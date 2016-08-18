@@ -1,0 +1,8 @@
+*.mojom.dart
+.packages
+.project
+.pub/
+build/
+packages/
+pubspec.lock
+/out
