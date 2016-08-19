@@ -1,8 +1,32 @@
-Install the Gerrit commit hook:
+Setup
+=====
 
-```sh
-curl -Lo .git/hooks/commit-msg https://fuchsia-review.googlesource.com/tools/hooks/commit-msg
-chmod u+x .git/hooks/commit-msg
+## Authenticate
+
+Go to your profile settings on Gerrit, select `HTTP Password > Obtain Password`,
+and follow the instructions.
+
+
+## Install Jiri
+
+```
+curl -s https://raw.githubusercontent.com/vanadium/go.jiri/master/scripts/bootstrap_jiri | bash -s /path/to/workspace/root
+export PATH=/path/to/workspace/root/.jiri_root/scripts:$PATH
 ```
 
-Authenticate by going to your profile settings on Gerrit, selecting `HTTP Password > Obtain Password`, and following the instructions.
+
+## Fetch the repo
+
+```
+cd /path/to/workspace/root
+jiri import sysui https://fuchsia.googlesource.com/manifest
+jiri update
+cd sysui
+```
+
+
+## Update your environment
+
+```
+source tools/environment.sh
+```
