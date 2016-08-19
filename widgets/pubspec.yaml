@@ -1,0 +1,12 @@
+# Copyright 2016 The Fuchsia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+name: sysui_widgets
+dependencies:
+  flutter:
+    path: ../third_party/flutter/packages/flutter
+dev_dependencies:
+  flutter_test:
+    path: ../third_party/flutter/packages/flutter_test
+  typed_mock: ^0.0.4

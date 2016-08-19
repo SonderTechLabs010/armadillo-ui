@@ -1,8 +1,9 @@
 *.mojom.dart
 .packages
 .project
-.pub/
-build/
-packages/
+.pub
+build
+packages
 pubspec.lock
 /out
+/third_party

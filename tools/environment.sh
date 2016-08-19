@@ -21,6 +21,11 @@ function croot() {
   cd $TREE_ROOT
 }
 
+function analyze() {
+  local dir=$PWD
+  (cd $TREE_ROOT/tools/analyze && pub run bin/main.dart "$dir/$@")
+}
+
 PRUNE_ARGS="-name third_party -prune -o -name .git -prune -o -name out -prune -o -name .pub -prune -o -name packages -prune -o -name .packages -prune -o -name build -prune"
 GREP_COMMAND="grep -I -nH --color"
 
@@ -71,6 +76,7 @@ function sysui_help() {
   echo " >>> Commands <<<"
   echo "croot           - cd to the root of the Git tree"
   echo "sfind           - find files in the tree"
+  echo "analyze         - analyze Dart code"
   echo ""
   echo " >>> Search commands"
   echo "sgrep           - search through all files"
