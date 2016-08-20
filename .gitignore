@@ -6,4 +6,4 @@ build
 packages
 pubspec.lock
 /out
-/third_party
+/third_party/flutter
