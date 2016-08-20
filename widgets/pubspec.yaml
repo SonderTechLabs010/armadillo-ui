@@ -7,6 +7,9 @@ dependencies:
   flutter:
     path: ../third_party/flutter/packages/flutter
 dev_dependencies:
+  # Note that this dependency also gets us the test package.
+  # Not specifying test explicitly here to ensure we use the same version as
+  # Flutter.
   flutter_test:
     path: ../third_party/flutter/packages/flutter_test
   typed_mock: ^0.0.4
