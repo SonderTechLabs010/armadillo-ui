@@ -26,6 +26,10 @@ function analyze() {
   (cd $TREE_ROOT/tools/analyze && pub run bin/main.dart "$dir/$@")
 }
 
+function push_to_gerrit() {
+  git push origin HEAD:refs/for/master
+}
+
 PRUNE_ARGS="-name third_party -prune -o -name .git -prune -o -name out -prune -o -name .pub -prune -o -name packages -prune -o -name .packages -prune -o -name build -prune"
 GREP_COMMAND="grep -I -nH --color"
 
@@ -77,6 +81,7 @@ function sysui_help() {
   echo "croot           - cd to the root of the Git tree"
   echo "sfind           - find files in the tree"
   echo "analyze         - analyze Dart code"
+  echo "push_to_gerrit  - push current HEAD to Gerrit for review"
   echo ""
   echo " >>> Search commands"
   echo "sgrep           - search through all files"
