@@ -132,6 +132,7 @@ class ConductorState extends State<Conductor> {
             bottom: 0.0,
             left: 0.0,
             right: 0.0,
+            top: 0.0,
             child: new RepaintBoundary(
                 child: new Now(
                     key: _nowKey,

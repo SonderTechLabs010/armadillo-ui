@@ -79,148 +79,132 @@ class NowState extends TickingState<Now> {
   final RK4SpringSimulation _quickSettingsSimulation =
       new RK4SpringSimulation(initValue: 0.0, desc: _kSimulationDesc);
 
-  /// As [Now] minimizes the user image goes from bottom center aligned to
-  /// center aligned as it shrinks.
-  final Tween<FractionalOffset> _userImageAlignment =
-      new Tween<FractionalOffset>(
-          begin: FractionalOffset.bottomCenter, end: FractionalOffset.center);
-
   @override
-  Widget build(BuildContext context) => new GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () {
-        if (!_minimizing) {
-          if (!_revealingQuickSettings) {
-            showQuickSettings();
-          } else {
-            hideQuickSettings();
-          }
-        }
-      },
-      child: new ConstrainedBox(
-          constraints: new BoxConstraints.tightFor(
-              height: _nowHeight + math.max(0.0, _scrollOffsetDelta)),
-          child: new Padding(
-              padding: new EdgeInsets.symmetric(horizontal: 8.0),
-              child: new Stack(children: [
-                // Quick Settings background.
-                new Positioned(
-                    left: 0.0,
-                    right: 0.0,
-                    bottom: _quickSettingsBackgroundBottomOffset,
-                    child: new Center(child: new Container(
-                        height: _quickSettingsBackgroundHeight,
-                        width: _quickSettingsBackgroundWidth,
-                        decoration: new BoxDecoration(
-                            backgroundColor: new Color(0xFFFFFFFF),
-                            borderRadius: new BorderRadius.circular(
-                                _quickSettingsBackgroundBorderRadius))))),
+  Widget build(BuildContext context) => new LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) =>
+          new GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                if (!_minimizing) {
+                  if (!_revealingQuickSettings) {
+                    showQuickSettings();
+                  } else {
+                    hideQuickSettings();
+                  }
+                }
+              },
+              child: new Container(
+                  margin: new EdgeInsets.only(
+                      top: constraints.maxHeight - _nowHeight),
+                  child: new Stack(children: [
+                    // Quick Settings.
+                    new Positioned(
+                        left: 8.0,
+                        right: 8.0,
+                        top: _quickSettingsTopOffset,
+                        child: new Center(child: new Container(
+                            height: _quickSettingsBackgroundHeight,
+                            width: _quickSettingsBackgroundWidth,
+                            decoration: new BoxDecoration(
+                                backgroundColor: new Color(0xFFFFFFFF),
+                                borderRadius: new BorderRadius.circular(
+                                    _quickSettingsBackgroundBorderRadius)),
+                            child: new Padding(
+                                padding: const EdgeInsets.all(32.0) -
+                                    new EdgeInsets.only(bottom: 32.0 *
+                                        (1.0 - _quickSettingsSlideUpProgress)) +
+                                    new EdgeInsets.only(top: 128.0),
+                                child: new Opacity(
+                                    opacity: _quickSettingsSlideUpProgress,
+                                    child: config.quickSettings))))),
 
-                // Quick Settings.
-                new Positioned(
-                    left: 0.0,
-                    right: 0.0,
-                    bottom: _quickSettingsBottomOffset,
-                    child: new ConstrainedBox(
-                        constraints: new BoxConstraints.tightFor(
-                            width: _quickSettingsWidth,
-                            height: _quickSettingsHeight),
-                        child: new Opacity(
-                            opacity: _quickSettingsSlideUpProgress,
-                            child: config.quickSettings))),
-
-                // User's Image.
-                new Positioned(
-                    left: 0.0,
-                    right: 0.0,
-                    top: 0.0,
-                    bottom: _userImageBottomOffset,
-                    child: new Align(
-                        alignment:
-                            _userImageAlignment.lerp(_minimizationProgress),
-                        child: new Stack(children: [
-                          new Opacity(
-                              opacity: _quickSettingsProgress,
-                              child: new Container(
-                                  width: _userImageSize,
-                                  height: _userImageSize,
-                                  decoration: new BoxDecoration(
-                                      boxShadow: kElevationToShadow[12],
-                                      shape: BoxShape.circle))),
-                          new ClipOval(child: new Container(
-                              width: _userImageSize,
-                              height: _userImageSize,
-                              foregroundDecoration: new BoxDecoration(
-                                  border: new Border.all(
-                                      color: new Color(0xFFFFFFFF),
-                                      width: _userImageBorderWidth),
-                                  shape: BoxShape.circle),
-                              child: config.user))
-                        ]))),
-
-                // User Context Text and Important Information when maximized.
-                new Positioned(
-                    left: 0.0,
-                    right: 0.0,
-                    bottom: _batteryBottomOffset,
-                    child: new Center(child: new Opacity(
-                        opacity: _fallAwayOpacity,
-                        child: new Column(children: [
-                          config.userContextMaximized,
+                    // User Image, User Context Text, and Important Information when maximized.
+                    new Positioned(
+                        left: 8.0,
+                        right: 8.0,
+                        top: _userImageTopOffset,
+                        child: new Center(child: new Column(children: [
+                          new Stack(children: [
+                            new Opacity(
+                                opacity: _quickSettingsProgress,
+                                child: new Container(
+                                    width: _userImageSize,
+                                    height: _userImageSize,
+                                    decoration: new BoxDecoration(
+                                        boxShadow: kElevationToShadow[12],
+                                        shape: BoxShape.circle))),
+                            new ClipOval(child: new Container(
+                                width: _userImageSize,
+                                height: _userImageSize,
+                                foregroundDecoration: new BoxDecoration(
+                                    border: new Border.all(
+                                        color: new Color(0xFFFFFFFF),
+                                        width: _userImageBorderWidth),
+                                    shape: BoxShape.circle),
+                                child: config.user))
+                          ]),
+                          new Padding(
+                              padding: const EdgeInsets.only(top: 24.0),
+                              child: new Opacity(
+                                  opacity: _fallAwayOpacity,
+                                  child: config.userContextMaximized)),
                           new Padding(
                               padding: const EdgeInsets.only(top: 16.0),
-                              child: config.importantInfoMaximized),
-                        ])))),
+                              child: new Opacity(
+                                  opacity: _fallAwayOpacity,
+                                  child: config.importantInfoMaximized)),
+                        ]))),
 
-                // User Context Text and Important Information when minimized.
-                new Align(
-                    alignment: FractionalOffset.bottomCenter,
-                    child: new Container(
-                        height: config.minHeight,
-                        padding: new EdgeInsets.symmetric(
-                            horizontal: _slideInDistance),
-                        child: new Opacity(
-                            opacity: _slideInProgress,
-                            child: new Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  config.userContextMinimized,
-                                  config.importantInfoMinimized
-                                ])))),
+                    // User Context Text and Important Information when minimized.
+                    new Align(
+                        alignment: FractionalOffset.bottomCenter,
+                        child: new Container(
+                            height: config.minHeight,
+                            padding: new EdgeInsets.symmetric(
+                                horizontal: 8.0 + _slideInDistance),
+                            child: new Opacity(
+                                opacity: _slideInProgress,
+                                child: new Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      config.userContextMinimized,
+                                      config.importantInfoMinimized
+                                    ])))),
 
-                // Button bar.  These buttons are only enabled when we're nearly
-                // fully minimized.
-                new OffStage(
-                    offstage: _buttonTapDisabled,
-                    child: new Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Toggle Quick Settings Overlay Button.
-                          new Flexible(
-                              flex: 1,
-                              child: new GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap:
-                                      config.onQuickSettingsOverlayButtonTap)),
+                    // Button bar.  These buttons are only enabled when we're nearly
+                    // fully minimized.
+                    new OffStage(
+                        offstage: _buttonTapDisabled,
+                        child: new Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Toggle Quick Settings Overlay Button.
+                              new Flexible(
+                                  flex: 1,
+                                  child: new GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: config
+                                          .onQuickSettingsOverlayButtonTap)),
 
-                          // Return To Origin Button.
-                          new Flexible(
-                              flex: 2,
-                              child: new GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: config.onReturnToOriginButtonTap)),
+                              // Return To Origin Button.
+                              new Flexible(
+                                  flex: 2,
+                                  child: new GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: config.onReturnToOriginButtonTap)),
 
-                          // Toggle Interruptions Overlay Button.
-                          new Flexible(
-                              flex: 1,
-                              child: new GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap:
-                                      config.onInterruptionsOverlayButtonTap))
-                        ])),
-              ]))));
+                              // Toggle Interruptions Overlay Button.
+                              new Flexible(
+                                  flex: 1,
+                                  child: new GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: config
+                                          .onInterruptionsOverlayButtonTap))
+                            ])),
+                  ]))));
 
   @override
   bool handleTick(double elapsedSeconds) {
@@ -289,27 +273,25 @@ class NowState extends TickingState<Now> {
   bool get _buttonTapDisabled =>
       _minimizationProgress < (1.0 - _kFallAwayDurationFraction);
 
-  double get _nowHeight =>
+  double get _nowHeight => math.max(
+      config.minHeight,
       config.minHeight +
-      ((config.maxHeight - config.minHeight) * (1.0 - _minimizationProgress)) +
-      config.quickSettingsHeightBump * _quickSettingsProgress;
+          ((config.maxHeight - config.minHeight) *
+              (1.0 - _minimizationProgress)) +
+          _quickSettingsRaiseDistance +
+          _scrollOffsetDelta);
 
   double get _userImageSize => 100.0 - (88.0 * _minimizationProgress);
 
   double get _userImageBorderWidth => 2.0 + (4.0 * _minimizationProgress);
 
-  double get _userImageBottomOffset =>
-      160.0 * (1.0 - _minimizationProgress) +
-      _quickSettingsRaiseDistance +
-      _scrollOffsetDelta +
-      _restingDistanceAboveLowestPoint;
+  double get _userImageTopOffset =>
+      (100.0 + _quickSettingsRaiseDistance - _quickSettingsProgress * 200.0) *
+          (1.0 - _minimizationProgress) +
+      ((config.minHeight - _userImageSize) / 2.0) * _minimizationProgress;
 
-  double get _batteryBottomOffset =>
-      70.0 +
-      _fallAwayDistance +
-      _quickSettingsRaiseDistance +
-      _scrollOffsetDelta +
-      _restingDistanceAboveLowestPoint;
+  double get _quickSettingsTopOffset =>
+      _userImageTopOffset + ((_userImageSize / 2.0) * _quickSettingsProgress);
 
   double get _quickSettingsBackgroundBorderRadius =>
       50.0 - 46.0 * _quickSettingsProgress;
@@ -321,28 +303,6 @@ class NowState extends TickingState<Now> {
       (config.quickSettingsHeightBump + 80.0) *
       _quickSettingsProgress *
       (1.0 - _minimizationProgress);
-
-  double get _restingDistanceAboveLowestPoint =>
-      _kRestingDistanceAboveLowestPoint *
-      (1.0 - _quickSettingsProgress) *
-      (1.0 - _minimizationProgress);
-
-  // TODO(apwilson): Make this calculation sane.  It appears it should depend
-  // upon config.quickSettingsHeightBump.
-  double get _quickSettingsBackgroundBottomOffset =>
-      _userImageBottomOffset +
-      (_userImageSize / 2.0) -
-      _quickSettingsBackgroundHeight +
-      (_userImageSize / 3.0) * (1.0 - _quickSettingsProgress) +
-      (5.0 / 3.0 * _userImageSize * _minimizationProgress);
-
-  double get _quickSettingsWidth => 400.0 - 32.0;
-  double get _quickSettingsHeight =>
-      config.quickSettingsHeightBump + 80.0 - 32.0;
-  double get _quickSettingsBottomOffset =>
-      136.0 + (16.0 * _quickSettingsSlideUpProgress);
-
-  double get _fallAwayDistance => 10.0 * (1.0 - _fallAwayProgress);
 
   double get _fallAwayOpacity => (1.0 - _fallAwayProgress);
 
