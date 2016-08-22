@@ -11,6 +11,7 @@ abstract class TickingState<T extends StatefulWidget> extends State<T> {
   Ticker _ticker;
   Duration _lastTick;
 
+  /// Returns false if [_ticker] should stop ticking after this tick.
   bool handleTick(double elapsedSeconds);
 
   void startTicking() {

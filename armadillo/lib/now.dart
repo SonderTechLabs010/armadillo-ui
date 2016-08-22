@@ -6,7 +6,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sysui_widgets/aggregate_listener_animation.dart';
+import 'package:sysui_widgets/rk4_spring_simulation.dart';
+import 'package:sysui_widgets/ticking_state.dart';
 
 typedef void OnQuickSettingsProgressChange(double quickSettingsProgress);
 
@@ -57,227 +58,234 @@ class Now extends StatefulWidget {
   NowState createState() => new NowState();
 }
 
-class NowState extends State<Now> {
-  /// The controller for the minimization animation.
-  final AnimationController _minimizationAnimation =
-      new AnimationController(duration: const Duration(milliseconds: 500));
+/// Spring description used by the minimization and quick settings reveal
+/// simulations.
+const RK4SpringDescription _kSimulationDesc =
+    const RK4SpringDescription(tension: 450.0, friction: 50.0);
 
-  /// The controller for the quick settings animation.
-  final AnimationController _quickSettingsAnimation =
-      new AnimationController(duration: const Duration(milliseconds: 500));
+const double _kMinimizationSimulationTarget = 100.0;
+const double _kQuickSettingsSimulationTarget = 100.0;
+
+class NowState extends TickingState<Now> {
+  /// The simulation for the minimization to a bar.
+  final RK4SpringSimulation _minimizationSimulation =
+      new RK4SpringSimulation(initValue: 0.0, desc: _kSimulationDesc);
+
+  /// The simulation for the inline quick settings reveal.
+  final RK4SpringSimulation _quickSettingsSimulation =
+      new RK4SpringSimulation(initValue: 0.0, desc: _kSimulationDesc);
 
   /// As [Now] minimizes the user image goes from bottom center aligned to
   /// center aligned as it shrinks.
   final Tween<FractionalOffset> _userImageAlignment =
       new Tween<FractionalOffset>(
           begin: FractionalOffset.bottomCenter, end: FractionalOffset.center);
-  CurvedAnimation _curvedMinimizationAnimation;
-  CurvedAnimation _curvedQuickSettingsAnimation;
-
-  NowState() {
-    _curvedMinimizationAnimation = new CurvedAnimation(
-        parent: _minimizationAnimation,
-        curve: Curves.fastOutSlowIn,
-        reverseCurve: Curves.fastOutSlowIn.flipped);
-    _curvedQuickSettingsAnimation = new CurvedAnimation(
-        parent: _quickSettingsAnimation,
-        curve: Curves.fastOutSlowIn,
-        reverseCurve: Curves.fastOutSlowIn.flipped);
-  }
 
   @override
-  void initState() {
-    super.initState();
-    if (config.onQuickSettingsProgressChange != null) {
-      _curvedQuickSettingsAnimation.addListener(() {
-        config
-            .onQuickSettingsProgressChange(_curvedQuickSettingsAnimation.value);
-      });
+  Widget build(BuildContext context) => new GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        if (!_minimizing) {
+          if (!_revealingQuickSettings) {
+            showQuickSettings();
+          } else {
+            hideQuickSettings();
+          }
+        }
+      },
+      child: new ConstrainedBox(
+          constraints: new BoxConstraints.tightFor(
+              height: _nowHeight + math.max(0.0, _scrollOffsetDelta)),
+          child: new Padding(
+              padding: new EdgeInsets.symmetric(horizontal: 8.0),
+              child: new Stack(children: [
+                // Quick Settings background.
+                new Positioned(
+                    left: 0.0,
+                    right: 0.0,
+                    bottom: _quickSettingsBackgroundBottomOffset,
+                    child: new Center(child: new Container(
+                        height: _quickSettingsBackgroundHeight,
+                        width: _quickSettingsBackgroundWidth,
+                        decoration: new BoxDecoration(
+                            backgroundColor: new Color(0xFFFFFFFF),
+                            borderRadius: new BorderRadius.circular(
+                                _quickSettingsBackgroundBorderRadius))))),
+
+                // Quick Settings.
+                new Positioned(
+                    left: 0.0,
+                    right: 0.0,
+                    bottom: _quickSettingsBottomOffset,
+                    child: new ConstrainedBox(
+                        constraints: new BoxConstraints.tightFor(
+                            width: _quickSettingsWidth,
+                            height: _quickSettingsHeight),
+                        child: new Opacity(
+                            opacity: _quickSettingsSlideUpProgress,
+                            child: config.quickSettings))),
+
+                // User's Image.
+                new Positioned(
+                    left: 0.0,
+                    right: 0.0,
+                    top: 0.0,
+                    bottom: _userImageBottomOffset,
+                    child: new Align(
+                        alignment:
+                            _userImageAlignment.lerp(_minimizationProgress),
+                        child: new Stack(children: [
+                          new Opacity(
+                              opacity: _quickSettingsProgress,
+                              child: new Container(
+                                  width: _userImageSize,
+                                  height: _userImageSize,
+                                  decoration: new BoxDecoration(
+                                      boxShadow: kElevationToShadow[12],
+                                      shape: BoxShape.circle))),
+                          new ClipOval(child: new Container(
+                              width: _userImageSize,
+                              height: _userImageSize,
+                              foregroundDecoration: new BoxDecoration(
+                                  border: new Border.all(
+                                      color: new Color(0xFFFFFFFF),
+                                      width: _userImageBorderWidth),
+                                  shape: BoxShape.circle),
+                              child: config.user))
+                        ]))),
+
+                // User Context Text when maximized.
+                new Positioned(
+                    left: 0.0,
+                    right: 0.0,
+                    bottom: _contextTextBottomOffset,
+                    child: new Center(child: new Opacity(
+                        opacity: _fallAwayOpacity,
+                        child: config.userContextMaximized))),
+
+                // Important Information when maximized.
+                new Positioned(
+                    left: 0.0,
+                    right: 0.0,
+                    bottom: _batteryBottomOffset,
+                    child: new Center(child: new Opacity(
+                        opacity: _fallAwayOpacity,
+                        child: config.importantInfoMaximized))),
+
+                // User Context Text when minimized.
+                new Positioned(
+                    bottom: 0.0,
+                    left: _slideInDistance,
+                    right: 0.0,
+                    height: config.minHeight,
+                    child: new Align(
+                        alignment: FractionalOffset.centerLeft,
+                        child: new Opacity(
+                            opacity: _slideInProgress,
+                            child: config.userContextMinimized))),
+
+                // Important Information when minimized.
+                new Positioned(
+                    bottom: 0.0,
+                    left: 0.0,
+                    right: _slideInDistance,
+                    height: config.minHeight,
+                    child: new Align(
+                        alignment: FractionalOffset.centerRight,
+                        child: new Opacity(
+                            opacity: _slideInProgress,
+                            child: config.importantInfoMinimized))),
+
+                // Return To Origin Button.  This button is only enabled
+                // when we're nearly fully minimized.
+                new OffStage(
+                    offstage: _buttonTapDisabled,
+                    child: new Center(child: new GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: config.onButtonTap,
+                        child: new Container(
+                            width: config.minHeight,
+                            height: config.minHeight))))
+              ]))));
+
+  @override
+  bool handleTick(double elapsedSeconds) {
+    bool continueTicking = false;
+
+    // Tick the minimization simulation.
+    _minimizationSimulation.elapseTime(elapsedSeconds);
+    if (!_minimizationSimulation.isDone) {
+      continueTicking = true;
     }
+
+    // Tick the quick settings simulation.
+    if (!_quickSettingsSimulation.isDone) {
+      _quickSettingsSimulation.elapseTime(elapsedSeconds);
+      if (!_quickSettingsSimulation.isDone) {
+        continueTicking = true;
+      }
+      if (config.onQuickSettingsProgressChange != null) {
+        config.onQuickSettingsProgressChange(_quickSettingsProgress);
+      }
+    }
+
+    return continueTicking;
   }
-
-  @override
-  Widget build(BuildContext context) => new AnimatedBuilder(
-      animation: new AggregateListenerAnimation(
-          children: [_minimizationAnimation, _quickSettingsAnimation]),
-      builder: (BuildContext context, Widget child) => new GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () {
-            if (_minimizationAnimation.status != AnimationStatus.completed &&
-                _minimizationAnimation.status != AnimationStatus.forward) {
-              if (_quickSettingsAnimation.status != AnimationStatus.completed &&
-                  _quickSettingsAnimation.status != AnimationStatus.forward) {
-                showQuickSettings();
-              } else {
-                hideQuickSettings();
-              }
-            }
-          },
-          child: new ConstrainedBox(
-              constraints: new BoxConstraints.tightFor(
-                  height: _nowHeight + math.max(0.0, _scrollOffsetDelta)),
-              child: new Padding(
-                  padding: new EdgeInsets.symmetric(horizontal: 8.0),
-                  child: new Stack(children: [
-                    // Quick Settings background.
-                    new Positioned(
-                        left: 0.0,
-                        right: 0.0,
-                        bottom: _quickSettingsBackgroundBottomOffset,
-                        child: new Center(
-                            child: new Container(
-                                height: _quickSettingsBackgroundHeight,
-                                width: _quickSettingsBackgroundWidth,
-                                decoration: new BoxDecoration(
-                                    backgroundColor: new Color(0xFFFFFFFF),
-                                    borderRadius: new BorderRadius.circular(
-                                        _quickSettingsBackgroundBorderRadius))))),
-
-                    // Quick Settings.
-                    new Positioned(
-                        left: 0.0,
-                        right: 0.0,
-                        bottom: _quickSettingsBottomOffset,
-                        child: new ConstrainedBox(
-                            constraints: new BoxConstraints.tightFor(
-                                width: _quickSettingsWidth,
-                                height: _quickSettingsHeight),
-                            child: new Opacity(
-                                opacity: _quickSettingsSlideUpProgress,
-                                child: config.quickSettings))),
-
-                    // User's Image.
-                    new Positioned(
-                        left: 0.0,
-                        right: 0.0,
-                        top: 0.0,
-                        bottom: _userImageBottomOffset,
-                        child: new Align(
-                            alignment: _userImageAlignment
-                                .evaluate(_curvedMinimizationAnimation),
-                            child: new Stack(children: [
-                              new Opacity(
-                                  opacity: _curvedQuickSettingsAnimation.value,
-                                  child: new Container(
-                                      width: _userImageSize,
-                                      height: _userImageSize,
-                                      decoration: new BoxDecoration(
-                                          boxShadow: kElevationToShadow[12],
-                                          shape: BoxShape.circle))),
-                              new ClipOval(
-                                  child: new Container(
-                                      width: _userImageSize,
-                                      height: _userImageSize,
-                                      foregroundDecoration: new BoxDecoration(
-                                          border: new Border.all(
-                                              color: new Color(0xFFFFFFFF),
-                                              width: _userImageBorderWidth),
-                                          shape: BoxShape.circle),
-                                      child: config.user))
-                            ]))),
-
-                    // User Context Text when maximized.
-                    new Positioned(
-                        left: 0.0,
-                        right: 0.0,
-                        bottom: _contextTextBottomOffset,
-                        child: new Center(
-                            child: new Opacity(
-                                opacity: _fallAwayOpacity,
-                                child: config.userContextMaximized))),
-
-                    // Important Information when maximized.
-                    new Positioned(
-                        left: 0.0,
-                        right: 0.0,
-                        bottom: _batteryBottomOffset,
-                        child: new Center(
-                            child: new Opacity(
-                                opacity: _fallAwayOpacity,
-                                child: config.importantInfoMaximized))),
-
-                    // User Context Text when minimized.
-                    new Positioned(
-                        bottom: 0.0,
-                        left: _slideInDistance,
-                        right: 0.0,
-                        height: config.minHeight,
-                        child: new Align(
-                            alignment: FractionalOffset.centerLeft,
-                            child: new Opacity(
-                                opacity: _slideInProgress,
-                                child: config.userContextMinimized))),
-
-                    // Important Information when minimized.
-                    new Positioned(
-                        bottom: 0.0,
-                        left: 0.0,
-                        right: _slideInDistance,
-                        height: config.minHeight,
-                        child: new Align(
-                            alignment: FractionalOffset.centerRight,
-                            child: new Opacity(
-                                opacity: _slideInProgress,
-                                child: config.importantInfoMinimized))),
-
-                    // Return To Origin Button.  This button is only enabled
-                    // when we're nearly fully minimized.
-                    new OffStage(
-                        offstage: _buttonTapDisabled,
-                        child: new Center(
-                            child: new GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: config.onButtonTap,
-                                child: new Container(
-                                    width: config.minHeight,
-                                    height: config.minHeight))))
-                  ])))));
 
   void minimize() {
-    if (_minimizationAnimation.status != AnimationStatus.completed &&
-        _minimizationAnimation.status != AnimationStatus.forward) {
-      _minimizationAnimation.forward();
+    if (!_minimizing) {
+      _minimizationSimulation.target = _kMinimizationSimulationTarget;
+      startTicking();
     }
   }
 
   void maximize() {
-    if (_minimizationAnimation.status != AnimationStatus.dismissed &&
-        _minimizationAnimation.status != AnimationStatus.reverse) {
-      _minimizationAnimation.reverse();
+    if (_minimizing) {
+      _minimizationSimulation.target = 0.0;
+      startTicking();
     }
   }
 
   void showQuickSettings() {
-    if (_quickSettingsAnimation.status != AnimationStatus.completed &&
-        _quickSettingsAnimation.status != AnimationStatus.forward) {
-      _quickSettingsAnimation.forward();
+    if (!_revealingQuickSettings) {
+      _quickSettingsSimulation.target = _kQuickSettingsSimulationTarget;
+      startTicking();
     }
   }
 
   void hideQuickSettings() {
-    if (_quickSettingsAnimation.status != AnimationStatus.dismissed &&
-        _quickSettingsAnimation.status != AnimationStatus.reverse) {
-      _quickSettingsAnimation.reverse();
+    if (_revealingQuickSettings) {
+      _quickSettingsSimulation.target = 0.0;
+      startTicking();
     }
   }
 
+  double get _quickSettingsProgress =>
+      _quickSettingsSimulation.value / _kQuickSettingsSimulationTarget;
+
+  double get _minimizationProgress =>
+      _minimizationSimulation.value / _kMinimizationSimulationTarget;
+
+  bool get _minimizing =>
+      _minimizationSimulation.target == _kMinimizationSimulationTarget;
+
+  bool get _revealingQuickSettings =>
+      _quickSettingsSimulation.target == _kQuickSettingsSimulationTarget;
+
   bool get _buttonTapDisabled =>
-      _curvedMinimizationAnimation.value < (1.0 - _kFallAwayDurationFraction);
+      _minimizationProgress < (1.0 - _kFallAwayDurationFraction);
 
   double get _nowHeight =>
       config.minHeight +
-      ((config.maxHeight - config.minHeight) *
-          (1.0 - _curvedMinimizationAnimation.value)) +
-      config.quickSettingsHeightBump * _quickSettingsAnimation.value;
+      ((config.maxHeight - config.minHeight) * (1.0 - _minimizationProgress)) +
+      config.quickSettingsHeightBump * _quickSettingsProgress;
 
-  double get _userImageSize =>
-      100.0 - (88.0 * _curvedMinimizationAnimation.value);
+  double get _userImageSize => 100.0 - (88.0 * _minimizationProgress);
 
-  double get _userImageBorderWidth =>
-      2.0 + (4.0 * _curvedMinimizationAnimation.value);
+  double get _userImageBorderWidth => 2.0 + (4.0 * _minimizationProgress);
 
   double get _userImageBottomOffset =>
-      160.0 * (1.0 - _curvedMinimizationAnimation.value) +
+      160.0 * (1.0 - _minimizationProgress) +
       _quickSettingsRaiseDistance +
       _scrollOffsetDelta +
       _restingDistanceAboveLowestPoint;
@@ -297,22 +305,20 @@ class NowState extends State<Now> {
       _restingDistanceAboveLowestPoint;
 
   double get _quickSettingsBackgroundBorderRadius =>
-      50.0 - 46.0 * _curvedQuickSettingsAnimation.value;
+      50.0 - 46.0 * _quickSettingsProgress;
 
   double get _quickSettingsBackgroundWidth =>
-      424.0 *
-      _curvedQuickSettingsAnimation.value *
-      (1.0 - _curvedMinimizationAnimation.value);
+      424.0 * _quickSettingsProgress * (1.0 - _minimizationProgress);
 
   double get _quickSettingsBackgroundHeight =>
       (config.quickSettingsHeightBump + 80.0) *
-      _curvedQuickSettingsAnimation.value *
-      (1.0 - _curvedMinimizationAnimation.value);
+      _quickSettingsProgress *
+      (1.0 - _minimizationProgress);
 
   double get _restingDistanceAboveLowestPoint =>
       _kRestingDistanceAboveLowestPoint *
-      (1.0 - _curvedQuickSettingsAnimation.value) *
-      (1.0 - _curvedMinimizationAnimation.value);
+      (1.0 - _quickSettingsProgress) *
+      (1.0 - _minimizationProgress);
 
   // TODO(apwilson): Make this calculation sane.  It appears it should depend
   // upon config.quickSettingsHeightBump.
@@ -320,8 +326,8 @@ class NowState extends State<Now> {
       _userImageBottomOffset +
       (_userImageSize / 2.0) -
       _quickSettingsBackgroundHeight +
-      (_userImageSize / 3.0) * (1.0 - _curvedQuickSettingsAnimation.value) +
-      (5.0 / 3.0 * _userImageSize * _curvedMinimizationAnimation.value);
+      (_userImageSize / 3.0) * (1.0 - _quickSettingsProgress) +
+      (5.0 / 3.0 * _userImageSize * _minimizationProgress);
 
   double get _quickSettingsWidth => 400.0 - 32.0;
   double get _quickSettingsHeight =>
@@ -336,14 +342,14 @@ class NowState extends State<Now> {
   double get _slideInDistance => 10.0 * (1.0 - _slideInProgress);
 
   double get _quickSettingsRaiseDistance =>
-      config.quickSettingsHeightBump * _curvedQuickSettingsAnimation.value;
+      config.quickSettingsHeightBump * _quickSettingsProgress;
 
   double get _scrollOffsetDelta =>
       (math.max(
                   -_kRestingDistanceAboveLowestPoint,
                   (-1.0 * config.scrollOffset / 3.0) *
-                      (1.0 - _curvedMinimizationAnimation.value) *
-                      (1.0 - _curvedQuickSettingsAnimation.value)) *
+                      (1.0 - _minimizationProgress) *
+                      (1.0 - _quickSettingsProgress)) *
               1000.0)
           .truncateToDouble() /
       1000.0;
@@ -351,34 +357,21 @@ class NowState extends State<Now> {
   /// We fall away the context text and important information for the initial
   /// portion of the minimization animation as determined by
   /// [_kFallAwayDurationFraction].
-  double get _fallAwayProgress => (_minimizationAnimation.status ==
-              AnimationStatus.forward
-          ? Curves.fastOutSlowIn
-          : Curves.fastOutSlowIn.flipped)
-      .transform(math.min(
-          1.0, (_minimizationAnimation.value / _kFallAwayDurationFraction)));
+  double get _fallAwayProgress =>
+      math.min(1.0, (_minimizationProgress / _kFallAwayDurationFraction));
 
   /// We slide in the context text and important information for the final
   /// portion of the minimization animation as determined by
   /// [_kFallAwayDurationFraction].
-  double get _slideInProgress => (_minimizationAnimation.status ==
-              AnimationStatus.forward
-          ? Curves.fastOutSlowIn
-          : Curves.fastOutSlowIn.flipped)
-      .transform(math.max(
-          0.0,
-          ((_minimizationAnimation.value - (1.0 - _kFallAwayDurationFraction)) /
-              _kFallAwayDurationFraction)));
+  double get _slideInProgress => math.max(
+      0.0,
+      ((_minimizationProgress - (1.0 - _kFallAwayDurationFraction)) /
+          _kFallAwayDurationFraction));
 
   /// We slide up and fade in the quick settings for the final portion of the
   /// quick settings animation as determined by [_kFallAwayDurationFraction].
-  double get _quickSettingsSlideUpProgress =>
-      (_curvedQuickSettingsAnimation.status == AnimationStatus.forward
-              ? Curves.fastOutSlowIn
-              : Curves.fastOutSlowIn.flipped)
-          .transform(math.max(
-              0.0,
-              ((_curvedQuickSettingsAnimation.value -
-                      (1.0 - _kFallAwayDurationFraction)) /
-                  _kFallAwayDurationFraction)));
+  double get _quickSettingsSlideUpProgress => math.max(
+      0.0,
+      ((_quickSettingsProgress - (1.0 - _kFallAwayDurationFraction)) /
+          _kFallAwayDurationFraction));
 }
