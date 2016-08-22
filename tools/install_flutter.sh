@@ -20,4 +20,5 @@ fi
 
 cd $DEST
 echo "Resetting Flutter repo to $TARGET_VERSION"
+git fetch
 git reset --hard $TARGET_VERSION

@@ -26,12 +26,14 @@ class ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
         new Container(
             decoration:
                 new BoxDecoration(backgroundColor: new Color(0xFF404040)),
-            child: new Center(child: new Container(
-                decoration: new BoxDecoration(
-                    backgroundColor: Colors.black,
-                    boxShadow: kElevationToShadow[12]),
-                child: new ConstrainedBox(
-                    constraints: _currentConstraint, child: config.child)))),
+            child: new Center(
+                child: new Container(
+                    decoration: new BoxDecoration(
+                        backgroundColor: Colors.black,
+                        boxShadow: kElevationToShadow[12]),
+                    child: new ConstrainedBox(
+                        constraints: _currentConstraint,
+                        child: config.child)))),
         new Positioned(
             right: 0.0,
             top: 0.0,

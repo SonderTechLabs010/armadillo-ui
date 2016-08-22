@@ -18,8 +18,8 @@ const _kConstraints = const <BoxConstraints>[
 ];
 
 Future main() async {
-  runApp(new WidgetsApp(onGenerateRoute: (RouteSettings settings) =>
-      new DelegatingPageRoute(
+  runApp(new WidgetsApp(
+      onGenerateRoute: (RouteSettings settings) => new DelegatingPageRoute(
           (_) => new ChildConstraintsChanger(
               constraints: _kConstraints,
               child: new DefaultAssetBundle(

@@ -95,35 +95,39 @@ class NowState extends TickingState<Now> {
               },
               child: new Container(
                   margin: new EdgeInsets.only(
-                      top: constraints.maxHeight - _nowHeight),
+                      top: math.max(0.0, constraints.maxHeight - _nowHeight)),
                   child: new Stack(children: [
                     // Quick Settings.
                     new Positioned(
                         left: 8.0,
                         right: 8.0,
                         top: _quickSettingsTopOffset,
-                        child: new Center(child: new Container(
-                            height: _quickSettingsBackgroundHeight,
-                            width: _quickSettingsBackgroundWidth,
-                            decoration: new BoxDecoration(
-                                backgroundColor: new Color(0xFFFFFFFF),
-                                borderRadius: new BorderRadius.circular(
-                                    _quickSettingsBackgroundBorderRadius)),
-                            child: new Padding(
-                                padding: const EdgeInsets.all(32.0) -
-                                    new EdgeInsets.only(bottom: 32.0 *
-                                        (1.0 - _quickSettingsSlideUpProgress)) +
-                                    new EdgeInsets.only(top: 128.0),
-                                child: new Opacity(
-                                    opacity: _quickSettingsSlideUpProgress,
-                                    child: config.quickSettings))))),
+                        child: new Center(
+                            child: new Container(
+                                height: _quickSettingsBackgroundHeight,
+                                width: _quickSettingsBackgroundWidth,
+                                decoration: new BoxDecoration(
+                                    backgroundColor: new Color(0xFFFFFFFF),
+                                    borderRadius: new BorderRadius.circular(
+                                        _quickSettingsBackgroundBorderRadius)),
+                                child: new Padding(
+                                    padding: const EdgeInsets.all(32.0) -
+                                        new EdgeInsets.only(
+                                            bottom: 32.0 *
+                                                (1.0 -
+                                                    _quickSettingsSlideUpProgress)) +
+                                        new EdgeInsets.only(top: 128.0),
+                                    child: new Opacity(
+                                        opacity: _quickSettingsSlideUpProgress,
+                                        child: config.quickSettings))))),
 
                     // User Image, User Context Text, and Important Information when maximized.
                     new Positioned(
                         left: 8.0,
                         right: 8.0,
                         top: _userImageTopOffset,
-                        child: new Center(child: new Column(children: [
+                        child: new Center(
+                            child: new Column(children: [
                           new Stack(children: [
                             new Opacity(
                                 opacity: _quickSettingsProgress,
@@ -133,15 +137,16 @@ class NowState extends TickingState<Now> {
                                     decoration: new BoxDecoration(
                                         boxShadow: kElevationToShadow[12],
                                         shape: BoxShape.circle))),
-                            new ClipOval(child: new Container(
-                                width: _userImageSize,
-                                height: _userImageSize,
-                                foregroundDecoration: new BoxDecoration(
-                                    border: new Border.all(
-                                        color: new Color(0xFFFFFFFF),
-                                        width: _userImageBorderWidth),
-                                    shape: BoxShape.circle),
-                                child: config.user))
+                            new ClipOval(
+                                child: new Container(
+                                    width: _userImageSize,
+                                    height: _userImageSize,
+                                    foregroundDecoration: new BoxDecoration(
+                                        border: new Border.all(
+                                            color: new Color(0xFFFFFFFF),
+                                            width: _userImageBorderWidth),
+                                        shape: BoxShape.circle),
+                                    child: config.user))
                           ]),
                           new Padding(
                               padding: const EdgeInsets.only(top: 24.0),
