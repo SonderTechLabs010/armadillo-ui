@@ -151,10 +151,16 @@ class ConductorState extends State<Conductor> {
                               }
                               _quickSettingsProgress = quickSettingsProgress;
                             }),
-                    onButtonTap: () {
+                    onReturnToOriginButtonTap: () {
                       _recentListScrollableKey.currentState.scrollTo(0.0,
                           duration: const Duration(milliseconds: 500),
                           curve: Curves.fastOutSlowIn);
+                    },
+                    onQuickSettingsOverlayButtonTap: () {
+                      print('Toggle quick settings overlay!');
+                    },
+                    onInterruptionsOverlayButtonTap: () {
+                      print('Toggle interruptions overlay!');
                     },
                     user: new Image.asset(_kUserImage, fit: ImageFit.cover),
                     userContextMaximized: new Text(

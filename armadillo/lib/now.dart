@@ -30,7 +30,9 @@ class Now extends StatefulWidget {
   final double scrollOffset;
   final double quickSettingsHeightBump;
   final OnQuickSettingsProgressChange onQuickSettingsProgressChange;
-  final VoidCallback onButtonTap;
+  final VoidCallback onQuickSettingsOverlayButtonTap;
+  final VoidCallback onReturnToOriginButtonTap;
+  final VoidCallback onInterruptionsOverlayButtonTap;
   final Widget user;
   final Widget userContextMaximized;
   final Widget userContextMinimized;
@@ -45,7 +47,9 @@ class Now extends StatefulWidget {
       this.scrollOffset,
       this.quickSettingsHeightBump,
       this.onQuickSettingsProgressChange,
-      this.onButtonTap,
+      this.onQuickSettingsOverlayButtonTap,
+      this.onReturnToOriginButtonTap,
+      this.onInterruptionsOverlayButtonTap,
       this.user,
       this.userContextMaximized,
       this.userContextMinimized,
@@ -154,58 +158,68 @@ class NowState extends TickingState<Now> {
                               child: config.user))
                         ]))),
 
-                // User Context Text when maximized.
-                new Positioned(
-                    left: 0.0,
-                    right: 0.0,
-                    bottom: _contextTextBottomOffset,
-                    child: new Center(child: new Opacity(
-                        opacity: _fallAwayOpacity,
-                        child: config.userContextMaximized))),
-
-                // Important Information when maximized.
+                // User Context Text and Important Information when maximized.
                 new Positioned(
                     left: 0.0,
                     right: 0.0,
                     bottom: _batteryBottomOffset,
                     child: new Center(child: new Opacity(
                         opacity: _fallAwayOpacity,
-                        child: config.importantInfoMaximized))),
+                        child: new Column(children: [
+                          config.userContextMaximized,
+                          new Padding(
+                              padding: const EdgeInsets.only(top: 16.0),
+                              child: config.importantInfoMaximized),
+                        ])))),
 
-                // User Context Text when minimized.
-                new Positioned(
-                    bottom: 0.0,
-                    left: _slideInDistance,
-                    right: 0.0,
-                    height: config.minHeight,
-                    child: new Align(
-                        alignment: FractionalOffset.centerLeft,
+                // User Context Text and Important Information when minimized.
+                new Align(
+                    alignment: FractionalOffset.bottomCenter,
+                    child: new Container(
+                        height: config.minHeight,
+                        padding: new EdgeInsets.symmetric(
+                            horizontal: _slideInDistance),
                         child: new Opacity(
                             opacity: _slideInProgress,
-                            child: config.userContextMinimized))),
+                            child: new Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  config.userContextMinimized,
+                                  config.importantInfoMinimized
+                                ])))),
 
-                // Important Information when minimized.
-                new Positioned(
-                    bottom: 0.0,
-                    left: 0.0,
-                    right: _slideInDistance,
-                    height: config.minHeight,
-                    child: new Align(
-                        alignment: FractionalOffset.centerRight,
-                        child: new Opacity(
-                            opacity: _slideInProgress,
-                            child: config.importantInfoMinimized))),
-
-                // Return To Origin Button.  This button is only enabled
-                // when we're nearly fully minimized.
+                // Button bar.  These buttons are only enabled when we're nearly
+                // fully minimized.
                 new OffStage(
                     offstage: _buttonTapDisabled,
-                    child: new Center(child: new GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: config.onButtonTap,
-                        child: new Container(
-                            width: config.minHeight,
-                            height: config.minHeight))))
+                    child: new Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Toggle Quick Settings Overlay Button.
+                          new Flexible(
+                              flex: 1,
+                              child: new GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap:
+                                      config.onQuickSettingsOverlayButtonTap)),
+
+                          // Return To Origin Button.
+                          new Flexible(
+                              flex: 2,
+                              child: new GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: config.onReturnToOriginButtonTap)),
+
+                          // Toggle Interruptions Overlay Button.
+                          new Flexible(
+                              flex: 1,
+                              child: new GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap:
+                                      config.onInterruptionsOverlayButtonTap))
+                        ])),
               ]))));
 
   @override
@@ -286,13 +300,6 @@ class NowState extends TickingState<Now> {
 
   double get _userImageBottomOffset =>
       160.0 * (1.0 - _minimizationProgress) +
-      _quickSettingsRaiseDistance +
-      _scrollOffsetDelta +
-      _restingDistanceAboveLowestPoint;
-
-  double get _contextTextBottomOffset =>
-      110.0 +
-      _fallAwayDistance +
       _quickSettingsRaiseDistance +
       _scrollOffsetDelta +
       _restingDistanceAboveLowestPoint;
