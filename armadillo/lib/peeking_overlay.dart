@@ -20,8 +20,12 @@ const double _kAngleOffsetY = 16.0;
 class PeekingOverlay extends StatefulWidget {
   final double peekHeight;
   final Widget child;
+  final VoidCallback onHide;
   PeekingOverlay(
-      {Key key, this.peekHeight: _kStartOverlayTransitionHeight, this.child})
+      {Key key,
+      this.peekHeight: _kStartOverlayTransitionHeight,
+      this.onHide,
+      this.child})
       : super(key: key);
 
   @override
@@ -48,6 +52,10 @@ class PeekingOverlayState extends BottomAlignedOverlayState<PeekingOverlay> {
 
   @override
   void hide() {
+    if (config.onHide != null) {
+      config.onHide();
+    }
+
     if (maxHeight != _defaultMaxHeight) {
       maxHeight = _defaultMaxHeight;
       setHeight(maxHeight);
@@ -94,7 +102,7 @@ class PeekingOverlayState extends BottomAlignedOverlayState<PeekingOverlay> {
           right: 0.0,
           height: 100.0,
           child: new GestureDetector(
-              onTap: () => show(),
+              onTap: openingProgress == 0.0 ? show : null,
               onVerticalDragUpdate: (DragUpdateDetails details) =>
                   setHeight(height - details.primaryDelta, force: true),
               onVerticalDragEnd: (DragEndDetails details) =>

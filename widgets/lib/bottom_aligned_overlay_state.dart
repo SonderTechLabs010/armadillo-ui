@@ -78,18 +78,23 @@ abstract class BottomAlignedOverlayState<T extends StatefulWidget>
         if (active) {
           stackChildren.insert(
               0,
-              new GestureDetector(
-                  onTap: () => setHeight(minHeight),
-                  onVerticalDragUpdate: (DragUpdateDetails details) =>
-                      setHeight(height - details.primaryDelta, force: true),
-                  onVerticalDragEnd: (DragEndDetails details) =>
-                      snap(details.velocity.pixelsPerSecond.dy),
-                  behavior: HitTestBehavior.opaque,
-                  child: new Container(
-                      decoration: new BoxDecoration(
-                          backgroundColor: new Color(
-                              ((0xD9 * openingProgress).round() << 24) +
-                                  0x00000000)))));
+              new Positioned(
+                  top: 0.0,
+                  left: 0.0,
+                  right: 0.0,
+                  height: parentHeight - height,
+                  child: new GestureDetector(
+                      onTap: () => setHeight(minHeight),
+                      onVerticalDragUpdate: (DragUpdateDetails details) =>
+                          setHeight(height - details.primaryDelta, force: true),
+                      onVerticalDragEnd: (DragEndDetails details) =>
+                          snap(details.velocity.pixelsPerSecond.dy),
+                      behavior: HitTestBehavior.opaque,
+                      child: new Container(
+                          decoration: new BoxDecoration(
+                              backgroundColor: new Color(
+                                  ((0xD9 * openingProgress).round() << 24) +
+                                      0x00000000))))));
         }
         return new Stack(children: stackChildren);
       });

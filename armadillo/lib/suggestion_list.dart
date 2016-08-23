@@ -29,18 +29,68 @@ const _kDummySuggestionColors = const <int>[
 const String _kMicImageGrey600 =
     'packages/armadillo/res/ic_mic_grey600_1x_web_24dp.png';
 
-class SuggestionList extends StatelessWidget {
+class SuggestionList extends StatefulWidget {
+  final VoidCallback onAskingStarted;
+  final VoidCallback onAskingEnded;
+
+  SuggestionList({this.onAskingStarted, this.onAskingEnded});
+
+  @override
+  SuggestionListState createState() => new SuggestionListState();
+}
+
+class SuggestionListState extends State<SuggestionList> {
+  bool _asking = false;
   @override
   Widget build(BuildContext context) => new Stack(children: [
         new Positioned(
-            left: 16.0,
-            top: 36.0,
-            child: new Text('ASK ANYTHING',
-                style: new TextStyle(color: Colors.grey[600]))),
-        new Positioned(
-            right: 10.0,
-            top: 28.0,
-            child: new Image.asset(_kMicImageGrey600, fit: ImageFit.cover)),
+            top: 0.0,
+            left: 0.0,
+            right: 0.0,
+            height: 84.0,
+            child: new Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  new Flexible(
+                      flex: 3,
+                      child: new GestureDetector(
+                          onTap: () {
+                            _asking = !_asking;
+                            if (_asking) {
+                              if (config.onAskingStarted != null) {
+                                config.onAskingStarted();
+                              }
+                            } else {
+                              if (config.onAskingEnded != null) {
+                                config.onAskingEnded();
+                              }
+                            }
+                          },
+                          behavior: HitTestBehavior.opaque,
+                          child: new Align(
+                              alignment: FractionalOffset.topLeft,
+                              child: new Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 16.0, top: 36.0),
+                                  child: new Text('ASK ANYTHING',
+                                      style: new TextStyle(
+                                          color: Colors.grey[600])))))),
+                  new Flexible(
+                      flex: 1,
+                      child: new GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            print('tap!');
+                          },
+                          child: new Align(
+                              alignment: FractionalOffset.topRight,
+                              child: new Padding(
+                                  padding: const EdgeInsets.only(
+                                      right: 10.0, top: 28.0),
+                                  child: new Image.asset(_kMicImageGrey600,
+                                      fit: ImageFit.cover)))))
+                ])),
         new Positioned(
             top: 84.0,
             left: 0.0,

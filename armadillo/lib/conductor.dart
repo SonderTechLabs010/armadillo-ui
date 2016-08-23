@@ -4,8 +4,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:keyboard/keyboard.dart';
+import 'package:sysui_widgets/device_extension_state.dart';
 
 import 'device_extender.dart';
+import 'keyboard_device_extension.dart';
 import 'now.dart';
 import 'peeking_overlay.dart';
 import 'suggestion_list.dart';
@@ -70,6 +73,9 @@ class ConductorState extends State<Conductor> {
   final GlobalKey<NowState> _nowKey = new GlobalKey<NowState>();
   final GlobalKey<PeekingOverlayState> _suggestionOverlayKey =
       new GlobalKey<PeekingOverlayState>();
+  final GlobalKey<DeviceExtensionState> _keyboardDeviceExtensionKey =
+      new GlobalKey<DeviceExtensionState>();
+  final GlobalKey<KeyboardState> _keyboardKey = new GlobalKey<KeyboardState>();
 
   double _quickSettingsProgress = 0.0;
   double _lastScrollOffset = 0.0;
@@ -82,126 +88,154 @@ class ConductorState extends State<Conductor> {
   /// behind it.
   @override
   Widget build(BuildContext context) => new DeviceExtender(
+          deviceExtensions: [
+            new KeyboardDeviceExtension(
+                key: _keyboardDeviceExtensionKey,
+                keyboardKey: _keyboardKey,
+                onText: (String text) {
+                  print('text $text');
+                },
+                onSuggestion: (String suggestion) {
+                  print('suggestion $suggestion');
+                },
+                onDelete: () {
+                  print('delete');
+                },
+                onGo: () {
+                  print('go');
+                }),
+          ],
           child: new Stack(children: [
-        // Recent List.
-        new Positioned(
-            left: 0.0,
-            right: 0.0,
-            top: -_quickSettingsHeightDelta,
-            bottom: _quickSettingsHeightDelta,
-            child: new ClipRect(
-              clipper: new BottomClipper(bottom: _kMinimizedNowHeight),
-              child: new Block(
-                  key: _recentListKey,
-                  scrollableKey: _recentListScrollableKey,
-                  padding: new EdgeInsets.only(bottom: _kMaximizedNowHeight),
-                  scrollAnchor: ViewportAnchor.end,
-                  onScroll: (double scrollOffset) => setState(() {
-                        _suggestionOverlayKey.currentState.peek =
-                            scrollOffset <=
-                                _kNowMinimizationScrollOffsetThreshold;
-                        if (scrollOffset >
-                            _kNowMinimizationScrollOffsetThreshold) {
-                          _nowKey.currentState.minimize();
-                        } else {
-                          _nowKey.currentState.maximize();
-                        }
-                        // When we're past the quick settings threshold and are
-                        // scrolling further, hide quick settings.
-                        if (scrollOffset >
-                                _kNowQuickSettingsHideScrollOffsetThreshold &&
-                            _lastScrollOffset < scrollOffset) {
-                          _nowKey.currentState.hideQuickSettings();
-                        }
-                        _lastScrollOffset = scrollOffset;
-                      }),
-                  children: _kDummyRecentColors.reversed
-                      .map((int color) => new Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 8.0, vertical: 4.0),
-                          // 'Randomize' heights a bit.
-                          height: 200.0 + (color % 201).toDouble(),
-                          decoration: new BoxDecoration(
-                              backgroundColor: new Color(color),
-                              borderRadius: new BorderRadius.circular(4.0))))
-                      .toList()),
-            )),
+            // Recent List.
+            new Positioned(
+                left: 0.0,
+                right: 0.0,
+                top: -_quickSettingsHeightDelta,
+                bottom: _quickSettingsHeightDelta,
+                child: new ClipRect(
+                  clipper: new BottomClipper(bottom: _kMinimizedNowHeight),
+                  child: new Block(
+                      key: _recentListKey,
+                      scrollableKey: _recentListScrollableKey,
+                      padding:
+                          new EdgeInsets.only(bottom: _kMaximizedNowHeight),
+                      scrollAnchor: ViewportAnchor.end,
+                      onScroll: (double scrollOffset) => setState(() {
+                            _suggestionOverlayKey.currentState.peek =
+                                scrollOffset <=
+                                    _kNowMinimizationScrollOffsetThreshold;
+                            if (scrollOffset >
+                                _kNowMinimizationScrollOffsetThreshold) {
+                              _nowKey.currentState.minimize();
+                            } else {
+                              _nowKey.currentState.maximize();
+                            }
+                            // When we're past the quick settings threshold and are
+                            // scrolling further, hide quick settings.
+                            if (scrollOffset >
+                                    _kNowQuickSettingsHideScrollOffsetThreshold &&
+                                _lastScrollOffset < scrollOffset) {
+                              _nowKey.currentState.hideQuickSettings();
+                            }
+                            _lastScrollOffset = scrollOffset;
+                          }),
+                      children: _kDummyRecentColors.reversed
+                          .map((int color) => new Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 8.0, vertical: 4.0),
+                              // 'Randomize' heights a bit.
+                              height: 200.0 + (color % 201).toDouble(),
+                              decoration: new BoxDecoration(
+                                  backgroundColor: new Color(color),
+                                  borderRadius:
+                                      new BorderRadius.circular(4.0))))
+                          .toList()),
+                )),
 
-        // Now.
-        new Positioned(
-            bottom: 0.0,
-            left: 0.0,
-            right: 0.0,
-            top: 0.0,
-            child: new RepaintBoundary(
-                child: new Now(
-                    key: _nowKey,
-                    minHeight: _kMinimizedNowHeight,
-                    maxHeight: _kMaximizedNowHeight,
-                    scrollOffset: _lastScrollOffset,
-                    quickSettingsHeightBump: _kQuickSettingsHeightBump,
-                    onQuickSettingsProgressChange:
-                        (double quickSettingsProgress) => setState(() {
-                              // When quick settings starts being shown, scroll to 0.0.
-                              if (_quickSettingsProgress == 0.0 &&
-                                  quickSettingsProgress > 0.0) {
-                                _recentListScrollableKey.currentState.scrollTo(
-                                    0.0,
-                                    duration: const Duration(milliseconds: 500),
-                                    curve: Curves.fastOutSlowIn);
-                              }
-                              _quickSettingsProgress = quickSettingsProgress;
-                            }),
-                    onReturnToOriginButtonTap: () {
-                      _recentListScrollableKey.currentState.scrollTo(0.0,
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.fastOutSlowIn);
-                    },
-                    onQuickSettingsOverlayButtonTap: () {
-                      print('Toggle quick settings overlay!');
-                    },
-                    onInterruptionsOverlayButtonTap: () {
-                      print('Toggle interruptions overlay!');
-                    },
-                    user: new Image.asset(_kUserImage, fit: ImageFit.cover),
-                    userContextMaximized: new Text(
-                        'Saturday 4:23 Sierra Vista'.toUpperCase(),
-                        style: _textStyle),
-                    userContextMinimized: new Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: new Text('4:23')),
-                    importantInfoMaximized: new Stack(children: [
-                      new Opacity(
-                          opacity: 1.0 - _quickSettingsProgress,
-                          child: new Image.asset(_kBatteryImageWhite,
-                              fit: ImageFit.cover)),
-                      new Opacity(
-                          opacity: _quickSettingsProgress,
-                          child: new Image.asset(_kBatteryImageGrey600,
-                              fit: ImageFit.cover))
-                    ]),
-                    importantInfoMinimized: new Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          new Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 4.0, right: 4.0),
-                              child: new Text('89%')),
-                          new Image.asset(_kBatteryImageWhite,
-                              fit: ImageFit.cover)
+            // Now.
+            new Positioned(
+                bottom: 0.0,
+                left: 0.0,
+                right: 0.0,
+                top: 0.0,
+                child: new RepaintBoundary(
+                    child: new Now(
+                        key: _nowKey,
+                        minHeight: _kMinimizedNowHeight,
+                        maxHeight: _kMaximizedNowHeight,
+                        scrollOffset: _lastScrollOffset,
+                        quickSettingsHeightBump: _kQuickSettingsHeightBump,
+                        onQuickSettingsProgressChange:
+                            (double quickSettingsProgress) => setState(() {
+                                  // When quick settings starts being shown, scroll to 0.0.
+                                  if (_quickSettingsProgress == 0.0 &&
+                                      quickSettingsProgress > 0.0) {
+                                    _recentListScrollableKey.currentState
+                                        .scrollTo(0.0,
+                                            duration: const Duration(
+                                                milliseconds: 500),
+                                            curve: Curves.fastOutSlowIn);
+                                  }
+                                  _quickSettingsProgress =
+                                      quickSettingsProgress;
+                                }),
+                        onReturnToOriginButtonTap: () {
+                          _recentListScrollableKey.currentState.scrollTo(0.0,
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.fastOutSlowIn);
+                        },
+                        onQuickSettingsOverlayButtonTap: () {
+                          print('Toggle quick settings overlay!');
+                        },
+                        onInterruptionsOverlayButtonTap: () {
+                          print('Toggle interruptions overlay!');
+                        },
+                        user: new Image.asset(_kUserImage, fit: ImageFit.cover),
+                        userContextMaximized: new Text(
+                            'Saturday 4:23 Sierra Vista'.toUpperCase(),
+                            style: _textStyle),
+                        userContextMinimized: new Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: new Text('4:23')),
+                        importantInfoMaximized: new Stack(children: [
+                          new Opacity(
+                              opacity: 1.0 - _quickSettingsProgress,
+                              child: new Image.asset(_kBatteryImageWhite,
+                                  fit: ImageFit.cover)),
+                          new Opacity(
+                              opacity: _quickSettingsProgress,
+                              child: new Image.asset(_kBatteryImageGrey600,
+                                  fit: ImageFit.cover))
                         ]),
-                    quickSettings: new Align(
-                      alignment: FractionalOffset.bottomCenter,
-                      child: new Text('quick settings',
-                          style: new TextStyle(color: Colors.grey[600])),
-                    )))),
+                        importantInfoMinimized: new Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              new Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 4.0, right: 4.0),
+                                  child: new Text('89%')),
+                              new Image.asset(_kBatteryImageWhite,
+                                  fit: ImageFit.cover)
+                            ]),
+                        quickSettings: new Align(
+                          alignment: FractionalOffset.bottomCenter,
+                          child: new Text('quick settings',
+                              style: new TextStyle(color: Colors.grey[600])),
+                        )))),
 
-        // Suggestions Overlay.
-        new PeekingOverlay(
-            key: _suggestionOverlayKey,
-            peekHeight: _kSuggestionOverlayPeekHeight,
-            child: new SuggestionList())
-      ]));
+            // Suggestions Overlay.
+            new PeekingOverlay(
+                key: _suggestionOverlayKey,
+                peekHeight: _kSuggestionOverlayPeekHeight,
+                onHide: () {
+                  _keyboardDeviceExtensionKey?.currentState?.hide();
+                },
+                child: new SuggestionList(onAskingStarted: () {
+                  _keyboardDeviceExtensionKey.currentState.show();
+                }, onAskingEnded: () {
+                  _keyboardDeviceExtensionKey.currentState.hide();
+                }))
+          ]));
 
   double get _quickSettingsHeightDelta =>
       _quickSettingsProgress * (_kQuickSettingsHeightBump - 120.0);
