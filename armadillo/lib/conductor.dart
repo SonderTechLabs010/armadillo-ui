@@ -11,6 +11,7 @@ import 'device_extender.dart';
 import 'keyboard_device_extension.dart';
 import 'now.dart';
 import 'peeking_overlay.dart';
+import 'recent_list.dart';
 import 'suggestion_list.dart';
 
 /// Manages the position, size, and state of the recent list, user context,
@@ -45,26 +46,6 @@ const _kNowMinimizationScrollOffsetThreshold = 120.0;
 /// When the recent list's scrollOffset exceeds this value we hide quick
 /// settings [Now].
 const _kNowQuickSettingsHideScrollOffsetThreshold = 16.0;
-
-/// Colors for dummy recents.
-const _kDummyRecentColors = const <int>[
-  0xFFFF5722,
-  0xFFFF9800,
-  0xFFFFC107,
-  0xFFFFEB3B,
-  0xFFCDDC39,
-  0xFF8BC34A,
-  0xFF4CAF50,
-  0xFF009688,
-  0xFF00BCD4,
-  0xFF03A9F4,
-  0xFF2196F3,
-  0xFF3F51B5,
-  0xFF673AB7,
-  0xFF9C27B0,
-  0xFFE91E63,
-  0xFFF44336
-];
 
 class ConductorState extends State<Conductor> {
   final GlobalKey _recentListKey = new GlobalKey();
@@ -113,44 +94,31 @@ class ConductorState extends State<Conductor> {
                 top: -_quickSettingsHeightDelta,
                 bottom: _quickSettingsHeightDelta,
                 child: new ClipRect(
-                  clipper: new BottomClipper(bottom: _kMinimizedNowHeight),
-                  child: new Block(
-                      key: _recentListKey,
-                      scrollableKey: _recentListScrollableKey,
-                      padding:
-                          new EdgeInsets.only(bottom: _kMaximizedNowHeight),
-                      scrollAnchor: ViewportAnchor.end,
-                      onScroll: (double scrollOffset) => setState(() {
-                            _suggestionOverlayKey.currentState.peek =
-                                scrollOffset <=
-                                    _kNowMinimizationScrollOffsetThreshold;
-                            if (scrollOffset >
-                                _kNowMinimizationScrollOffsetThreshold) {
-                              _nowKey.currentState.minimize();
-                            } else {
-                              _nowKey.currentState.maximize();
-                            }
-                            // When we're past the quick settings threshold and are
-                            // scrolling further, hide quick settings.
-                            if (scrollOffset >
-                                    _kNowQuickSettingsHideScrollOffsetThreshold &&
-                                _lastScrollOffset < scrollOffset) {
-                              _nowKey.currentState.hideQuickSettings();
-                            }
-                            _lastScrollOffset = scrollOffset;
-                          }),
-                      children: _kDummyRecentColors.reversed
-                          .map((int color) => new Container(
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 4.0),
-                              // 'Randomize' heights a bit.
-                              height: 200.0 + (color % 201).toDouble(),
-                              decoration: new BoxDecoration(
-                                  backgroundColor: new Color(color),
-                                  borderRadius:
-                                      new BorderRadius.circular(4.0))))
-                          .toList()),
-                )),
+                    clipper: new BottomClipper(bottom: _kMinimizedNowHeight),
+                    child: new RecentList(
+                        key: _recentListKey,
+                        scrollableKey: _recentListScrollableKey,
+                        padding:
+                            new EdgeInsets.only(bottom: _kMaximizedNowHeight),
+                        onScroll: (double scrollOffset) => setState(() {
+                              _suggestionOverlayKey.currentState.peek =
+                                  scrollOffset <=
+                                      _kNowMinimizationScrollOffsetThreshold;
+                              if (scrollOffset >
+                                  _kNowMinimizationScrollOffsetThreshold) {
+                                _nowKey.currentState.minimize();
+                              } else {
+                                _nowKey.currentState.maximize();
+                              }
+                              // When we're past the quick settings threshold and are
+                              // scrolling further, hide quick settings.
+                              if (scrollOffset >
+                                      _kNowQuickSettingsHideScrollOffsetThreshold &&
+                                  _lastScrollOffset < scrollOffset) {
+                                _nowKey.currentState.hideQuickSettings();
+                              }
+                              _lastScrollOffset = scrollOffset;
+                            })))),
 
             // Now.
             new Positioned(
