@@ -95,7 +95,7 @@ class ConductorState extends State<Conductor> {
                 bottom: _quickSettingsHeightDelta,
                 child: new ClipRect(
                     clipper: new BottomClipper(bottom: _kMinimizedNowHeight),
-                    child: new RecentList(
+                    child: new RecentList.dummyList(
                         key: _recentListKey,
                         scrollableKey: _recentListScrollableKey,
                         padding:

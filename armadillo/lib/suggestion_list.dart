@@ -49,7 +49,7 @@ class SuggestionListState extends State<SuggestionList> {
             right: 0.0,
             height: 84.0,
             child: new Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   new Flexible(
@@ -69,10 +69,9 @@ class SuggestionListState extends State<SuggestionList> {
                           },
                           behavior: HitTestBehavior.opaque,
                           child: new Align(
-                              alignment: FractionalOffset.topLeft,
+                              alignment: FractionalOffset.centerLeft,
                               child: new Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 16.0, top: 36.0),
+                                  padding: const EdgeInsets.only(left: 16.0),
                                   child: new Text('ASK ANYTHING',
                                       style: new TextStyle(
                                           color: Colors.grey[600])))))),
@@ -84,10 +83,9 @@ class SuggestionListState extends State<SuggestionList> {
                             print('tap!');
                           },
                           child: new Align(
-                              alignment: FractionalOffset.topRight,
+                              alignment: FractionalOffset.centerRight,
                               child: new Padding(
-                                  padding: const EdgeInsets.only(
-                                      right: 10.0, top: 28.0),
+                                  padding: const EdgeInsets.only(right: 10.0),
                                   child: new Image.asset(_kMicImageGrey600,
                                       fit: ImageFit.cover)))))
                 ])),
