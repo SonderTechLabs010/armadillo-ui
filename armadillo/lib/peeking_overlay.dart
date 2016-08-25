@@ -34,19 +34,15 @@ class PeekingOverlay extends StatefulWidget {
 }
 
 class PeekingOverlayState extends BottomAlignedOverlayState<PeekingOverlay> {
-  static final double _kFinishOverlayTransitionHeight = 400.0;
-
   bool _peeking;
 
   PeekingOverlayState({double darkeningBackgroundMinHeight})
-      : super(
-            darkeningBackgroundMinHeight: darkeningBackgroundMinHeight,
-            darkeningBackgroundMaxHeight: _kFinishOverlayTransitionHeight);
+      : super(darkeningBackgroundMinHeight: darkeningBackgroundMinHeight);
 
   @override
   void initState() {
     super.initState();
-    maxHeight = _defaultMaxHeight;
+    maxHeight = config.peekHeight;
     peek = true;
   }
 
@@ -55,18 +51,8 @@ class PeekingOverlayState extends BottomAlignedOverlayState<PeekingOverlay> {
     if (config.onHide != null) {
       config.onHide();
     }
-
-    if (maxHeight != _defaultMaxHeight) {
-      maxHeight = _defaultMaxHeight;
-      setHeight(maxHeight);
-    }
-
     super.hide();
   }
-
-  double get _defaultMaxHeight => parentHeight != null
-      ? math.min(parentHeight, _kFinishOverlayTransitionHeight)
-      : _kFinishOverlayTransitionHeight;
 
   set peek(bool peeking) {
     if (peeking != _peeking) {
@@ -86,7 +72,14 @@ class PeekingOverlayState extends BottomAlignedOverlayState<PeekingOverlay> {
           1.0));
 
   @override
-  Widget createWidget(BuildContext context) {
+  Widget createWidget(BuildContext context, BoxConstraints constraints) {
+    double targetMaxHeight = 0.8 * constraints.maxHeight;
+    if (maxHeight != targetMaxHeight) {
+      maxHeight = targetMaxHeight;
+      if (active) {
+        show();
+      }
+    }
     return new Stack(children: [
       new CustomPaint(
           painter: new QuadrilateralPainter(

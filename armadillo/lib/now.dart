@@ -17,7 +17,7 @@ const double _kFallAwayDurationFraction = 0.35;
 
 /// The distance above the lowest point we can scroll down to when
 /// [scrollOffset] is 0.0.
-const double _kRestingDistanceAboveLowestPoint = 40.0;
+const double _kRestingDistanceAboveLowestPoint = 80.0;
 
 /// Shows the user, the user's context, and important settings.  When minimized
 /// also shows an affordance for seeing missed interruptions.

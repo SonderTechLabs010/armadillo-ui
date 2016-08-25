@@ -32,13 +32,13 @@ const String _kBatteryImageGrey600 =
 const _kMinimizedNowHeight = 50.0;
 
 /// The height of [Now] when maximized.
-const _kMaximizedNowHeight = 400.0;
+const _kMaximizedNowHeight = 440.0;
 
 /// How far [Now] should raise when quick settings is activated inline.
 const _kQuickSettingsHeightBump = 240.0;
 
 /// How far above the bottom the suggestions overlay peeks.
-const _kSuggestionOverlayPeekHeight = 76.0;
+const _kSuggestionOverlayPeekHeight = 116.0;
 
 /// When the recent list's scrollOffset exceeds this value we minimize [Now].
 const _kNowMinimizationScrollOffsetThreshold = 120.0;
@@ -92,33 +92,31 @@ class ConductorState extends State<Conductor> {
                 left: 0.0,
                 right: 0.0,
                 top: -_quickSettingsHeightDelta,
-                bottom: _quickSettingsHeightDelta,
-                child: new ClipRect(
-                    clipper: new BottomClipper(bottom: _kMinimizedNowHeight),
-                    child: new RecentList.dummyList(
-                        key: _recentListKey,
-                        scrollableKey: _recentListScrollableKey,
-                        padding:
-                            new EdgeInsets.only(bottom: _kMaximizedNowHeight),
-                        onScroll: (double scrollOffset) => setState(() {
-                              _suggestionOverlayKey.currentState.peek =
-                                  scrollOffset <=
-                                      _kNowMinimizationScrollOffsetThreshold;
-                              if (scrollOffset >
-                                  _kNowMinimizationScrollOffsetThreshold) {
-                                _nowKey.currentState.minimize();
-                              } else {
-                                _nowKey.currentState.maximize();
-                              }
-                              // When we're past the quick settings threshold and are
-                              // scrolling further, hide quick settings.
-                              if (scrollOffset >
-                                      _kNowQuickSettingsHideScrollOffsetThreshold &&
-                                  _lastScrollOffset < scrollOffset) {
-                                _nowKey.currentState.hideQuickSettings();
-                              }
-                              _lastScrollOffset = scrollOffset;
-                            })))),
+                bottom: _quickSettingsHeightDelta + _kMinimizedNowHeight,
+                child: new RecentList.dummyList(
+                    key: _recentListKey,
+                    scrollableKey: _recentListScrollableKey,
+                    padding: new EdgeInsets.only(
+                        bottom: _kMaximizedNowHeight - _kMinimizedNowHeight),
+                    onScroll: (double scrollOffset) => setState(() {
+                          _suggestionOverlayKey.currentState.peek =
+                              scrollOffset <=
+                                  _kNowMinimizationScrollOffsetThreshold;
+                          if (scrollOffset >
+                              _kNowMinimizationScrollOffsetThreshold) {
+                            _nowKey.currentState.minimize();
+                          } else {
+                            _nowKey.currentState.maximize();
+                          }
+                          // When we're past the quick settings threshold and are
+                          // scrolling further, hide quick settings.
+                          if (scrollOffset >
+                                  _kNowQuickSettingsHideScrollOffsetThreshold &&
+                              _lastScrollOffset < scrollOffset) {
+                            _nowKey.currentState.hideQuickSettings();
+                          }
+                          _lastScrollOffset = scrollOffset;
+                        }))),
 
             // Now.
             new Positioned(
@@ -210,21 +208,4 @@ class ConductorState extends State<Conductor> {
 
   TextStyle get _textStyle => TextStyle.lerp(new TextStyle(color: Colors.white),
       new TextStyle(color: Colors.grey[600]), _quickSettingsProgress);
-}
-
-/// Clips the [bottom] off of [ClipRect]'s child.
-class BottomClipper extends CustomClipper<Rect> {
-  final double bottom;
-
-  BottomClipper({this.bottom});
-
-  @override
-  Rect getClip(Size size) =>
-      new Rect.fromLTWH(0.0, 0.0, size.width, size.height - bottom);
-
-  @override
-  Rect getApproximateClipRect(Size size) => getClip(size);
-
-  @override
-  bool shouldRepaint(BottomClipper oldClipper) => bottom != oldClipper.bottom;
 }

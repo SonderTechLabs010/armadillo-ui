@@ -14,12 +14,13 @@ import 'armadillo.dart';
 
 const _kConstraints = const <BoxConstraints>[
   const BoxConstraints.tightFor(width: 440.0, height: 440.0 * 16.0 / 9.0),
+  const BoxConstraints.tightFor(width: 440.0 * 16.0 / 9.0, height: 440.0),
   const BoxConstraints(),
   const BoxConstraints.tightFor(width: 360.0, height: 640.0),
-  const BoxConstraints.tightFor(width: 480.0, height: 800.0),
-  const BoxConstraints.tightFor(width: 800.0, height: 1280.0),
   const BoxConstraints.tightFor(width: 640.0, height: 360.0),
+  const BoxConstraints.tightFor(width: 480.0, height: 800.0),
   const BoxConstraints.tightFor(width: 800.0, height: 480.0),
+  const BoxConstraints.tightFor(width: 800.0, height: 1280.0),
   const BoxConstraints.tightFor(width: 1280.0, height: 800.0),
 ];
 

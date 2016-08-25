@@ -17,7 +17,6 @@ class Armadillo extends StatelessWidget {
   @override
   Widget build(BuildContext context) => new Container(
       decoration: new BoxDecoration(
-          boxShadow: kElevationToShadow[12],
           backgroundImage: new BackgroundImage(
               image: new AssetImage(_kBackgroundImage),
               alignment: const FractionalOffset(0.4, 0.5),

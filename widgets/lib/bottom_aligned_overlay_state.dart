@@ -22,19 +22,19 @@ abstract class BottomAlignedOverlayState<T extends StatefulWidget>
     extends TickingHeightState<T> {
   static final double kSnapVelocityThreshold = 500.0;
   final double darkeningBackgroundMinHeight;
-  final double darkeningBackgroundMaxHeight;
-  double parentHeight;
+  bool _hiding = true;
 
-  BottomAlignedOverlayState(
-      {this.darkeningBackgroundMinHeight, this.darkeningBackgroundMaxHeight});
+  BottomAlignedOverlayState({this.darkeningBackgroundMinHeight});
 
-  Widget createWidget(BuildContext context);
+  Widget createWidget(BuildContext context, BoxConstraints constraints);
 
   void hide() {
+    _hiding = true;
     setHeight(minHeight);
   }
 
   void show() {
+    _hiding = false;
     setHeight(maxHeight);
   }
 
@@ -54,56 +54,40 @@ abstract class BottomAlignedOverlayState<T extends StatefulWidget>
 
   @override
   Widget build(BuildContext context) => new LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-        parentHeight = constraints.maxHeight;
-        final stackChildren = <Widget>[
-          new Align(
-              alignment: FractionalOffset.bottomCenter,
-              child: new ClipRect(
-                  child: new ConstrainedBox(
-                      constraints: new BoxConstraints(
-                          minWidth: constraints.maxWidth,
-                          maxWidth: constraints.maxWidth,
-                          minHeight: height,
-                          maxHeight: height),
-                      child: new OverflowBox(
-                          minWidth: constraints.maxWidth,
-                          maxWidth: constraints.maxWidth,
-                          minHeight: math.max(height, maxHeight),
-                          maxHeight: math.max(height, maxHeight),
-                          alignment: FractionalOffset.topCenter,
-                          child: createWidget(context)))))
-        ];
-
-        if (active) {
-          stackChildren.insert(
-              0,
-              new Positioned(
-                  top: 0.0,
-                  left: 0.0,
-                  right: 0.0,
-                  height: parentHeight - height,
-                  child: new GestureDetector(
-                      onTap: () => setHeight(minHeight),
-                      onVerticalDragUpdate: (DragUpdateDetails details) =>
-                          setHeight(height - details.primaryDelta, force: true),
-                      onVerticalDragEnd: (DragEndDetails details) =>
-                          snap(details.velocity.pixelsPerSecond.dy),
-                      behavior: HitTestBehavior.opaque,
-                      child: new Container(
-                          decoration: new BoxDecoration(
-                              backgroundColor: new Color(
-                                  ((0xD9 * openingProgress).round() << 24) +
-                                      0x00000000))))));
-        }
-        return new Stack(children: stackChildren);
-      });
+      builder: (BuildContext context, BoxConstraints constraints) =>
+          new Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            new Flexible(
+                child: new OffStage(
+                    offstage: openingProgress <= 0.0,
+                    child: new GestureDetector(
+                        onTap: () => setHeight(minHeight),
+                        onVerticalDragUpdate: (DragUpdateDetails details) =>
+                            setHeight(height - details.primaryDelta,
+                                force: true),
+                        onVerticalDragEnd: (DragEndDetails details) =>
+                            snap(details.velocity.pixelsPerSecond.dy),
+                        behavior: HitTestBehavior.opaque,
+                        child: new Container(
+                            decoration: new BoxDecoration(
+                                backgroundColor: new Color(
+                                    ((0xD9 * openingProgress).round() << 24) +
+                                        0x00000000)))))),
+            new Container(
+                height: height,
+                child: new OverflowBox(
+                    minWidth: constraints.maxWidth,
+                    maxWidth: constraints.maxWidth,
+                    minHeight: math.max(height, maxHeight),
+                    maxHeight: math.max(height, maxHeight),
+                    alignment: FractionalOffset.topCenter,
+                    child: createWidget(context, constraints)))
+          ]));
 
   double get openingProgress => (height > darkeningBackgroundMinHeight
       ? math.min(
           1.0,
           (height - darkeningBackgroundMinHeight) /
-              (darkeningBackgroundMaxHeight - darkeningBackgroundMinHeight))
+              (maxHeight - darkeningBackgroundMinHeight))
       : 0.0);
-  bool get active => height > darkeningBackgroundMinHeight;
+  bool get active => !_hiding;
 }
