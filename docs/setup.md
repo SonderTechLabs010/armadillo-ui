@@ -30,3 +30,10 @@ cd sysui
 ```
 source tools/environment.sh
 ```
+
+
+## Fetch the dependencies
+
+```
+make sync=
+```
