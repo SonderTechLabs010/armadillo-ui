@@ -47,7 +47,11 @@ else
 endif
 
 build: sync
-	$(info Fastest build ever!)
+	rm -rf interfaces/lib
+	cd .. && packages/gn/gen.py -m sysui && buildtools/ninja -j32 -C out/debug-x86-64
+	$(eval files := $(shell find ../out/debug-x86-64/gen/sysui/interfaces/ -name *.mojom.dart))
+	mkdir interfaces/lib
+	$(foreach file,$(files),ln -s $(abspath $(file)) interfaces/lib/$(notdir $(file)))
 
 # The Analyzer takes a while to run, so it was moved to be a separate target so
 # it won't hurt the development workflow.
