@@ -82,134 +82,140 @@ class NowState extends TickingState<Now> {
   @override
   Widget build(BuildContext context) => new LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) =>
-          new GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () {
-                if (!_minimizing) {
-                  if (!_revealingQuickSettings) {
-                    showQuickSettings();
-                  } else {
-                    hideQuickSettings();
-                  }
-                }
-              },
-              child: new Container(
-                  margin: new EdgeInsets.only(
-                      top: math.max(0.0, constraints.maxHeight - _nowHeight)),
-                  child: new Stack(children: [
-                    // Quick Settings.
-                    new Positioned(
-                        left: 8.0,
-                        right: 8.0,
-                        top: _quickSettingsTopOffset,
-                        child: new Center(
-                            child: new Container(
-                                height: _quickSettingsBackgroundHeight,
-                                width: _quickSettingsBackgroundWidth,
-                                decoration: new BoxDecoration(
-                                    backgroundColor: new Color(0xFFFFFFFF),
-                                    borderRadius: new BorderRadius.circular(
-                                        _quickSettingsBackgroundBorderRadius)),
-                                child: new Padding(
-                                    padding: const EdgeInsets.all(32.0) -
-                                        new EdgeInsets.only(
-                                            bottom: 32.0 *
-                                                (1.0 -
-                                                    _quickSettingsSlideUpProgress)) +
-                                        new EdgeInsets.only(top: 128.0),
-                                    child: new Opacity(
-                                        opacity: _quickSettingsSlideUpProgress,
-                                        child: config.quickSettings))))),
-
-                    // User Image, User Context Text, and Important Information when maximized.
-                    new Positioned(
-                        left: 8.0,
-                        right: 8.0,
-                        top: _userImageTopOffset,
-                        child: new Center(
-                            child: new Column(children: [
-                          new Stack(children: [
-                            new Opacity(
-                                opacity: _quickSettingsProgress,
-                                child: new Container(
-                                    width: _userImageSize,
-                                    height: _userImageSize,
-                                    decoration: new BoxDecoration(
-                                        boxShadow: kElevationToShadow[12],
-                                        shape: BoxShape.circle))),
-                            new ClipOval(
-                                child: new Container(
-                                    width: _userImageSize,
-                                    height: _userImageSize,
-                                    foregroundDecoration: new BoxDecoration(
-                                        border: new Border.all(
-                                            color: new Color(0xFFFFFFFF),
-                                            width: _userImageBorderWidth),
-                                        shape: BoxShape.circle),
-                                    child: config.user))
-                          ]),
-                          new Padding(
-                              padding: const EdgeInsets.only(top: 24.0),
-                              child: new Opacity(
-                                  opacity: _fallAwayOpacity,
-                                  child: config.userContextMaximized)),
-                          new Padding(
-                              padding: const EdgeInsets.only(top: 16.0),
-                              child: new Opacity(
-                                  opacity: _fallAwayOpacity,
-                                  child: config.importantInfoMaximized)),
-                        ]))),
-
-                    // User Context Text and Important Information when minimized.
-                    new Align(
-                        alignment: FractionalOffset.bottomCenter,
+          new Container(
+              margin: new EdgeInsets.only(
+                  top: math.max(0.0, constraints.maxHeight - _nowHeight)),
+              child: new Stack(children: [
+                // Quick Settings.
+                new Positioned(
+                    left: 8.0,
+                    right: 8.0,
+                    top: _quickSettingsTopOffset,
+                    child: new Center(
                         child: new Container(
-                            height: config.minHeight,
-                            padding: new EdgeInsets.symmetric(
-                                horizontal: 8.0 + _slideInDistance),
-                            child: new Opacity(
-                                opacity: _slideInProgress,
-                                child: new Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      config.userContextMinimized,
-                                      config.importantInfoMinimized
-                                    ])))),
+                            height: _quickSettingsBackgroundHeight,
+                            width: _quickSettingsBackgroundWidth,
+                            decoration: new BoxDecoration(
+                                backgroundColor: new Color(0xFFFFFFFF),
+                                borderRadius: new BorderRadius.circular(
+                                    _quickSettingsBackgroundBorderRadius)),
+                            child: new Padding(
+                                padding: const EdgeInsets.all(32.0) -
+                                    new EdgeInsets.only(
+                                        bottom: 32.0 *
+                                            (1.0 -
+                                                _quickSettingsSlideUpProgress)) +
+                                    new EdgeInsets.only(top: 128.0),
+                                child: new Opacity(
+                                    opacity: _quickSettingsSlideUpProgress,
+                                    child: config.quickSettings))))),
 
-                    // Button bar.  These buttons are only enabled when we're nearly
-                    // fully minimized.
-                    new OffStage(
-                        offstage: _buttonTapDisabled,
-                        child: new Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // Toggle Quick Settings Overlay Button.
-                              new Flexible(
-                                  flex: 1,
-                                  child: new GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: config
-                                          .onQuickSettingsOverlayButtonTap)),
+                // User Image, User Context Text, and Important Information when maximized.
+                new Positioned(
+                    left: 8.0,
+                    right: 8.0,
+                    top: _userImageTopOffset,
+                    child: new Center(
+                        child: new Column(children: [
+                      new Stack(children: [
+                        new Opacity(
+                            opacity: _quickSettingsProgress,
+                            child: new Container(
+                                width: _userImageSize,
+                                height: _userImageSize,
+                                decoration: new BoxDecoration(
+                                    boxShadow: kElevationToShadow[12],
+                                    shape: BoxShape.circle))),
+                        new ClipOval(
+                            child: new Container(
+                                width: _userImageSize,
+                                height: _userImageSize,
+                                foregroundDecoration: new BoxDecoration(
+                                    border: new Border.all(
+                                        color: new Color(0xFFFFFFFF),
+                                        width: _userImageBorderWidth),
+                                    shape: BoxShape.circle),
+                                child: config.user))
+                      ]),
+                      new Padding(
+                          padding: const EdgeInsets.only(top: 24.0),
+                          child: new Opacity(
+                              opacity: _fallAwayOpacity,
+                              child: config.userContextMaximized)),
+                      new Padding(
+                          padding: const EdgeInsets.only(top: 16.0),
+                          child: new Opacity(
+                              opacity: _fallAwayOpacity,
+                              child: config.importantInfoMaximized)),
+                    ]))),
 
-                              // Return To Origin Button.
-                              new Flexible(
-                                  flex: 2,
-                                  child: new GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: config.onReturnToOriginButtonTap)),
+                // User Context Text and Important Information when minimized.
+                new Align(
+                    alignment: FractionalOffset.bottomCenter,
+                    child: new Container(
+                        height: config.minHeight,
+                        padding: new EdgeInsets.symmetric(
+                            horizontal: 8.0 + _slideInDistance),
+                        child: new Opacity(
+                            opacity: _slideInProgress,
+                            child: new Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  config.userContextMinimized,
+                                  config.importantInfoMinimized
+                                ])))),
 
-                              // Toggle Interruptions Overlay Button.
-                              new Flexible(
-                                  flex: 1,
-                                  child: new GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: config
-                                          .onInterruptionsOverlayButtonTap))
-                            ])),
-                  ]))));
+                // Button bar.  These buttons are only enabled when we're nearly
+                // fully minimized.
+                new OffStage(
+                    offstage: _buttonTapDisabled,
+                    child: new Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Toggle Quick Settings Overlay Button.
+                          new Flexible(
+                              flex: 1,
+                              child: new GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap:
+                                      config.onQuickSettingsOverlayButtonTap)),
+
+                          // Return To Origin Button.
+                          new Flexible(
+                              flex: 2,
+                              child: new GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: config.onReturnToOriginButtonTap)),
+
+                          // Toggle Interruptions Overlay Button.
+                          new Flexible(
+                              flex: 1,
+                              child: new GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap:
+                                      config.onInterruptionsOverlayButtonTap))
+                        ])),
+
+                // Inline Quick Settings Toggle.
+                new Positioned(
+                    top: config.scrollOffset * 2.0 / 3.0,
+                    bottom: 0.0,
+                    left: 0.0,
+                    right: 0.0,
+                    child: new OffStage(
+                        offstage: !_buttonTapDisabled,
+                        child: new GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTap: () {
+                              if (!_revealingQuickSettings) {
+                                showQuickSettings();
+                              } else {
+                                hideQuickSettings();
+                              }
+                            }))),
+              ])));
 
   @override
   bool handleTick(double elapsedSeconds) {

@@ -93,30 +93,35 @@ class ConductorState extends State<Conductor> {
                 right: 0.0,
                 top: -_quickSettingsHeightDelta,
                 bottom: _quickSettingsHeightDelta + _kMinimizedNowHeight,
-                child: new RecentList.dummyList(
-                    key: _recentListKey,
-                    scrollableKey: _recentListScrollableKey,
-                    padding: new EdgeInsets.only(
-                        bottom: _kMaximizedNowHeight - _kMinimizedNowHeight),
-                    onScroll: (double scrollOffset) => setState(() {
-                          _suggestionOverlayKey.currentState.peek =
-                              scrollOffset <=
-                                  _kNowMinimizationScrollOffsetThreshold;
-                          if (scrollOffset >
-                              _kNowMinimizationScrollOffsetThreshold) {
-                            _nowKey.currentState.minimize();
-                          } else {
-                            _nowKey.currentState.maximize();
-                          }
-                          // When we're past the quick settings threshold and are
-                          // scrolling further, hide quick settings.
-                          if (scrollOffset >
-                                  _kNowQuickSettingsHideScrollOffsetThreshold &&
-                              _lastScrollOffset < scrollOffset) {
-                            _nowKey.currentState.hideQuickSettings();
-                          }
-                          _lastScrollOffset = scrollOffset;
-                        }))),
+                child: new LayoutBuilder(builder:
+                    (BuildContext context, BoxConstraints constraints) {
+                  return new RecentList.dummyList(
+                      key: _recentListKey,
+                      parentSize:
+                          new Size(constraints.maxWidth, constraints.maxHeight),
+                      scrollableKey: _recentListScrollableKey,
+                      padding: new EdgeInsets.only(
+                          bottom: _kMaximizedNowHeight - _kMinimizedNowHeight),
+                      onScroll: (double scrollOffset) => setState(() {
+                            _suggestionOverlayKey.currentState.peek =
+                                scrollOffset <=
+                                    _kNowMinimizationScrollOffsetThreshold;
+                            if (scrollOffset >
+                                _kNowMinimizationScrollOffsetThreshold) {
+                              _nowKey.currentState.minimize();
+                            } else {
+                              _nowKey.currentState.maximize();
+                            }
+                            // When we're past the quick settings threshold and are
+                            // scrolling further, hide quick settings.
+                            if (scrollOffset >
+                                    _kNowQuickSettingsHideScrollOffsetThreshold &&
+                                _lastScrollOffset < scrollOffset) {
+                              _nowKey.currentState.hideQuickSettings();
+                            }
+                            _lastScrollOffset = scrollOffset;
+                          }));
+                })),
 
             // Now.
             new Positioned(

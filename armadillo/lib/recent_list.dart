@@ -8,6 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+import 'focusable_story.dart';
+
+export 'focusable_story.dart' show Story;
+
 /// Colors for dummy recents.
 const _kDummyRecentColors = const <int>[
   0xFFFF5722,
@@ -28,38 +32,6 @@ const _kDummyRecentColors = const <int>[
   0xFFF44336
 ];
 
-/// The minimum story height.
-const double _kMinimumStoryHeight = 200.0;
-
-/// The representation fo a Story.  A Story's contents are display as a [Widget]
-/// provided by [builder] while the size of a story in the [RecentList] is
-/// determined by [lastInteraction] and [cumulativeInteractionDuration].
-class Story {
-  final WidgetBuilder builder;
-  final DateTime lastInteraction;
-  final Duration cumulativeInteractionDuration;
-
-  Story(
-      {this.builder, this.lastInteraction, this.cumulativeInteractionDuration});
-
-  /// A [Story] is bigger if it has been used often and recently.
-  double get height {
-    double sizeRatio =
-        1.0 + (_culmulativeInteractionDurationRatio * _lastInteractionRatio);
-    return _kMinimumStoryHeight * sizeRatio;
-  }
-
-  double get _culmulativeInteractionDurationRatio =>
-      cumulativeInteractionDuration.inMinutes.toDouble() / 60.0;
-
-  double get _lastInteractionRatio =>
-      1.0 -
-      math.min(
-          1.0,
-          new DateTime.now().difference(lastInteraction).inMinutes.toDouble() /
-              60.0);
-}
-
 /// If the width of the [RecentList] exceeds this value it will switch to
 /// multicolumn mode.
 const double _kMultiColumnWidthThreshold = 600.0;
@@ -67,21 +39,7 @@ const double _kMultiColumnWidthThreshold = 600.0;
 /// In multicolumn mode, the distance the right column will be offset up.
 const double _kRightBump = 64.0;
 
-/// In multicolumn mode, the distance from the parent's edge the largest story
-/// will be.
-const double _kMultiColumnMargin = 64.0;
-
-/// In multicolumn mode, the aspect ratio of a story.
-const double _kWidthToHeightRatio = 16.0 / 9.0;
-
-/// In single column mode, the distance from a story and other UI elements.
-const double _kSingleColumnStoryMargin = 8.0;
-
-/// In multicolumn mode, the minimum distance from a story and other UI
-/// elements.
-const double _kMultiColumnMinimumStoryMargin = 8.0;
-
-class RecentList extends StatelessWidget {
+class RecentList extends StatefulWidget {
   static final _kDummyStories = _kDummyRecentColors
       .map((int color) => new Story(
           builder: (_) => new Container(
@@ -91,21 +49,24 @@ class RecentList extends StatelessWidget {
           cumulativeInteractionDuration:
               new Duration(minutes: new math.Random().nextInt(60))))
       .toList();
+
   final Key scrollableKey;
   final ScrollListener onScroll;
   final EdgeInsets padding;
-  final List<Story> _stories;
+  final List<Story> stories;
+  final Size parentSize;
 
   RecentList(
       {Key key,
       this.scrollableKey,
       this.padding,
       this.onScroll,
+      this.parentSize,
       List<Story> stories: const <Story>[]})
-      : _stories = new List.from(stories),
+      : this.stories = new List<Story>.from(stories),
         super(key: key) {
     // Sort recently interacted with stories to the start of the list.
-    _stories.sort((Story a, Story b) =>
+    this.stories.sort((Story a, Story b) =>
         b.lastInteraction.millisecondsSinceEpoch -
         a.lastInteraction.millisecondsSinceEpoch);
   }
@@ -114,34 +75,123 @@ class RecentList extends StatelessWidget {
       {Key key,
       Key scrollableKey,
       EdgeInsets padding,
+      Size parentSize,
       ScrollListener onScroll}) {
     return new RecentList(
         key: key,
         scrollableKey: scrollableKey,
         padding: padding,
         onScroll: onScroll,
+        parentSize: parentSize,
         stories: _kDummyStories);
   }
 
   @override
-  Widget build(BuildContext context) => new LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-        bool multiColumn = constraints.maxWidth > _kMultiColumnWidthThreshold;
-        return new RecentListBlock(
-            scrollableKey: scrollableKey,
-            padding: padding,
-            onScroll: onScroll,
+  RecentListState createState() => new RecentListState();
+}
+
+class RecentListState extends State<RecentList> {
+  /// When true, list scrolling is disabled and vertical gestures will no longer
+  /// be stolen by the [Scrollable] with the key [config.scrollableKey].
+  /// This gets set to true when a [Story] comes into focus.
+  bool _lockScrolling = false;
+
+  @override
+  Widget build(BuildContext context) {
+    bool multiColumn = config.parentSize.width > _kMultiColumnWidthThreshold;
+    return new ScrollConfiguration(
+        delegate: new LockingScrollConfigurationDelegate(lock: _lockScrolling),
+        child: new RecentListBlock(
+            scrollableKey: config.scrollableKey,
+            padding: config.padding,
+            onScroll: config.onScroll,
             multiColumn: multiColumn,
-            children: _stories.map((Story story) {
-              return new Container(
-                  height: story.height,
-                  width:
-                      multiColumn ? story.height * _kWidthToHeightRatio : 0.0,
-                  child: new ClipRRect(
-                      borderRadius: new BorderRadius.circular(4.0),
-                      child: story.builder(context)));
-            }).toList());
-      });
+            children: config.stories.map((Story story) {
+              return new GestureDetector(
+                  onTap: () {
+                    // Unfocus all non-tapped stories.
+                    config.stories
+                        .where((Story s) => s != story)
+                        .forEach((Story s) {
+                      FocusableStoryState untappedFocusableStoryState =
+                          new GlobalObjectKey(s).currentState;
+                      untappedFocusableStoryState.focused = false;
+                    });
+
+                    // Toggle focus of tapped story.
+                    FocusableStoryState tappedFocusableStoryState =
+                        new GlobalObjectKey(story).currentState;
+                    tappedFocusableStoryState.focused =
+                        !tappedFocusableStoryState.focused;
+
+                    // If tapped story is now in focus, scroll the list such
+                    // that the bottom of the story will align with the
+                    // bottom of the parent.
+                    if (tappedFocusableStoryState.focused) {
+                      RenderBox listBox = context.findRenderObject();
+                      Point listTopLeft = listBox.localToGlobal(Point.origin);
+                      RenderBox storyBox = new GlobalObjectKey(story)
+                          .currentContext
+                          .findRenderObject();
+                      Point storyTopLeft = storyBox.localToGlobal(Point.origin);
+                      double scrollDelta =
+                          (listBox.size.height + listTopLeft.y) -
+                              (storyTopLeft.y + storyBox.size.height);
+
+                      GlobalKey<ScrollableState> scrollableKey =
+                          config.scrollableKey;
+
+                      scrollableKey.currentState.scrollBy(scrollDelta,
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.fastOutSlowIn);
+                    }
+
+                    // Lock scrolling if we're now in focus, unlock if not.
+                    setState(() {
+                      _lockScrolling = tappedFocusableStoryState.focused;
+                    });
+                  },
+                  child: new FocusableStory(
+                      key: new GlobalObjectKey(story),
+                      fullSize: config.parentSize,
+                      story: story,
+                      multiColumn: multiColumn));
+            }).toList()));
+  }
+}
+
+class LockingScrollConfigurationDelegate extends ScrollConfigurationDelegate {
+  final bool lock;
+  const LockingScrollConfigurationDelegate({this.lock: false});
+
+  @override
+  TargetPlatform get platform => defaultTargetPlatform;
+
+  @override
+  ExtentScrollBehavior createScrollBehavior() {
+    return lock
+        ? new LockedUnboundedBehavior(platform: platform)
+        : new OverscrollWhenScrollableBehavior(platform: platform);
+  }
+
+  @override
+  bool updateShouldNotify(LockingScrollConfigurationDelegate old) {
+    return lock != old.lock;
+  }
+}
+
+class LockedUnboundedBehavior extends UnboundedBehavior {
+  LockedUnboundedBehavior(
+      {double contentExtent: double.INFINITY,
+      double containerExtent: 0.0,
+      TargetPlatform platform})
+      : super(
+            contentExtent: contentExtent,
+            containerExtent: containerExtent,
+            platform: platform);
+
+  @override
+  bool get isScrollable => false;
 }
 
 class RecentListBlock extends Block {
@@ -216,13 +266,6 @@ class RecentListRenderBlock extends RenderBlock {
   }
 
   @override
-  void setupParentData(RenderBox child) {
-    if (child.parentData is! RecentListBlockParentData) {
-      child.parentData = new RecentListBlockParentData();
-    }
-  }
-
-  @override
   void performLayout() {
     assert(!constraints.hasBoundedHeight);
     assert(constraints.hasBoundedWidth);
@@ -242,43 +285,40 @@ class RecentListRenderBlock extends RenderBlock {
   void _layoutMultiColumn() {
     BoxConstraints innerConstraints = _getInnerConstraints(constraints);
 
-    // Find tallest child's height.
-    double tallestHeight = 0.0;
-    {
-      RenderBox child = firstChild;
-      while (child != null) {
-        tallestHeight =
-            math.max(tallestHeight, child.getMaxIntrinsicHeight(0.0));
-        final BlockParentData childParentData = child.parentData;
-        assert(child.parentData == childParentData);
-        child = childParentData.nextSibling;
-      }
-    }
-    double sizeMultiplier = (innerConstraints.maxWidth - _kMultiColumnMargin) /
-        (tallestHeight * _kWidthToHeightRatio);
-
     // Layout children.
     double leftHeight = 0.0;
     double rightHeight = _kRightBump;
+    double leftMaxWidth = 0.0;
+    double rightMaxWidth = 0.0;
     {
       bool left = true;
       RenderBox child = firstChild;
       while (child != null) {
         child.layout(
             new BoxConstraints.tightFor(
-                width: child.getMaxIntrinsicWidth(0.0) * sizeMultiplier,
-                height: child.getMaxIntrinsicHeight(0.0) * sizeMultiplier),
+                width: child.getMaxIntrinsicWidth(0.0),
+                height: child.getMaxIntrinsicHeight(0.0)),
             parentUsesSize: true);
         if (left) {
           leftHeight += child.size.height;
+          leftMaxWidth = math.max(leftMaxWidth, child.size.width);
         } else {
           rightHeight += child.size.height;
+          rightMaxWidth = math.max(rightMaxWidth, child.size.width);
         }
         left = !left;
         final BlockParentData childParentData = child.parentData;
         assert(child.parentData == childParentData);
         child = childParentData.nextSibling;
       }
+    }
+    double centerLine = innerConstraints.maxWidth;
+    assert(leftMaxWidth <= centerLine || rightMaxWidth <= centerLine);
+    if (leftMaxWidth > centerLine) {
+      centerLine = leftMaxWidth;
+    }
+    if (rightMaxWidth > centerLine) {
+      centerLine -= (rightMaxWidth - centerLine);
     }
 
     // Position children.
@@ -290,25 +330,13 @@ class RecentListRenderBlock extends RenderBlock {
       RenderBox child = firstChild;
       while (child != null) {
         final BlockParentData childParentData = child.parentData;
-        final double marginDelta = _kMultiColumnMinimumStoryMargin *
-            (1.0 +
-                2.0 *
-                    (child.size.height / sizeMultiplier / _kMinimumStoryHeight -
-                        1.0));
         if (left) {
           leftPosition -= child.size.height;
-          childParentData.offset = new Offset(
-              innerConstraints.maxWidth -
-                  child.size.width -
-                  _kMultiColumnMinimumStoryMargin / 2.0,
-              leftPosition);
-          leftPosition -= marginDelta;
+          childParentData.offset =
+              new Offset(centerLine - child.size.width, leftPosition);
         } else {
           rightPosition -= child.size.height;
-          childParentData.offset = new Offset(
-              innerConstraints.maxWidth + _kMultiColumnMinimumStoryMargin / 2.0,
-              rightPosition);
-          rightPosition -= marginDelta;
+          childParentData.offset = new Offset(centerLine, rightPosition);
         }
         left = !left;
         assert(child.parentData == childParentData);
@@ -318,19 +346,18 @@ class RecentListRenderBlock extends RenderBlock {
   }
 
   void _layoutSingleColumn() {
-    BoxConstraints innerConstraints = _getInnerConstraints(constraints);
-
     // Layout children.
     double height = 0.0;
     {
       RenderBox child = firstChild;
       while (child != null) {
+        final BlockParentData childParentData = child.parentData;
         child.layout(
-            innerConstraints.deflate(const EdgeInsets.symmetric(
-                horizontal: _kSingleColumnStoryMargin)),
+            new BoxConstraints.tightFor(
+                height: child.getMaxIntrinsicHeight(0.0),
+                width: child.getMaxIntrinsicWidth(0.0)),
             parentUsesSize: true);
         height += child.size.height;
-        final BlockParentData childParentData = child.parentData;
         assert(child.parentData == childParentData);
         child = childParentData.nextSibling;
       }
@@ -343,9 +370,7 @@ class RecentListRenderBlock extends RenderBlock {
       while (child != null) {
         final BlockParentData childParentData = child.parentData;
         position -= child.size.height;
-        childParentData.offset =
-            new Offset(_kSingleColumnStoryMargin, position);
-        position -= _kSingleColumnStoryMargin;
+        childParentData.offset = new Offset(0.0, position);
         assert(child.parentData == childParentData);
         child = childParentData.nextSibling;
       }
@@ -365,5 +390,3 @@ class RecentListRenderBlock extends RenderBlock {
     return parentData.offset.dy + child.size.height;
   }
 }
-
-class RecentListBlockParentData extends BlockParentData {}
