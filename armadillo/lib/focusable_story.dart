@@ -31,12 +31,22 @@ const double _kMultiColumnMinimumStoryMargin = 8.0;
 /// provided by [builder] while the size of a story in the [RecentList] is
 /// determined by [lastInteraction] and [cumulativeInteractionDuration].
 class Story {
+  final Object id;
   final WidgetBuilder builder;
   final DateTime lastInteraction;
   final Duration cumulativeInteractionDuration;
 
   Story(
-      {this.builder, this.lastInteraction, this.cumulativeInteractionDuration});
+      {this.id,
+      this.builder,
+      this.lastInteraction,
+      this.cumulativeInteractionDuration});
+
+  Story copyWith({DateTime lastInteraction}) => new Story(
+      id: this.id,
+      builder: this.builder,
+      lastInteraction: lastInteraction ?? this.lastInteraction,
+      cumulativeInteractionDuration: this.cumulativeInteractionDuration);
 
   /// A [Story] is bigger if it has been used often and recently.
   double getHeight({bool multiColumn, double parentWidth}) {
@@ -68,6 +78,8 @@ class Story {
               60.0);
 }
 
+typedef void OnStoryFocused(Story story);
+
 /// The visual representation of a [Story].  A [Story] has a default size but
 /// will expand to [fullSize] when it comes into focus.  [FocusableStory]s are
 /// intended to be children of [RecentList].
@@ -75,7 +87,13 @@ class FocusableStory extends StatefulWidget {
   final Story story;
   final bool multiColumn;
   final Size fullSize;
-  FocusableStory({Key key, this.story, this.multiColumn, this.fullSize})
+  final OnStoryFocused onStoryFocused;
+  FocusableStory(
+      {Key key,
+      this.story,
+      this.multiColumn,
+      this.fullSize,
+      this.onStoryFocused})
       : super(key: key);
 
   @override
@@ -103,8 +121,20 @@ class FocusableStoryState extends TickingState<FocusableStory> {
 
   @override
   bool handleTick(double elapsedSeconds) {
+    bool wasDone = _focusSimulation.isDone;
+    if (wasDone) {
+      return false;
+    }
+
     // Tick the minimization simulation.
     _focusSimulation.elapseTime(elapsedSeconds);
+
+    // Notify that the story has come into focus.
+    if (_focusSimulation.isDone &&
+        _focusProgress == 1.0 &&
+        config.onStoryFocused != null) {
+      config.onStoryFocused(config.story);
+    }
     return !_focusSimulation.isDone;
   }
 

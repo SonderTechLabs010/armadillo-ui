@@ -10,27 +10,7 @@ import 'package:flutter/widgets.dart';
 
 import 'focusable_story.dart';
 
-export 'focusable_story.dart' show Story;
-
-/// Colors for dummy recents.
-const _kDummyRecentColors = const <int>[
-  0xFFFF5722,
-  0xFFFF9800,
-  0xFFFFC107,
-  0xFFFFEB3B,
-  0xFFCDDC39,
-  0xFF8BC34A,
-  0xFF4CAF50,
-  0xFF009688,
-  0xFF00BCD4,
-  0xFF03A9F4,
-  0xFF2196F3,
-  0xFF3F51B5,
-  0xFF673AB7,
-  0xFF9C27B0,
-  0xFFE91E63,
-  0xFFF44336
-];
+export 'focusable_story.dart' show Story, OnStoryFocused;
 
 /// If the width of the [RecentList] exceeds this value it will switch to
 /// multicolumn mode.
@@ -40,18 +20,9 @@ const double _kMultiColumnWidthThreshold = 600.0;
 const double _kRightBump = 64.0;
 
 class RecentList extends StatefulWidget {
-  static final _kDummyStories = _kDummyRecentColors
-      .map((int color) => new Story(
-          builder: (_) => new Container(
-              decoration: new BoxDecoration(backgroundColor: new Color(color))),
-          lastInteraction: new DateTime.now()
-              .subtract(new Duration(minutes: new math.Random().nextInt(120))),
-          cumulativeInteractionDuration:
-              new Duration(minutes: new math.Random().nextInt(60))))
-      .toList();
-
   final Key scrollableKey;
   final ScrollListener onScroll;
+  final OnStoryFocused onStoryFocused;
   final EdgeInsets padding;
   final List<Story> stories;
   final Size parentSize;
@@ -61,6 +32,7 @@ class RecentList extends StatefulWidget {
       this.scrollableKey,
       this.padding,
       this.onScroll,
+      this.onStoryFocused,
       this.parentSize,
       List<Story> stories: const <Story>[]})
       : this.stories = new List<Story>.from(stories),
@@ -69,21 +41,6 @@ class RecentList extends StatefulWidget {
     this.stories.sort((Story a, Story b) =>
         b.lastInteraction.millisecondsSinceEpoch -
         a.lastInteraction.millisecondsSinceEpoch);
-  }
-
-  factory RecentList.dummyList(
-      {Key key,
-      Key scrollableKey,
-      EdgeInsets padding,
-      Size parentSize,
-      ScrollListener onScroll}) {
-    return new RecentList(
-        key: key,
-        scrollableKey: scrollableKey,
-        padding: padding,
-        onScroll: onScroll,
-        parentSize: parentSize,
-        stories: _kDummyStories);
   }
 
   @override
@@ -111,7 +68,7 @@ class RecentListState extends State<RecentList> {
                   onTap: () {
                     // Bring tapped story into focus.
                     FocusableStoryState tappedFocusableStoryState =
-                        new GlobalObjectKey(story).currentState;
+                        new GlobalObjectKey(story.id).currentState;
                     tappedFocusableStoryState.focused = true;
 
                     // Since the tapped story is now coming into focus, scroll
@@ -119,7 +76,7 @@ class RecentListState extends State<RecentList> {
                     // with the bottom of the parent.
                     RenderBox listBox = context.findRenderObject();
                     Point listTopLeft = listBox.localToGlobal(Point.origin);
-                    RenderBox storyBox = new GlobalObjectKey(story)
+                    RenderBox storyBox = new GlobalObjectKey(story.id)
                         .currentContext
                         .findRenderObject();
                     Point storyTopLeft = storyBox.localToGlobal(Point.origin);
@@ -140,9 +97,10 @@ class RecentListState extends State<RecentList> {
                     });
                   },
                   child: new FocusableStory(
-                      key: new GlobalObjectKey(story),
+                      key: new GlobalObjectKey(story.id),
                       fullSize: config.parentSize,
                       story: story,
+                      onStoryFocused: config.onStoryFocused,
                       multiColumn: multiColumn));
             }).toList()));
   }
@@ -151,7 +109,7 @@ class RecentListState extends State<RecentList> {
     // Unfocus all stories.
     config.stories.forEach((Story s) {
       FocusableStoryState untappedFocusableStoryState =
-          new GlobalObjectKey(s).currentState;
+          new GlobalObjectKey(s.id).currentState;
       untappedFocusableStoryState.focused = false;
     });
 
