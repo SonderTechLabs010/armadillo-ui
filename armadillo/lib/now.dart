@@ -33,6 +33,13 @@ class Now extends StatefulWidget {
   final VoidCallback onQuickSettingsOverlayButtonTap;
   final VoidCallback onReturnToOriginButtonTap;
   final VoidCallback onInterruptionsOverlayButtonTap;
+
+  /// [onBarVerticalDragUpdate] and [onBarVerticalDragEnd] will be called only
+  /// when a vertical drag occurs on [Now] when in its fully minimized bar
+  /// state.
+  final GestureDragUpdateCallback onBarVerticalDragUpdate;
+  final GestureDragEndCallback onBarVerticalDragEnd;
+
   final Widget user;
   final Widget userContextMaximized;
   final Widget userContextMinimized;
@@ -50,6 +57,8 @@ class Now extends StatefulWidget {
       this.onQuickSettingsOverlayButtonTap,
       this.onReturnToOriginButtonTap,
       this.onInterruptionsOverlayButtonTap,
+      this.onBarVerticalDragUpdate,
+      this.onBarVerticalDragEnd,
       this.user,
       this.userContextMaximized,
       this.userContextMinimized,
@@ -171,32 +180,36 @@ class NowState extends TickingState<Now> {
                 // fully minimized.
                 new OffStage(
                     offstage: _buttonTapDisabled,
-                    child: new Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Toggle Quick Settings Overlay Button.
-                          new Flexible(
-                              flex: 1,
-                              child: new GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap:
-                                      config.onQuickSettingsOverlayButtonTap)),
+                    child: new GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onVerticalDragUpdate: config.onBarVerticalDragUpdate,
+                        onVerticalDragEnd: config.onBarVerticalDragEnd,
+                        child: new Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Toggle Quick Settings Overlay Button.
+                              new Flexible(
+                                  flex: 1,
+                                  child: new GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: config
+                                          .onQuickSettingsOverlayButtonTap)),
 
-                          // Return To Origin Button.
-                          new Flexible(
-                              flex: 2,
-                              child: new GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: config.onReturnToOriginButtonTap)),
+                              // Return To Origin Button.
+                              new Flexible(
+                                  flex: 2,
+                                  child: new GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: config.onReturnToOriginButtonTap)),
 
-                          // Toggle Interruptions Overlay Button.
-                          new Flexible(
-                              flex: 1,
-                              child: new GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap:
-                                      config.onInterruptionsOverlayButtonTap))
-                        ])),
+                              // Toggle Interruptions Overlay Button.
+                              new Flexible(
+                                  flex: 1,
+                                  child: new GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: config
+                                          .onInterruptionsOverlayButtonTap))
+                            ]))),
 
                 // Inline Quick Settings Toggle.
                 new Positioned(

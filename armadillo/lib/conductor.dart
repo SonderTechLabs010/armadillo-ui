@@ -161,6 +161,12 @@ class ConductorState extends State<Conductor> {
                         onInterruptionsOverlayButtonTap: () {
                           print('Toggle interruptions overlay!');
                         },
+                        onBarVerticalDragUpdate: (DragUpdateDetails details) =>
+                            _suggestionOverlayKey.currentState
+                                ?.onVerticalDragUpdate(details),
+                        onBarVerticalDragEnd: (DragEndDetails details) =>
+                            _suggestionOverlayKey.currentState
+                                ?.onVerticalDragEnd(details),
                         user: new Image.asset(_kUserImage, fit: ImageFit.cover),
                         userContextMaximized: new Text(
                             'Saturday 4:23 Sierra Vista'.toUpperCase(),

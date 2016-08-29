@@ -69,10 +69,10 @@ abstract class BottomAlignedOverlayState<T extends StatefulWidget>
                         behavior: HitTestBehavior.opaque,
                         child: new Container(
                             decoration: new BoxDecoration(
-                                backgroundColor: new Color(
-                                    ((0xD9 * openingProgress).round() << 24) +
-                                        0x00000000)))))),
+                                backgroundColor: _overlayBackgroundColor))))),
             new Container(
+                decoration:
+                    new BoxDecoration(backgroundColor: _overlayBackgroundColor),
                 height: height,
                 child: new OverflowBox(
                     minWidth: constraints.maxWidth,
@@ -90,4 +90,7 @@ abstract class BottomAlignedOverlayState<T extends StatefulWidget>
               (maxHeight - darkeningBackgroundMinHeight))
       : 0.0);
   bool get active => !_hiding;
+
+  Color get _overlayBackgroundColor =>
+      new Color(((0xD9 * openingProgress).round() << 24) + 0x00000000);
 }

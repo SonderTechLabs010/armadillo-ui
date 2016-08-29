@@ -96,10 +96,14 @@ class PeekingOverlayState extends BottomAlignedOverlayState<PeekingOverlay> {
           height: 100.0,
           child: new GestureDetector(
               onTap: openingProgress == 0.0 ? show : null,
-              onVerticalDragUpdate: (DragUpdateDetails details) =>
-                  setHeight(height - details.primaryDelta, force: true),
-              onVerticalDragEnd: (DragEndDetails details) =>
-                  snap(details.velocity.pixelsPerSecond.dy)))
+              onVerticalDragUpdate: onVerticalDragUpdate,
+              onVerticalDragEnd: onVerticalDragEnd))
     ]);
   }
+
+  void onVerticalDragUpdate(DragUpdateDetails details) =>
+      setHeight(height - details.primaryDelta, force: true);
+
+  void onVerticalDragEnd(DragEndDetails details) =>
+      snap(details.velocity.pixelsPerSecond.dy);
 }
