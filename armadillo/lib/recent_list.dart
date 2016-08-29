@@ -109,46 +109,34 @@ class RecentListState extends State<RecentList> {
             children: config.stories.map((Story story) {
               return new GestureDetector(
                   onTap: () {
-                    // Unfocus all non-tapped stories.
-                    config.stories
-                        .where((Story s) => s != story)
-                        .forEach((Story s) {
-                      FocusableStoryState untappedFocusableStoryState =
-                          new GlobalObjectKey(s).currentState;
-                      untappedFocusableStoryState.focused = false;
-                    });
-
-                    // Toggle focus of tapped story.
+                    // Bring tapped story into focus.
                     FocusableStoryState tappedFocusableStoryState =
                         new GlobalObjectKey(story).currentState;
-                    tappedFocusableStoryState.focused =
-                        !tappedFocusableStoryState.focused;
+                    tappedFocusableStoryState.focused = true;
 
-                    // If tapped story is now in focus, scroll the list such
-                    // that the bottom of the story will align with the
-                    // bottom of the parent.
-                    if (tappedFocusableStoryState.focused) {
-                      RenderBox listBox = context.findRenderObject();
-                      Point listTopLeft = listBox.localToGlobal(Point.origin);
-                      RenderBox storyBox = new GlobalObjectKey(story)
-                          .currentContext
-                          .findRenderObject();
-                      Point storyTopLeft = storyBox.localToGlobal(Point.origin);
-                      double scrollDelta =
-                          (listBox.size.height + listTopLeft.y) -
-                              (storyTopLeft.y + storyBox.size.height);
+                    // Since the tapped story is now coming into focus, scroll
+                    // the list such that the bottom of the story will align
+                    // with the bottom of the parent.
+                    RenderBox listBox = context.findRenderObject();
+                    Point listTopLeft = listBox.localToGlobal(Point.origin);
+                    RenderBox storyBox = new GlobalObjectKey(story)
+                        .currentContext
+                        .findRenderObject();
+                    Point storyTopLeft = storyBox.localToGlobal(Point.origin);
+                    double scrollDelta = (listBox.size.height + listTopLeft.y) -
+                        (storyTopLeft.y + storyBox.size.height);
 
-                      GlobalKey<ScrollableState> scrollableKey =
-                          config.scrollableKey;
+                    GlobalKey<ScrollableState> scrollableKey =
+                        config.scrollableKey;
 
-                      scrollableKey.currentState.scrollBy(scrollDelta,
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.fastOutSlowIn);
-                    }
+                    scrollableKey.currentState.scrollTo(
+                        scrollableKey.currentState.scrollOffset + scrollDelta,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.fastOutSlowIn);
 
-                    // Lock scrolling if we're now in focus, unlock if not.
+                    // Lock scrolling.
                     setState(() {
-                      _lockScrolling = tappedFocusableStoryState.focused;
+                      _lockScrolling = true;
                     });
                   },
                   child: new FocusableStory(
@@ -157,6 +145,20 @@ class RecentListState extends State<RecentList> {
                       story: story,
                       multiColumn: multiColumn));
             }).toList()));
+  }
+
+  void defocus() {
+    // Unfocus all stories.
+    config.stories.forEach((Story s) {
+      FocusableStoryState untappedFocusableStoryState =
+          new GlobalObjectKey(s).currentState;
+      untappedFocusableStoryState.focused = false;
+    });
+
+    // Unlock scrolling.
+    setState(() {
+      _lockScrolling = false;
+    });
   }
 }
 

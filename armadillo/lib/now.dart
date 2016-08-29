@@ -168,7 +168,7 @@ class NowState extends TickingState<Now> {
 
                 // Button bar.  These buttons are only enabled when we're nearly
                 // fully minimized.
-                new OffStage(
+                new Offstage(
                     offstage: _buttonTapDisabled,
                     child: new GestureDetector(
                         behavior: HitTestBehavior.opaque,
@@ -207,7 +207,7 @@ class NowState extends TickingState<Now> {
                     bottom: 0.0,
                     left: 0.0,
                     right: 0.0,
-                    child: new OffStage(
+                    child: new Offstage(
                         offstage: !_buttonTapDisabled,
                         child: new GestureDetector(
                             behavior: HitTestBehavior.translucent,

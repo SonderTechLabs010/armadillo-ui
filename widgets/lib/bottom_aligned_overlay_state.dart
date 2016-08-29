@@ -57,7 +57,7 @@ abstract class BottomAlignedOverlayState<T extends StatefulWidget>
       builder: (BuildContext context, BoxConstraints constraints) =>
           new Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             new Flexible(
-                child: new OffStage(
+                child: new Offstage(
                     offstage: openingProgress <= 0.0,
                     child: new GestureDetector(
                         onTap: hide,

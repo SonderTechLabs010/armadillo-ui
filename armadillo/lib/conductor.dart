@@ -48,7 +48,8 @@ const _kNowMinimizationScrollOffsetThreshold = 120.0;
 const _kNowQuickSettingsHideScrollOffsetThreshold = 16.0;
 
 class ConductorState extends State<Conductor> {
-  final GlobalKey _recentListKey = new GlobalKey();
+  final GlobalKey<RecentListState> _recentListKey =
+      new GlobalKey<RecentListState>();
   final GlobalKey<ScrollableState> _recentListScrollableKey =
       new GlobalKey<ScrollableState>();
   final GlobalKey<NowState> _nowKey = new GlobalKey<NowState>();
@@ -152,6 +153,7 @@ class ConductorState extends State<Conductor> {
                           _recentListScrollableKey.currentState.scrollTo(0.0,
                               duration: const Duration(milliseconds: 500),
                               curve: Curves.fastOutSlowIn);
+                          _recentListKey.currentState.defocus();
                         },
                         onQuickSettingsOverlayButtonTap: () {
                           print('Toggle quick settings overlay!');

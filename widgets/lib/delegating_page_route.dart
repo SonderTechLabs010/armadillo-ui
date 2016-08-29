@@ -25,4 +25,7 @@ class DelegatingPageRoute<T> extends PageRoute<T> {
   Widget buildPage(BuildContext context, _, __) {
     return _builder(context);
   }
+
+  @override
+  bool get maintainState => false;
 }

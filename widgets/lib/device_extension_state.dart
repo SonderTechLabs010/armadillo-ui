@@ -34,12 +34,13 @@ abstract class DeviceExtensionState<T extends StatefulWidget>
 
   @override
   Widget build(BuildContext context) {
-    return new ClipRect(child: new Align(
-        alignment: FractionalOffset.topCenter,
-        heightFactor: height / 100.0,
-        child: new OffStage(
-            offstage: height == 0.0,
-            child: new RepaintBoundary(child: createWidget(context)))));
+    return new ClipRect(
+        child: new Align(
+            alignment: FractionalOffset.topCenter,
+            heightFactor: height / 100.0,
+            child: new Offstage(
+                offstage: height == 0.0,
+                child: new RepaintBoundary(child: createWidget(context)))));
   }
 
   bool get active => height > minHeight;
