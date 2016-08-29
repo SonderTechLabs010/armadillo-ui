@@ -60,7 +60,7 @@ abstract class BottomAlignedOverlayState<T extends StatefulWidget>
                 child: new OffStage(
                     offstage: openingProgress <= 0.0,
                     child: new GestureDetector(
-                        onTap: () => setHeight(minHeight),
+                        onTap: hide,
                         onVerticalDragUpdate: (DragUpdateDetails details) =>
                             setHeight(height - details.primaryDelta,
                                 force: true),
