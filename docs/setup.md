@@ -10,7 +10,7 @@ and follow the instructions.
 ## Install Jiri
 
 ```
-curl -s https://raw.githubusercontent.com/vanadium/go.jiri/master/scripts/bootstrap_jiri | bash -s /path/to/workspace/root
+curl -s https://raw.githubusercontent.com/fuchsia-mirror/jiri/master/scripts/bootstrap_jiri | bash -s /path/to/workspace/root
 export PATH=/path/to/workspace/root/.jiri_root/scripts:$PATH
 ```
 
