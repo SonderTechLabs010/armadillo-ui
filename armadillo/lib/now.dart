@@ -95,7 +95,7 @@ class NowState extends TickingState<Now> {
               margin: new EdgeInsets.only(
                   top: math.max(0.0, constraints.maxHeight - _nowHeight)),
               child: new Stack(children: [
-                // Quick Settings.
+                // Quick Settings Background.
                 new Positioned(
                     left: 8.0,
                     right: 8.0,
@@ -107,17 +107,7 @@ class NowState extends TickingState<Now> {
                             decoration: new BoxDecoration(
                                 backgroundColor: new Color(0xFFFFFFFF),
                                 borderRadius: new BorderRadius.circular(
-                                    _quickSettingsBackgroundBorderRadius)),
-                            child: new Padding(
-                                padding: const EdgeInsets.all(32.0) -
-                                    new EdgeInsets.only(
-                                        bottom: 32.0 *
-                                            (1.0 -
-                                                _quickSettingsSlideUpProgress)) +
-                                    new EdgeInsets.only(top: 128.0),
-                                child: new Opacity(
-                                    opacity: _quickSettingsSlideUpProgress,
-                                    child: config.quickSettings))))),
+                                    _quickSettingsBackgroundBorderRadius))))),
 
                 // User Image, User Context Text, and Important Information when maximized.
                 new Positioned(
@@ -228,6 +218,22 @@ class NowState extends TickingState<Now> {
                                 hideQuickSettings();
                               }
                             }))),
+
+                // Quick Settings.
+                new Positioned(
+                    left: 8.0,
+                    right: 8.0,
+                    top: _quickSettingsTopOffset +
+                        32.0 * (1.0 - _quickSettingsSlideUpProgress) +
+                        128.0,
+                    child: new Center(
+                        child: new Container(
+                            height: math.max(
+                                0.0, _quickSettingsBackgroundHeight - 128.0),
+                            width: _quickSettingsBackgroundWidth,
+                            child: new Opacity(
+                                opacity: _quickSettingsSlideUpProgress,
+                                child: config.quickSettings)))),
               ])));
 
   @override

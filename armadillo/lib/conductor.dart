@@ -136,20 +136,18 @@ class ConductorState extends State<Conductor> {
                         maxHeight: _kMaximizedNowHeight,
                         scrollOffset: _lastScrollOffset,
                         quickSettingsHeightBump: _kQuickSettingsHeightBump,
-                        onQuickSettingsProgressChange:
-                            (double quickSettingsProgress) => setState(() {
-                                  // When quick settings starts being shown, scroll to 0.0.
-                                  if (_quickSettingsProgress == 0.0 &&
-                                      quickSettingsProgress > 0.0) {
-                                    _recentListScrollableKey.currentState
-                                        .scrollTo(0.0,
-                                            duration: const Duration(
-                                                milliseconds: 500),
-                                            curve: Curves.fastOutSlowIn);
-                                  }
-                                  _quickSettingsProgress =
-                                      quickSettingsProgress;
-                                }),
+                        onQuickSettingsProgressChange: (double quickSettingsProgress) =>
+                            setState(() {
+                              // When quick settings starts being shown, scroll to 0.0.
+                              if (_quickSettingsProgress == 0.0 &&
+                                  quickSettingsProgress > 0.0) {
+                                _recentListScrollableKey.currentState.scrollTo(
+                                    0.0,
+                                    duration: const Duration(milliseconds: 500),
+                                    curve: Curves.fastOutSlowIn);
+                              }
+                              _quickSettingsProgress = quickSettingsProgress;
+                            }),
                         onReturnToOriginButtonTap: () {
                           _recentListScrollableKey.currentState.scrollTo(0.0,
                               duration: const Duration(milliseconds: 500),
@@ -195,10 +193,37 @@ class ConductorState extends State<Conductor> {
                                   fit: ImageFit.cover)
                             ]),
                         quickSettings: new Align(
-                          alignment: FractionalOffset.bottomCenter,
-                          child: new Text('quick settings',
-                              style: new TextStyle(color: Colors.grey[600])),
-                        )))),
+                            alignment: FractionalOffset.bottomCenter,
+                            child: new Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  new Container(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: new Text('quick settings',
+                                          textAlign: TextAlign.center,
+                                          style: new TextStyle(
+                                              color: Colors.grey[600]))),
+                                  new Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0),
+                                      child: new Divider(
+                                          height: 1.0,
+                                          color: Colors.grey[600])),
+                                  new GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () {
+                                        print(
+                                            'Make Inline Quick Settings into Story!');
+                                      },
+                                      child: new Container(
+                                          padding: const EdgeInsets.all(16.0),
+                                          child: new Text('MORE',
+                                              textAlign: TextAlign.center,
+                                              style: new TextStyle(
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Colors.grey[600]))))
+                                ]))))),
 
             // Suggestions Overlay.
             new PeekingOverlay(
