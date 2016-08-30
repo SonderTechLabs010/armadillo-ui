@@ -10,6 +10,7 @@ import 'package:keyboard/keyboard.dart';
 import 'package:sysui_widgets/device_extension_state.dart';
 
 import 'device_extender.dart';
+import 'fake_story.dart';
 import 'keyboard_device_extension.dart';
 import 'now.dart';
 import 'peeking_overlay.dart';
@@ -72,12 +73,12 @@ const _kDummyRecentColors = const <int>[
 final _kDummyStories = _kDummyRecentColors
     .map((int color) => new Story(
         id: new Object(),
-        builder: (_) => new Container(
-            decoration: new BoxDecoration(backgroundColor: new Color(color))),
+        builder: (_) => new FakeStory(),
         lastInteraction: new DateTime.now()
             .subtract(new Duration(minutes: new math.Random().nextInt(120))),
         cumulativeInteractionDuration:
-            new Duration(minutes: new math.Random().nextInt(60))))
+            new Duration(minutes: new math.Random().nextInt(60)),
+        themeColor: new Color(color)))
     .toList();
 
 class ConductorState extends State<Conductor> {

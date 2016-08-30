@@ -10,6 +10,8 @@ import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
+import 'story_bar.dart';
+
 /// The minimum story height.
 const double _kMinimumStoryHeight = 200.0;
 
@@ -35,18 +37,21 @@ class Story {
   final WidgetBuilder builder;
   final DateTime lastInteraction;
   final Duration cumulativeInteractionDuration;
+  final Color themeColor;
 
   Story(
       {this.id,
       this.builder,
       this.lastInteraction,
-      this.cumulativeInteractionDuration});
+      this.cumulativeInteractionDuration,
+      this.themeColor});
 
   Story copyWith({DateTime lastInteraction}) => new Story(
       id: this.id,
       builder: this.builder,
       lastInteraction: lastInteraction ?? this.lastInteraction,
-      cumulativeInteractionDuration: this.cumulativeInteractionDuration);
+      cumulativeInteractionDuration: this.cumulativeInteractionDuration,
+      themeColor: this.themeColor);
 
   /// A [Story] is bigger if it has been used often and recently.
   double getHeight({bool multiColumn, double parentWidth}) {
@@ -151,31 +156,73 @@ class FocusableStoryState extends TickingState<FocusableStory> {
 
   @override
   Widget build(BuildContext context) {
+    double verticalMargin =
+        config.story.getVerticalMargin(multiColumn: config.multiColumn) *
+            (1.0 - _focusProgress);
+
+    double horizontalMargin = (config.multiColumn
+            ? _kMultiColumnMinimumStoryMargin / 2.0
+            : _kSingleColumnStoryMargin) *
+        (1.0 - _focusProgress);
+
     double unfocusedStoryHeight = config.story.getHeight(
         multiColumn: config.multiColumn, parentWidth: config.fullSize.width);
-    return new Container(
-        height: unfocusedStoryHeight +
-            (config.fullSize.height - unfocusedStoryHeight) * _focusProgress,
-        width: config.multiColumn
+
+    double width = (config.multiColumn
             ? (unfocusedStoryHeight * _kWidthToHeightRatio) +
                 (config.fullSize.width -
                         (unfocusedStoryHeight * _kWidthToHeightRatio)) *
-                    _focusProgress -
-                _kMultiColumnMinimumStoryMargin * (1.0 - _focusProgress)
-            : config.fullSize.width -
-                2.0 * _kSingleColumnStoryMargin * (1.0 - _focusProgress),
-        margin: new EdgeInsets.symmetric(
-            vertical: config.story
-                    .getVerticalMargin(multiColumn: config.multiColumn) *
-                (1.0 - _focusProgress),
-            horizontal: (config.multiColumn
-                    ? _kMultiColumnMinimumStoryMargin / 2.0
-                    : _kSingleColumnStoryMargin) *
-                (1.0 - _focusProgress)),
-        child: new ClipRRect(
-            borderRadius:
-                new BorderRadius.circular(4.0 * (1.0 - _focusProgress)),
-            child: config.story.builder(context)));
+                    _focusProgress
+            : config.fullSize.width) -
+        2.0 * horizontalMargin;
+
+    double height = unfocusedStoryHeight +
+        (config.fullSize.height - unfocusedStoryHeight) * _focusProgress;
+
+    // Calculate how much the Story needs to be scaled to fit the card.
+    double scale = width / config.fullSize.width;
+    Matrix4 transform = new Matrix4.identity();
+    transform.scale(scale, scale);
+
+    return new Padding(
+      padding: new EdgeInsets.symmetric(
+          vertical: verticalMargin, horizontal: horizontalMargin),
+      child: new ClipRRect(
+        borderRadius: new BorderRadius.circular(4.0 * (1.0 - _focusProgress)),
+        child: new Container(
+          decoration: new BoxDecoration(backgroundColor: new Color(0xFFFF0000)),
+          height: height,
+          width: width,
+          child: new Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // The story bar that pushes down the story.
+              new StoryBar(
+                  color: config.story.themeColor,
+                  focusProgress: _focusProgress),
+
+              // The scaled and clipped story.  When full size, the story will
+              // no longer be scaled or clipped due to the nature of the
+              // calculations of scale, width, height, and margins above.
+              new Flexible(
+                child: new Transform(
+                  transform: transform,
+                  alignment: FractionalOffset.topCenter,
+                  child: new OverflowBox(
+                    alignment: FractionalOffset.topCenter,
+                    minWidth: config.fullSize.width,
+                    maxWidth: config.fullSize.width,
+                    minHeight: config.fullSize.height,
+                    maxHeight: config.fullSize.height,
+                    child: config.story.builder(context),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void addProgressListener(ProgressListener listener) {
