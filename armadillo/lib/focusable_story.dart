@@ -79,6 +79,7 @@ class Story {
 }
 
 typedef void OnStoryFocused(Story story);
+typedef void ProgressListener(double progress, bool isDone);
 
 /// The visual representation of a [Story].  A [Story] has a default size but
 /// will expand to [fullSize] when it comes into focus.  [FocusableStory]s are
@@ -102,9 +103,11 @@ class FocusableStory extends StatefulWidget {
 
 const RK4SpringDescription _kFocusSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
-const double _kFocusSimulationTarget = 100.0;
+const double _kFocusSimulationTarget = 200.0;
 
 class FocusableStoryState extends TickingState<FocusableStory> {
+  final Set<ProgressListener> _listeners = new Set<ProgressListener>();
+
   /// The simulation for maximizing a [Story] to [config.fullSize].
   final RK4SpringSimulation _focusSimulation =
       new RK4SpringSimulation(initValue: 0.0, desc: _kFocusSimulationDesc);
@@ -112,9 +115,11 @@ class FocusableStoryState extends TickingState<FocusableStory> {
 
   bool get focused => _focused;
   set focused(bool focused) {
-    _focused = focused;
-    _focusSimulation.target = _focused ? _kFocusSimulationTarget : 0.0;
-    startTicking();
+    if (focused != _focused) {
+      _focused = focused;
+      _focusSimulation.target = _focused ? _kFocusSimulationTarget : 0.0;
+      startTicking();
+    }
   }
 
   double get _focusProgress => _focusSimulation.value / _kFocusSimulationTarget;
@@ -129,12 +134,18 @@ class FocusableStoryState extends TickingState<FocusableStory> {
     // Tick the minimization simulation.
     _focusSimulation.elapseTime(elapsedSeconds);
 
+    // Notify listeners of progress change.
+    _listeners.toList().forEach((ProgressListener listener) {
+      listener(_focusProgress, _focusSimulation.isDone);
+    });
+
     // Notify that the story has come into focus.
     if (_focusSimulation.isDone &&
         _focusProgress == 1.0 &&
         config.onStoryFocused != null) {
       config.onStoryFocused(config.story);
     }
+
     return !_focusSimulation.isDone;
   }
 
@@ -165,5 +176,13 @@ class FocusableStoryState extends TickingState<FocusableStory> {
             borderRadius:
                 new BorderRadius.circular(4.0 * (1.0 - _focusProgress)),
             child: config.story.builder(context)));
+  }
+
+  void addProgressListener(ProgressListener listener) {
+    _listeners.add(listener);
+  }
+
+  void removeProgressListener(ProgressListener listener) {
+    _listeners.remove(listener);
   }
 }

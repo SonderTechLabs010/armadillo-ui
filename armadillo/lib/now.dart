@@ -74,9 +74,9 @@ class Now extends StatefulWidget {
 /// Spring description used by the minimization and quick settings reveal
 /// simulations.
 const RK4SpringDescription _kSimulationDesc =
-    const RK4SpringDescription(tension: 450.0, friction: 50.0);
+    const RK4SpringDescription(tension: 600.0, friction: 50.0);
 
-const double _kMinimizationSimulationTarget = 100.0;
+const double _kMinimizationSimulationTarget = 400.0;
 const double _kQuickSettingsSimulationTarget = 100.0;
 
 class NowState extends TickingState<Now> {

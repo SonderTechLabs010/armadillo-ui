@@ -86,10 +86,13 @@ class RecentListState extends State<RecentList> {
                     GlobalKey<ScrollableState> scrollableKey =
                         config.scrollableKey;
 
-                    scrollableKey.currentState.scrollTo(
-                        scrollableKey.currentState.scrollOffset + scrollDelta,
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.fastOutSlowIn);
+                    FocusGainScroller scroller = new FocusGainScroller(
+                        initialScrollOffset:
+                            scrollableKey.currentState.scrollOffset,
+                        scrollDelta: scrollDelta,
+                        scrollableKey: scrollableKey,
+                        focusableStoryKey: new GlobalObjectKey(story.id));
+                    scroller.startListening();
 
                     // Lock scrolling.
                     setState(() {
@@ -117,6 +120,42 @@ class RecentListState extends State<RecentList> {
     setState(() {
       _lockScrolling = false;
     });
+  }
+}
+
+/// When started, adds itself as a listener to the [FocusableStory] with key
+/// [focusableStoryKey] and then removes itself when that story becomes fully in
+/// focus.  Uses the [FocusableStory]'s focus progress (which goes from 0 to 1)
+/// to set the scroll offset.
+/// As the story comes into focus the [Scrollable] with a key of
+/// [scrollableKey]'s scrollOffset will be set to:
+/// [initialScrollOffset] + [scrollDelta].
+class FocusGainScroller {
+  final double initialScrollOffset;
+  final double scrollDelta;
+  final GlobalKey<ScrollableState> scrollableKey;
+  final GlobalKey<FocusableStoryState> focusableStoryKey;
+
+  FocusGainScroller(
+      {this.initialScrollOffset,
+      this.scrollDelta,
+      this.scrollableKey,
+      this.focusableStoryKey});
+
+  void startListening() {
+    focusableStoryKey.currentState.addProgressListener(onProgress);
+  }
+
+  void stopListening() {
+    focusableStoryKey.currentState.removeProgressListener(onProgress);
+  }
+
+  void onProgress(double progress, bool isDone) {
+    if (isDone && progress == 1.0) {
+      stopListening();
+    }
+    scrollableKey.currentState
+        ?.scrollTo(initialScrollOffset + scrollDelta * progress);
   }
 }
 
