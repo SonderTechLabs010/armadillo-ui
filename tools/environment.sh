@@ -21,6 +21,10 @@ function croot() {
   cd $TREE_ROOT
 }
 
+function sync_flutter() {
+  (cd $TREE_ROOT/tools/sync_flutter && pub run bin/main.dart "$@")
+}
+
 function analyze() {
   local dir=$PWD
   (cd $TREE_ROOT/tools/analyze && pub run bin/main.dart "$dir/$@")
@@ -79,6 +83,7 @@ function sysui_help() {
   echo ""
   echo " >>> Commands <<<"
   echo "croot           - cd to the root of the Git tree"
+  echo "sync_flutter    - inspect and sync new commits in Flutter"
   echo "sfind           - find files in the tree"
   echo "analyze         - analyze Dart code"
   echo "push_to_gerrit  - push current HEAD to Gerrit for review"
