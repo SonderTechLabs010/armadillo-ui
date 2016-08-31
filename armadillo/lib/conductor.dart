@@ -74,6 +74,11 @@ final _kDummyStories = _kDummyRecentColors
     .map((int color) => new Story(
         id: new Object(),
         builder: (_) => new FakeStory(),
+        title: 'Fake Flutter Story',
+        icons: [
+          (BuildContext context) => new FlutterLogo(
+              swatch: Colors.grey, style: FlutterLogoStyle.markOnly)
+        ],
         lastInteraction: new DateTime.now()
             .subtract(new Duration(minutes: new math.Random().nextInt(120))),
         cumulativeInteractionDuration:

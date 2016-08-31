@@ -41,6 +41,8 @@ const double _kVerticalGestureDetectorHeight = 32.0;
 class Story {
   final Object id;
   final WidgetBuilder builder;
+  final List<WidgetBuilder> icons;
+  final String title;
   final DateTime lastInteraction;
   final Duration cumulativeInteractionDuration;
   final Color themeColor;
@@ -48,6 +50,8 @@ class Story {
   Story(
       {this.id,
       this.builder,
+      this.title,
+      this.icons: const <WidgetBuilder>[],
       this.lastInteraction,
       this.cumulativeInteractionDuration,
       this.themeColor});
@@ -57,7 +61,9 @@ class Story {
       builder: this.builder,
       lastInteraction: lastInteraction ?? this.lastInteraction,
       cumulativeInteractionDuration: this.cumulativeInteractionDuration,
-      themeColor: this.themeColor);
+      themeColor: this.themeColor,
+      icons: new List.from(this.icons),
+      title: this.title);
 
   /// A [Story] is bigger if it has been used often and recently.
   double getHeight({bool multiColumn, double parentWidth}) {
@@ -211,7 +217,7 @@ class FocusableStoryState extends TickingState<FocusableStory> {
               // The story bar that pushes down the story.
               new StoryBar(
                 key: _storyBarKey,
-                color: config.story.themeColor,
+                story: config.story,
               ),
 
               // The scaled and clipped story.  When full size, the story will

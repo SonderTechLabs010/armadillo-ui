@@ -12,3 +12,5 @@ assets:
   - packages/keyboard/res/ArrowUp.png
   - packages/keyboard/res/Delete.png
   - packages/keyboard/res/Space.png
+
+uses-material-design: true

@@ -9,6 +9,8 @@ import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
+import 'focusable_story.dart';
+
 const double _kHeightInCardMode = 12.0;
 const double _kHeightInFullScreenMode = 48.0;
 const RK4SpringDescription _kHeightSimulationDesc =
@@ -16,8 +18,8 @@ const RK4SpringDescription _kHeightSimulationDesc =
 
 /// The bar to be shown at the top of a story.
 class StoryBar extends StatefulWidget {
-  final Color color;
-  StoryBar({Key key, this.color}) : super(key: key);
+  final Story story;
+  StoryBar({Key key, this.story}) : super(key: key);
 
   @override
   StoryBarState createState() => new StoryBarState();
@@ -30,19 +32,41 @@ class StoryBarState extends TickingState<StoryBar> {
 
   @override
   Widget build(BuildContext context) => new Container(
-      height: _height,
-      padding: new EdgeInsets.symmetric(horizontal: 8.0),
-      decoration: new BoxDecoration(backgroundColor: config.color),
-      child: new Opacity(
-          opacity: _opacity,
-          child: new Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                new Text('icons', style: new TextStyle(color: Colors.black)),
-                new Text('title', style: new TextStyle(color: Colors.black)),
-                new Text('menu', style: new TextStyle(color: Colors.black)),
-              ])));
+        height: _height,
+        padding: new EdgeInsets.symmetric(horizontal: 8.0),
+        decoration: new BoxDecoration(backgroundColor: config.story.themeColor),
+        child: new OverflowBox(
+          minHeight: _kHeightInFullScreenMode,
+          maxHeight: _kHeightInFullScreenMode,
+          alignment: FractionalOffset.topCenter,
+          child: new Opacity(
+            opacity: _opacity,
+            child: new Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: new Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // TODO(apwilson): Figure out proper spacing of the elements in
+                // the bar.
+                children: [
+                  new Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: config.story.icons
+                          .map((WidgetBuilder builder) => builder(context))
+                          .toList()),
+                  new Text(config.story.title.toUpperCase(),
+                      style: new TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 2.0)),
+                  new Icon(Icons.account_circle, color: Colors.white),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
 
   @override
   bool handleTick(double elapsedSeconds) {
