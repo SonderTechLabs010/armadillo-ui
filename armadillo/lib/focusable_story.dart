@@ -112,6 +112,7 @@ const double _kFocusSimulationTarget = 200.0;
 
 class FocusableStoryState extends TickingState<FocusableStory> {
   final Set<ProgressListener> _listeners = new Set<ProgressListener>();
+  final GlobalKey<StoryBarState> _storyBarKey = new GlobalKey<StoryBarState>();
 
   /// The simulation for maximizing a [Story] to [config.fullSize].
   final RK4SpringSimulation _focusSimulation =
@@ -124,6 +125,11 @@ class FocusableStoryState extends TickingState<FocusableStory> {
       _focused = focused;
       _focusSimulation.target = _focused ? _kFocusSimulationTarget : 0.0;
       startTicking();
+      if (focused) {
+        _storyBarKey.currentState.maximize();
+      } else {
+        _storyBarKey.currentState.minimize();
+      }
     }
   }
 
@@ -136,7 +142,7 @@ class FocusableStoryState extends TickingState<FocusableStory> {
       return false;
     }
 
-    // Tick the minimization simulation.
+    // Tick the focus simulation.
     _focusSimulation.elapseTime(elapsedSeconds);
 
     // Notify listeners of progress change.
@@ -198,8 +204,9 @@ class FocusableStoryState extends TickingState<FocusableStory> {
             children: [
               // The story bar that pushes down the story.
               new StoryBar(
-                  color: config.story.themeColor,
-                  focusProgress: _focusProgress),
+                key: _storyBarKey,
+                color: config.story.themeColor,
+              ),
 
               // The scaled and clipped story.  When full size, the story will
               // no longer be scaled or clipped due to the nature of the
@@ -208,13 +215,45 @@ class FocusableStoryState extends TickingState<FocusableStory> {
                 child: new Transform(
                   transform: transform,
                   alignment: FractionalOffset.topCenter,
-                  child: new OverflowBox(
-                    alignment: FractionalOffset.topCenter,
-                    minWidth: config.fullSize.width,
-                    maxWidth: config.fullSize.width,
-                    minHeight: config.fullSize.height,
-                    maxHeight: config.fullSize.height,
-                    child: config.story.builder(context),
+                  child: new Stack(
+                    children: [
+                      // Touch listener that activates in full screen mode.
+                      // When a touch comes in we hide the story bar.
+                      new Listener(
+                        onPointerDown: (_focusProgress == 1.0)
+                            ? (PointerDownEvent event) {
+                                _storyBarKey.currentState.hide();
+                              }
+                            : null,
+                        behavior: HitTestBehavior.translucent,
+                        child: new OverflowBox(
+                          alignment: FractionalOffset.topCenter,
+                          minWidth: config.fullSize.width,
+                          maxWidth: config.fullSize.width,
+                          minHeight: config.fullSize.height,
+                          maxHeight: config.fullSize.height,
+                          child: config.story.builder(context),
+                        ),
+                      ),
+
+                      // Vertical gesture detector that activates in full screen
+                      // mode.  When a drag down from top of screen occurs we
+                      // show the story bar.
+                      new Positioned(
+                        top: 0.0,
+                        left: 0.0,
+                        right: 0.0,
+                        height: 16.0,
+                        child: new GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onVerticalDragUpdate: (_focusProgress == 1.0)
+                              ? (DragUpdateDetails details) {
+                                  _storyBarKey.currentState.show();
+                                }
+                              : null,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
