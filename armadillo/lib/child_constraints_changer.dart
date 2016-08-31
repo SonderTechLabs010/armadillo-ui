@@ -57,16 +57,15 @@ class ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
                             borderRadius: new BorderRadius.circular(_kInnerBezelRadius),
                             child: new ConstrainedBox(constraints: _currentConstraint, child: config.child))))),
         new Positioned(
-            right: 0.0,
-            top: 0.0,
-            width: 50.0,
-            height: 50.0,
-            child: new GestureDetector(
-                onTap: _switchConstraints,
-                child: new Container(
-                    decoration: new BoxDecoration(
-                        backgroundColor: new Color(0x80FF0080)),
-                    child: new Center(child: new Text('~')))))
+          right: 0.0,
+          top: 0.0,
+          width: 50.0,
+          height: 50.0,
+          child: new GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _switchConstraints,
+          ),
+        )
       ]);
 
   BoxConstraints get _currentConstraint {
