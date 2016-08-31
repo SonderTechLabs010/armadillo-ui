@@ -35,6 +35,9 @@ const double _kMultiColumnMinimumStoryMargin = 8.0;
 /// use.
 const double _kVerticalGestureDetectorHeight = 32.0;
 
+const double _kStoryBarMinimizedHeight = 12.0;
+const double _kStoryBarMaximizedHeight = 48.0;
+
 /// The representation of a Story.  A Story's contents are display as a [Widget]
 /// provided by [builder] while the size of a story in the [RecentList] is
 /// determined by [lastInteraction] and [cumulativeInteractionDuration].
@@ -218,6 +221,8 @@ class FocusableStoryState extends TickingState<FocusableStory> {
               new StoryBar(
                 key: _storyBarKey,
                 story: config.story,
+                minimizedHeight: _kStoryBarMinimizedHeight,
+                maximizedHeight: _kStoryBarMaximizedHeight,
               ),
 
               // The scaled and clipped story.  When full size, the story will
@@ -232,18 +237,25 @@ class FocusableStoryState extends TickingState<FocusableStory> {
                       // Touch listener that activates in full screen mode.
                       // When a touch comes in we hide the story bar.
                       new Listener(
-                        onPointerDown: (_focusProgress == 1.0)
-                            ? (PointerDownEvent event) {
-                                _storyBarKey.currentState.hide();
-                              }
-                            : null,
+                        onPointerDown:
+                            (_focusProgress == 1.0 && !config.multiColumn)
+                                ? (PointerDownEvent event) {
+                                    _storyBarKey.currentState.hide();
+                                  }
+                                : null,
                         behavior: HitTestBehavior.translucent,
                         child: new OverflowBox(
                           alignment: FractionalOffset.topCenter,
                           minWidth: config.fullSize.width,
                           maxWidth: config.fullSize.width,
-                          minHeight: config.fullSize.height,
-                          maxHeight: config.fullSize.height,
+                          minHeight: config.fullSize.height -
+                              (config.multiColumn
+                                  ? _kStoryBarMaximizedHeight
+                                  : 0.0),
+                          maxHeight: config.fullSize.height -
+                              (config.multiColumn
+                                  ? _kStoryBarMaximizedHeight
+                                  : 0.0),
                           child: config.story.builder(context),
                         ),
                       ),
@@ -258,11 +270,12 @@ class FocusableStoryState extends TickingState<FocusableStory> {
                         height: _kVerticalGestureDetectorHeight,
                         child: new GestureDetector(
                           behavior: HitTestBehavior.translucent,
-                          onVerticalDragUpdate: (_focusProgress == 1.0)
-                              ? (DragUpdateDetails details) {
-                                  _storyBarKey.currentState.show();
-                                }
-                              : null,
+                          onVerticalDragUpdate:
+                              (_focusProgress == 1.0 && !config.multiColumn)
+                                  ? (DragUpdateDetails details) {
+                                      _storyBarKey.currentState.show();
+                                    }
+                                  : null,
                         ),
                       ),
                     ],

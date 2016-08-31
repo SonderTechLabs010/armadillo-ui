@@ -12,8 +12,6 @@ import 'package:sysui_widgets/ticking_state.dart';
 
 import 'focusable_story.dart';
 
-const double _kHeightInCardMode = 12.0;
-const double _kHeightInFullScreenMode = 48.0;
 const RK4SpringDescription _kHeightSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
 const double _kPartMargin = 8.0;
@@ -21,16 +19,26 @@ const double _kPartMargin = 8.0;
 /// The bar to be shown at the top of a story.
 class StoryBar extends StatefulWidget {
   final Story story;
-  StoryBar({Key key, this.story}) : super(key: key);
+  final double minimizedHeight;
+  final double maximizedHeight;
+  StoryBar({Key key, this.story, this.minimizedHeight, this.maximizedHeight})
+      : super(key: key);
 
   @override
   StoryBarState createState() => new StoryBarState();
 }
 
 class StoryBarState extends TickingState<StoryBar> {
-  final RK4SpringSimulation _heightSimulation = new RK4SpringSimulation(
-      initValue: _kHeightInCardMode, desc: _kHeightSimulationDesc);
-  double _showHeight = _kHeightInCardMode;
+  RK4SpringSimulation _heightSimulation;
+  double _showHeight;
+
+  @override
+  void initState() {
+    super.initState();
+    _heightSimulation = new RK4SpringSimulation(
+        initValue: config.minimizedHeight, desc: _kHeightSimulationDesc);
+    _showHeight = config.minimizedHeight;
+  }
 
   @override
   Widget build(BuildContext context) => new Container(
@@ -38,8 +46,8 @@ class StoryBarState extends TickingState<StoryBar> {
         padding: new EdgeInsets.symmetric(horizontal: 8.0),
         decoration: new BoxDecoration(backgroundColor: config.story.themeColor),
         child: new OverflowBox(
-          minHeight: _kHeightInFullScreenMode,
-          maxHeight: _kHeightInFullScreenMode,
+          minHeight: config.maximizedHeight,
+          maxHeight: config.maximizedHeight,
           alignment: FractionalOffset.topCenter,
           child: new Opacity(
             opacity: _opacity,
@@ -111,19 +119,19 @@ class StoryBarState extends TickingState<StoryBar> {
   }
 
   void maximize() {
-    _showHeight = _kHeightInFullScreenMode;
+    _showHeight = config.maximizedHeight;
     show();
   }
 
   void minimize() {
-    _showHeight = _kHeightInCardMode;
+    _showHeight = config.minimizedHeight;
     show();
   }
 
   double get _opacity => math.max(
       0.0,
-      (_height - _kHeightInCardMode) /
-          (_kHeightInFullScreenMode - _kHeightInCardMode));
+      (_height - config.minimizedHeight) /
+          (config.maximizedHeight - config.minimizedHeight));
 
   double get _height => _heightSimulation.value;
 }
