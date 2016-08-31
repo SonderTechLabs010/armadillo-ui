@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/rk4_spring_simulation.dart';
+import 'package:sysui_widgets/three_column_aligned_layout_delegate.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
 import 'focusable_story.dart';
@@ -15,6 +16,7 @@ const double _kHeightInCardMode = 12.0;
 const double _kHeightInFullScreenMode = 48.0;
 const RK4SpringDescription _kHeightSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
+const double _kPartMargin = 8.0;
 
 /// The bar to be shown at the top of a story.
 class StoryBar extends StatefulWidget {
@@ -43,24 +45,42 @@ class StoryBarState extends TickingState<StoryBar> {
             opacity: _opacity,
             child: new Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: new Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                // TODO(apwilson): Figure out proper spacing of the elements in
-                // the bar.
+              child: new CustomMultiChildLayout(
+                delegate: new ThreeColumnAlignedLayoutDelegate(
+                  partMargin: _kPartMargin,
+                ),
                 children: [
-                  new Row(
+                  new LayoutId(
+                    id: ThreeColumnAlignedLayoutDelegateParts.left,
+                    child: new Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: config.story.icons
                           .map((WidgetBuilder builder) => builder(context))
-                          .toList()),
-                  new Text(config.story.title.toUpperCase(),
+                          .toList(),
+                    ),
+                  ),
+                  new LayoutId(
+                    id: ThreeColumnAlignedLayoutDelegateParts.center,
+                    child: new Text(
+                      config.story.title.toUpperCase(),
                       style: new TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 2.0)),
-                  new Icon(Icons.account_circle, color: Colors.white),
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 2.0,
+                      ),
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  new LayoutId(
+                    id: ThreeColumnAlignedLayoutDelegateParts.right,
+                    child: new Icon(
+                      Icons.account_circle,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
               ),
             ),
