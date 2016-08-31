@@ -45,6 +45,7 @@ class Story {
   final Object id;
   final WidgetBuilder builder;
   final List<WidgetBuilder> icons;
+  final WidgetBuilder avatar;
   final String title;
   final DateTime lastInteraction;
   final Duration cumulativeInteractionDuration;
@@ -55,6 +56,7 @@ class Story {
       this.builder,
       this.title,
       this.icons: const <WidgetBuilder>[],
+      this.avatar,
       this.lastInteraction,
       this.cumulativeInteractionDuration,
       this.themeColor});
@@ -66,6 +68,7 @@ class Story {
       cumulativeInteractionDuration: this.cumulativeInteractionDuration,
       themeColor: this.themeColor,
       icons: new List.from(this.icons),
+      avatar: this.avatar,
       title: this.title);
 
   /// A [Story] is bigger if it has been used often and recently.

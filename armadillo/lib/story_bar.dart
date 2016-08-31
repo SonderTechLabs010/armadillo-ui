@@ -84,9 +84,21 @@ class StoryBarState extends TickingState<StoryBar> {
                   ),
                   new LayoutId(
                     id: ThreeColumnAlignedLayoutDelegateParts.right,
-                    child: new Icon(
-                      Icons.account_circle,
-                      color: Colors.white,
+                    child: new Container(
+                      width: config.maximizedHeight - 16.0,
+                      height: config.maximizedHeight - 16.0,
+                      child: new ClipOval(
+                        child: new Container(
+                          foregroundDecoration: new BoxDecoration(
+                            border: new Border.all(
+                              color: Colors.white,
+                              width: 1.0,
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          child: config.story.avatar(context),
+                        ),
+                      ),
                     ),
                   ),
                 ],

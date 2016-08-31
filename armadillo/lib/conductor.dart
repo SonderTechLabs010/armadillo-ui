@@ -79,6 +79,7 @@ final _kDummyStories = _kDummyRecentColors
           (BuildContext context) => new FlutterLogo(
               swatch: Colors.grey, style: FlutterLogoStyle.markOnly)
         ],
+        avatar: (_) => new Image.asset(_kUserImage, fit: ImageFit.cover),
         lastInteraction: new DateTime.now()
             .subtract(new Duration(minutes: new math.Random().nextInt(120))),
         cumulativeInteractionDuration:
