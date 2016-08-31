@@ -57,14 +57,27 @@ class RecentListState extends State<RecentList> {
   Widget build(BuildContext context) {
     bool multiColumn = config.parentSize.width > _kMultiColumnWidthThreshold;
     return new ScrollConfiguration(
-        delegate: new LockingScrollConfigurationDelegate(lock: _lockScrolling),
-        child: new RecentListBlock(
-            scrollableKey: config.scrollableKey,
-            padding: config.padding,
-            onScroll: config.onScroll,
-            multiColumn: multiColumn,
-            children: config.stories.map((Story story) {
-              return new GestureDetector(
+      delegate: new LockingScrollConfigurationDelegate(lock: _lockScrolling),
+      child: new RecentListBlock(
+        scrollableKey: config.scrollableKey,
+        padding: config.padding,
+        onScroll: config.onScroll,
+        multiColumn: multiColumn,
+        children: config.stories.map(
+          (Story story) {
+            final stackChildren = <Widget>[
+              new FocusableStory(
+                key: new GlobalObjectKey(story.id),
+                fullSize: config.parentSize,
+                story: story,
+                onStoryFocused: config.onStoryFocused,
+                multiColumn: multiColumn,
+              ),
+            ];
+            if (!_lockScrolling) {
+              stackChildren.add(
+                new GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: () {
                     // Bring tapped story into focus.
                     FocusableStoryState tappedFocusableStoryState =
@@ -87,11 +100,12 @@ class RecentListState extends State<RecentList> {
                         config.scrollableKey;
 
                     FocusGainScroller scroller = new FocusGainScroller(
-                        initialScrollOffset:
-                            scrollableKey.currentState.scrollOffset,
-                        scrollDelta: scrollDelta,
-                        scrollableKey: scrollableKey,
-                        focusableStoryKey: new GlobalObjectKey(story.id));
+                      initialScrollOffset:
+                          scrollableKey.currentState.scrollOffset,
+                      scrollDelta: scrollDelta,
+                      scrollableKey: scrollableKey,
+                      focusableStoryKey: new GlobalObjectKey(story.id),
+                    );
                     scroller.startListening();
 
                     // Lock scrolling.
@@ -99,13 +113,14 @@ class RecentListState extends State<RecentList> {
                       _lockScrolling = true;
                     });
                   },
-                  child: new FocusableStory(
-                      key: new GlobalObjectKey(story.id),
-                      fullSize: config.parentSize,
-                      story: story,
-                      onStoryFocused: config.onStoryFocused,
-                      multiColumn: multiColumn));
-            }).toList()));
+                ),
+              );
+            }
+            return new Stack(children: stackChildren);
+          },
+        ).toList(),
+      ),
+    );
   }
 
   void defocus() {

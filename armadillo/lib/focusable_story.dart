@@ -29,6 +29,12 @@ const double _kSingleColumnStoryMargin = 8.0;
 /// elements.
 const double _kMultiColumnMinimumStoryMargin = 8.0;
 
+/// The height of the vertical gesture detector used to reveal the story bar in
+/// full screen mode.
+/// TODO(apwilson): Reduce the height of this.  It's large for now for ease of
+/// use.
+const double _kVerticalGestureDetectorHeight = 32.0;
+
 /// The representation of a Story.  A Story's contents are display as a [Widget]
 /// provided by [builder] while the size of a story in the [RecentList] is
 /// determined by [lastInteraction] and [cumulativeInteractionDuration].
@@ -243,7 +249,7 @@ class FocusableStoryState extends TickingState<FocusableStory> {
                         top: 0.0,
                         left: 0.0,
                         right: 0.0,
-                        height: 16.0,
+                        height: _kVerticalGestureDetectorHeight,
                         child: new GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onVerticalDragUpdate: (_focusProgress == 1.0)
