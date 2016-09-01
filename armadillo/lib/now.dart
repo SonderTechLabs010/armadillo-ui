@@ -360,10 +360,10 @@ class NowState extends TickingState<Now> {
   /// We slide in the context text and important information for the final
   /// portion of the minimization animation as determined by
   /// [_kFallAwayDurationFraction].
-  double get _slideInProgress => math.max(
-      0.0,
-      ((_minimizationProgress - (1.0 - _kFallAwayDurationFraction)) /
-          _kFallAwayDurationFraction));
+  double get _slideInProgress =>
+      (((_minimizationProgress - (1.0 - _kFallAwayDurationFraction)) /
+              _kFallAwayDurationFraction))
+          .clamp(0.0, 1.0);
 
   /// We slide up and fade in the quick settings for the final portion of the
   /// quick settings animation as determined by [_kFallAwayDurationFraction].

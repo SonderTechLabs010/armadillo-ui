@@ -11,6 +11,7 @@ import 'package:sysui_widgets/three_column_aligned_layout_delegate.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
 import 'focusable_story.dart';
+import 'story_title.dart';
 
 const RK4SpringDescription _kHeightSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
@@ -71,16 +72,7 @@ class StoryBarState extends TickingState<StoryBar> {
                   ),
                   new LayoutId(
                     id: ThreeColumnAlignedLayoutDelegateParts.center,
-                    child: new Text(
-                      config.story.title.toUpperCase(),
-                      style: new TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 2.0,
-                      ),
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    child: new StoryTitle(title: config.story.title),
                   ),
                   new LayoutId(
                     id: ThreeColumnAlignedLayoutDelegateParts.right,

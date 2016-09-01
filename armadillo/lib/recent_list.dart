@@ -76,43 +76,50 @@ class RecentListState extends State<RecentList> {
             ];
             if (!_lockScrolling) {
               stackChildren.add(
-                new GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    // Bring tapped story into focus.
-                    FocusableStoryState tappedFocusableStoryState =
-                        new GlobalObjectKey(story.id).currentState;
-                    tappedFocusableStoryState.focused = true;
+                new Positioned(
+                  left: 0.0,
+                  right: 0.0,
+                  top: 0.0,
+                  bottom: 0.0,
+                  child: new GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      // Bring tapped story into focus.
+                      FocusableStoryState tappedFocusableStoryState =
+                          new GlobalObjectKey(story.id).currentState;
+                      tappedFocusableStoryState.focused = true;
 
-                    // Since the tapped story is now coming into focus, scroll
-                    // the list such that the bottom of the story will align
-                    // with the bottom of the parent.
-                    RenderBox listBox = context.findRenderObject();
-                    Point listTopLeft = listBox.localToGlobal(Point.origin);
-                    RenderBox storyBox = new GlobalObjectKey(story.id)
-                        .currentContext
-                        .findRenderObject();
-                    Point storyTopLeft = storyBox.localToGlobal(Point.origin);
-                    double scrollDelta = (listBox.size.height + listTopLeft.y) -
-                        (storyTopLeft.y + storyBox.size.height);
+                      // Since the tapped story is now coming into focus, scroll
+                      // the list such that the bottom of the story will align
+                      // with the bottom of the parent.
+                      RenderBox listBox = context.findRenderObject();
+                      Point listTopLeft = listBox.localToGlobal(Point.origin);
+                      RenderBox storyBox = new GlobalObjectKey(story.id)
+                          .currentContext
+                          .findRenderObject();
+                      Point storyTopLeft = storyBox.localToGlobal(Point.origin);
+                      double scrollDelta =
+                          (listBox.size.height + listTopLeft.y) -
+                              (storyTopLeft.y + storyBox.size.height);
 
-                    GlobalKey<ScrollableState> scrollableKey =
-                        config.scrollableKey;
+                      GlobalKey<ScrollableState> scrollableKey =
+                          config.scrollableKey;
 
-                    FocusGainScroller scroller = new FocusGainScroller(
-                      initialScrollOffset:
-                          scrollableKey.currentState.scrollOffset,
-                      scrollDelta: scrollDelta,
-                      scrollableKey: scrollableKey,
-                      focusableStoryKey: new GlobalObjectKey(story.id),
-                    );
-                    scroller.startListening();
+                      FocusGainScroller scroller = new FocusGainScroller(
+                        initialScrollOffset:
+                            scrollableKey.currentState.scrollOffset,
+                        scrollDelta: scrollDelta,
+                        scrollableKey: scrollableKey,
+                        focusableStoryKey: new GlobalObjectKey(story.id),
+                      );
+                      scroller.startListening();
 
-                    // Lock scrolling.
-                    setState(() {
-                      _lockScrolling = true;
-                    });
-                  },
+                      // Lock scrolling.
+                      setState(() {
+                        _lockScrolling = true;
+                      });
+                    },
+                  ),
                 ),
               );
             }
@@ -297,7 +304,8 @@ class RecentListRenderBlock extends RenderBlock {
   }
 
   void _layoutMultiColumn() {
-    BoxConstraints innerConstraints = _getInnerConstraints(constraints);
+    BoxConstraints innerConstraints =
+        new BoxConstraints(maxWidth: constraints.maxWidth);
 
     // Layout children.
     double leftHeight = 0.0;
@@ -308,11 +316,7 @@ class RecentListRenderBlock extends RenderBlock {
       bool left = true;
       RenderBox child = firstChild;
       while (child != null) {
-        child.layout(
-            new BoxConstraints.tightFor(
-                width: child.getMaxIntrinsicWidth(0.0),
-                height: child.getMaxIntrinsicHeight(0.0)),
-            parentUsesSize: true);
+        child.layout(innerConstraints, parentUsesSize: true);
         if (left) {
           leftHeight += child.size.height;
           leftMaxWidth = math.max(leftMaxWidth, child.size.width);
@@ -326,7 +330,7 @@ class RecentListRenderBlock extends RenderBlock {
         child = childParentData.nextSibling;
       }
     }
-    double centerLine = innerConstraints.maxWidth;
+    double centerLine = constraints.maxWidth / 2.0;
     assert(leftMaxWidth <= centerLine || rightMaxWidth <= centerLine);
     if (leftMaxWidth > centerLine) {
       centerLine = leftMaxWidth;
@@ -360,17 +364,16 @@ class RecentListRenderBlock extends RenderBlock {
   }
 
   void _layoutSingleColumn() {
+    BoxConstraints innerConstraints =
+        new BoxConstraints.tightFor(width: constraints.maxWidth);
+
     // Layout children.
     double height = 0.0;
     {
       RenderBox child = firstChild;
       while (child != null) {
         final BlockParentData childParentData = child.parentData;
-        child.layout(
-            new BoxConstraints.tightFor(
-                height: child.getMaxIntrinsicHeight(0.0),
-                width: child.getMaxIntrinsicWidth(0.0)),
-            parentUsesSize: true);
+        child.layout(innerConstraints, parentUsesSize: true);
         height += child.size.height;
         assert(child.parentData == childParentData);
         child = childParentData.nextSibling;
@@ -389,12 +392,6 @@ class RecentListRenderBlock extends RenderBlock {
         child = childParentData.nextSibling;
       }
     }
-  }
-
-  BoxConstraints _getInnerConstraints(BoxConstraints constraints) {
-    return _multiColumn
-        ? new BoxConstraints(maxWidth: constraints.maxWidth / 2.0)
-        : new BoxConstraints.tightFor(width: constraints.maxWidth);
   }
 
   double get _mainAxisExtent {
