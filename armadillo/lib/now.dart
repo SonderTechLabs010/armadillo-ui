@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -88,6 +89,12 @@ class NowState extends TickingState<Now> {
   final RK4SpringSimulation _quickSettingsSimulation =
       new RK4SpringSimulation(initValue: 0.0, desc: _kSimulationDesc);
 
+  /// The simulation for showing minimized info in the minimized bar.
+  final RK4SpringSimulation _minimizedInfoSimulation = new RK4SpringSimulation(
+      initValue: _kMinimizationSimulationTarget, desc: _kSimulationDesc);
+
+  Timer _hideMinimizedInfoTimer;
+
   @override
   Widget build(BuildContext context) => new LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) =>
@@ -118,23 +125,38 @@ class NowState extends TickingState<Now> {
                         child: new Column(children: [
                       new Stack(children: [
                         new Opacity(
-                            opacity: _quickSettingsProgress,
-                            child: new Container(
-                                width: _userImageSize,
-                                height: _userImageSize,
-                                decoration: new BoxDecoration(
-                                    boxShadow: kElevationToShadow[12],
-                                    shape: BoxShape.circle))),
+                          opacity: _quickSettingsProgress,
+                          child: new Container(
+                            width: _userImageSize,
+                            height: _userImageSize,
+                            decoration: new BoxDecoration(
+                              boxShadow: kElevationToShadow[12],
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
                         new ClipOval(
+                          child: new GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              if (!_revealingQuickSettings) {
+                                showQuickSettings();
+                              } else {
+                                hideQuickSettings();
+                              }
+                            },
                             child: new Container(
-                                width: _userImageSize,
-                                height: _userImageSize,
-                                foregroundDecoration: new BoxDecoration(
-                                    border: new Border.all(
-                                        color: new Color(0xFFFFFFFF),
-                                        width: _userImageBorderWidth),
-                                    shape: BoxShape.circle),
-                                child: config.user))
+                              width: _userImageSize,
+                              height: _userImageSize,
+                              foregroundDecoration: new BoxDecoration(
+                                  border: new Border.all(
+                                      color: new Color(0xFFFFFFFF),
+                                      width: _userImageBorderWidth),
+                                  shape: BoxShape.circle),
+                              child: config.user,
+                            ),
+                          ),
+                        ),
                       ]),
                       new Padding(
                           padding: const EdgeInsets.only(top: 24.0),
@@ -156,7 +178,7 @@ class NowState extends TickingState<Now> {
                         padding: new EdgeInsets.symmetric(
                             horizontal: 8.0 + _slideInDistance),
                         child: new Opacity(
-                            opacity: _slideInProgress,
+                            opacity: 0.6 * _slideInProgress,
                             child: new Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment:
@@ -169,55 +191,37 @@ class NowState extends TickingState<Now> {
                 // Button bar.  These buttons are only enabled when we're nearly
                 // fully minimized.
                 new Offstage(
-                    offstage: _buttonTapDisabled,
-                    child: new GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onVerticalDragUpdate: config.onBarVerticalDragUpdate,
-                        onVerticalDragEnd: config.onBarVerticalDragEnd,
-                        child: new Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // Toggle Quick Settings Overlay Button.
-                              new Flexible(
-                                  flex: 1,
-                                  child: new GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: config
-                                          .onQuickSettingsOverlayButtonTap)),
-
-                              // Return To Origin Button.
-                              new Flexible(
-                                  flex: 2,
-                                  child: new GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: config.onReturnToOriginButtonTap)),
-
-                              // Toggle Interruptions Overlay Button.
-                              new Flexible(
-                                  flex: 1,
-                                  child: new GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: config
-                                          .onInterruptionsOverlayButtonTap))
-                            ]))),
-
-                // Inline Quick Settings Toggle.
-                new Positioned(
-                    top: config.scrollOffset * 2.0 / 3.0,
-                    bottom: 0.0,
-                    left: 0.0,
-                    right: 0.0,
-                    child: new Offstage(
-                        offstage: !_buttonTapDisabled,
-                        child: new GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            onTap: () {
-                              if (!_revealingQuickSettings) {
-                                showQuickSettings();
-                              } else {
-                                hideQuickSettings();
-                              }
-                            }))),
+                  offstage: _buttonTapDisabled,
+                  child: new GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onVerticalDragUpdate: config.onBarVerticalDragUpdate,
+                    onVerticalDragEnd: config.onBarVerticalDragEnd,
+                    child: new Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        new Flexible(
+                            child: new GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTapDown: (_) {
+                            _showMinimizedInfo();
+                          },
+                        )),
+                        new GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: config.onReturnToOriginButtonTap,
+                          child: new Container(width: config.minHeight),
+                        ),
+                        new Flexible(
+                            child: new GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTapDown: (_) {
+                            _showMinimizedInfo();
+                          },
+                        )),
+                      ],
+                    ),
+                  ),
+                ),
 
                 // Quick Settings.
                 new Positioned(
@@ -240,10 +244,18 @@ class NowState extends TickingState<Now> {
   bool handleTick(double elapsedSeconds) {
     bool continueTicking = false;
 
-    // Tick the minimization simulation.
-    _minimizationSimulation.elapseTime(elapsedSeconds);
-    if (!_minimizationSimulation.isDone) {
+    // Tick the minimized info simulation.
+    _minimizedInfoSimulation.elapseTime(elapsedSeconds);
+    if (!_minimizedInfoSimulation.isDone) {
       continueTicking = true;
+    }
+
+    // Tick the minimization simulation.
+    if (!_minimizationSimulation.isDone) {
+      _minimizationSimulation.elapseTime(elapsedSeconds);
+      if (!_minimizationSimulation.isDone) {
+        continueTicking = true;
+      }
     }
 
     // Tick the quick settings simulation.
@@ -263,6 +275,7 @@ class NowState extends TickingState<Now> {
   void minimize() {
     if (!_minimizing) {
       _minimizationSimulation.target = _kMinimizationSimulationTarget;
+      _showMinimizedInfo();
       startTicking();
     }
   }
@@ -288,11 +301,27 @@ class NowState extends TickingState<Now> {
     }
   }
 
+  void _showMinimizedInfo() {
+    _hideMinimizedInfoTimer?.cancel();
+    _hideMinimizedInfoTimer =
+        new Timer(const Duration(seconds: 3), _hideMinimizedInfo);
+    _minimizedInfoSimulation.target = _kMinimizationSimulationTarget;
+    startTicking();
+  }
+
+  void _hideMinimizedInfo() {
+    _minimizedInfoSimulation.target = 0.0;
+    startTicking();
+  }
+
   double get _quickSettingsProgress =>
       _quickSettingsSimulation.value / _kQuickSettingsSimulationTarget;
 
   double get _minimizationProgress =>
       _minimizationSimulation.value / _kMinimizationSimulationTarget;
+
+  double get _minimizedInfoProgress =>
+      _minimizedInfoSimulation.value / _kMinimizationSimulationTarget;
 
   bool get _minimizing =>
       _minimizationSimulation.target == _kMinimizationSimulationTarget;
@@ -361,8 +390,9 @@ class NowState extends TickingState<Now> {
   /// portion of the minimization animation as determined by
   /// [_kFallAwayDurationFraction].
   double get _slideInProgress =>
-      (((_minimizationProgress - (1.0 - _kFallAwayDurationFraction)) /
-              _kFallAwayDurationFraction))
+      ((((_minimizationProgress - (1.0 - _kFallAwayDurationFraction)) /
+                  _kFallAwayDurationFraction)) *
+              _minimizedInfoProgress)
           .clamp(0.0, 1.0);
 
   /// We slide up and fade in the quick settings for the final portion of the
