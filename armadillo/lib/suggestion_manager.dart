@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:keyboard/word_suggestion_service.dart';
 
 import 'focusable_story.dart';
 
@@ -27,6 +29,8 @@ class SuggestionManager {
   Map<Object, List<Suggestion>> _storySuggestionsMap =
       const <Object, List<Suggestion>>{};
   List<Suggestion> _currentSuggestions = const <Suggestion>[];
+  Story _activeStory;
+  String _askText;
 
   SuggestionManager();
 
@@ -68,7 +72,8 @@ class SuggestionManager {
   List<Suggestion> get suggestions => _currentSuggestions;
 
   set askText(String text) {
-    // TODO(apwilson): change suggestions based on askText.
+    _askText = text?.toLowerCase();
+    _updateSuggestions();
   }
 
   /// Should be called only by those who instantiate
@@ -90,8 +95,44 @@ class SuggestionManager {
   /// Updates the [suggestions] based on the currently focused [story].  If no
   /// story is in focus, [story] should be null.
   void storyFocusChanged(Story story) {
-    _currentSuggestions =
-        _storySuggestionsMap[story?.id ?? new ValueKey('none')];
+    _activeStory = story;
+    _updateSuggestions();
+  }
+
+  void _updateSuggestions() {
+    if (_askText?.isEmpty ?? true) {
+      _currentSuggestions =
+          _storySuggestionsMap[_activeStory?.id ?? new ValueKey('none')];
+    } else {
+      List<Suggestion> suggestions =
+          new List<Suggestion>.from(_storySuggestionsMap[new ValueKey('none')]);
+      suggestions.sort((Suggestion a, Suggestion b) {
+        int minADistance = math.min(
+          a.title
+              .toLowerCase()
+              .split(' ')
+              .map((String word) =>
+                  WordSuggestionService.levenshteinDistance(word, _askText))
+              .reduce(math.min),
+          WordSuggestionService.levenshteinDistance(
+              a.title.toLowerCase(), _askText),
+        );
+
+        int minBDistance = math.min(
+          b.title
+              .toLowerCase()
+              .split(' ')
+              .map((String word) =>
+                  WordSuggestionService.levenshteinDistance(word, _askText))
+              .reduce(math.min),
+          WordSuggestionService.levenshteinDistance(
+              b.title.toLowerCase(), _askText),
+        );
+
+        return minADistance - minBDistance;
+      });
+      _currentSuggestions = suggestions;
+    }
     _notifyListeners();
   }
 

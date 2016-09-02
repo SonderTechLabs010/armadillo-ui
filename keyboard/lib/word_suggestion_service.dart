@@ -220,7 +220,7 @@ class WordSuggestionService {
   }
 
   /// From https://en.wikipedia.org/wiki/Levenshtein_distance.
-  int levenshteinDistance(String s, String t) {
+  static int levenshteinDistance(String s, String t) {
     // Degenerate cases.
     if (s == t) {
       return 0;

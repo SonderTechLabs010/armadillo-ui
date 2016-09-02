@@ -30,10 +30,12 @@ class ArmadilloState extends State<Armadillo> {
   void initState() {
     super.initState();
     config.storyManager.addListener(onStoryManagerChanged);
+    config.storyManager.suggestionManager.addListener(onStoryManagerChanged);
   }
 
   @override
   void dispose() {
+    config.storyManager.suggestionManager.removeListener(onStoryManagerChanged);
     config.storyManager.removeListener(onStoryManagerChanged);
     super.dispose();
   }
