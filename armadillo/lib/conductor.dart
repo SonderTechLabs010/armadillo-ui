@@ -53,6 +53,8 @@ class ConductorState extends State<Conductor> {
       new GlobalKey<RecentListState>();
   final GlobalKey<ScrollableState> _recentListScrollableKey =
       new GlobalKey<ScrollableState>();
+  final GlobalKey<ScrollableState> _suggestionListScrollableKey =
+      new GlobalKey<ScrollableState>();
   final GlobalKey<NowState> _nowKey = new GlobalKey<NowState>();
   final GlobalKey<PeekingOverlayState> _suggestionOverlayKey =
       new GlobalKey<PeekingOverlayState>();
@@ -125,11 +127,9 @@ class ConductorState extends State<Conductor> {
                             _lastScrollOffset = scrollOffset;
                           }),
                       onStoryFocused: (Story story) {
-                        setState(() {
-                          InheritedStoryManager
-                              .of(context)
-                              .interactionStarted(story);
-                        });
+                        InheritedStoryManager
+                            .of(context)
+                            .interactionStarted(story);
                         // Scroll.
                         _recentListScrollableKey.currentState.scrollTo(
                             _kMaximizedNowHeight - _kMinimizedNowHeight);
@@ -166,6 +166,9 @@ class ConductorState extends State<Conductor> {
                               duration: const Duration(milliseconds: 500),
                               curve: Curves.fastOutSlowIn);
                           _recentListKey.currentState.defocus();
+                          InheritedStoryManager
+                              .of(context)
+                              .interactionStopped();
                         },
                         onQuickSettingsOverlayButtonTap: () {
                           print('Toggle quick settings overlay!');
@@ -245,12 +248,18 @@ class ConductorState extends State<Conductor> {
                 peekHeight: _kSuggestionOverlayPeekHeight,
                 onHide: () {
                   _keyboardDeviceExtensionKey?.currentState?.hide();
+                  _suggestionListScrollableKey?.currentState?.scrollTo(0.0,
+                      duration: const Duration(milliseconds: 1000),
+                      curve: Curves.fastOutSlowIn);
                 },
-                child: new SuggestionList(onAskingStarted: () {
-                  _keyboardDeviceExtensionKey.currentState.show();
-                }, onAskingEnded: () {
-                  _keyboardDeviceExtensionKey.currentState.hide();
-                }))
+                child: new SuggestionList(
+                    scrollableKey: _suggestionListScrollableKey,
+                    onAskingStarted: () {
+                      _keyboardDeviceExtensionKey.currentState.show();
+                    },
+                    onAskingEnded: () {
+                      _keyboardDeviceExtensionKey.currentState.hide();
+                    }))
           ]));
 
   double get _quickSettingsHeightDelta =>

@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 
 import 'conductor.dart';
 import 'story_manager.dart';
+import 'suggestion_manager.dart';
 
 const _kBackgroundOverlayColor = const Color(0xB0000000);
 const _kBackgroundImage = 'packages/armadillo/res/Background.jpg';
@@ -39,15 +40,25 @@ class ArmadilloState extends State<Armadillo> {
 
   @override
   Widget build(BuildContext context) => new Container(
-      decoration: new BoxDecoration(
+        decoration: new BoxDecoration(
           backgroundImage: new BackgroundImage(
-              image: new AssetImage(_kBackgroundImage),
-              alignment: const FractionalOffset(0.4, 0.5),
-              fit: ImageFit.cover,
-              colorFilter: new ui.ColorFilter.mode(
-                  _kBackgroundOverlayColor, ui.TransferMode.srcATop))),
-      child: new InheritedStoryManager(
-          storyManager: config.storyManager, child: new Conductor()));
+            image: new AssetImage(_kBackgroundImage),
+            alignment: const FractionalOffset(0.4, 0.5),
+            fit: ImageFit.cover,
+            colorFilter: new ui.ColorFilter.mode(
+              _kBackgroundOverlayColor,
+              ui.TransferMode.srcATop,
+            ),
+          ),
+        ),
+        child: new InheritedSuggestionManager(
+          suggestionManager: config.storyManager.suggestionManager,
+          child: new InheritedStoryManager(
+            storyManager: config.storyManager,
+            child: new Conductor(),
+          ),
+        ),
+      );
 
   void onStoryManagerChanged() {
     setState(() {});
