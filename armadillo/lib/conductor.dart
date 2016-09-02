@@ -53,6 +53,8 @@ class ConductorState extends State<Conductor> {
       new GlobalKey<RecentListState>();
   final GlobalKey<ScrollableState> _recentListScrollableKey =
       new GlobalKey<ScrollableState>();
+  final GlobalKey<SuggestionListState> _suggestionListKey =
+      new GlobalKey<SuggestionListState>();
   final GlobalKey<ScrollableState> _suggestionListScrollableKey =
       new GlobalKey<ScrollableState>();
   final GlobalKey<NowState> _nowKey = new GlobalKey<NowState>();
@@ -78,16 +80,41 @@ class ConductorState extends State<Conductor> {
                 key: _keyboardDeviceExtensionKey,
                 keyboardKey: _keyboardKey,
                 onText: (String text) {
-                  print('text $text');
+                  _suggestionListKey.currentState.append(text);
+                  _keyboardKey.currentState
+                      .updateSuggestions(_suggestionListKey.currentState.text);
                 },
                 onSuggestion: (String suggestion) {
-                  print('suggestion $suggestion');
+                  if (suggestion == null || suggestion.isEmpty) {
+                    return;
+                  }
+                  final stringList =
+                      _suggestionListKey.currentState.text.split(' ');
+                  if (stringList.isEmpty) {
+                    return;
+                  }
+
+                  // Remove last word.
+                  for (int i = 0;
+                      i < stringList[stringList.length - 1].length;
+                      i++) {
+                    _suggestionListKey.currentState.backspace();
+                  }
+
+                  // Add the suggested word.
+                  _suggestionListKey.currentState.append(suggestion + ' ');
+
+                  _keyboardKey.currentState
+                      .updateSuggestions(_suggestionListKey.currentState.text);
                 },
                 onDelete: () {
-                  print('delete');
+                  _suggestionListKey.currentState.backspace();
+                  _keyboardKey.currentState
+                      .updateSuggestions(_suggestionListKey.currentState.text);
                 },
                 onGo: () {
                   print('go');
+                  // TODO(apwilson): Select first suggestion?
                 }),
           ],
           child: new Stack(children: [
@@ -247,12 +274,14 @@ class ConductorState extends State<Conductor> {
                 key: _suggestionOverlayKey,
                 peekHeight: _kSuggestionOverlayPeekHeight,
                 onHide: () {
-                  _keyboardDeviceExtensionKey?.currentState?.hide();
-                  _suggestionListScrollableKey?.currentState?.scrollTo(0.0,
+                  _keyboardDeviceExtensionKey.currentState?.hide();
+                  _suggestionListScrollableKey.currentState?.scrollTo(0.0,
                       duration: const Duration(milliseconds: 1000),
                       curve: Curves.fastOutSlowIn);
+                  _suggestionListKey.currentState?.clear();
                 },
                 child: new SuggestionList(
+                    key: _suggestionListKey,
                     scrollableKey: _suggestionListScrollableKey,
                     onAskingStarted: () {
                       _keyboardDeviceExtensionKey.currentState.show();

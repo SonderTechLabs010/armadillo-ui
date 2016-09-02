@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import 'blinking_cursor.dart';
 
-const Color _kTextColor = const Color(0xFFEEEEEE);
-const Color _kHintTextColor = const Color(0x80EEEEEE);
-const double _kTextSize = 32.0;
+final Color _kTextColor = Colors.grey[600];
+final Color _kHintTextColor = Colors.grey[600];
+const double _kTextSize = 16.0;
 
 /// Handles the display of typed characters in a [Text].
 ///
@@ -31,7 +32,7 @@ class ScrollableInputTextState extends State<ScrollableInputText> {
     List<Widget> blockChildren = [
       new Align(
           alignment: config.alignment ?? const FractionalOffset(0.0, 0.5),
-          child: new Text(_text.isEmpty ? 'ask for anything' : _text,
+          child: new Text(_text.isEmpty ? 'ASK ANYTHING' : _text,
               style: new TextStyle(
                   fontSize: _kTextSize,
                   color: _text.isEmpty ? _kHintTextColor : _kTextColor)))

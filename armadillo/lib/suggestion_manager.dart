@@ -67,6 +67,10 @@ class SuggestionManager {
 
   List<Suggestion> get suggestions => _currentSuggestions;
 
+  set askText(String text) {
+    // TODO(apwilson): change suggestions based on askText.
+  }
+
   /// Should be called only by those who instantiate
   /// [InheritedSuggestionManager] so they can [State.setState].  If you're a
   /// [Widget] that wants to be rebuilt when suggestions change, use
@@ -113,9 +117,9 @@ class InheritedSuggestionManager extends InheritedWidget {
   /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
   /// returns true for the [InheritedSuggestionManager] returned by
   /// [BuildContext.inheritFromWidgetOfExactType].
-  static List<Suggestion> of(BuildContext context) {
+  static SuggestionManager of(BuildContext context) {
     InheritedSuggestionManager inheritedSuggestionManager =
         context.inheritFromWidgetOfExactType(InheritedSuggestionManager);
-    return inheritedSuggestionManager?.suggestionManager?.suggestions;
+    return inheritedSuggestionManager?.suggestionManager;
   }
 }
