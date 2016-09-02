@@ -3,11 +3,14 @@
 # found in the LICENSE file.
 
 assets:
+  - packages/armadillo/res/Armadillo.png
   - packages/armadillo/res/Background.jpg
   - packages/armadillo/res/User.png
+  - packages/armadillo/res/flutter-mark-square-100.png
   - packages/armadillo/res/ic_battery_90_grey600_1x_web_24dp.png
   - packages/armadillo/res/ic_battery_90_white_1x_web_24dp.png
   - packages/armadillo/res/ic_mic_grey600_1x_web_24dp.png
+  - packages/armadillo/res/stories.json
   - packages/keyboard/res/ArrowDown.png
   - packages/keyboard/res/ArrowUp.png
   - packages/keyboard/res/Delete.png

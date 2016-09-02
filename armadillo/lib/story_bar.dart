@@ -53,7 +53,8 @@ class StoryBarState extends TickingState<StoryBar> {
           child: new Opacity(
             opacity: _opacity,
             child: new Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
               child: new CustomMultiChildLayout(
                 delegate: new ThreeColumnAlignedLayoutDelegate(
                   partMargin: _kPartMargin,
@@ -76,20 +77,16 @@ class StoryBarState extends TickingState<StoryBar> {
                   ),
                   new LayoutId(
                     id: ThreeColumnAlignedLayoutDelegateParts.right,
-                    child: new Container(
-                      width: config.maximizedHeight - 16.0,
-                      height: config.maximizedHeight - 16.0,
-                      child: new ClipOval(
-                        child: new Container(
-                          foregroundDecoration: new BoxDecoration(
-                            border: new Border.all(
-                              color: Colors.white,
-                              width: 1.0,
-                            ),
-                            shape: BoxShape.circle,
+                    child: new ClipOval(
+                      child: new Container(
+                        foregroundDecoration: new BoxDecoration(
+                          border: new Border.all(
+                            color: Colors.white,
+                            width: 1.0,
                           ),
-                          child: config.story.avatar(context),
+                          shape: BoxShape.circle,
                         ),
+                        child: config.story.avatar(context),
                       ),
                     ),
                   ),

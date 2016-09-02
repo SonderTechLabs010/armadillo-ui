@@ -9,8 +9,9 @@ import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/default_bundle.dart';
 import 'package:sysui_widgets/delegating_page_route.dart';
 
-import 'child_constraints_changer.dart';
 import 'armadillo.dart';
+import 'child_constraints_changer.dart';
+import 'story_manager.dart';
 
 const _kConstraints = const <BoxConstraints>[
   const BoxConstraints.tightFor(width: 440.0, height: 440.0 * 16.0 / 9.0),
@@ -25,12 +26,15 @@ const _kConstraints = const <BoxConstraints>[
 ];
 
 Future main() async {
+  StoryManager storyManager = new StoryManager();
   runApp(new WidgetsApp(
       onGenerateRoute: (RouteSettings settings) => new DelegatingPageRoute(
           (_) => new ChildConstraintsChanger(
               constraints: _kConstraints,
               child: new DefaultAssetBundle(
-                  bundle: defaultBundle, child: new Armadillo())),
+                  bundle: defaultBundle,
+                  child: new Armadillo(storyManager: storyManager))),
           settings: settings)));
   SystemChrome.setEnabledSystemUIOverlays(0);
+  storyManager.load(defaultBundle);
 }

@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:keyboard/keyboard.dart';
 import 'package:sysui_widgets/device_extension_state.dart';
 
 import 'device_extender.dart';
-import 'fake_story.dart';
 import 'keyboard_device_extension.dart';
 import 'now.dart';
 import 'peeking_overlay.dart';
 import 'recent_list.dart';
+import 'story_manager.dart';
 import 'suggestion_list.dart';
 
 /// Manages the position, size, and state of the recent list, user context,
@@ -50,43 +48,6 @@ const _kNowMinimizationScrollOffsetThreshold = 120.0;
 /// settings [Now].
 const _kNowQuickSettingsHideScrollOffsetThreshold = 16.0;
 
-/// Colors for dummy recents.
-const _kDummyRecentColors = const <int>[
-  0xFFFF5722,
-  0xFFFF9800,
-  0xFFFFC107,
-  0xFFFFEB3B,
-  0xFFCDDC39,
-  0xFF8BC34A,
-  0xFF4CAF50,
-  0xFF009688,
-  0xFF00BCD4,
-  0xFF03A9F4,
-  0xFF2196F3,
-  0xFF3F51B5,
-  0xFF673AB7,
-  0xFF9C27B0,
-  0xFFE91E63,
-  0xFFF44336
-];
-
-final _kDummyStories = _kDummyRecentColors
-    .map((int color) => new Story(
-        id: new Object(),
-        builder: (_) => new FakeStory(),
-        title: 'Fake Flutter Story',
-        icons: [
-          (BuildContext context) => new FlutterLogo(
-              swatch: Colors.grey, style: FlutterLogoStyle.markOnly)
-        ],
-        avatar: (_) => new Image.asset(_kUserImage, fit: ImageFit.cover),
-        lastInteraction: new DateTime.now()
-            .subtract(new Duration(minutes: new math.Random().nextInt(120))),
-        cumulativeInteractionDuration:
-            new Duration(minutes: new math.Random().nextInt(60)),
-        themeColor: new Color(color)))
-    .toList();
-
 class ConductorState extends State<Conductor> {
   final GlobalKey<RecentListState> _recentListKey =
       new GlobalKey<RecentListState>();
@@ -101,8 +62,6 @@ class ConductorState extends State<Conductor> {
 
   double _quickSettingsProgress = 0.0;
   double _lastScrollOffset = 0.0;
-
-  List<Story> _stories = new List<Story>.from(_kDummyStories);
 
   /// Note in particular the magic we're employing here to make the user
   /// state appear to be a part of the recent list:
@@ -140,7 +99,7 @@ class ConductorState extends State<Conductor> {
                     (BuildContext context, BoxConstraints constraints) {
                   return new RecentList(
                       key: _recentListKey,
-                      stories: _stories,
+                      stories: InheritedStoryManager.of(context).stories,
                       parentSize:
                           new Size(constraints.maxWidth, constraints.maxHeight),
                       scrollableKey: _recentListScrollableKey,
@@ -166,18 +125,10 @@ class ConductorState extends State<Conductor> {
                             _lastScrollOffset = scrollOffset;
                           }),
                       onStoryFocused: (Story story) {
-                        // TODO(apwilson): Replace this with real logic which
-                        // causes the in-focus story to come to front of list.
                         setState(() {
-                          _stories = new List<Story>.generate(
-                              _kDummyStories.length, (int index) {
-                            Story s = _kDummyStories[index];
-                            if (s.id != story.id) {
-                              return s;
-                            }
-                            return s.copyWith(
-                                lastInteraction: new DateTime.now());
-                          });
+                          InheritedStoryManager
+                              .of(context)
+                              .interactionStarted(story);
                         });
                         // Scroll.
                         _recentListScrollableKey.currentState.scrollTo(
