@@ -36,7 +36,14 @@ all: build
 ################################################################################
 ## Main targets.
 
-sync:
+check:
+ifeq ($(wildcard ~/goma/.*),)
+	$(error Goma needs to be installed)
+else
+	~/goma/goma_ctl.py ensure_start
+endif
+
+sync: check
 ifeq ($(flag_sync), yes)
 	tools/install_flutter.sh
 	# Force an update of Flutter's dependencies.
@@ -48,7 +55,7 @@ endif
 
 build: sync
 	rm -rf interfaces/lib
-	cd .. && packages/gn/gen.py -m sysui && buildtools/ninja -j32 -C out/debug-x86-64
+	cd .. && packages/gn/gen.py --goma -m sysui && buildtools/ninja -j1000 -C out/debug-x86-64
 	$(eval files := $(shell find ../out/debug-x86-64/gen/sysui/interfaces/ -name *.mojom.dart))
 	mkdir interfaces/lib
 	$(foreach file,$(files),ln -s $(abspath $(file)) interfaces/lib/$(notdir $(file)))
