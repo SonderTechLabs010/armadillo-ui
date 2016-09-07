@@ -363,7 +363,7 @@ class NowState extends TickingState<Now> {
       _quickSettingsProgress *
       (1.0 - _minimizationProgress);
 
-  double get _fallAwayOpacity => (1.0 - _fallAwayProgress);
+  double get _fallAwayOpacity => (1.0 - _fallAwayProgress).clamp(0.0, 1.0);
 
   double get _slideInDistance => 10.0 * (1.0 - _slideInProgress);
 

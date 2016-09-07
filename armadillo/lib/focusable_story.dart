@@ -154,7 +154,9 @@ class FocusableStoryState extends TickingState<FocusableStory> {
   @override
   void didUpdateConfig(FocusableStory oldConfig) {
     super.didUpdateConfig(oldConfig);
-    if (config.story.id != oldConfig.story.id) {
+    if (config.story.id != oldConfig.story.id ||
+        ((config.startFocused != oldConfig.startFocused) &&
+            config.startFocused)) {
       _focusSimulation = new RK4SpringSimulation(
           initValue: config.startFocused ? _kFocusSimulationTarget : 0.0,
           desc: _kFocusSimulationDesc);

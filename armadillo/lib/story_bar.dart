@@ -54,7 +54,9 @@ class StoryBarState extends TickingState<StoryBar> {
   @override
   void didUpdateConfig(StoryBar oldConfig) {
     super.didUpdateConfig(oldConfig);
-    if (config.story.id != oldConfig.story.id) {
+    if (config.story.id != oldConfig.story.id ||
+        ((config.startMaximized != oldConfig.startMaximized) &&
+            config.startMaximized)) {
       _heightSimulation = new RK4SpringSimulation(
           initValue: config.startMaximized
               ? config.maximizedHeight

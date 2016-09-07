@@ -154,14 +154,16 @@ class ConductorState extends State<Conductor> {
                       padding: new EdgeInsets.only(
                           bottom: _kMaximizedNowHeight - _kMinimizedNowHeight),
                       onScroll: (double scrollOffset) => setState(() {
-                            _suggestionOverlayKey.currentState.peek =
-                                scrollOffset <=
-                                    _kNowMinimizationScrollOffsetThreshold;
                             if (scrollOffset >
-                                _kNowMinimizationScrollOffsetThreshold) {
+                                    _kNowMinimizationScrollOffsetThreshold &&
+                                _lastScrollOffset < scrollOffset) {
                               _nowKey.currentState.minimize();
-                            } else {
+                              _suggestionOverlayKey.currentState.peek = false;
+                            } else if (scrollOffset <
+                                    _kNowMinimizationScrollOffsetThreshold &&
+                                _lastScrollOffset > scrollOffset) {
                               _nowKey.currentState.maximize();
+                              _suggestionOverlayKey.currentState.peek = true;
                             }
                             // When we're past the quick settings threshold and are
                             // scrolling further, hide quick settings.
@@ -172,6 +174,11 @@ class ConductorState extends State<Conductor> {
                             }
                             _lastScrollOffset = scrollOffset;
                           }),
+                      onStoryFocusStarted: () {
+                        _nowKey.currentState.minimize();
+                        _nowKey.currentState.hideQuickSettings();
+                        _suggestionOverlayKey.currentState.peek = false;
+                      },
                       onStoryFocused: (Story story) {
                         InheritedStoryManager
                             .of(context)
@@ -311,11 +318,24 @@ class ConductorState extends State<Conductor> {
                 },
                 onSuggestionSelected:
                     (Suggestion suggestion, Rect globalBounds) {
-                  _selectedSuggestionOverlayKey.currentState.suggestionSelected(
-                      suggestion: suggestion, globalBounds: globalBounds);
-                  _nowKey.currentState.minimize();
-                  _nowKey.currentState.hideQuickSettings();
-                  _suggestionOverlayKey.currentState.peek = false;
+                  switch (suggestion.selectionType) {
+                    case SelectionType.existingStory:
+                    case SelectionType.newStory:
+                      _selectedSuggestionOverlayKey.currentState
+                          .suggestionSelected(
+                              suggestion: suggestion,
+                              globalBounds: globalBounds);
+                      _nowKey.currentState.minimize();
+                      _nowKey.currentState.hideQuickSettings();
+                      _suggestionOverlayKey.currentState.peek = false;
+                      break;
+                    case SelectionType.modifyStory:
+                    default:
+                      // TODO(apwilson): Send message to someone somewhere.
+                      // Unhide selected suggestion in suggestion list.
+                      _suggestionListKey.currentState.resetSelection();
+                      break;
+                  }
                   _suggestionOverlayKey.currentState.hide();
                 },
               ),
@@ -330,29 +350,43 @@ class ConductorState extends State<Conductor> {
               onSuggestionExpanded: (Suggestion suggestion) {
                 setState(
                   () {
-                    // 1. Create a new story.
-                    Story story = new Story(
-                      id: new GlobalObjectKey(suggestion),
-                      builder: (_) => new Container(
-                          decoration: new BoxDecoration(
-                              backgroundColor: Colors.grey[200])),
-                      title: suggestion.title,
-                      icons: const <WidgetBuilder>[],
-                      avatar: (_) =>
-                          new Image.asset(_kUserImage, fit: ImageFit.cover),
-                      lastInteraction: new DateTime.now(),
-                      cumulativeInteractionDuration: new Duration(minutes: 0),
-                      themeColor: Colors.grey[600],
-                    );
+                    Story story;
+                    if (suggestion.selectionType == SelectionType.newStory) {
+                      // Create a new story.
+                      story = new Story(
+                        id: new GlobalObjectKey(suggestion),
+                        builder: (_) => new Container(
+                            decoration: new BoxDecoration(
+                                backgroundColor: Colors.grey[200])),
+                        title: suggestion.title,
+                        icons: const <WidgetBuilder>[],
+                        avatar: (_) =>
+                            new Image.asset(_kUserImage, fit: ImageFit.cover),
+                        lastInteraction: new DateTime.now(),
+                        cumulativeInteractionDuration: new Duration(minutes: 0),
+                        themeColor: Colors.grey[600],
+                      );
 
-                    // 2. Add the new story to the story manager.
-                    InheritedStoryManager.of(context).addStory(story);
+                      // Add the new story to the story manager.
+                      InheritedStoryManager.of(context).addStory(story);
+                    } else {
+                      story = InheritedStoryManager
+                          .of(context)
+                          .stories
+                          .where(
+                            (Story story) =>
+                                story.id == suggestion.selectionStoryId,
+                          )
+                          .single;
+                    }
 
-                    // 3. Focus on the story.
+                    assert(story != null);
+
+                    // Focus on the story.
                     _initiallyFocusedStory = story;
                     _recentListKey.currentState.config.onStoryFocused(story);
 
-                    // 4. Unhide selected suggestion in suggestion list.
+                    // Unhide selected suggestion in suggestion list.
                     _suggestionListKey.currentState.resetSelection();
                   },
                 );

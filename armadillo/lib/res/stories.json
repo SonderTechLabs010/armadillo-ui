@@ -225,52 +225,72 @@
     {
       "id":"suggestion_01",
       "title":"Suggestion Ichi",
-      "color":"0xFF2196F3"
+      "color":"0xFF2196F3",
+      "selection_type":"existing",
+      "story_id":"story_16"
     },
     {
       "id":"suggestion_02",
       "title":"Suggestion Ni",
-      "color":"0xFF03A9F4"
+      "color":"0xFF03A9F4",
+      "selection_type":"existing",
+      "story_id":"story_15"
     },
     {
       "id":"suggestion_03",
       "title":"Suggestion San",
-      "color":"0xFFFF5722"
+      "color":"0xFFFF5722",
+      "selection_type":"existing",
+      "story_id":"story_14"
     },
     {
       "id":"suggestion_04",
       "title":"Suggestion Shi",
-      "color":"0xFFFF9800"
+      "color":"0xFFFF9800",
+      "selection_type":"existing",
+      "story_id":"story_13"
     },
     {
       "id":"suggestion_05",
       "title":"Suggestion Go",
-      "color":"0xFFFFEB3B"
+      "color":"0xFFFFEB3B",
+      "selection_type":"new",
+      "story_id":"story_12"
     },
     {
       "id":"suggestion_06",
       "title":"Suggestion Rok",
-      "color":"0xFFFFC107"
+      "color":"0xFFFFC107",
+      "selection_type":"new",
+      "story_id":"story_11"
     },
     {
       "id":"suggestion_07",
       "title":"Suggestion Nana",
-      "color":"0xFFCDDC39"
+      "color":"0xFFCDDC39",
+      "selection_type":"new",
+      "story_id":"story_10"
     },
     {
       "id":"suggestion_08",
       "title":"Suggestion Achi",
-      "color":"0xFF4CAF50"
+      "color":"0xFF4CAF50",
+      "selection_type":"modify",
+      "story_id":"story_09"
     },
     {
       "id":"suggestion_09",
       "title":"Suggestion Kyuu",
-      "color":"0xFF8BC34A"
+      "color":"0xFF8BC34A",
+      "selection_type":"modify",
+      "story_id":"story_08"
     },
     {
       "id":"suggestion_10",
       "title":"Suggestion Juu",
-      "color":"0xFF009688"
+      "color":"0xFF009688",
+      "selection_type":"modify",
+      "story_id":"story_07"
     }
   ],
   "story_suggestions_map":{

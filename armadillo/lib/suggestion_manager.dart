@@ -14,11 +14,21 @@ import 'focusable_story.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/stories.json';
 
+enum SelectionType { existingStory, newStory, modifyStory }
+
 class Suggestion {
   final Object id;
   final String title;
   final Color themeColor;
-  Suggestion({this.id, this.title, this.themeColor});
+  final SelectionType selectionType;
+  final Object selectionStoryId;
+  Suggestion({
+    this.id,
+    this.title,
+    this.themeColor,
+    this.selectionType,
+    this.selectionStoryId,
+  });
 }
 
 /// A simple suggestion manager that reads suggestions from json maps them to
@@ -46,6 +56,8 @@ class SuggestionManager {
                 id: new ValueKey(suggestion['id']),
                 title: suggestion['title'],
                 themeColor: new Color(int.parse(suggestion['color'])),
+                selectionType: _getSelectionType(suggestion['selection_type']),
+                selectionStoryId: new ValueKey(suggestion['story_id']),
               ),
         ),
         key: (Suggestion suggestion) => suggestion.id,
@@ -67,6 +79,18 @@ class SuggestionManager {
 
       _notifyListeners();
     });
+  }
+
+  SelectionType _getSelectionType(String selectionType) {
+    switch (selectionType) {
+      case 'existing':
+        return SelectionType.existingStory;
+      case 'new':
+        return SelectionType.newStory;
+      case 'modify':
+      default:
+        return SelectionType.modifyStory;
+    }
   }
 
   List<Suggestion> get suggestions => _currentSuggestions;

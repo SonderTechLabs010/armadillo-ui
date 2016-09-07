@@ -22,6 +22,7 @@ const double _kRightBump = 64.0;
 class RecentList extends StatefulWidget {
   final Key scrollableKey;
   final ScrollListener onScroll;
+  final VoidCallback onStoryFocusStarted;
   final OnStoryFocused onStoryFocused;
   final EdgeInsets padding;
   final List<Story> stories;
@@ -36,6 +37,7 @@ class RecentList extends StatefulWidget {
     this.scrollableKey,
     this.padding,
     this.onScroll,
+    this.onStoryFocusStarted,
     this.onStoryFocused,
     this.parentSize,
     List<Story> stories: const <Story>[],
@@ -68,7 +70,9 @@ class RecentListState extends State<RecentList> {
   @override
   void didUpdateConfig(RecentList oldConfig) {
     super.didUpdateConfig(oldConfig);
-    _lockScrolling = config.initiallyFocusedStory != null;
+    if (config.initiallyFocusedStory != null) {
+      _lockScrolling = true;
+    }
   }
 
   @override
@@ -137,6 +141,10 @@ class RecentListState extends State<RecentList> {
                       setState(() {
                         _lockScrolling = true;
                       });
+
+                      if (config.onStoryFocusStarted != null) {
+                        config.onStoryFocusStarted();
+                      }
                     },
                   ),
                 ),
