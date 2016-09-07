@@ -22,7 +22,13 @@ class StoryBar extends StatefulWidget {
   final Story story;
   final double minimizedHeight;
   final double maximizedHeight;
-  StoryBar({Key key, this.story, this.minimizedHeight, this.maximizedHeight})
+  final bool startMaximized;
+  StoryBar(
+      {Key key,
+      this.story,
+      this.minimizedHeight,
+      this.maximizedHeight,
+      this.startMaximized: true})
       : super(key: key);
 
   @override
@@ -37,8 +43,27 @@ class StoryBarState extends TickingState<StoryBar> {
   void initState() {
     super.initState();
     _heightSimulation = new RK4SpringSimulation(
-        initValue: config.minimizedHeight, desc: _kHeightSimulationDesc);
-    _showHeight = config.minimizedHeight;
+        initValue: config.startMaximized
+            ? config.maximizedHeight
+            : config.minimizedHeight,
+        desc: _kHeightSimulationDesc);
+    _showHeight =
+        config.startMaximized ? config.maximizedHeight : config.minimizedHeight;
+  }
+
+  @override
+  void didUpdateConfig(StoryBar oldConfig) {
+    super.didUpdateConfig(oldConfig);
+    if (config.story.id != oldConfig.story.id) {
+      _heightSimulation = new RK4SpringSimulation(
+          initValue: config.startMaximized
+              ? config.maximizedHeight
+              : config.minimizedHeight,
+          desc: _kHeightSimulationDesc);
+      _showHeight = config.startMaximized
+          ? config.maximizedHeight
+          : config.minimizedHeight;
+    }
   }
 
   @override

@@ -101,8 +101,8 @@ class SuggestionManager {
 
   void _updateSuggestions() {
     if (_askText?.isEmpty ?? true) {
-      _currentSuggestions =
-          _storySuggestionsMap[_activeStory?.id ?? new ValueKey('none')];
+      _currentSuggestions = _storySuggestionsMap[_activeStory?.id] ??
+          _storySuggestionsMap[new ValueKey('none')];
     } else {
       List<Suggestion> suggestions =
           new List<Suggestion>.from(_storySuggestionsMap[new ValueKey('none')]);

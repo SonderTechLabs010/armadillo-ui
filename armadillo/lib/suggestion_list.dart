@@ -4,24 +4,28 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sysui_widgets/quadrilateral_painter.dart';
 import 'package:sysui_widgets/raw_keyboard_input.dart';
 
 import 'suggestion_manager.dart';
+import 'suggestion_widget.dart';
 
 const String _kMicImageGrey600 =
     'packages/armadillo/res/ic_mic_grey600_1x_web_24dp.png';
+
+typedef void OnSuggestionSelected(Suggestion suggestion, Rect globalBounds);
 
 class SuggestionList extends StatefulWidget {
   final Key scrollableKey;
   final VoidCallback onAskingStarted;
   final VoidCallback onAskingEnded;
+  final OnSuggestionSelected onSuggestionSelected;
 
   SuggestionList({
     Key key,
     this.scrollableKey,
     this.onAskingStarted,
     this.onAskingEnded,
+    this.onSuggestionSelected,
   })
       : super(key: key);
 
@@ -33,6 +37,7 @@ class SuggestionListState extends State<SuggestionList> {
   final GlobalKey<RawKeyboardInputState> _inputKey =
       new GlobalKey<RawKeyboardInputState>();
   bool _asking = false;
+  Suggestion _selectedSuggestion;
 
   String get text => _inputKey.currentState?.text;
   void append(String text) {
@@ -49,6 +54,12 @@ class SuggestionListState extends State<SuggestionList> {
   void clear() {
     _inputKey.currentState?.clear();
     InheritedSuggestionManager.of(context).askText = null;
+  }
+
+  void resetSelection() {
+    setState(() {
+      _selectedSuggestion = null;
+    });
   }
 
   @override
@@ -129,45 +140,40 @@ class SuggestionListState extends State<SuggestionList> {
             bottom: 0.0,
             child: new Block(
               scrollableKey: config.scrollableKey,
-              children: InheritedSuggestionManager.of(context).suggestions.map(
-                (Suggestion suggestion) {
-                  int color = suggestion.themeColor.value;
-                  return new Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 4.0,
-                    ),
-                    height: 200.0,
-                    decoration: new BoxDecoration(
-                        backgroundColor: Colors.white,
-                        boxShadow: kElevationToShadow[3]),
-                    child: new CustomPaint(
-                      painter: new QuadrilateralPainter(
-                        // 'Randomize' insets a bit.
-                        topLeftInset: new Offset(
-                            325.0 +
-                                ((color % 2 == 0)
-                                    ? 15.0 + (color % 26).toDouble()
-                                    : 0.0),
-                            0.0),
-                        bottomLeftInset: new Offset(
-                            325.0 +
-                                ((color % 2 == 0)
-                                    ? 0.0
-                                    : 15.0 + (color % 26).toDouble()),
-                            0.0),
-                        color: new Color(color),
-                      ),
-                      child: new Center(
-                        child: new Text(
-                          suggestion.title,
-                          style: new TextStyle(color: Colors.grey[600]),
+              children: InheritedSuggestionManager
+                  .of(context)
+                  .suggestions
+                  .map(
+                    (Suggestion suggestion) => new Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                            vertical: 4.0,
+                          ),
+                          child: new SuggestionWidget(
+                            key: new GlobalObjectKey(suggestion),
+                            visible: _selectedSuggestion?.id == suggestion.id,
+                            suggestion: suggestion,
+                            onSelected: () {
+                              setState(() {
+                                _selectedSuggestion = suggestion;
+                              });
+
+                              // We pass the bounds of the suggestion w.r.t.
+                              // global coordinates so it can be mapped back to
+                              // local coordinates when it's displayed in the
+                              // SelectedSuggestionOverlay.
+                              RenderBox box = new GlobalObjectKey(suggestion)
+                                  .currentContext
+                                  .findRenderObject();
+                              config.onSuggestionSelected(
+                                suggestion,
+                                box.localToGlobal(Point.origin) & box.size,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                },
-              ).toList(),
+                  )
+                  .toList(),
             ),
           ),
         ],

@@ -99,6 +99,12 @@ class StoryManager {
     suggestionManager.storyFocusChanged(null);
   }
 
+  void addStory(Story story) {
+    _stories.removeWhere((Story s) => s.id == story.id);
+    _stories.add(story);
+    _notifyListeners();
+  }
+
   void _notifyListeners() {
     version++;
     _listeners.toList().forEach((VoidCallback listener) => listener());

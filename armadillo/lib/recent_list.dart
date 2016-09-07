@@ -27,14 +27,20 @@ class RecentList extends StatefulWidget {
   final List<Story> stories;
   final Size parentSize;
 
-  RecentList(
-      {Key key,
-      this.scrollableKey,
-      this.padding,
-      this.onScroll,
-      this.onStoryFocused,
-      this.parentSize,
-      List<Story> stories: const <Story>[]})
+  /// When set, this story will begin fully expanded with its story bar
+  /// maximized.
+  final Story initiallyFocusedStory;
+
+  RecentList({
+    Key key,
+    this.scrollableKey,
+    this.padding,
+    this.onScroll,
+    this.onStoryFocused,
+    this.parentSize,
+    List<Story> stories: const <Story>[],
+    this.initiallyFocusedStory,
+  })
       : this.stories = new List<Story>.from(stories),
         super(key: key) {
     // Sort recently interacted with stories to the start of the list.
@@ -52,6 +58,18 @@ class RecentListState extends State<RecentList> {
   /// be stolen by the [Scrollable] with the key [config.scrollableKey].
   /// This gets set to true when a [Story] comes into focus.
   bool _lockScrolling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _lockScrolling = config.initiallyFocusedStory != null;
+  }
+
+  @override
+  void didUpdateConfig(RecentList oldConfig) {
+    super.didUpdateConfig(oldConfig);
+    _lockScrolling = config.initiallyFocusedStory != null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +90,7 @@ class RecentListState extends State<RecentList> {
                 story: story,
                 onStoryFocused: config.onStoryFocused,
                 multiColumn: multiColumn,
+                startFocused: config.initiallyFocusedStory?.id == story.id,
               ),
             ];
             if (!_lockScrolling) {

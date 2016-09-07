@@ -14,6 +14,8 @@ import 'peeking_overlay.dart';
 import 'recent_list.dart';
 import 'story_manager.dart';
 import 'suggestion_list.dart';
+import 'suggestion_manager.dart';
+import 'selected_suggestion_overlay.dart';
 
 /// Manages the position, size, and state of the recent list, user context,
 /// suggestion overlay, device extensions. interruption overlay, and quick
@@ -64,8 +66,20 @@ class ConductorState extends State<Conductor> {
       new GlobalKey<DeviceExtensionState>();
   final GlobalKey<KeyboardState> _keyboardKey = new GlobalKey<KeyboardState>();
 
+  /// The key for adding [Suggestion]s to the [SelectedSuggestionOverlay].  This
+  /// is to allow us to animate from a [Suggestion] in an open [SuggestionList]
+  /// to a [Story] focused in the [RecentList].
+  final GlobalKey<SelectedSuggestionOverlayState>
+      _selectedSuggestionOverlayKey =
+      new GlobalKey<SelectedSuggestionOverlayState>();
+
   double _quickSettingsProgress = 0.0;
   double _lastScrollOffset = 0.0;
+
+  /// When non-null, indicates the next time [RecentList] is rebuilt it should
+  /// have [_initiallyFocusedStory] start focused (which in this case means
+  /// fully expanded with a maximized story bar).
+  Story _initiallyFocusedStory;
 
   /// Note in particular the magic we're employing here to make the user
   /// state appear to be a part of the recent list:
@@ -126,6 +140,11 @@ class ConductorState extends State<Conductor> {
                 bottom: _quickSettingsHeightDelta + _kMinimizedNowHeight,
                 child: new LayoutBuilder(builder:
                     (BuildContext context, BoxConstraints constraints) {
+                  // A non-null _initiallyFocusedStory only applies once so we
+                  // grab its value and reset it for next time.
+                  Story initiallyFocusedStory = _initiallyFocusedStory;
+                  _initiallyFocusedStory = null;
+
                   return new RecentList(
                       key: _recentListKey,
                       stories: InheritedStoryManager.of(context).stories,
@@ -160,7 +179,8 @@ class ConductorState extends State<Conductor> {
                         // Scroll.
                         _recentListScrollableKey.currentState.scrollTo(
                             _kMaximizedNowHeight - _kMinimizedNowHeight);
-                      });
+                      },
+                      initiallyFocusedStory: initiallyFocusedStory);
                 })),
 
             // Now.
@@ -271,24 +291,73 @@ class ConductorState extends State<Conductor> {
 
             // Suggestions Overlay.
             new PeekingOverlay(
-                key: _suggestionOverlayKey,
-                peekHeight: _kSuggestionOverlayPeekHeight,
-                onHide: () {
-                  _keyboardDeviceExtensionKey.currentState?.hide();
-                  _suggestionListScrollableKey.currentState?.scrollTo(0.0,
-                      duration: const Duration(milliseconds: 1000),
-                      curve: Curves.fastOutSlowIn);
-                  _suggestionListKey.currentState?.clear();
+              key: _suggestionOverlayKey,
+              peekHeight: _kSuggestionOverlayPeekHeight,
+              onHide: () {
+                _keyboardDeviceExtensionKey.currentState?.hide();
+                _suggestionListScrollableKey.currentState?.scrollTo(0.0,
+                    duration: const Duration(milliseconds: 1000),
+                    curve: Curves.fastOutSlowIn);
+                _suggestionListKey.currentState?.clear();
+              },
+              child: new SuggestionList(
+                key: _suggestionListKey,
+                scrollableKey: _suggestionListScrollableKey,
+                onAskingStarted: () {
+                  _keyboardDeviceExtensionKey.currentState.show();
                 },
-                child: new SuggestionList(
-                    key: _suggestionListKey,
-                    scrollableKey: _suggestionListScrollableKey,
-                    onAskingStarted: () {
-                      _keyboardDeviceExtensionKey.currentState.show();
-                    },
-                    onAskingEnded: () {
-                      _keyboardDeviceExtensionKey.currentState.hide();
-                    }))
+                onAskingEnded: () {
+                  _keyboardDeviceExtensionKey.currentState.hide();
+                },
+                onSuggestionSelected:
+                    (Suggestion suggestion, Rect globalBounds) {
+                  _selectedSuggestionOverlayKey.currentState.suggestionSelected(
+                      suggestion: suggestion, globalBounds: globalBounds);
+                  _nowKey.currentState.minimize();
+                  _nowKey.currentState.hideQuickSettings();
+                  _suggestionOverlayKey.currentState.peek = false;
+                  _suggestionOverlayKey.currentState.hide();
+                },
+              ),
+            ),
+
+            // Selected Suggestion Overlay.
+            // This is only visible in transitoning the user from a Suggestion
+            // in an open SuggestionList to a focused Story in the RecentList.
+            new SelectedSuggestionOverlay(
+              key: _selectedSuggestionOverlayKey,
+              minimizedNowBarHeight: _kMinimizedNowHeight,
+              onSuggestionExpanded: (Suggestion suggestion) {
+                setState(
+                  () {
+                    // 1. Create a new story.
+                    Story story = new Story(
+                      id: new GlobalObjectKey(suggestion),
+                      builder: (_) => new Container(
+                          decoration: new BoxDecoration(
+                              backgroundColor: Colors.grey[200])),
+                      title: suggestion.title,
+                      icons: const <WidgetBuilder>[],
+                      avatar: (_) =>
+                          new Image.asset(_kUserImage, fit: ImageFit.cover),
+                      lastInteraction: new DateTime.now(),
+                      cumulativeInteractionDuration: new Duration(minutes: 0),
+                      themeColor: Colors.grey[600],
+                    );
+
+                    // 2. Add the new story to the story manager.
+                    InheritedStoryManager.of(context).addStory(story);
+
+                    // 3. Focus on the story.
+                    _initiallyFocusedStory = story;
+                    _recentListKey.currentState.config.onStoryFocused(story);
+
+                    // 4. Unhide selected suggestion in suggestion list.
+                    _suggestionListKey.currentState.resetSelection();
+                  },
+                );
+              },
+            ),
           ]));
 
   double get _quickSettingsHeightDelta =>

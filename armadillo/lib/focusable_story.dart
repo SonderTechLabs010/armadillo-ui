@@ -114,12 +114,14 @@ class FocusableStory extends StatefulWidget {
   final bool multiColumn;
   final Size fullSize;
   final OnStoryFocused onStoryFocused;
+  final bool startFocused;
   FocusableStory(
       {Key key,
       this.story,
       this.multiColumn,
       this.fullSize,
-      this.onStoryFocused})
+      this.onStoryFocused,
+      this.startFocused})
       : super(key: key);
 
   @override
@@ -135,9 +137,31 @@ class FocusableStoryState extends TickingState<FocusableStory> {
   final GlobalKey<StoryBarState> _storyBarKey = new GlobalKey<StoryBarState>();
 
   /// The simulation for maximizing a [Story] to [config.fullSize].
-  final RK4SpringSimulation _focusSimulation =
+  RK4SpringSimulation _focusSimulation =
       new RK4SpringSimulation(initValue: 0.0, desc: _kFocusSimulationDesc);
   bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusSimulation = new RK4SpringSimulation(
+        initValue: config.startFocused ? _kFocusSimulationTarget : 0.0,
+        desc: _kFocusSimulationDesc);
+    _focusSimulation.target = _kFocusSimulationTarget;
+    _focused = config.startFocused;
+  }
+
+  @override
+  void didUpdateConfig(FocusableStory oldConfig) {
+    super.didUpdateConfig(oldConfig);
+    if (config.story.id != oldConfig.story.id) {
+      _focusSimulation = new RK4SpringSimulation(
+          initValue: config.startFocused ? _kFocusSimulationTarget : 0.0,
+          desc: _kFocusSimulationDesc);
+      _focusSimulation.target = _kFocusSimulationTarget;
+      _focused = config.startFocused;
+    }
+  }
 
   bool get focused => _focused;
   set focused(bool focused) {
@@ -235,6 +259,7 @@ class FocusableStoryState extends TickingState<FocusableStory> {
                     story: config.story,
                     minimizedHeight: _kStoryBarMinimizedHeight,
                     maximizedHeight: _kStoryBarMaximizedHeight,
+                    startMaximized: config.startFocused,
                   ),
 
                   // The scaled and clipped story.  When full size, the story will
