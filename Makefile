@@ -77,7 +77,7 @@ format:
 	git ls-files | grep '\.dart$$' | xargs dartfmt -w
 
 clean:
-	rm -rf out/
+	rm -rf ../out/
 
 ## Example invocations
 help:
