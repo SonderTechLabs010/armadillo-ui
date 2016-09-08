@@ -14,7 +14,13 @@ import 'focusable_story.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/stories.json';
 
-enum SelectionType { existingStory, newStory, modifyStory }
+/// Specifies the type of action to perform when the suggestion is selected.
+/// [launchStory] will trigger the [Story] specified by
+/// [Suggestion.selectionStoryId] to come into focus.
+/// [modifyStory] will modify the [Story] specified by
+/// [Suggestion.selectionStoryId] in some way.
+/// [doNothing] does nothing and is only provided for testing purposes.
+enum SelectionType { launchStory, modifyStory, doNothing }
 
 class Suggestion {
   final Object id;
@@ -83,13 +89,13 @@ class SuggestionManager {
 
   SelectionType _getSelectionType(String selectionType) {
     switch (selectionType) {
-      case 'existing':
-        return SelectionType.existingStory;
-      case 'new':
-        return SelectionType.newStory;
+      case 'launch':
+        return SelectionType.launchStory;
       case 'modify':
-      default:
         return SelectionType.modifyStory;
+      case 'nothing':
+      default:
+        return SelectionType.doNothing;
     }
   }
 

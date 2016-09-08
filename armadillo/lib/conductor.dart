@@ -8,10 +8,12 @@ import 'package:keyboard/keyboard.dart';
 import 'package:sysui_widgets/device_extension_state.dart';
 
 import 'device_extender.dart';
+import 'expand_suggestion.dart';
 import 'keyboard_device_extension.dart';
 import 'now.dart';
 import 'peeking_overlay.dart';
 import 'recent_list.dart';
+import 'splash_suggestion.dart';
 import 'story_manager.dart';
 import 'suggestion_list.dart';
 import 'suggestion_manager.dart';
@@ -319,24 +321,34 @@ class ConductorState extends State<Conductor> {
                 onSuggestionSelected:
                     (Suggestion suggestion, Rect globalBounds) {
                   switch (suggestion.selectionType) {
-                    case SelectionType.existingStory:
-                    case SelectionType.newStory:
+                    case SelectionType.launchStory:
+                    case SelectionType.modifyStory:
                       _selectedSuggestionOverlayKey.currentState
                           .suggestionSelected(
-                              suggestion: suggestion,
-                              globalBounds: globalBounds);
+                        expansionBehavior: suggestion.selectionType ==
+                                SelectionType.launchStory
+                            ? new ExpandSuggestion(
+                                suggestion: suggestion,
+                                suggestionInitialGlobalBounds: globalBounds,
+                                onSuggestionExpanded: _onSuggestionExpanded,
+                                minimizedNowBarHeight: _kMinimizedNowHeight,
+                              )
+                            : new SplashSuggestion(
+                                suggestion: suggestion,
+                                suggestionInitialGlobalBounds: globalBounds,
+                                onSuggestionExpanded: _onSuggestionExpanded,
+                              ),
+                      );
                       _nowKey.currentState.minimize();
                       _nowKey.currentState.hideQuickSettings();
                       _suggestionOverlayKey.currentState.peek = false;
+                      _suggestionOverlayKey.currentState.hide();
                       break;
-                    case SelectionType.modifyStory:
+                    case SelectionType.doNothing:
                     default:
-                      // TODO(apwilson): Send message to someone somewhere.
-                      // Unhide selected suggestion in suggestion list.
                       _suggestionListKey.currentState.resetSelection();
                       break;
                   }
-                  _suggestionOverlayKey.currentState.hide();
                 },
               ),
             ),
@@ -344,55 +356,31 @@ class ConductorState extends State<Conductor> {
             // Selected Suggestion Overlay.
             // This is only visible in transitoning the user from a Suggestion
             // in an open SuggestionList to a focused Story in the RecentList.
-            new SelectedSuggestionOverlay(
-              key: _selectedSuggestionOverlayKey,
-              minimizedNowBarHeight: _kMinimizedNowHeight,
-              onSuggestionExpanded: (Suggestion suggestion) {
-                setState(
-                  () {
-                    Story story;
-                    if (suggestion.selectionType == SelectionType.newStory) {
-                      // Create a new story.
-                      story = new Story(
-                        id: new GlobalObjectKey(suggestion),
-                        builder: (_) => new Container(
-                            decoration: new BoxDecoration(
-                                backgroundColor: Colors.grey[200])),
-                        title: suggestion.title,
-                        icons: const <WidgetBuilder>[],
-                        avatar: (_) =>
-                            new Image.asset(_kUserImage, fit: ImageFit.cover),
-                        lastInteraction: new DateTime.now(),
-                        cumulativeInteractionDuration: new Duration(minutes: 0),
-                        themeColor: Colors.grey[600],
-                      );
-
-                      // Add the new story to the story manager.
-                      InheritedStoryManager.of(context).addStory(story);
-                    } else {
-                      story = InheritedStoryManager
-                          .of(context)
-                          .stories
-                          .where(
-                            (Story story) =>
-                                story.id == suggestion.selectionStoryId,
-                          )
-                          .single;
-                    }
-
-                    assert(story != null);
-
-                    // Focus on the story.
-                    _initiallyFocusedStory = story;
-                    _recentListKey.currentState.config.onStoryFocused(story);
-
-                    // Unhide selected suggestion in suggestion list.
-                    _suggestionListKey.currentState.resetSelection();
-                  },
-                );
-              },
-            ),
+            new SelectedSuggestionOverlay(key: _selectedSuggestionOverlayKey),
           ]));
+
+  void _onSuggestionExpanded(Suggestion suggestion) {
+    setState(
+      () {
+        Story story = InheritedStoryManager
+            .of(context)
+            .stories
+            .where(
+              (Story story) => story.id == suggestion.selectionStoryId,
+            )
+            .single;
+
+        assert(story != null);
+
+        // Focus on the story.
+        _initiallyFocusedStory = story;
+        _recentListKey.currentState.config.onStoryFocused(story);
+
+        // Unhide selected suggestion in suggestion list.
+        _suggestionListKey.currentState.resetSelection();
+      },
+    );
+  }
 
   double get _quickSettingsHeightDelta =>
       _quickSettingsProgress * (_kQuickSettingsHeightBump - 120.0);

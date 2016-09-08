@@ -226,49 +226,49 @@
       "id":"suggestion_01",
       "title":"Suggestion Ichi",
       "color":"0xFF2196F3",
-      "selection_type":"existing",
+      "selection_type":"launch",
       "story_id":"story_16"
     },
     {
       "id":"suggestion_02",
       "title":"Suggestion Ni",
       "color":"0xFF03A9F4",
-      "selection_type":"existing",
+      "selection_type":"launch",
       "story_id":"story_15"
     },
     {
       "id":"suggestion_03",
       "title":"Suggestion San",
       "color":"0xFFFF5722",
-      "selection_type":"existing",
+      "selection_type":"launch",
       "story_id":"story_14"
     },
     {
       "id":"suggestion_04",
       "title":"Suggestion Shi",
       "color":"0xFFFF9800",
-      "selection_type":"existing",
+      "selection_type":"launch",
       "story_id":"story_13"
     },
     {
       "id":"suggestion_05",
       "title":"Suggestion Go",
       "color":"0xFFFFEB3B",
-      "selection_type":"new",
+      "selection_type":"launch",
       "story_id":"story_12"
     },
     {
       "id":"suggestion_06",
       "title":"Suggestion Rok",
       "color":"0xFFFFC107",
-      "selection_type":"new",
+      "selection_type":"launch",
       "story_id":"story_11"
     },
     {
       "id":"suggestion_07",
       "title":"Suggestion Nana",
       "color":"0xFFCDDC39",
-      "selection_type":"new",
+      "selection_type":"launch",
       "story_id":"story_10"
     },
     {
@@ -291,6 +291,12 @@
       "color":"0xFF009688",
       "selection_type":"modify",
       "story_id":"story_07"
+    },
+    {
+      "id":"suggestion_11",
+      "title":"Suggestion Dummy",
+      "color":"0xFF009688",
+      "selection_type":"dummy"
     }
   ],
   "story_suggestions_map":{
@@ -304,7 +310,8 @@
       "suggestion_07",
       "suggestion_08",
       "suggestion_09",
-      "suggestion_10"
+      "suggestion_10",
+      "suggestion_11"
     ],
     "story_01":[
       "suggestion_01",

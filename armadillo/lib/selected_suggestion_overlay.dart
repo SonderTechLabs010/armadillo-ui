@@ -2,35 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
-import 'splash_painter.dart';
 import 'suggestion_manager.dart';
-import 'suggestion_widget.dart';
 
 typedef void OnSuggestionExpanded(Suggestion suggestion);
-
-const RK4SpringDescription _kSweepSimulationDesc =
-    const RK4SpringDescription(tension: 150.0, friction: 50.0);
-const double _kSweepSimulationTarget = 1000.0;
-const RK4SpringDescription _kClearSimulationDesc =
-    const RK4SpringDescription(tension: 150.0, friction: 50.0);
-const double _kClearSimulationTarget = 1000.0;
 
 /// When a Suggestion is selected, the suggestion is brought into this overlay
 /// and an animation fills the overlay such that we can prepare the story that
 /// will be displayed after the overlay animation finishes.
 class SelectedSuggestionOverlay extends StatefulWidget {
   final OnSuggestionExpanded onSuggestionExpanded;
-  final double minimizedNowBarHeight;
 
-  SelectedSuggestionOverlay(
-      {Key key, this.minimizedNowBarHeight, this.onSuggestionExpanded})
+  SelectedSuggestionOverlay({Key key, this.onSuggestionExpanded})
       : super(key: key);
 
   @override
@@ -40,121 +26,51 @@ class SelectedSuggestionOverlay extends StatefulWidget {
 
 class SelectedSuggestionOverlayState
     extends TickingState<SelectedSuggestionOverlay> {
-  Suggestion _suggestion;
-  Rect _suggestionInitialGlobalBounds;
-  RK4SpringSimulation _sweepSimulation;
-  RK4SpringSimulation _clearSimulation;
-  bool _notified = false;
+  ExpansionBehavior _expansionBehavior;
 
+  /// Expands the suggestion to fill the screen, using the effect specified in
+  /// [expansionBehavior].
   /// Returns true if the overlay successfully initiates suggestion expansion.
-  bool suggestionSelected({Suggestion suggestion, Rect globalBounds}) {
-    if (_suggestion != null) {
+  /// Returns false if an expansion is already taking place.
+  bool suggestionSelected({ExpansionBehavior expansionBehavior}) {
+    if (_expansionBehavior != null) {
       return false;
     }
-    _notified = false;
-    _suggestion = suggestion;
-    _suggestionInitialGlobalBounds = globalBounds;
-    _sweepSimulation =
-        new RK4SpringSimulation(initValue: 0.0, desc: _kSweepSimulationDesc);
-    _sweepSimulation.target = _kSweepSimulationTarget;
-    _clearSimulation =
-        new RK4SpringSimulation(initValue: 0.0, desc: _kClearSimulationDesc);
-    _clearSimulation.target = 0.0;
+    _expansionBehavior = expansionBehavior;
+    _expansionBehavior.start();
     startTicking();
     return true;
   }
 
   @override
   Widget build(BuildContext context) => new LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-        if (_suggestion == null || _clearIsDone) {
-          return new Offstage(offstage: true);
-        } else {
-          RenderBox box = context.findRenderObject();
-          Point topLeft = box.localToGlobal(Point.origin);
-          Rect shiftedBounds = _suggestionInitialGlobalBounds
-              .shift(new Offset(-topLeft.x, -topLeft.y));
-          double splashRadius = math.sqrt(
-              (shiftedBounds.center.x * shiftedBounds.center.x) +
-                  (shiftedBounds.center.y * shiftedBounds.center.y));
-          return new Stack(
-            children: [
-              new Positioned(
-                left: shiftedBounds.left,
-                top: shiftedBounds.top,
-                width: shiftedBounds.width,
-                height: shiftedBounds.height,
-                child: new Offstage(
-                  offstage: _sweepIsDone,
-                  child: new SuggestionWidget(suggestion: _suggestion),
-                ),
-              ),
-              new Positioned(
-                left: 0.0,
-                right: 0.0,
-                top: 0.0,
-                bottom: 0.0,
-                child: new Opacity(
-                  opacity: _splashOpacity,
-                  child: new CustomPaint(
-                    painter: new SplashPainter(
-                      innerSplashProgress: _clearProgress,
-                      outerSplashProgress: _sweepProgress,
-                      splashOrigin: shiftedBounds.center,
-                      splashColor: _suggestion.themeColor,
-                      splashRadius: splashRadius * 1.2,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }
-      });
+      builder: (BuildContext context, BoxConstraints constraints) =>
+          (_expansionBehavior == null)
+              ? new Offstage(offstage: true)
+              : _expansionBehavior.build(context, constraints));
 
   @override
   bool handleTick(double elapsedSeconds) {
-    bool isDone = true;
-
-    _clearSimulation?.elapseTime(elapsedSeconds);
-    if (!_clearIsDone) {
-      isDone = false;
-    } else {
-      _suggestion = null;
-      _suggestionInitialGlobalBounds = null;
-      _sweepSimulation = null;
+    if (_expansionBehavior == null) {
+      return false;
     }
 
-    if (!_sweepIsDone) {
-      // Tick the simulations.
-      _sweepSimulation?.elapseTime(elapsedSeconds);
-
-      // Notify that we've swept the screen.
-      if (_sweepIsDone) {
-        if (config.onSuggestionExpanded != null && !_notified) {
-          config.onSuggestionExpanded(_suggestion);
-          _notified = true;
-        }
-        _clearSimulation.target = _kClearSimulationTarget;
-      }
-
-      if (!_sweepIsDone) {
-        isDone = false;
-      }
+    bool shouldContinue = _expansionBehavior.handleTick(elapsedSeconds);
+    if (!shouldContinue) {
+      _expansionBehavior = null;
     }
-
-    return !isDone;
+    return shouldContinue;
   }
+}
 
-  double get _sweepProgress =>
-      (_sweepSimulation?.value ?? 1.0) / _kSweepSimulationTarget;
+/// How an expansion should occur.
+abstract class ExpansionBehavior {
+  /// Called to initialize the expansion.
+  void start();
 
-  double get _clearProgress =>
-      (_clearSimulation?.value ?? 1.0) / _kClearSimulationTarget;
+  /// Ticks any simulations associated with the expansion.
+  bool handleTick(double elapsedSeconds);
 
-  double get _splashOpacity => (_sweepProgress / 0.7).clamp(0.0, 1.0);
-
-  bool get _clearIsDone => _clearProgress > 0.7;
-
-  bool get _sweepIsDone => _sweepProgress > 0.7;
+  /// Creates the expanded [Widget].
+  Widget build(BuildContext context, BoxConstraints constraints);
 }
