@@ -61,6 +61,16 @@ class GenerateCommitCommand extends Command {
       exit(314);
     }
 
+    // Reset sync branch if needed.
+    final hasSyncBranch = (await runCommand(
+            'git rev-parse --verify $BRANCH_NAME',
+            ignoreErrors: true)) !=
+        null;
+    if (hasSyncBranch) {
+      print('Deleting existing sync branch');
+      await runCommand('git branch -D $BRANCH_NAME');
+    }
+
     // Set up temporary directories.
     final baseDirectory = await Directory.systemTemp.createTemp('sync_flutter');
     final basePath = baseDirectory.path;
