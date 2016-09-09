@@ -56,8 +56,10 @@ abstract class TickingHeightState<T extends StatefulWidget>
     startTicking();
   }
 
-  double get height => (_heightSimulation == null ||
-      _heightSimulation.value < 0.0) ? 0.0 : _heightSimulation.value;
+  double get height =>
+      (_heightSimulation == null || _heightSimulation.value < 0.0)
+          ? 0.0
+          : _heightSimulation.value;
 
   @override
   bool handleTick(double elapsedSeconds) {

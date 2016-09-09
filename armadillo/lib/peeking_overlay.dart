@@ -74,7 +74,7 @@ class PeekingOverlayState extends BottomAlignedOverlayState<PeekingOverlay> {
   @override
   Widget createWidget(BuildContext context, BoxConstraints constraints) {
     double targetMaxHeight = 0.8 * constraints.maxHeight;
-    if (maxHeight != targetMaxHeight) {
+    if (maxHeight != targetMaxHeight && targetMaxHeight != 0.0) {
       maxHeight = targetMaxHeight;
       if (active) {
         show();
