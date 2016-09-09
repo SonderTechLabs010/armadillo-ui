@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'focusable_story.dart';
+import 'story_manager.dart';
 
 export 'focusable_story.dart' show Story, OnStoryFocused;
 
@@ -23,14 +24,8 @@ class RecentList extends StatefulWidget {
   final Key scrollableKey;
   final ScrollListener onScroll;
   final VoidCallback onStoryFocusStarted;
-  final OnStoryFocused onStoryFocused;
   final EdgeInsets padding;
-  final List<Story> stories;
   final Size parentSize;
-
-  /// When set, this story will begin fully expanded with its story bar
-  /// maximized.
-  final Story initiallyFocusedStory;
 
   RecentList({
     Key key,
@@ -38,18 +33,9 @@ class RecentList extends StatefulWidget {
     this.padding,
     this.onScroll,
     this.onStoryFocusStarted,
-    this.onStoryFocused,
     this.parentSize,
-    List<Story> stories: const <Story>[],
-    this.initiallyFocusedStory,
   })
-      : this.stories = new List<Story>.from(stories),
-        super(key: key) {
-    // Sort recently interacted with stories to the start of the list.
-    this.stories.sort((Story a, Story b) =>
-        b.lastInteraction.millisecondsSinceEpoch -
-        a.lastInteraction.millisecondsSinceEpoch);
-  }
+      : super(key: key);
 
   @override
   RecentListState createState() => new RecentListState();
@@ -61,23 +47,25 @@ class RecentListState extends State<RecentList> {
   /// This gets set to true when a [Story] comes into focus.
   bool _lockScrolling = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _lockScrolling = config.initiallyFocusedStory != null;
-  }
-
-  @override
-  void didUpdateConfig(RecentList oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    if (config.initiallyFocusedStory != null) {
-      _lockScrolling = true;
-    }
-  }
+  /// When set, this story will begin fully expanded with its story bar
+  /// maximized.
+  Story _initiallyFocusedStory;
 
   @override
   Widget build(BuildContext context) {
+    List<Story> stories = new List<Story>.from(
+      InheritedStoryManager.of(context).stories,
+    );
+    // Sort recently interacted with stories to the start of the list.
+    stories.sort((Story a, Story b) =>
+        b.lastInteraction.millisecondsSinceEpoch -
+        a.lastInteraction.millisecondsSinceEpoch);
+
     bool multiColumn = config.parentSize.width > _kMultiColumnWidthThreshold;
+
+    Story initiallyFocusedStory = _initiallyFocusedStory;
+    _initiallyFocusedStory = null;
+
     return new ScrollConfiguration(
       delegate: new LockingScrollConfigurationDelegate(lock: _lockScrolling),
       child: new RecentListBlock(
@@ -85,16 +73,16 @@ class RecentListState extends State<RecentList> {
         padding: config.padding,
         onScroll: config.onScroll,
         multiColumn: multiColumn,
-        children: config.stories.map(
+        children: stories.map(
           (Story story) {
             final stackChildren = <Widget>[
               new FocusableStory(
                 key: new GlobalObjectKey(story.id),
                 fullSize: config.parentSize,
                 story: story,
-                onStoryFocused: config.onStoryFocused,
+                onStoryFocused: focusStory,
                 multiColumn: multiColumn,
-                startFocused: config.initiallyFocusedStory?.id == story.id,
+                startFocused: initiallyFocusedStory?.id == story.id,
               ),
             ];
             if (!_lockScrolling) {
@@ -159,7 +147,7 @@ class RecentListState extends State<RecentList> {
 
   void defocus() {
     // Unfocus all stories.
-    config.stories.forEach((Story s) {
+    InheritedStoryManager.of(context).stories.forEach((Story s) {
       FocusableStoryState untappedFocusableStoryState =
           new GlobalObjectKey(s.id).currentState;
       untappedFocusableStoryState.focused = false;
@@ -168,6 +156,16 @@ class RecentListState extends State<RecentList> {
     // Unlock scrolling.
     setState(() {
       _lockScrolling = false;
+    });
+  }
+
+  void focusStory(Story story) {
+    InheritedStoryManager.of(context).interactionStarted(story);
+    GlobalKey<ScrollableState> scrollableKey = config.scrollableKey;
+    scrollableKey.currentState.scrollTo(config.padding.bottom);
+    setState(() {
+      _initiallyFocusedStory = story;
+      _lockScrolling = true;
     });
   }
 }

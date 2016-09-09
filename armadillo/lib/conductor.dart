@@ -72,11 +72,6 @@ class ConductorState extends State<Conductor> {
   double _quickSettingsProgress = 0.0;
   double _lastScrollOffset = 0.0;
 
-  /// When non-null, indicates the next time [RecentList] is rebuilt it should
-  /// have [_initiallyFocusedStory] start focused (which in this case means
-  /// fully expanded with a maximized story bar).
-  Story _initiallyFocusedStory;
-
   /// Note in particular the magic we're employing here to make the user
   /// state appear to be a part of the recent list:
   /// By giving the recent list bottom padding and clipping its bottom to the
@@ -130,20 +125,14 @@ class ConductorState extends State<Conductor> {
           child: new Stack(children: [
             // Recent List.
             new Positioned(
-                left: 0.0,
-                right: 0.0,
-                top: -_quickSettingsHeightDelta,
-                bottom: _quickSettingsHeightDelta + _kMinimizedNowHeight,
-                child: new LayoutBuilder(builder:
-                    (BuildContext context, BoxConstraints constraints) {
-                  // A non-null _initiallyFocusedStory only applies once so we
-                  // grab its value and reset it for next time.
-                  Story initiallyFocusedStory = _initiallyFocusedStory;
-                  _initiallyFocusedStory = null;
-
-                  return new RecentList(
+              left: 0.0,
+              right: 0.0,
+              top: -_quickSettingsHeightDelta,
+              bottom: _quickSettingsHeightDelta + _kMinimizedNowHeight,
+              child: new LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) =>
+                    new RecentList(
                       key: _recentListKey,
-                      stories: InheritedStoryManager.of(context).stories,
                       parentSize:
                           new Size(constraints.maxWidth, constraints.maxHeight),
                       scrollableKey: _recentListScrollableKey,
@@ -175,16 +164,9 @@ class ConductorState extends State<Conductor> {
                         _nowKey.currentState.hideQuickSettings();
                         _suggestionOverlayKey.currentState.peek = false;
                       },
-                      onStoryFocused: (Story story) {
-                        InheritedStoryManager
-                            .of(context)
-                            .interactionStarted(story);
-                        // Scroll.
-                        _recentListScrollableKey.currentState.scrollTo(
-                            _kMaximizedNowHeight - _kMinimizedNowHeight);
-                      },
-                      initiallyFocusedStory: initiallyFocusedStory);
-                })),
+                    ),
+              ),
+            ),
 
             // Now.
             new Positioned(
@@ -296,26 +278,21 @@ class ConductorState extends State<Conductor> {
           ]));
 
   void _onSuggestionExpanded(Suggestion suggestion) {
-    setState(
-      () {
-        Story story = InheritedStoryManager
-            .of(context)
-            .stories
-            .where(
-              (Story story) => story.id == suggestion.selectionStoryId,
-            )
-            .single;
+    setState(() {
+      Story story = InheritedStoryManager
+          .of(context)
+          .stories
+          .where((Story story) => story.id == suggestion.selectionStoryId)
+          .single;
 
-        assert(story != null);
+      assert(story != null);
 
-        // Focus on the story.
-        _initiallyFocusedStory = story;
-        _recentListKey.currentState.config.onStoryFocused(story);
+      // Focus on the story.
+      _recentListKey.currentState.focusStory(story);
 
-        // Unhide selected suggestion in suggestion list.
-        _suggestionListKey.currentState.resetSelection();
-      },
-    );
+      // Unhide selected suggestion in suggestion list.
+      _suggestionListKey.currentState.resetSelection();
+    });
   }
 
   double get _quickSettingsHeightDelta =>

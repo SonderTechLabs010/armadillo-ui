@@ -6,11 +6,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
 
 import '../lib/recent_list.dart';
+import '../lib/story_manager.dart';
 
 const int _kStoryCount = 4;
 const double _kRecentListWidthSingleColumn = 500.0;
 const double _kRecentListHorizontalMarginsSingleColumn = 16.0;
 const double _kRecentListWidthMultiColumn = 700.0;
+const double _kRecentListHeight = 600.0;
+const double _kStoryBarMaximizedHeight = 48.0;
 
 void main() {
   testWidgets('Single Column RecentList children extend to fit parent',
@@ -21,28 +24,28 @@ void main() {
         new List<GlobalKey>.generate(4, (int index) => new GlobalKey());
 
     RecentList recentList = new RecentList(
-        key: recentListKey,
-        stories: new List<Story>.generate(
-            storyKeys.length,
-            (int index) => new Story(
-                builder: (_) => new Container(key: storyKeys[index]),
-                lastInteraction: new DateTime.now(),
-                cumulativeInteractionDuration: const Duration(minutes: 5))));
-
-    await tester.pumpWidget(new Center(
-        child: new Container(
-            width: _kRecentListWidthSingleColumn, child: recentList)));
+      key: recentListKey,
+      parentSize: new Size(
+        _kRecentListWidthSingleColumn,
+        _kRecentListHeight,
+      ),
+    );
+    StoryManager storyManager = new DummyStoryManager(storyKeys: storyKeys);
+    await tester.pumpWidget(new InheritedStoryManager(
+        storyManager: storyManager,
+        child: new Center(
+            child: new Container(
+                width: _kRecentListWidthSingleColumn, child: recentList))));
     expect(find.byKey(recentListKey), isNotNull);
-    expect(tester.getSize(find.byKey(recentListKey)).width,
-        _kRecentListWidthSingleColumn);
+    expect(
+      tester.getSize(find.byKey(recentListKey)).width,
+      _kRecentListWidthSingleColumn,
+    );
     storyKeys.forEach((GlobalKey key) {
       final finder = find.byKey(key);
       expect(finder, isNotNull);
       final size = tester.getSize(finder);
-      expect(
-          size.width,
-          _kRecentListWidthSingleColumn -
-              _kRecentListHorizontalMarginsSingleColumn);
+      expect(size.width, _kRecentListWidthSingleColumn);
     });
   });
 
@@ -55,25 +58,56 @@ void main() {
         new List<GlobalKey>.generate(4, (int index) => new GlobalKey());
 
     RecentList recentList = new RecentList(
-        key: recentListKey,
-        stories: new List<Story>.generate(
-            storyKeys.length,
-            (int index) => new Story(
-                builder: (_) => new Container(key: storyKeys[index]),
-                lastInteraction: new DateTime.now(),
-                cumulativeInteractionDuration: const Duration(minutes: 5))));
+      key: recentListKey,
+      parentSize: new Size(
+        _kRecentListWidthMultiColumn,
+        _kRecentListHeight,
+      ),
+    );
+    StoryManager storyManager = new DummyStoryManager(storyKeys: storyKeys);
 
-    await tester.pumpWidget(new Center(
-        child: new Container(
-            width: _kRecentListWidthMultiColumn, child: recentList)));
+    await tester.pumpWidget(
+      new InheritedStoryManager(
+        storyManager: storyManager,
+        child: new Center(
+          child: new Container(
+            width: _kRecentListWidthMultiColumn,
+            child: recentList,
+          ),
+        ),
+      ),
+    );
     expect(find.byKey(recentListKey), isNotNull);
-    expect(tester.getSize(find.byKey(recentListKey)).width,
-        _kRecentListWidthMultiColumn);
+    expect(
+      tester.getSize(find.byKey(recentListKey)).width,
+      _kRecentListWidthMultiColumn,
+    );
     storyKeys.forEach((GlobalKey key) {
       final finder = find.byKey(key);
       expect(finder, isNotNull);
       final size = tester.getSize(finder);
-      expect(size.width / size.height, 16.0 / 9.0);
+      expect(size.width, _kRecentListWidthMultiColumn);
+      expect(size.height, _kRecentListHeight - _kStoryBarMaximizedHeight);
     });
   });
+}
+
+class DummyStoryManager extends StoryManager {
+  final List<GlobalKey> storyKeys;
+
+  DummyStoryManager({this.storyKeys}) : super();
+
+  @override
+  List<Story> get stories => new List<Story>.generate(
+        storyKeys.length,
+        (int index) => new Story(
+              id: new ValueKey(storyKeys[index]),
+              builder: (_) => new Container(key: storyKeys[index]),
+              title: '',
+              avatar: (_) => new Container(),
+              lastInteraction: new DateTime.now(),
+              cumulativeInteractionDuration: const Duration(minutes: 5),
+              themeColor: new Color(0xFFFFFFFF),
+            ),
+      );
 }
