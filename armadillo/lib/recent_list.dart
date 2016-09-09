@@ -26,6 +26,7 @@ class RecentList extends StatefulWidget {
   final VoidCallback onStoryFocusStarted;
   final EdgeInsets padding;
   final Size parentSize;
+  final double quickSettingsHeightBump;
 
   RecentList({
     Key key,
@@ -34,6 +35,7 @@ class RecentList extends StatefulWidget {
     this.onScroll,
     this.onStoryFocusStarted,
     this.parentSize,
+    this.quickSettingsHeightBump,
   })
       : super(key: key);
 
@@ -51,6 +53,24 @@ class RecentListState extends State<RecentList> {
   /// maximized.
   Story _initiallyFocusedStory;
 
+  double _quickSettingsProgress = 0.0;
+
+  /// [quickSettingsProgress] ranges from 0.0 to 1.0 and reflects the progress
+  /// of [Now]'s animation to reveal quick settings.  This is currently piped
+  /// here from [Conductor].
+  set quickSettingsProgress(double quickSettingsProgress) {
+    // When quick settings starts being shown, scroll to 0.0.
+    if (_quickSettingsProgress == 0.0 && quickSettingsProgress > 0.0) {
+      GlobalKey<ScrollableState> scrollableKey = config.scrollableKey;
+      scrollableKey.currentState.scrollTo(
+        0.0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.fastOutSlowIn,
+      );
+    }
+    _quickSettingsProgress = quickSettingsProgress;
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Story> stories = new List<Story>.from(
@@ -66,82 +86,96 @@ class RecentListState extends State<RecentList> {
     Story initiallyFocusedStory = _initiallyFocusedStory;
     _initiallyFocusedStory = null;
 
-    return new ScrollConfiguration(
-      delegate: new LockingScrollConfigurationDelegate(lock: _lockScrolling),
-      child: new RecentListBlock(
-        scrollableKey: config.scrollableKey,
-        padding: config.padding,
-        onScroll: config.onScroll,
-        multiColumn: multiColumn,
-        children: stories.map(
-          (Story story) {
-            final stackChildren = <Widget>[
-              new FocusableStory(
-                key: new GlobalObjectKey(story.id),
-                fullSize: config.parentSize,
-                story: story,
-                onStoryFocused: focusStory,
-                multiColumn: multiColumn,
-                startFocused: initiallyFocusedStory?.id == story.id,
-              ),
-            ];
-            if (!_lockScrolling) {
-              stackChildren.add(
-                new Positioned(
-                  left: 0.0,
-                  right: 0.0,
-                  top: 0.0,
-                  bottom: 0.0,
-                  child: new GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      // Bring tapped story into focus.
-                      FocusableStoryState tappedFocusableStoryState =
-                          new GlobalObjectKey(story.id).currentState;
-                      tappedFocusableStoryState.focused = true;
+    return new Stack(
+      children: [
+        // Recent List.
+        new Positioned(
+          left: 0.0,
+          right: 0.0,
+          top: -_quickSettingsHeightDelta,
+          bottom: _quickSettingsHeightDelta,
+          child: new ScrollConfiguration(
+            delegate:
+                new LockingScrollConfigurationDelegate(lock: _lockScrolling),
+            child: new RecentListBlock(
+              scrollableKey: config.scrollableKey,
+              padding: config.padding,
+              onScroll: config.onScroll,
+              multiColumn: multiColumn,
+              children: stories.map(
+                (Story story) {
+                  final stackChildren = <Widget>[
+                    new FocusableStory(
+                      key: new GlobalObjectKey(story.id),
+                      fullSize: config.parentSize,
+                      story: story,
+                      onStoryFocused: focusStory,
+                      multiColumn: multiColumn,
+                      startFocused: initiallyFocusedStory?.id == story.id,
+                    ),
+                  ];
+                  if (!_lockScrolling) {
+                    stackChildren.add(
+                      new Positioned(
+                        left: 0.0,
+                        right: 0.0,
+                        top: 0.0,
+                        bottom: 0.0,
+                        child: new GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            // Bring tapped story into focus.
+                            FocusableStoryState tappedFocusableStoryState =
+                                new GlobalObjectKey(story.id).currentState;
+                            tappedFocusableStoryState.focused = true;
 
-                      // Since the tapped story is now coming into focus, scroll
-                      // the list such that the bottom of the story will align
-                      // with the bottom of the parent.
-                      RenderBox listBox = context.findRenderObject();
-                      Point listTopLeft = listBox.localToGlobal(Point.origin);
-                      RenderBox storyBox = new GlobalObjectKey(story.id)
-                          .currentContext
-                          .findRenderObject();
-                      Point storyTopLeft = storyBox.localToGlobal(Point.origin);
-                      double scrollDelta =
-                          (listBox.size.height + listTopLeft.y) -
-                              (storyTopLeft.y + storyBox.size.height);
+                            // Since the tapped story is now coming into focus, scroll
+                            // the list such that the bottom of the story will align
+                            // with the bottom of the parent.
+                            RenderBox listBox = context.findRenderObject();
+                            Point listTopLeft =
+                                listBox.localToGlobal(Point.origin);
+                            RenderBox storyBox = new GlobalObjectKey(story.id)
+                                .currentContext
+                                .findRenderObject();
+                            Point storyTopLeft =
+                                storyBox.localToGlobal(Point.origin);
+                            double scrollDelta =
+                                (listBox.size.height + listTopLeft.y) -
+                                    (storyTopLeft.y + storyBox.size.height);
 
-                      GlobalKey<ScrollableState> scrollableKey =
-                          config.scrollableKey;
+                            GlobalKey<ScrollableState> scrollableKey =
+                                config.scrollableKey;
 
-                      FocusGainScroller scroller = new FocusGainScroller(
-                        initialScrollOffset:
-                            scrollableKey.currentState.scrollOffset,
-                        scrollDelta: scrollDelta,
-                        scrollableKey: scrollableKey,
-                        focusableStoryKey: new GlobalObjectKey(story.id),
-                      );
-                      scroller.startListening();
+                            FocusGainScroller scroller = new FocusGainScroller(
+                              initialScrollOffset:
+                                  scrollableKey.currentState.scrollOffset,
+                              scrollDelta: scrollDelta,
+                              scrollableKey: scrollableKey,
+                              focusableStoryKey: new GlobalObjectKey(story.id),
+                            );
+                            scroller.startListening();
 
-                      // Lock scrolling.
-                      setState(() {
-                        _lockScrolling = true;
-                      });
+                            // Lock scrolling.
+                            setState(() {
+                              _lockScrolling = true;
+                            });
 
-                      if (config.onStoryFocusStarted != null) {
-                        config.onStoryFocusStarted();
-                      }
-                    },
-                  ),
-                ),
-              );
-            }
-            return new Stack(children: stackChildren);
-          },
-        ).toList(),
-      ),
+                            if (config.onStoryFocusStarted != null) {
+                              config.onStoryFocusStarted();
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  }
+                  return new Stack(children: stackChildren);
+                },
+              ).toList(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -168,6 +202,9 @@ class RecentListState extends State<RecentList> {
       _lockScrolling = true;
     });
   }
+
+  double get _quickSettingsHeightDelta =>
+      _quickSettingsProgress * config.quickSettingsHeightBump;
 }
 
 /// When started, adds itself as a listener to the [FocusableStory] with key

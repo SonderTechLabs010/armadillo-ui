@@ -31,6 +31,11 @@ abstract class TickingState<T extends StatefulWidget> extends State<T> {
   }
 
   void _onTick(Duration elapsed) {
+    if (!mounted) {
+      _ticker?.stop();
+      _ticker = null;
+      return;
+    }
     final double elapsedSeconds =
         (elapsed.inMicroseconds - _lastTick.inMicroseconds) / 1000000.0;
     _lastTick = elapsed;

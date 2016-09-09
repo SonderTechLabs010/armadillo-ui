@@ -22,20 +22,24 @@ const double _kFallAwayDurationFraction = 0.35;
 /// [scrollOffset] is 0.0.
 const double _kRestingDistanceAboveLowestPoint = 80.0;
 
+/// When the recent list's scrollOffset exceeds this value we minimize [Now].
+const _kNowMinimizationScrollOffsetThreshold = 120.0;
+
+/// When the recent list's scrollOffset exceeds this value we hide quick
+/// settings [Now].
+const _kNowQuickSettingsHideScrollOffsetThreshold = 16.0;
+
 /// Shows the user, the user's context, and important settings.  When minimized
 /// also shows an affordance for seeing missed interruptions.
 class Now extends StatefulWidget {
   final double minHeight;
   final double maxHeight;
 
-  /// [scrolloffset] effects the bottom padding of the user and text elements
-  /// as well as the overall height of [Now] while maximized.
-  final double scrollOffset;
   final double quickSettingsHeightBump;
   final OnQuickSettingsProgressChange onQuickSettingsProgressChange;
-  final VoidCallback onQuickSettingsOverlayButtonTap;
   final VoidCallback onReturnToOriginButtonTap;
-  final VoidCallback onInterruptionsOverlayButtonTap;
+  final VoidCallback onMinimize;
+  final VoidCallback onMaximize;
 
   /// [onBarVerticalDragUpdate] and [onBarVerticalDragEnd] will be called only
   /// when a vertical drag occurs on [Now] when in its fully minimized bar
@@ -47,12 +51,11 @@ class Now extends StatefulWidget {
     Key key,
     this.minHeight,
     this.maxHeight,
-    this.scrollOffset,
     this.quickSettingsHeightBump,
     this.onQuickSettingsProgressChange,
-    this.onQuickSettingsOverlayButtonTap,
     this.onReturnToOriginButtonTap,
-    this.onInterruptionsOverlayButtonTap,
+    this.onMinimize,
+    this.onMaximize,
     this.onBarVerticalDragUpdate,
     this.onBarVerticalDragEnd,
   })
@@ -84,6 +87,30 @@ class NowState extends TickingState<Now> {
       initValue: _kMinimizationSimulationTarget, desc: _kSimulationDesc);
 
   Timer _hideMinimizedInfoTimer;
+
+  /// [scrolloffset] affects the bottom padding of the user and text elements
+  /// as well as the overall height of [Now] while maximized.
+  double _lastScrollOffset = 0.0;
+
+  set scrollOffset(double scrollOffset) {
+    if (scrollOffset > _kNowMinimizationScrollOffsetThreshold &&
+        _lastScrollOffset < scrollOffset) {
+      minimize();
+      hideQuickSettings();
+    } else if (scrollOffset < _kNowMinimizationScrollOffsetThreshold &&
+        _lastScrollOffset > scrollOffset) {
+      maximize();
+    }
+    // When we're past the quick settings threshold and are
+    // scrolling further, hide quick settings.
+    if (scrollOffset > _kNowQuickSettingsHideScrollOffsetThreshold &&
+        _lastScrollOffset < scrollOffset) {
+      hideQuickSettings();
+    }
+    setState(() {
+      _lastScrollOffset = scrollOffset;
+    });
+  }
 
   @override
   Widget build(BuildContext context) => new LayoutBuilder(
@@ -306,6 +333,7 @@ class NowState extends TickingState<Now> {
       _minimizationSimulation.target = _kMinimizationSimulationTarget;
       _showMinimizedInfo();
       startTicking();
+      config.onMinimize?.call();
     }
   }
 
@@ -313,6 +341,7 @@ class NowState extends TickingState<Now> {
     if (_minimizing) {
       _minimizationSimulation.target = 0.0;
       startTicking();
+      config.onMaximize?.call();
     }
   }
 
@@ -401,7 +430,7 @@ class NowState extends TickingState<Now> {
   double get _scrollOffsetDelta =>
       (math.max(
                   -_kRestingDistanceAboveLowestPoint,
-                  (-1.0 * config.scrollOffset / 3.0) *
+                  (-1.0 * _lastScrollOffset / 3.0) *
                       (1.0 - _minimizationProgress) *
                       (1.0 - _quickSettingsProgress)) *
               1000.0)

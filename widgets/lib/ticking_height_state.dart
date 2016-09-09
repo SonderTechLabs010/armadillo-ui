@@ -40,19 +40,17 @@ abstract class TickingHeightState<T extends StatefulWidget>
 
   void setHeight(double height, {bool force: false}) {
     double newHeight = height.clamp(_minHeight, _maxHeight);
-    setState(() {
-      if (force) {
+    if (force) {
+      _heightSimulation = new RK4SpringSimulation(
+          initValue: newHeight, desc: springDescription);
+    } else {
+      if (_heightSimulation == null) {
         _heightSimulation = new RK4SpringSimulation(
             initValue: newHeight, desc: springDescription);
       } else {
-        if (_heightSimulation == null) {
-          _heightSimulation = new RK4SpringSimulation(
-              initValue: newHeight, desc: springDescription);
-        } else {
-          _heightSimulation.target = newHeight;
-        }
+        _heightSimulation.target = newHeight;
       }
-    });
+    }
     startTicking();
   }
 

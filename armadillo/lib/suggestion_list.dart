@@ -13,12 +13,14 @@ const String _kMicImageGrey600 =
     'packages/armadillo/res/ic_mic_grey600_1x_web_24dp.png';
 
 typedef void OnSuggestionSelected(Suggestion suggestion, Rect globalBounds);
+typedef void OnAskTextChanged(String text);
 
 class SuggestionList extends StatefulWidget {
   final Key scrollableKey;
   final VoidCallback onAskingStarted;
   final VoidCallback onAskingEnded;
   final OnSuggestionSelected onSuggestionSelected;
+  final OnAskTextChanged onAskTextChanged;
 
   SuggestionList({
     Key key,
@@ -26,6 +28,7 @@ class SuggestionList extends StatefulWidget {
     this.onAskingStarted,
     this.onAskingEnded,
     this.onSuggestionSelected,
+    this.onAskTextChanged,
   })
       : super(key: key);
 
@@ -42,17 +45,19 @@ class SuggestionListState extends State<SuggestionList> {
   String get text => _inputKey.currentState?.text;
   void append(String text) {
     _inputKey.currentState?.append(text);
+    config.onAskTextChanged?.call(text);
     InheritedSuggestionManager.of(context).askText = this.text;
   }
 
-  bool backspace() {
-    bool result = _inputKey.currentState?.backspace();
+  void backspace() {
+    _inputKey.currentState?.backspace();
+    config.onAskTextChanged?.call(text);
     InheritedSuggestionManager.of(context).askText = text;
-    return result;
   }
 
   void clear() {
     _inputKey.currentState?.clear();
+    config.onAskTextChanged?.call(text);
     InheritedSuggestionManager.of(context).askText = null;
   }
 
@@ -60,6 +65,24 @@ class SuggestionListState extends State<SuggestionList> {
     setState(() {
       _selectedSuggestion = null;
     });
+  }
+
+  void onSuggestion(String suggestion) {
+    if (suggestion == null || suggestion.isEmpty) {
+      return;
+    }
+    final stringList = text.split(' ');
+    if (stringList.isEmpty) {
+      return;
+    }
+
+    // Remove last word.
+    for (int i = 0; i < stringList[stringList.length - 1].length; i++) {
+      backspace();
+    }
+
+    // Add the suggested word.
+    append(suggestion + ' ');
   }
 
   @override
@@ -154,21 +177,29 @@ class SuggestionListState extends State<SuggestionList> {
                             visible: _selectedSuggestion?.id == suggestion.id,
                             suggestion: suggestion,
                             onSelected: () {
-                              setState(() {
-                                _selectedSuggestion = suggestion;
-                              });
-
-                              // We pass the bounds of the suggestion w.r.t.
-                              // global coordinates so it can be mapped back to
-                              // local coordinates when it's displayed in the
-                              // SelectedSuggestionOverlay.
-                              RenderBox box = new GlobalObjectKey(suggestion)
-                                  .currentContext
-                                  .findRenderObject();
-                              config.onSuggestionSelected(
-                                suggestion,
-                                box.localToGlobal(Point.origin) & box.size,
-                              );
+                              switch (suggestion.selectionType) {
+                                case SelectionType.launchStory:
+                                case SelectionType.modifyStory:
+                                  setState(() {
+                                    _selectedSuggestion = suggestion;
+                                  });
+                                  // We pass the bounds of the suggestion w.r.t.
+                                  // global coordinates so it can be mapped back to
+                                  // local coordinates when it's displayed in the
+                                  // SelectedSuggestionOverlay.
+                                  RenderBox box =
+                                      new GlobalObjectKey(suggestion)
+                                          .currentContext
+                                          .findRenderObject();
+                                  config.onSuggestionSelected(
+                                    suggestion,
+                                    box.localToGlobal(Point.origin) & box.size,
+                                  );
+                                  break;
+                                case SelectionType.doNothing:
+                                default:
+                                  break;
+                              }
                             },
                           ),
                         ),
