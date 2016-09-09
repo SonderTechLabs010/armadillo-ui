@@ -11,6 +11,7 @@ import 'package:sysui_widgets/delegating_page_route.dart';
 
 import 'armadillo.dart';
 import 'child_constraints_changer.dart';
+import 'now_manager.dart';
 import 'story_manager.dart';
 import 'suggestion_manager.dart';
 
@@ -28,16 +29,30 @@ const _kConstraints = const <BoxConstraints>[
 
 Future main() async {
   SuggestionManager suggestionManager = new SuggestionManager();
-  StoryManager storyManager =
-      new StoryManager(suggestionManager: suggestionManager);
-  runApp(new WidgetsApp(
+  StoryManager storyManager = new StoryManager(
+    suggestionManager: suggestionManager,
+  );
+  NowManager nowManager = new NowManager();
+
+  runApp(
+    new WidgetsApp(
       onGenerateRoute: (RouteSettings settings) => new DelegatingPageRoute(
-          (_) => new ChildConstraintsChanger(
-              constraints: _kConstraints,
-              child: new DefaultAssetBundle(
-                  bundle: defaultBundle,
-                  child: new Armadillo(storyManager: storyManager))),
-          settings: settings)));
+            (_) => new ChildConstraintsChanger(
+                  constraints: _kConstraints,
+                  child: new DefaultAssetBundle(
+                    bundle: defaultBundle,
+                    child: new Armadillo(
+                      storyManager: storyManager,
+                      suggestionManager: suggestionManager,
+                      nowManager: nowManager,
+                    ),
+                  ),
+                ),
+            settings: settings,
+          ),
+    ),
+  );
+
   SystemChrome.setEnabledSystemUIOverlays(0);
   storyManager.load(defaultBundle);
   suggestionManager.load(defaultBundle);

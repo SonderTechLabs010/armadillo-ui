@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'conductor.dart';
+import 'now_manager.dart';
 import 'story_manager.dart';
 import 'suggestion_manager.dart';
 
@@ -18,8 +19,10 @@ const _kBackgroundImage = 'packages/armadillo/res/Background.jpg';
 /// The main app which controls the Fuchsia UI.
 class Armadillo extends StatefulWidget {
   final StoryManager storyManager;
+  final SuggestionManager suggestionManager;
+  final NowManager nowManager;
 
-  Armadillo({this.storyManager});
+  Armadillo({this.storyManager, this.suggestionManager, this.nowManager});
 
   @override
   ArmadilloState createState() => new ArmadilloState();
@@ -29,14 +32,16 @@ class ArmadilloState extends State<Armadillo> {
   @override
   void initState() {
     super.initState();
-    config.storyManager.addListener(onStoryManagerChanged);
-    config.storyManager.suggestionManager.addListener(onStoryManagerChanged);
+    config.storyManager.addListener(onChange);
+    config.suggestionManager.addListener(onChange);
+    config.nowManager.addListener(onChange);
   }
 
   @override
   void dispose() {
-    config.storyManager.suggestionManager.removeListener(onStoryManagerChanged);
-    config.storyManager.removeListener(onStoryManagerChanged);
+    config.nowManager.removeListener(onChange);
+    config.suggestionManager.removeListener(onChange);
+    config.storyManager.removeListener(onChange);
     super.dispose();
   }
 
@@ -54,15 +59,18 @@ class ArmadilloState extends State<Armadillo> {
           ),
         ),
         child: new InheritedSuggestionManager(
-          suggestionManager: config.storyManager.suggestionManager,
+          suggestionManager: config.suggestionManager,
           child: new InheritedStoryManager(
             storyManager: config.storyManager,
-            child: new Conductor(),
+            child: new InheritedNowManager(
+              nowManager: config.nowManager,
+              child: new Conductor(),
+            ),
           ),
         ),
       );
 
-  void onStoryManagerChanged() {
+  void onChange() {
     setState(() {});
   }
 }

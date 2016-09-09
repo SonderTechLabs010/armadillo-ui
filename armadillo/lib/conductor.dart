@@ -27,12 +27,6 @@ class Conductor extends StatefulWidget {
   ConductorState createState() => new ConductorState();
 }
 
-const String _kUserImage = 'packages/armadillo/res/User.png';
-const String _kBatteryImageWhite =
-    'packages/armadillo/res/ic_battery_90_white_1x_web_24dp.png';
-const String _kBatteryImageGrey600 =
-    'packages/armadillo/res/ic_battery_90_grey600_1x_web_24dp.png';
-
 /// The height of [Now]'s bar when minimized.'
 const _kMinimizedNowHeight = 50.0;
 
@@ -194,109 +188,51 @@ class ConductorState extends State<Conductor> {
 
             // Now.
             new Positioned(
-                bottom: 0.0,
-                left: 0.0,
-                right: 0.0,
-                top: 0.0,
-                child: new RepaintBoundary(
-                    child: new Now(
-                        key: _nowKey,
-                        minHeight: _kMinimizedNowHeight,
-                        maxHeight: _kMaximizedNowHeight,
-                        scrollOffset: _lastScrollOffset,
-                        quickSettingsHeightBump: _kQuickSettingsHeightBump,
-                        onQuickSettingsProgressChange: (double quickSettingsProgress) =>
-                            setState(() {
-                              // When quick settings starts being shown, scroll to 0.0.
-                              if (_quickSettingsProgress == 0.0 &&
-                                  quickSettingsProgress > 0.0) {
-                                _recentListScrollableKey.currentState.scrollTo(
-                                    0.0,
-                                    duration: const Duration(milliseconds: 500),
-                                    curve: Curves.fastOutSlowIn);
-                              }
-                              _quickSettingsProgress = quickSettingsProgress;
-                            }),
-                        onReturnToOriginButtonTap: () {
-                          _recentListScrollableKey.currentState.scrollTo(0.0,
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.fastOutSlowIn);
-                          _recentListKey.currentState.defocus();
-                          InheritedStoryManager
-                              .of(context)
-                              .interactionStopped();
-                        },
-                        onQuickSettingsOverlayButtonTap: () {
-                          print('Toggle quick settings overlay!');
-                        },
-                        onInterruptionsOverlayButtonTap: () {
-                          print('Toggle interruptions overlay!');
-                        },
-                        onBarVerticalDragUpdate: (DragUpdateDetails details) =>
-                            _suggestionOverlayKey.currentState
-                                ?.onVerticalDragUpdate(details),
-                        onBarVerticalDragEnd: (DragEndDetails details) =>
-                            _suggestionOverlayKey.currentState
-                                ?.onVerticalDragEnd(details),
-                        user: new Image.asset(_kUserImage, fit: ImageFit.cover),
-                        userContextMaximized: new Text(
-                            'Saturday 4:23 Sierra Vista'.toUpperCase(),
-                            style: _textStyle),
-                        userContextMinimized: new Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: new Text('4:23')),
-                        importantInfoMaximized: new Stack(children: [
-                          new Opacity(
-                              opacity: 1.0 - _quickSettingsProgress,
-                              child: new Image.asset(_kBatteryImageWhite,
-                                  fit: ImageFit.cover)),
-                          new Opacity(
-                              opacity: _quickSettingsProgress,
-                              child: new Image.asset(_kBatteryImageGrey600,
-                                  fit: ImageFit.cover))
-                        ]),
-                        importantInfoMinimized: new Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              new Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 4.0, right: 4.0),
-                                  child: new Text('89%')),
-                              new Image.asset(_kBatteryImageWhite,
-                                  fit: ImageFit.cover)
-                            ]),
-                        quickSettings: new Align(
-                            alignment: FractionalOffset.bottomCenter,
-                            child: new Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  new Container(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: new Text('quick settings',
-                                          textAlign: TextAlign.center,
-                                          style: new TextStyle(
-                                              color: Colors.grey[600]))),
-                                  new Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16.0),
-                                      child: new Divider(
-                                          height: 1.0,
-                                          color: Colors.grey[600])),
-                                  new GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: () {
-                                        print(
-                                            'Make Inline Quick Settings into Story!');
-                                      },
-                                      child: new Container(
-                                          padding: const EdgeInsets.all(16.0),
-                                          child: new Text('MORE',
-                                              textAlign: TextAlign.center,
-                                              style: new TextStyle(
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Colors.grey[600]))))
-                                ]))))),
+              bottom: 0.0,
+              left: 0.0,
+              right: 0.0,
+              top: 0.0,
+              child: new RepaintBoundary(
+                child: new Now(
+                  key: _nowKey,
+                  minHeight: _kMinimizedNowHeight,
+                  maxHeight: _kMaximizedNowHeight,
+                  scrollOffset: _lastScrollOffset,
+                  quickSettingsHeightBump: _kQuickSettingsHeightBump,
+                  onQuickSettingsProgressChange:
+                      (double quickSettingsProgress) => setState(() {
+                            // When quick settings starts being shown, scroll to 0.0.
+                            if (_quickSettingsProgress == 0.0 &&
+                                quickSettingsProgress > 0.0) {
+                              _recentListScrollableKey.currentState.scrollTo(
+                                  0.0,
+                                  duration: const Duration(milliseconds: 500),
+                                  curve: Curves.fastOutSlowIn);
+                            }
+                            _quickSettingsProgress = quickSettingsProgress;
+                          }),
+                  onReturnToOriginButtonTap: () {
+                    _recentListScrollableKey.currentState.scrollTo(0.0,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.fastOutSlowIn);
+                    _recentListKey.currentState.defocus();
+                    InheritedStoryManager.of(context).interactionStopped();
+                  },
+                  onQuickSettingsOverlayButtonTap: () {
+                    print('Toggle quick settings overlay!');
+                  },
+                  onInterruptionsOverlayButtonTap: () {
+                    print('Toggle interruptions overlay!');
+                  },
+                  onBarVerticalDragUpdate: (DragUpdateDetails details) =>
+                      _suggestionOverlayKey.currentState
+                          ?.onVerticalDragUpdate(details),
+                  onBarVerticalDragEnd: (DragEndDetails details) =>
+                      _suggestionOverlayKey.currentState
+                          ?.onVerticalDragEnd(details),
+                ),
+              ),
+            ),
 
             // Suggestions Overlay.
             new PeekingOverlay(
@@ -384,7 +320,4 @@ class ConductorState extends State<Conductor> {
 
   double get _quickSettingsHeightDelta =>
       _quickSettingsProgress * (_kQuickSettingsHeightBump - 120.0);
-
-  TextStyle get _textStyle => TextStyle.lerp(new TextStyle(color: Colors.white),
-      new TextStyle(color: Colors.grey[600]), _quickSettingsProgress);
 }
