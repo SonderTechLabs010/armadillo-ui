@@ -34,7 +34,7 @@ const _kMinimizedNowHeight = 50.0;
 const _kMaximizedNowHeight = 440.0;
 
 /// How far [Now] should raise when quick settings is activated inline.
-const _kQuickSettingsHeightBump = 240.0;
+const _kQuickSettingsHeightBump = 120.0;
 
 /// How far above the bottom the suggestions overlay peeks.
 const _kSuggestionOverlayPeekHeight = 116.0;
@@ -296,5 +296,5 @@ class ConductorState extends State<Conductor> {
   }
 
   double get _quickSettingsHeightDelta =>
-      _quickSettingsProgress * (_kQuickSettingsHeightBump - 120.0);
+      _quickSettingsProgress * _kQuickSettingsHeightBump;
 }

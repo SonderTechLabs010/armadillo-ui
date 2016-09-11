@@ -98,7 +98,7 @@ class NowState extends TickingState<Now> {
                   new Positioned(
                     left: 8.0,
                     right: 8.0,
-                    top: _quickSettingsTopOffset,
+                    top: _quickSettingsBackgroundTopOffset,
                     child: new Center(
                       child: new Container(
                         height: _quickSettingsBackgroundHeight,
@@ -245,9 +245,11 @@ class NowState extends TickingState<Now> {
                   new Positioned(
                     left: 8.0,
                     right: 8.0,
-                    top: _quickSettingsTopOffset +
-                        32.0 * (1.0 - _quickSettingsSlideUpProgress) +
-                        128.0,
+                    top: _quickSettingsBackgroundTopOffset +
+                        // padding and space for user info
+                        128.0 +
+                        // quick settings slide animation
+                        32.0 * (1.0 - _quickSettingsSlideUpProgress),
                     child: new Center(
                       child: new Container(
                         height: math.max(
@@ -372,11 +374,10 @@ class NowState extends TickingState<Now> {
   double get _userImageBorderWidth => 2.0 + (4.0 * _minimizationProgress);
 
   double get _userImageTopOffset =>
-      (100.0 + _quickSettingsRaiseDistance - _quickSettingsProgress * 200.0) *
-          (1.0 - _minimizationProgress) +
+      (100.0 - 80 * _quickSettingsProgress) * (1.0 - _minimizationProgress) +
       ((config.minHeight - _userImageSize) / 2.0) * _minimizationProgress;
 
-  double get _quickSettingsTopOffset =>
+  double get _quickSettingsBackgroundTopOffset =>
       _userImageTopOffset + ((_userImageSize / 2.0) * _quickSettingsProgress);
 
   double get _quickSettingsBackgroundBorderRadius =>
@@ -386,7 +387,7 @@ class NowState extends TickingState<Now> {
       424.0 * _quickSettingsProgress * (1.0 - _minimizationProgress);
 
   double get _quickSettingsBackgroundHeight =>
-      (config.quickSettingsHeightBump + 80.0) *
+      (config.quickSettingsHeightBump + 200.0) *
       _quickSettingsProgress *
       (1.0 - _minimizationProgress);
 
