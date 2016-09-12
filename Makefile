@@ -29,6 +29,18 @@ dart_bin := $(root)/third_party/flutter/bin/cache/dart-sdk/bin
 pub := $(dart_bin)/pub
 
 ################################################################################
+## Build flags.
+ifeq ($(wildcard ~/goma/.*),)
+	goma_installed := no
+	gen_flags :=
+	ninja_flags := -j32
+else
+	goma_installed := yes
+	gen_flags := --goma
+	ninja_flags := -j1000
+endif
+
+################################################################################
 ## Makefile phony rules and default target
 .PHONY: *
 all: build
@@ -37,10 +49,10 @@ all: build
 ## Main targets.
 
 check:
-ifeq ($(wildcard ~/goma/.*),)
-	$(error Goma needs to be installed)
-else
+ifeq ($(goma_installed), yes)
 	~/goma/goma_ctl.py ensure_start
+else
+	$(warning [WARNING] Goma not installed. Install Goma to get faster distributed builds.)
 endif
 
 sync: check
@@ -55,7 +67,7 @@ endif
 
 build: sync
 	rm -rf interfaces/lib
-	cd .. && packages/gn/gen.py --goma -m sysui && buildtools/ninja -j1000 -C out/debug-x86-64
+	cd .. && packages/gn/gen.py $(gen_flags) -m sysui && buildtools/ninja $(ninja_flags) -C out/debug-x86-64
 	$(eval files := $(shell find ../out/debug-x86-64/gen/sysui/interfaces/ -name *.mojom.dart))
 	mkdir interfaces/lib
 	$(foreach file,$(files),ln -s $(abspath $(file)) interfaces/lib/$(notdir $(file)))
