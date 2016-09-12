@@ -170,11 +170,11 @@ class SuggestionListState extends State<SuggestionList> {
                     (Suggestion suggestion) => new Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8.0,
-                            vertical: 4.0,
+                            vertical: 6.0,
                           ),
                           child: new SuggestionWidget(
                             key: new GlobalObjectKey(suggestion),
-                            visible: _selectedSuggestion?.id == suggestion.id,
+                            visible: _selectedSuggestion?.id != suggestion.id,
                             suggestion: suggestion,
                             onSelected: () {
                               switch (suggestion.selectionType) {

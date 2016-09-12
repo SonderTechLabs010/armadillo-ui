@@ -225,78 +225,131 @@
     {
       "id":"suggestion_01",
       "title":"Suggestion Ichi",
-      "color":"0xFF2196F3",
+      "color":"0xFFF44336",
       "selection_type":"launch",
+      "icons":[
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "image":"packages/armadillo/res/Armadillo.png",
+      "image_type":"person",
       "story_id":"story_16"
     },
     {
       "id":"suggestion_02",
       "title":"Suggestion Ni",
-      "color":"0xFF03A9F4",
+      "color":"0xFFE91E63",
       "selection_type":"launch",
+      "icons":[
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "image":"packages/armadillo/res/Armadillo.png",
+      "image_type":"other",
       "story_id":"story_15"
     },
     {
       "id":"suggestion_03",
       "title":"Suggestion San",
-      "color":"0xFFFF5722",
+      "color":"0xFF9C27B0",
       "selection_type":"launch",
+      "icons":[
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "image":"packages/armadillo/res/Armadillo.png",
+      "image_type":"person",
       "story_id":"story_14"
     },
     {
       "id":"suggestion_04",
       "title":"Suggestion Shi",
-      "color":"0xFFFF9800",
+      "color":"0xFF673AB7",
       "selection_type":"launch",
+      "icons":[
+        "packages/armadillo/res/flutter-mark-square-100.png",
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "image":"packages/armadillo/res/Armadillo.png",
+      "image_type":"other",
       "story_id":"story_13"
     },
     {
       "id":"suggestion_05",
       "title":"Suggestion Go",
-      "color":"0xFFFFEB3B",
+      "color":"0xFF3F51B5",
       "selection_type":"launch",
+      "icons":[
+        "packages/armadillo/res/flutter-mark-square-100.png",
+        "packages/armadillo/res/flutter-mark-square-100.png",
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "image":"packages/armadillo/res/Armadillo.png",
+      "image_type":"other",
       "story_id":"story_12"
     },
     {
       "id":"suggestion_06",
-      "title":"Suggestion Rok",
-      "color":"0xFFFFC107",
+      "title":"Suggestion Rok - Let's make this really long so it wraps",
+      "color":"0xFF2196F3",
       "selection_type":"launch",
+      "icons":[
+        "packages/armadillo/res/flutter-mark-square-100.png",
+        "packages/armadillo/res/flutter-mark-square-100.png",
+        "packages/armadillo/res/flutter-mark-square-100.png",
+        "packages/armadillo/res/flutter-mark-square-100.png",
+        "packages/armadillo/res/flutter-mark-square-100.png",
+        "packages/armadillo/res/flutter-mark-square-100.png",
+        "packages/armadillo/res/flutter-mark-square-100.png",
+        "packages/armadillo/res/flutter-mark-square-100.png",
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "image":"packages/armadillo/res/Armadillo.png",
+      "image_type":"person",
       "story_id":"story_11"
     },
     {
       "id":"suggestion_07",
       "title":"Suggestion Nana",
-      "color":"0xFFCDDC39",
+      "color":"0xFF03A9F4",
       "selection_type":"launch",
+      "icons":[
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
       "story_id":"story_10"
     },
     {
       "id":"suggestion_08",
       "title":"Suggestion Achi",
-      "color":"0xFF4CAF50",
+      "color":"0xFF00BCD4",
       "selection_type":"modify",
       "story_id":"story_09"
     },
     {
       "id":"suggestion_09",
       "title":"Suggestion Kyuu",
-      "color":"0xFF8BC34A",
+      "color":"0xFF009688",
       "selection_type":"modify",
       "story_id":"story_08"
     },
     {
       "id":"suggestion_10",
       "title":"Suggestion Juu",
-      "color":"0xFF009688",
+      "color":"0xFF4CAF50",
       "selection_type":"modify",
+      "icons":[
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "image":"packages/armadillo/res/Armadillo.png",
+      "image_type":"other",
       "story_id":"story_07"
     },
     {
       "id":"suggestion_11",
       "title":"Suggestion Dummy",
-      "color":"0xFF009688",
-      "selection_type":"dummy"
+      "selection_type":"dummy",
+      "icons":[
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "image":"packages/armadillo/res/Armadillo.png",
+      "image_type":"person"
     }
   ],
   "story_suggestions_map":{

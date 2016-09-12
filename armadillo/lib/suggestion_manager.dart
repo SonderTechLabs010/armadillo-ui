@@ -22,18 +22,28 @@ const String _kJsonUrl = 'packages/armadillo/res/stories.json';
 /// [doNothing] does nothing and is only provided for testing purposes.
 enum SelectionType { launchStory, modifyStory, doNothing }
 
+/// Determines what the suggestion looks like with respect to
+/// [Suggestion.image].
+enum ImageType { person, other }
+
 class Suggestion {
   final Object id;
   final String title;
   final Color themeColor;
   final SelectionType selectionType;
   final Object selectionStoryId;
+  final List<WidgetBuilder> icons;
+  final WidgetBuilder image;
+  final ImageType imageType;
   Suggestion({
     this.id,
     this.title,
     this.themeColor,
     this.selectionType,
     this.selectionStoryId,
+    this.icons: const <WidgetBuilder>[],
+    this.image,
+    this.imageType,
   });
 }
 
@@ -48,8 +58,6 @@ class SuggestionManager {
   Story _activeStory;
   String _askText;
 
-  SuggestionManager();
-
   void load(AssetBundle assetBundle) {
     assetBundle.loadString(_kJsonUrl).then((String json) {
       final decodedJson = JSON.decode(json);
@@ -61,9 +69,27 @@ class SuggestionManager {
           (Map<String, Object> suggestion) => new Suggestion(
                 id: new ValueKey(suggestion['id']),
                 title: suggestion['title'],
-                themeColor: new Color(int.parse(suggestion['color'])),
+                themeColor: suggestion['color'] != null
+                    ? new Color(int.parse(suggestion['color']))
+                    : Colors.blueGrey[600],
                 selectionType: _getSelectionType(suggestion['selection_type']),
                 selectionStoryId: new ValueKey(suggestion['story_id']),
+                icons: suggestion['icons'] != null
+                    ? (suggestion['icons'] as List<String>)
+                        .map(
+                          (String icon) => (BuildContext context) =>
+                              new Image.asset(icon,
+                                  fit: ImageFit.cover, color: Colors.white),
+                        )
+                        .toList()
+                    : const <WidgetBuilder>[],
+                image: suggestion['image'] != null
+                    ? (_) => new Image.asset(
+                          suggestion['image'],
+                          fit: ImageFit.cover,
+                        )
+                    : null,
+                imageType: _getImageType(suggestion['image_type']),
               ),
         ),
         key: (Suggestion suggestion) => suggestion.id,
@@ -96,6 +122,16 @@ class SuggestionManager {
       case 'nothing':
       default:
         return SelectionType.doNothing;
+    }
+  }
+
+  ImageType _getImageType(String imageType) {
+    switch (imageType) {
+      case 'person':
+        return ImageType.person;
+      case 'other':
+      default:
+        return ImageType.other;
     }
   }
 
