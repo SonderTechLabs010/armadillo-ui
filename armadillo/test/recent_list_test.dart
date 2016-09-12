@@ -25,6 +25,8 @@ void main() {
 
     RecentList recentList = new RecentList(
       key: recentListKey,
+      multiColumn: false,
+      quickSettingsHeightBump: 200.0,
       parentSize: new Size(
         _kRecentListWidthSingleColumn,
         _kRecentListHeight,
@@ -59,6 +61,8 @@ void main() {
 
     RecentList recentList = new RecentList(
       key: recentListKey,
+      multiColumn: true,
+      quickSettingsHeightBump: 200.0,
       parentSize: new Size(
         _kRecentListWidthMultiColumn,
         _kRecentListHeight,

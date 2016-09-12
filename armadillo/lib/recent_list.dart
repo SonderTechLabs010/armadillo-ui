@@ -13,10 +13,6 @@ import 'story_manager.dart';
 
 export 'focusable_story.dart' show Story, OnStoryFocused;
 
-/// If the width of the [RecentList] exceeds this value it will switch to
-/// multicolumn mode.
-const double _kMultiColumnWidthThreshold = 600.0;
-
 /// In multicolumn mode, the distance the right column will be offset up.
 const double _kRightBump = 64.0;
 
@@ -27,6 +23,7 @@ class RecentList extends StatefulWidget {
   final EdgeInsets padding;
   final Size parentSize;
   final double quickSettingsHeightBump;
+  final bool multiColumn;
 
   RecentList({
     Key key,
@@ -36,6 +33,7 @@ class RecentList extends StatefulWidget {
     this.onStoryFocusStarted,
     this.parentSize,
     this.quickSettingsHeightBump,
+    this.multiColumn: false,
   })
       : super(key: key);
 
@@ -81,8 +79,6 @@ class RecentListState extends State<RecentList> {
         b.lastInteraction.millisecondsSinceEpoch -
         a.lastInteraction.millisecondsSinceEpoch);
 
-    bool multiColumn = config.parentSize.width > _kMultiColumnWidthThreshold;
-
     Story initiallyFocusedStory = _initiallyFocusedStory;
     _initiallyFocusedStory = null;
 
@@ -101,7 +97,7 @@ class RecentListState extends State<RecentList> {
               scrollableKey: config.scrollableKey,
               padding: config.padding,
               onScroll: config.onScroll,
-              multiColumn: multiColumn,
+              multiColumn: config.multiColumn,
               children: stories.map(
                 (Story story) {
                   final stackChildren = <Widget>[
@@ -110,7 +106,7 @@ class RecentListState extends State<RecentList> {
                       fullSize: config.parentSize,
                       story: story,
                       onStoryFocused: focusStory,
-                      multiColumn: multiColumn,
+                      multiColumn: config.multiColumn,
                       startFocused: initiallyFocusedStory?.id == story.id,
                     ),
                   ];

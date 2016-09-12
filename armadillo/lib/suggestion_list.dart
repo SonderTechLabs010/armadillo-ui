@@ -21,6 +21,7 @@ class SuggestionList extends StatefulWidget {
   final VoidCallback onAskingEnded;
   final OnSuggestionSelected onSuggestionSelected;
   final OnAskTextChanged onAskTextChanged;
+  final bool multiColumn;
 
   SuggestionList({
     Key key,
@@ -29,6 +30,7 @@ class SuggestionList extends StatefulWidget {
     this.onAskingEnded,
     this.onSuggestionSelected,
     this.onAskTextChanged,
+    this.multiColumn,
   })
       : super(key: key);
 
@@ -161,52 +163,99 @@ class SuggestionListState extends State<SuggestionList> {
             left: 0.0,
             right: 0.0,
             bottom: 0.0,
-            child: new Block(
-              scrollableKey: config.scrollableKey,
-              children: InheritedSuggestionManager
-                  .of(context)
-                  .suggestions
-                  .map(
-                    (Suggestion suggestion) => new Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0,
-                            vertical: 6.0,
-                          ),
-                          child: new SuggestionWidget(
-                            key: new GlobalObjectKey(suggestion),
-                            visible: _selectedSuggestion?.id != suggestion.id,
-                            suggestion: suggestion,
-                            onSelected: () {
-                              switch (suggestion.selectionType) {
-                                case SelectionType.launchStory:
-                                case SelectionType.modifyStory:
-                                  setState(() {
-                                    _selectedSuggestion = suggestion;
-                                  });
-                                  // We pass the bounds of the suggestion w.r.t.
-                                  // global coordinates so it can be mapped back to
-                                  // local coordinates when it's displayed in the
-                                  // SelectedSuggestionOverlay.
-                                  RenderBox box =
-                                      new GlobalObjectKey(suggestion)
-                                          .currentContext
-                                          .findRenderObject();
-                                  config.onSuggestionSelected(
-                                    suggestion,
-                                    box.localToGlobal(Point.origin) & box.size,
-                                  );
-                                  break;
-                                case SelectionType.doNothing:
-                                default:
-                                  break;
-                              }
-                            },
-                          ),
-                        ),
-                  )
-                  .toList(),
-            ),
+            child: config.multiColumn
+                ? _createTwoColumnBlock(context)
+                : _createSingleColumnBlock(context),
           ),
         ],
+      );
+
+  Widget _createSingleColumnBlock(BuildContext context) => new Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8.0,
+        ),
+        child: new Block(
+          scrollableKey: config.scrollableKey,
+          children: InheritedSuggestionManager
+              .of(context)
+              .suggestions
+              .map((Suggestion suggestion) => _createSuggestion(suggestion))
+              .toList(),
+        ),
+      );
+
+  Widget _createTwoColumnBlock(BuildContext context) {
+    List<Suggestion> suggestions =
+        InheritedSuggestionManager.of(context).suggestions;
+    int minSuggestionsPerColumn = (suggestions.length / 2).floor();
+    int additionalLeftSuggestions = suggestions.length % 2;
+    int additionalRightSuggestions =
+        (suggestions.length + additionalLeftSuggestions) % 2;
+    List<Suggestion> leftSuggestions = new List<Suggestion>.generate(
+      minSuggestionsPerColumn + additionalLeftSuggestions,
+      (int index) => suggestions[index * 2],
+    );
+    List<Suggestion> rightSuggestions = new List<Suggestion>.generate(
+      minSuggestionsPerColumn + additionalRightSuggestions,
+      (int index) => suggestions[index * 2 + 1],
+    );
+    return new Align(
+      alignment: FractionalOffset.topCenter,
+      child: new ConstrainedBox(
+        constraints: new BoxConstraints(maxWidth: 960.0),
+        child: new Block(
+          children: new List<Widget>.generate(
+            leftSuggestions.length,
+            (int index) => new Row(
+                  children: [
+                    new Flexible(
+                        child: _createSuggestion(leftSuggestions[index])),
+                    new Container(height: 0.0, width: 16.0),
+                    new Flexible(
+                      child: index < rightSuggestions.length
+                          ? _createSuggestion(rightSuggestions[index])
+                          : new Offstage(offstage: true),
+                    ),
+                  ],
+                ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _createSuggestion(Suggestion suggestion) => new Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: 6.0,
+        ),
+        child: new SuggestionWidget(
+          key: new GlobalObjectKey(suggestion),
+          visible: _selectedSuggestion?.id != suggestion.id,
+          suggestion: suggestion,
+          onSelected: () {
+            switch (suggestion.selectionType) {
+              case SelectionType.launchStory:
+              case SelectionType.modifyStory:
+                setState(() {
+                  _selectedSuggestion = suggestion;
+                });
+                // We pass the bounds of the suggestion w.r.t.
+                // global coordinates so it can be mapped back to
+                // local coordinates when it's displayed in the
+                // SelectedSuggestionOverlay.
+                RenderBox box = new GlobalObjectKey(suggestion)
+                    .currentContext
+                    .findRenderObject();
+                config.onSuggestionSelected(
+                  suggestion,
+                  box.localToGlobal(Point.origin) & box.size,
+                );
+                break;
+              case SelectionType.doNothing:
+              default:
+                break;
+            }
+          },
+        ),
       );
 }

@@ -39,10 +39,10 @@ const double _kHorizontalMargin = 24.0;
 const double _kSuggestionCornerRadius = 4.0;
 
 /// The height of the suggestion.
-const double _kSuggestionHeight = 96.0;
+const double _kSuggestionHeight = 112.0;
 
 /// The diameter of the person image.
-const double _kPersonImageDiameter = 64.0;
+const double _kPersonImageDiameter = 72.0;
 
 /// The margin around the person image such that it sits in the center of the
 /// space allocated for the suggestion image.
