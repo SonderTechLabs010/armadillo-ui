@@ -29,6 +29,9 @@ const _kNowMinimizationScrollOffsetThreshold = 120.0;
 /// settings [Now].
 const _kNowQuickSettingsHideScrollOffsetThreshold = 16.0;
 
+// The height of the quick settings background when fully maximized
+const _kQuickSettingsBackgroundMaximizedWidth = 424.0;
+
 /// Shows the user, the user's context, and important settings.  When minimized
 /// also shows an affordance for seeing missed interruptions.
 class Now extends StatefulWidget {
@@ -86,11 +89,16 @@ class NowState extends TickingState<Now> {
   final RK4SpringSimulation _minimizedInfoSimulation = new RK4SpringSimulation(
       initValue: _kMinimizationSimulationTarget, desc: _kSimulationDesc);
 
+  final GlobalKey _quickSettingsKey = new GlobalKey();
+
   Timer _hideMinimizedInfoTimer;
 
   /// [scrolloffset] affects the bottom padding of the user and text elements
   /// as well as the overall height of [Now] while maximized.
   double _lastScrollOffset = 0.0;
+
+  // initialized in showQuickSettings
+  double _quickSettingsMaximizedHeight = 0.0;
 
   set scrollOffset(double scrollOffset) {
     if (scrollOffset > _kNowMinimizationScrollOffsetThreshold &&
@@ -203,6 +211,26 @@ class NowState extends TickingState<Now> {
                                   .importantInfoMaximized,
                             ),
                           ),
+                          new Container(
+                              height: _quickSettingsHeight,
+                              width: _quickSettingsBackgroundWidth,
+                              child: new ClipRect(
+                                  child: new OverflowBox(
+                                      // don't use parent height as constraint
+                                      maxHeight: double.INFINITY,
+                                      minHeight: 0.0,
+                                      maxWidth:
+                                          _kQuickSettingsBackgroundMaximizedWidth,
+                                      minWidth: 0.0,
+                                      child: new Opacity(
+                                          opacity:
+                                              _quickSettingsSlideUpProgress,
+                                          child: new Center(
+                                              child: new Container(
+                                                  key: _quickSettingsKey,
+                                                  child: InheritedNowManager
+                                                      .of(context)
+                                                      .quickSettings)))))),
                         ],
                       ),
                     ),
@@ -267,28 +295,6 @@ class NowState extends TickingState<Now> {
                       ),
                     ),
                   ),
-
-                  // Quick Settings.
-                  new Positioned(
-                    left: 8.0,
-                    right: 8.0,
-                    top: _quickSettingsBackgroundTopOffset +
-                        // padding and space for user info
-                        128.0 +
-                        // quick settings slide animation
-                        32.0 * (1.0 - _quickSettingsSlideUpProgress),
-                    child: new Center(
-                      child: new Container(
-                        height: math.max(
-                            0.0, _quickSettingsBackgroundHeight - 128.0),
-                        width: _quickSettingsBackgroundWidth,
-                        child: new Opacity(
-                          opacity: _quickSettingsSlideUpProgress,
-                          child: InheritedNowManager.of(context).quickSettings,
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -346,6 +352,9 @@ class NowState extends TickingState<Now> {
   }
 
   void showQuickSettings() {
+    RenderBox r = _quickSettingsKey.currentContext.findRenderObject();
+    _quickSettingsMaximizedHeight = r.size.height;
+
     if (!_revealingQuickSettings) {
       _quickSettingsSimulation.target = _kQuickSettingsSimulationTarget;
       startTicking();
@@ -413,12 +422,18 @@ class NowState extends TickingState<Now> {
       50.0 - 46.0 * _quickSettingsProgress;
 
   double get _quickSettingsBackgroundWidth =>
-      424.0 * _quickSettingsProgress * (1.0 - _minimizationProgress);
-
-  double get _quickSettingsBackgroundHeight =>
-      (config.quickSettingsHeightBump + 200.0) *
+      _kQuickSettingsBackgroundMaximizedWidth *
       _quickSettingsProgress *
       (1.0 - _minimizationProgress);
+
+  double get _quickSettingsBackgroundHeight =>
+      (128.0 + // padding and space for user info
+          _quickSettingsHeight) *
+      _quickSettingsProgress *
+      (1.0 - _minimizationProgress);
+
+  double get _quickSettingsHeight =>
+      _quickSettingsProgress * _quickSettingsMaximizedHeight;
 
   double get _fallAwayOpacity => (1.0 - _fallAwayProgress).clamp(0.0, 1.0);
 
