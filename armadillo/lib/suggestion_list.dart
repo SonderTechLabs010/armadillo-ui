@@ -87,6 +87,12 @@ class SuggestionListState extends State<SuggestionList> {
     append(suggestion + ' ');
   }
 
+  void stopAsking() {
+    setState(() {
+      _asking = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) => new Stack(
         children: [
@@ -103,6 +109,7 @@ class SuggestionListState extends State<SuggestionList> {
                 new Flexible(
                   flex: 3,
                   child: new GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () {
                       setState(() {
                         _asking = !_asking;
@@ -117,7 +124,6 @@ class SuggestionListState extends State<SuggestionList> {
                         }
                       });
                     },
-                    behavior: HitTestBehavior.opaque,
                     child: new Align(
                       alignment: FractionalOffset.centerLeft,
                       child: new Padding(
@@ -141,7 +147,16 @@ class SuggestionListState extends State<SuggestionList> {
                   child: new GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () {
-                      print('Start asking!');
+                      _asking = !_asking;
+                      if (_asking) {
+                        if (config.onAskingStarted != null) {
+                          config.onAskingStarted();
+                        }
+                      } else {
+                        if (config.onAskingEnded != null) {
+                          config.onAskingEnded();
+                        }
+                      }
                     },
                     child: new Align(
                       alignment: FractionalOffset.centerRight,
@@ -204,6 +219,7 @@ class SuggestionListState extends State<SuggestionList> {
       child: new ConstrainedBox(
         constraints: new BoxConstraints(maxWidth: 960.0),
         child: new Block(
+          scrollableKey: config.scrollableKey,
           children: new List<Widget>.generate(
             leftSuggestions.length,
             (int index) => new Row(

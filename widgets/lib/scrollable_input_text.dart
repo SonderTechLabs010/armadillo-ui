@@ -13,11 +13,12 @@ const double _kTextSize = 16.0;
 
 /// Handles the display of typed characters in a [Text].
 ///
-/// TODO(apwilson): Handle non-Latin-1 characters
-///                 (https://github.com/domokit/sysui/issues/336)
+/// TODO(apwilson): Handle non-Latin-1 characters.
 class ScrollableInputText extends StatefulWidget {
   final FractionalOffset alignment;
-  ScrollableInputText({Key key, this.alignment}) : super(key: key);
+  final bool focused;
+  ScrollableInputText({Key key, this.alignment, this.focused})
+      : super(key: key);
 
   @override
   ScrollableInputTextState createState() => new ScrollableInputTextState();
@@ -32,13 +33,14 @@ class ScrollableInputTextState extends State<ScrollableInputText> {
     List<Widget> blockChildren = [
       new Align(
           alignment: config.alignment ?? const FractionalOffset(0.0, 0.5),
-          child: new Text(_text.isEmpty ? 'ASK ANYTHING' : _text,
+          child: new Text(
+              (_text.isEmpty && !config.focused) ? 'ASK ANYTHING' : _text,
               style: new TextStyle(
                   fontSize: _kTextSize,
                   color: _text.isEmpty ? _kHintTextColor : _kTextColor)))
     ];
 
-    if (_text.isNotEmpty) {
+    if (config.focused) {
       blockChildren.add(new Align(
           alignment: config.alignment ?? const FractionalOffset(0.0, 0.5),
           child: new BlinkingCursor(

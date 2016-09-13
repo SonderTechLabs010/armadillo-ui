@@ -172,14 +172,17 @@ class Conductor extends StatelessWidget {
                       curve: Curves.fastOutSlowIn,
                     );
                     _suggestionListKey.currentState?.clear();
+                    _suggestionListKey.currentState?.stopAsking();
                   },
                   child: new SuggestionList(
                     key: _suggestionListKey,
                     scrollableKey: _suggestionListScrollableKey,
                     multiColumn: constraints.maxWidth >
                         _kSuggestionListMultiColumnWidthThreshold,
-                    onAskingStarted: () =>
-                        _keyboardDeviceExtensionKey.currentState.show(),
+                    onAskingStarted: () {
+                      _suggestionOverlayKey.currentState.show();
+                      _keyboardDeviceExtensionKey.currentState.show();
+                    },
                     onAskingEnded: () =>
                         _keyboardDeviceExtensionKey.currentState.hide(),
                     onAskTextChanged: (String text) =>

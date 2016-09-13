@@ -36,9 +36,13 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
   final _scrollableInputTextKey = new GlobalKey<ScrollableInputTextState>();
   @override
   Widget build(BuildContext context) => new RawKeyboardListener(
-      onKey: _handleKey,
-      focused: config.focused,
-      child: new ScrollableInputText(key: _scrollableInputTextKey));
+        onKey: _handleKey,
+        focused: config.focused,
+        child: new ScrollableInputText(
+          key: _scrollableInputTextKey,
+          focused: config.focused,
+        ),
+      );
 
   ScrollableInputTextState get textState =>
       _scrollableInputTextKey.currentState;
