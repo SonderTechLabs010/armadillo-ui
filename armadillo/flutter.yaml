@@ -6,6 +6,7 @@ assets:
   - packages/armadillo/res/Armadillo.png
   - packages/armadillo/res/Background.jpg
   - packages/armadillo/res/User.png
+  - packages/armadillo/res/screen_config.json
   - packages/armadillo/res/flutter-mark-square-100.png
   - packages/armadillo/res/ic_battery_90_grey600_1x_web_24dp.png
   - packages/armadillo/res/ic_battery_90_white_1x_web_24dp.png

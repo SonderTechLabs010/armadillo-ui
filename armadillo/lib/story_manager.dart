@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'config_manager.dart';
 import 'focusable_story.dart';
 import 'suggestion_manager.dart';
 
@@ -15,10 +16,8 @@ const String _kJsonUrl = 'packages/armadillo/res/stories.json';
 
 /// A simple story manager that reads stories from json and reorders them with
 /// user interaction.
-class StoryManager {
+class StoryManager extends ConfigManager {
   final SuggestionManager suggestionManager;
-  final Set<VoidCallback> _listeners = new Set<VoidCallback>();
-  int version = 0;
   List<Story> _stories = const <Story>[];
 
   StoryManager({this.suggestionManager});
@@ -62,27 +61,11 @@ class StoryManager {
           )
           .toList();
 
-      _notifyListeners();
+      notifyListeners();
     });
   }
 
   List<Story> get stories => _stories;
-
-  /// Should be called only by those who instantiate
-  /// [InheritedStoryManager] so they can [State.setState].  If you're a
-  /// [Widget] that wants to be rebuilt when stories change, use
-  /// [InheritedStoryManager.of].
-  void addListener(VoidCallback listener) {
-    _listeners.add(listener);
-  }
-
-  /// Should be called only by those who instantiate
-  /// [InheritedStoryManager] so they can [State.setState].  If you're a
-  /// [Widget] that wants to be rebuilt when stories change, use
-  /// [InheritedStoryManager.of].
-  void removeListener(VoidCallback listener) {
-    _listeners.remove(listener);
-  }
 
   /// Updates the [Story.lastInteraction] of [story] to be [DateTime.now].
   /// This method is to be called whenever a [Story]'s [Story.builder] [Widget]
@@ -90,38 +73,33 @@ class StoryManager {
   void interactionStarted(Story story) {
     _stories.removeWhere((Story s) => s.id == story.id);
     _stories.add(story.copyWith(lastInteraction: new DateTime.now()));
-    _notifyListeners();
+    notifyListeners();
     suggestionManager.storyFocusChanged(story);
   }
 
   void interactionStopped() {
-    _notifyListeners();
+    notifyListeners();
     suggestionManager.storyFocusChanged(null);
   }
 
   void addStory(Story story) {
     _stories.removeWhere((Story s) => s.id == story.id);
     _stories.add(story);
-    _notifyListeners();
-  }
-
-  void _notifyListeners() {
-    version++;
-    _listeners.toList().forEach((VoidCallback listener) => listener());
+    notifyListeners();
   }
 }
 
-class InheritedStoryManager extends InheritedWidget {
-  final StoryManager storyManager;
-  final int storyManagerVersion;
-  InheritedStoryManager({Key key, Widget child, StoryManager storyManager})
-      : this.storyManager = storyManager,
-        this.storyManagerVersion = storyManager.version,
-        super(key: key, child: child);
-
-  @override
-  bool updateShouldNotify(InheritedStoryManager oldWidget) =>
-      (oldWidget.storyManagerVersion != storyManagerVersion);
+class InheritedStoryManager extends InheritedConfigManager<StoryManager> {
+  InheritedStoryManager({
+    Key key,
+    Widget child,
+    StoryManager storyManager,
+  })
+      : super(
+          key: key,
+          child: child,
+          configManager: storyManager,
+        );
 
   /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
   /// returns true for the [InheritedStoryManager] returned by
@@ -129,6 +107,6 @@ class InheritedStoryManager extends InheritedWidget {
   static StoryManager of(BuildContext context) {
     InheritedStoryManager inheritedStoryManager =
         context.inheritFromWidgetOfExactType(InheritedStoryManager);
-    return inheritedStoryManager?.storyManager;
+    return inheritedStoryManager?.configManager;
   }
 }

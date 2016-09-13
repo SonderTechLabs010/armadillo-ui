@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'constraints_manager.dart';
+
 /// Bezel constants.  Used to give the illusion of a device.
 const double _kBezelMinimumWidth = 8.0;
 const double _kBezelExtension = 16.0;
@@ -16,9 +18,9 @@ const double _kInnerBezelRadius = 16.0;
 /// top right.  Each tap of the affordance steps through the [constraints] list
 /// applying each constraint to [child] in turn.
 class ChildConstraintsChanger extends StatefulWidget {
-  final List<BoxConstraints> constraints;
+  final ConstraintsManager constraintsManager;
   final Widget child;
-  ChildConstraintsChanger({this.constraints, this.child});
+  ChildConstraintsChanger({this.constraintsManager, this.child});
 
   @override
   ChildConstraintsChangerState createState() =>
@@ -26,57 +28,91 @@ class ChildConstraintsChanger extends StatefulWidget {
 }
 
 class ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
+  List<BoxConstraints> _constraints;
   int _currentConstraintIndex = 0;
+
   @override
-  Widget build(BuildContext context) => new Stack(children: [
-        _currentConstraint == const BoxConstraints()
-            ? config.child
-            : new Container(
-                decoration:
-                    new BoxDecoration(backgroundColor: new Color(0xFF404040)),
-                child: new Center(
-                    child: new Container(
-                        padding: new EdgeInsets.only(
-                            bottom: _currentConstraint.maxHeight >
-                                    _currentConstraint.maxWidth
-                                ? _kBezelExtension
-                                : 0.0,
-                            right: _currentConstraint.maxHeight >
-                                    _currentConstraint.maxWidth
-                                ? 0.0
-                                : _kBezelExtension),
-                        decoration: new BoxDecoration(
-                            backgroundColor: Colors.black,
-                            border: new Border.all(
-                                color: Colors.black,
-                                width: _kBezelMinimumWidth),
-                            borderRadius:
-                                new BorderRadius.circular(_kOuterBezelRadius),
-                            boxShadow: kElevationToShadow[12]),
-                        child: new ClipRRect(
-                            borderRadius: new BorderRadius.circular(_kInnerBezelRadius),
-                            child: new ConstrainedBox(constraints: _currentConstraint, child: config.child))))),
-        new Positioned(
-          right: 0.0,
-          top: 0.0,
-          width: 50.0,
-          height: 50.0,
-          child: new GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: _switchConstraints,
+  void initState() {
+    super.initState();
+    _constraints = config.constraintsManager.constraints;
+    config.constraintsManager.addListener(_onChange);
+  }
+
+  @override
+  void dispose() {
+    config.constraintsManager.removeListener(_onChange);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => (_constraints?.isEmpty ?? true) ||
+          (_constraints.length == 1 &&
+              _constraints[0] == const BoxConstraints())
+      ? config.child
+      : new Stack(
+          children: [
+            _constrainedChild,
+            _constraintSwitchingButton,
+          ],
+        );
+
+  Widget get _constrainedChild => _currentConstraint == const BoxConstraints()
+      ? config.child
+      : new Container(
+          decoration: new BoxDecoration(backgroundColor: new Color(0xFF404040)),
+          child: new Center(
+            child: new Container(
+              padding: new EdgeInsets.only(
+                  bottom:
+                      _currentConstraint.maxHeight > _currentConstraint.maxWidth
+                          ? _kBezelExtension
+                          : 0.0,
+                  right:
+                      _currentConstraint.maxHeight > _currentConstraint.maxWidth
+                          ? 0.0
+                          : _kBezelExtension),
+              decoration: new BoxDecoration(
+                  backgroundColor: Colors.black,
+                  border: new Border.all(
+                      color: Colors.black, width: _kBezelMinimumWidth),
+                  borderRadius: new BorderRadius.circular(_kOuterBezelRadius),
+                  boxShadow: kElevationToShadow[12]),
+              child: new ClipRRect(
+                borderRadius: new BorderRadius.circular(_kInnerBezelRadius),
+                child: new ConstrainedBox(
+                  constraints: _currentConstraint,
+                  child: config.child,
+                ),
+              ),
+            ),
           ),
-        )
-      ]);
+        );
+
+  Widget get _constraintSwitchingButton => new Positioned(
+        right: 0.0,
+        top: 0.0,
+        width: 50.0,
+        height: 50.0,
+        child: new GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _switchConstraints,
+        ),
+      );
 
   BoxConstraints get _currentConstraint {
-    if (config.constraints == null || config.constraints.isEmpty) {
+    if (_constraints == null || _constraints.isEmpty) {
       return new BoxConstraints();
     }
-    return config.constraints[
-        _currentConstraintIndex % config.constraints.length];
+    return _constraints[_currentConstraintIndex % _constraints.length];
   }
 
   void _switchConstraints() => setState(() {
         _currentConstraintIndex++;
       });
+
+  void _onChange() {
+    setState(() {
+      _constraints = config.constraintsManager.constraints;
+    });
+  }
 }

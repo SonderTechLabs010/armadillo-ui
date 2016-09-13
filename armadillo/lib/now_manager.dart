@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'config_manager.dart';
+
 const String _kUserImage = 'packages/armadillo/res/User.png';
 const String _kBatteryImageWhite =
     'packages/armadillo/res/ic_battery_90_white_1x_web_24dp.png';
@@ -12,32 +14,12 @@ const String _kBatteryImageGrey600 =
     'packages/armadillo/res/ic_battery_90_grey600_1x_web_24dp.png';
 
 /// Manages the contents of [Now].
-class NowManager {
-  final Set<VoidCallback> _listeners = new Set<VoidCallback>();
-  int version = 0;
+class NowManager extends ConfigManager {
   double _quickSettingsProgress = 0.0;
-
-  NowManager();
-
-  /// Should be called only by those who instantiate
-  /// [InheritedNowManager] so they can [State.setState].  If you're a
-  /// [Widget] that wants to be rebuilt when suggestions change, use
-  /// [InheritedNowManager.of].
-  void addListener(VoidCallback listener) {
-    _listeners.add(listener);
-  }
-
-  /// Should be called only by those who instantiate
-  /// [InheritedNowManager] so they can [State.setState].  If you're a
-  /// [Widget] that wants to be rebuilt when suggestions change, use
-  /// [InheritedNowManager.of].
-  void removeListener(VoidCallback listener) {
-    _listeners.remove(listener);
-  }
 
   set quickSettingsProgress(double quickSettingsProgress) {
     _quickSettingsProgress = quickSettingsProgress;
-    _notifyListeners();
+    notifyListeners();
   }
 
   Widget get user => new Image.asset(_kUserImage, fit: ImageFit.cover);
@@ -125,24 +107,19 @@ class NowManager {
         new TextStyle(color: Colors.grey[600]),
         _quickSettingsProgress,
       );
-
-  void _notifyListeners() {
-    version++;
-    _listeners.toList().forEach((VoidCallback listener) => listener());
-  }
 }
 
-class InheritedNowManager extends InheritedWidget {
-  final NowManager nowManager;
-  final int nowManagerVersion;
-  InheritedNowManager({Key key, Widget child, NowManager nowManager})
-      : this.nowManager = nowManager,
-        this.nowManagerVersion = nowManager.version,
-        super(key: key, child: child);
-
-  @override
-  bool updateShouldNotify(InheritedNowManager oldWidget) =>
-      (oldWidget.nowManagerVersion != nowManagerVersion);
+class InheritedNowManager extends InheritedConfigManager<NowManager> {
+  InheritedNowManager({
+    Key key,
+    Widget child,
+    NowManager nowManager,
+  })
+      : super(
+          key: key,
+          child: child,
+          configManager: nowManager,
+        );
 
   /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
   /// returns true for the [InheritedNowManager] returned by
@@ -150,6 +127,6 @@ class InheritedNowManager extends InheritedWidget {
   static NowManager of(BuildContext context) {
     InheritedNowManager inheritedNowManager =
         context.inheritFromWidgetOfExactType(InheritedNowManager);
-    return inheritedNowManager?.nowManager;
+    return inheritedNowManager?.configManager;
   }
 }

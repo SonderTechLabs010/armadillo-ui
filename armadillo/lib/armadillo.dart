@@ -32,16 +32,16 @@ class ArmadilloState extends State<Armadillo> {
   @override
   void initState() {
     super.initState();
-    config.storyManager.addListener(onChange);
-    config.suggestionManager.addListener(onChange);
-    config.nowManager.addListener(onChange);
+    config.storyManager.addListener(_onChange);
+    config.suggestionManager.addListener(_onChange);
+    config.nowManager.addListener(_onChange);
   }
 
   @override
   void dispose() {
-    config.nowManager.removeListener(onChange);
-    config.suggestionManager.removeListener(onChange);
-    config.storyManager.removeListener(onChange);
+    config.nowManager.removeListener(_onChange);
+    config.suggestionManager.removeListener(_onChange);
+    config.storyManager.removeListener(_onChange);
     super.dispose();
   }
 
@@ -70,7 +70,7 @@ class ArmadilloState extends State<Armadillo> {
         ),
       );
 
-  void onChange() {
+  void _onChange() {
     setState(() {});
   }
 }

@@ -11,21 +11,10 @@ import 'package:sysui_widgets/delegating_page_route.dart';
 
 import 'armadillo.dart';
 import 'child_constraints_changer.dart';
+import 'constraints_manager.dart';
 import 'now_manager.dart';
 import 'story_manager.dart';
 import 'suggestion_manager.dart';
-
-const _kConstraints = const <BoxConstraints>[
-  const BoxConstraints.tightFor(width: 440.0, height: 440.0 * 16.0 / 9.0),
-  const BoxConstraints.tightFor(width: 440.0 * 16.0 / 9.0, height: 440.0),
-  const BoxConstraints(),
-  const BoxConstraints.tightFor(width: 360.0, height: 640.0),
-  const BoxConstraints.tightFor(width: 640.0, height: 360.0),
-  const BoxConstraints.tightFor(width: 480.0, height: 800.0),
-  const BoxConstraints.tightFor(width: 800.0, height: 480.0),
-  const BoxConstraints.tightFor(width: 800.0, height: 1280.0),
-  const BoxConstraints.tightFor(width: 1280.0, height: 800.0),
-];
 
 Future main() async {
   SuggestionManager suggestionManager = new SuggestionManager();
@@ -33,12 +22,13 @@ Future main() async {
     suggestionManager: suggestionManager,
   );
   NowManager nowManager = new NowManager();
+  ConstraintsManager constraintsManager = new ConstraintsManager();
 
   runApp(
     new WidgetsApp(
       onGenerateRoute: (RouteSettings settings) => new DelegatingPageRoute(
             (_) => new ChildConstraintsChanger(
-                  constraints: _kConstraints,
+                  constraintsManager: constraintsManager,
                   child: new DefaultAssetBundle(
                     bundle: defaultBundle,
                     child: new Armadillo(
@@ -56,4 +46,5 @@ Future main() async {
   SystemChrome.setEnabledSystemUIOverlays(0);
   storyManager.load(defaultBundle);
   suggestionManager.load(defaultBundle);
+  constraintsManager.load(defaultBundle);
 }

@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:keyboard/word_suggestion_service.dart';
 
+import 'config_manager.dart';
 import 'focusable_story.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/stories.json';
@@ -49,9 +50,7 @@ class Suggestion {
 
 /// A simple suggestion manager that reads suggestions from json maps them to
 /// stories.
-class SuggestionManager {
-  final Set<VoidCallback> _listeners = new Set<VoidCallback>();
-  int version = 0;
+class SuggestionManager extends ConfigManager {
   Map<Object, List<Suggestion>> _storySuggestionsMap =
       const <Object, List<Suggestion>>{};
   List<Suggestion> _currentSuggestions = const <Suggestion>[];
@@ -109,7 +108,7 @@ class SuggestionManager {
       // Start with no story focus suggestions.
       _currentSuggestions = _storySuggestionsMap[new ValueKey('none')];
 
-      _notifyListeners();
+      notifyListeners();
     });
   }
 
@@ -140,22 +139,6 @@ class SuggestionManager {
   set askText(String text) {
     _askText = text?.toLowerCase();
     _updateSuggestions();
-  }
-
-  /// Should be called only by those who instantiate
-  /// [InheritedSuggestionManager] so they can [State.setState].  If you're a
-  /// [Widget] that wants to be rebuilt when suggestions change, use
-  /// [InheritedSuggestionManager.of].
-  void addListener(VoidCallback listener) {
-    _listeners.add(listener);
-  }
-
-  /// Should be called only by those who instantiate
-  /// [InheritedSuggestionManager] so they can [State.setState].  If you're a
-  /// [Widget] that wants to be rebuilt when suggestions change, use
-  /// [InheritedSuggestionManager.of].
-  void removeListener(VoidCallback listener) {
-    _listeners.remove(listener);
   }
 
   /// Updates the [suggestions] based on the currently focused [story].  If no
@@ -199,27 +182,22 @@ class SuggestionManager {
       });
       _currentSuggestions = suggestions;
     }
-    _notifyListeners();
-  }
-
-  void _notifyListeners() {
-    version++;
-    _listeners.toList().forEach((VoidCallback listener) => listener());
+    notifyListeners();
   }
 }
 
-class InheritedSuggestionManager extends InheritedWidget {
-  final SuggestionManager suggestionManager;
-  final int suggestionManagerVersion;
-  InheritedSuggestionManager(
-      {Key key, Widget child, SuggestionManager suggestionManager})
-      : this.suggestionManager = suggestionManager,
-        this.suggestionManagerVersion = suggestionManager.version,
-        super(key: key, child: child);
-
-  @override
-  bool updateShouldNotify(InheritedSuggestionManager oldWidget) =>
-      (oldWidget.suggestionManagerVersion != suggestionManagerVersion);
+class InheritedSuggestionManager
+    extends InheritedConfigManager<SuggestionManager> {
+  InheritedSuggestionManager({
+    Key key,
+    Widget child,
+    SuggestionManager suggestionManager,
+  })
+      : super(
+          key: key,
+          child: child,
+          configManager: suggestionManager,
+        );
 
   /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
   /// returns true for the [InheritedSuggestionManager] returned by
@@ -227,6 +205,6 @@ class InheritedSuggestionManager extends InheritedWidget {
   static SuggestionManager of(BuildContext context) {
     InheritedSuggestionManager inheritedSuggestionManager =
         context.inheritFromWidgetOfExactType(InheritedSuggestionManager);
-    return inheritedSuggestionManager?.suggestionManager;
+    return inheritedSuggestionManager?.configManager;
   }
 }
