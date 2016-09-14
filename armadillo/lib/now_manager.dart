@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'dart:math' as math;
 
 import 'config_manager.dart';
+import 'quick_settings.dart';
 import 'time_stringer.dart';
 
 const String _kUserImage = 'packages/armadillo/res/User.png';
@@ -206,41 +207,7 @@ class NowManager extends ConfigManager {
         ],
       );
 
-  Widget get quickSettings => new Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          new Container(
-            padding: const EdgeInsets.all(16.0),
-            child: new Text(
-              'quick settings',
-              textAlign: TextAlign.center,
-              style: new TextStyle(color: Colors.grey[600]),
-            ),
-          ),
-          new Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: new Divider(height: 1.0, color: Colors.grey[600]),
-          ),
-          new GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              print('Make Inline Quick Settings into Story!');
-            },
-            child: new Container(
-              padding: const EdgeInsets.all(16.0),
-              child: new Text(
-                'MORE',
-                textAlign: TextAlign.center,
-                style: new TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
+  Widget get quickSettings => new QuickSettings();
 
   TextStyle get _textStyle => TextStyle.lerp(
         new TextStyle(color: Colors.white),
