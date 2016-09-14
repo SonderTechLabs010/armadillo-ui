@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -11,6 +10,7 @@ import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
 import 'now_manager.dart';
+import 'now_minimized_info_fader.dart';
 
 typedef void OnQuickSettingsProgressChange(double quickSettingsProgress);
 
@@ -91,7 +91,7 @@ class NowState extends TickingState<Now> {
 
   final GlobalKey _quickSettingsKey = new GlobalKey();
 
-  Timer _hideMinimizedInfoTimer;
+  NowMinimizedInfoFader _nowMinimizedInfoFader;
 
   /// [scrolloffset] affects the bottom padding of the user and text elements
   /// as well as the overall height of [Now] while maximized.
@@ -99,6 +99,24 @@ class NowState extends TickingState<Now> {
 
   // initialized in showQuickSettings
   double _quickSettingsMaximizedHeight = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _nowMinimizedInfoFader = new NowMinimizedInfoFader(
+      onChange: () {
+        if (mounted) {
+          setState(() {});
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _nowMinimizedInfoFader.reset();
+    super.dispose();
+  }
 
   set scrollOffset(double scrollOffset) {
     if (scrollOffset > _kNowMinimizationScrollOffsetThreshold &&
@@ -244,7 +262,9 @@ class NowState extends TickingState<Now> {
                       padding: new EdgeInsets.symmetric(
                           horizontal: 8.0 + _slideInDistance),
                       child: new Opacity(
-                        opacity: 0.6 * _slideInProgress,
+                        opacity: 0.6 *
+                            _slideInProgress *
+                            _nowMinimizedInfoFader.opacity,
                         child: new Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -276,7 +296,7 @@ class NowState extends TickingState<Now> {
                               child: new GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTapDown: (_) {
-                              _showMinimizedInfo();
+                              _nowMinimizedInfoFader.fadeIn();
                             },
                           )),
                           new GestureDetector(
@@ -288,7 +308,7 @@ class NowState extends TickingState<Now> {
                               child: new GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTapDown: (_) {
-                              _showMinimizedInfo();
+                              _nowMinimizedInfoFader.fadeIn();
                             },
                           )),
                         ],
@@ -369,15 +389,8 @@ class NowState extends TickingState<Now> {
   }
 
   void _showMinimizedInfo() {
-    _hideMinimizedInfoTimer?.cancel();
-    _hideMinimizedInfoTimer =
-        new Timer(const Duration(seconds: 3), _hideMinimizedInfo);
+    _nowMinimizedInfoFader.fadeIn(force: true);
     _minimizedInfoSimulation.target = _kMinimizationSimulationTarget;
-    startTicking();
-  }
-
-  void _hideMinimizedInfo() {
-    _minimizedInfoSimulation.target = 0.0;
     startTicking();
   }
 
