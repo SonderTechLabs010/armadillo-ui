@@ -11,6 +11,8 @@ assets:
   - packages/armadillo/res/ic_battery_90_grey600_1x_web_24dp.png
   - packages/armadillo/res/ic_battery_90_white_1x_web_24dp.png
   - packages/armadillo/res/ic_mic_grey600_1x_web_24dp.png
+  - packages/armadillo/res/ic_signal_cellular_connected_no_internet_0_bar_grey600_24dp.png
+  - packages/armadillo/res/ic_signal_wifi_3_bar_grey600_24dp.png
   - packages/armadillo/res/stories.json
   - packages/keyboard/res/ArrowDown.png
   - packages/keyboard/res/ArrowUp.png

@@ -29,9 +29,6 @@ const _kNowMinimizationScrollOffsetThreshold = 120.0;
 /// settings [Now].
 const _kNowQuickSettingsHideScrollOffsetThreshold = 16.0;
 
-// The height of the quick settings background when fully maximized
-const _kQuickSettingsBackgroundMaximizedWidth = 424.0;
-
 /// Shows the user, the user's context, and important settings.  When minimized
 /// also shows an affordance for seeing missed interruptions.
 class Now extends StatefulWidget {
@@ -220,15 +217,17 @@ class NowState extends TickingState<Now> {
                                   .userContextMaximized,
                             ),
                           ),
-                          new Padding(
-                            padding: const EdgeInsets.only(top: 16.0),
-                            child: new Opacity(
-                              opacity: _fallAwayOpacity,
-                              child: InheritedNowManager
-                                  .of(context)
-                                  .importantInfoMaximized,
-                            ),
-                          ),
+                          new Container(
+                              width: _importantInfoMaximizedWidth,
+                              child: new Padding(
+                                padding: const EdgeInsets.only(top: 16.0),
+                                child: new Opacity(
+                                  opacity: _fallAwayOpacity,
+                                  child: InheritedNowManager
+                                      .of(context)
+                                      .importantInfoMaximized,
+                                ),
+                              )),
                           new Container(
                               height: _quickSettingsHeight,
                               width: _quickSettingsBackgroundWidth,
@@ -237,8 +236,9 @@ class NowState extends TickingState<Now> {
                                       // don't use parent height as constraint
                                       maxHeight: double.INFINITY,
                                       minHeight: 0.0,
-                                      maxWidth:
-                                          _kQuickSettingsBackgroundMaximizedWidth,
+                                      maxWidth: InheritedNowManager
+                                          .of(context)
+                                          .quickSettingsBackgroundMaximizedWidth,
                                       minWidth: 0.0,
                                       child: new Opacity(
                                           opacity:
@@ -349,6 +349,8 @@ class NowState extends TickingState<Now> {
       }
       InheritedNowManager.of(context).quickSettingsProgress =
           _quickSettingsProgress;
+      InheritedNowManager.of(context).quickSettingsSlideUpProgress =
+          _quickSettingsSlideUpProgress;
     }
 
     return continueTicking;
@@ -435,7 +437,7 @@ class NowState extends TickingState<Now> {
       50.0 - 46.0 * _quickSettingsProgress;
 
   double get _quickSettingsBackgroundWidth =>
-      _kQuickSettingsBackgroundMaximizedWidth *
+      InheritedNowManager.of(context).quickSettingsBackgroundMaximizedWidth *
       _quickSettingsProgress *
       (1.0 - _minimizationProgress);
 
@@ -486,4 +488,14 @@ class NowState extends TickingState<Now> {
       0.0,
       ((_quickSettingsProgress - (1.0 - _kFallAwayDurationFraction)) /
           _kFallAwayDurationFraction));
+
+  // Width of quick settings maximized info
+  // (ie battery icon/desc | wifi icon/desc | network icon/desc)
+  double get _importantInfoMaximizedWidth {
+    double t = _quickSettingsProgress * (1.0 - _minimizationProgress);
+    double minWidth = InheritedNowManager.of(context).importantInfoMinWidth;
+    double qsBackgroundMaximizedWidth =
+        InheritedNowManager.of(context).quickSettingsBackgroundMaximizedWidth;
+    return minWidth + (qsBackgroundMaximizedWidth - minWidth) * t;
+  }
 }
