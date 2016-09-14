@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:sysui_widgets/icon_slider.dart';
 
 import 'toggle_icon.dart';
 
@@ -27,6 +28,10 @@ const String _kBatteryImageGrey600 =
     'packages/armadillo/res/ic_battery_90_grey600_1x_web_24dp.png';
 const String _kMicImageGrey600 =
     'packages/armadillo/res/ic_mic_grey600_1x_web_24dp.png';
+const String _kBrightnessHighGrey600 =
+    'packages/armadillo/res/ic_brightness_high_grey600.png';
+const String _kVolumeUpGrey600 =
+    'packages/armadillo/res/ic_volume_up_grey600.png';
 
 class QuickSettings extends StatefulWidget {
   @override
@@ -60,10 +65,11 @@ class _QuickSettingsState extends State<QuickSettings> {
             new Row(children: [
               new Flexible(
                 flex: 3,
-                child: new Slider(
+                child: new IconSlider(
                   value: _volumeSliderValue,
                   min: 0.0,
                   max: 100.0,
+                  thumbImage: new AssetImage(_kVolumeUpGrey600),
                   onChanged: (double value) {
                     setState(() {
                       _volumeSliderValue = value;
@@ -73,10 +79,11 @@ class _QuickSettingsState extends State<QuickSettings> {
               ),
               new Flexible(
                 flex: 3,
-                child: new Slider(
+                child: new IconSlider(
                   value: _brightnessSliderValue,
                   min: 0.0,
                   max: 100.0,
+                  thumbImage: new AssetImage(_kBrightnessHighGrey600),
                   onChanged: (double value) {
                     setState(() {
                       _brightnessSliderValue = value;
