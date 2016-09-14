@@ -66,7 +66,6 @@ class NowManager extends ConfigManager {
   Widget get quickSettings => new Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
-
         children: [
           new Container(
             padding: const EdgeInsets.all(16.0),
