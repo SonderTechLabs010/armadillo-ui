@@ -110,7 +110,7 @@ class GenerateCommitCommand extends Command {
 
     // Update the various files.
     new File('FLUTTER_VERSION').writeAsStringSync(diff.head);
-    List updated_files = ['FLUTTER_VERSION'];
+    List updatedFiles = ['FLUTTER_VERSION'];
     (await new Git().pubspecFiles).forEach((specFilename) {
       // Replace the version of mojo_sdk for packages that depend on it.
       final specFile = new File(specFilename);
@@ -118,7 +118,7 @@ class GenerateCommitCommand extends Command {
       if (!specs.contains('mojo_sdk')) {
         return;
       }
-      updated_files.add(specFilename);
+      updatedFiles.add(specFilename);
       final newSpecs = specs.replaceFirst(
           new RegExp(r"mojo_sdk: [^\s]+", multiLine: true),
           'mojo_sdk: ${additionalDependencies.mojoSdkPackageVersion}');
@@ -144,7 +144,7 @@ class GenerateCommitCommand extends Command {
     messageFile.writeAsStringSync(content.toString());
 
     // Create the sync commit.
-    await runCommand('git add -A ${updated_files.join(" ")}');
+    await runCommand('git add -A ${updatedFiles.join(" ")}');
     await runCommand('git commit -F $messageFilePath');
     print('Commit created!');
   }
