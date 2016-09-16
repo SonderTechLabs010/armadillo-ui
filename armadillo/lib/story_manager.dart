@@ -33,7 +33,7 @@ class StoryManager extends ConfigManager {
                   id: new ValueKey(story['id']),
                   builder: (_) => new Image.asset(
                         story['content'],
-                        alignment: FractionalOffset.centerLeft,
+                        alignment: FractionalOffset.topCenter,
                         fit: ImageFit.cover,
                       ),
                   title: story['title'],
