@@ -93,6 +93,14 @@ class SuggestionListState extends State<SuggestionList> {
     });
   }
 
+  void selectFirstSuggestions() {
+    List<Suggestion> suggestions =
+        InheritedSuggestionManager.of(context).suggestions;
+    if (suggestions.isNotEmpty) {
+      _onSuggestionSelected(suggestions[0]);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => new Stack(
         children: [
@@ -240,6 +248,30 @@ class SuggestionListState extends State<SuggestionList> {
     );
   }
 
+  void _onSuggestionSelected(Suggestion suggestion) {
+    switch (suggestion.selectionType) {
+      case SelectionType.launchStory:
+      case SelectionType.modifyStory:
+        setState(() {
+          _selectedSuggestion = suggestion;
+        });
+        // We pass the bounds of the suggestion w.r.t.
+        // global coordinates so it can be mapped back to
+        // local coordinates when it's displayed in the
+        // SelectedSuggestionOverlay.
+        RenderBox box =
+            new GlobalObjectKey(suggestion).currentContext.findRenderObject();
+        config.onSuggestionSelected(
+          suggestion,
+          box.localToGlobal(Point.origin) & box.size,
+        );
+        break;
+      case SelectionType.doNothing:
+      default:
+        break;
+    }
+  }
+
   Widget _createSuggestion(Suggestion suggestion) => new Padding(
         padding: const EdgeInsets.symmetric(
           vertical: 6.0,
@@ -248,30 +280,7 @@ class SuggestionListState extends State<SuggestionList> {
           key: new GlobalObjectKey(suggestion),
           visible: _selectedSuggestion?.id != suggestion.id,
           suggestion: suggestion,
-          onSelected: () {
-            switch (suggestion.selectionType) {
-              case SelectionType.launchStory:
-              case SelectionType.modifyStory:
-                setState(() {
-                  _selectedSuggestion = suggestion;
-                });
-                // We pass the bounds of the suggestion w.r.t.
-                // global coordinates so it can be mapped back to
-                // local coordinates when it's displayed in the
-                // SelectedSuggestionOverlay.
-                RenderBox box = new GlobalObjectKey(suggestion)
-                    .currentContext
-                    .findRenderObject();
-                config.onSuggestionSelected(
-                  suggestion,
-                  box.localToGlobal(Point.origin) & box.size,
-                );
-                break;
-              case SelectionType.doNothing:
-              default:
-                break;
-            }
-          },
+          onSelected: () => _onSuggestionSelected(suggestion),
         ),
       );
 }

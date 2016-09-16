@@ -82,8 +82,7 @@ class Conductor extends StatelessWidget {
                   _suggestionListKey.currentState.onSuggestion(suggestion),
               onDelete: () => _suggestionListKey.currentState.backspace(),
               onGo: () {
-                print('go');
-                // TODO(apwilson): Select first suggestion?
+                _suggestionListKey.currentState.selectFirstSuggestions();
               }),
         ],
         child: new LayoutBuilder(
