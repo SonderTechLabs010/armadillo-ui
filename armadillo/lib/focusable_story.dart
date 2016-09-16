@@ -52,6 +52,7 @@ class Story {
   final DateTime lastInteraction;
   final Duration cumulativeInteractionDuration;
   final Color themeColor;
+  final bool inactive;
 
   Story(
       {this.id,
@@ -61,9 +62,10 @@ class Story {
       this.avatar,
       this.lastInteraction,
       this.cumulativeInteractionDuration,
-      this.themeColor});
+      this.themeColor,
+      this.inactive: false});
 
-  Story copyWith({DateTime lastInteraction}) => new Story(
+  Story copyWith({DateTime lastInteraction, bool inactive}) => new Story(
       id: this.id,
       builder: this.builder,
       lastInteraction: lastInteraction ?? this.lastInteraction,
@@ -71,7 +73,8 @@ class Story {
       themeColor: this.themeColor,
       icons: new List.from(this.icons),
       avatar: this.avatar,
-      title: this.title);
+      title: this.title,
+      inactive: inactive ?? this.inactive);
 
   /// A [Story] is bigger if it has been used often and recently.
   double getHeight({bool multiColumn, double parentWidth}) {
@@ -236,113 +239,116 @@ class FocusableStoryState extends TickingState<FocusableStory> {
     Matrix4 transform = new Matrix4.identity();
     transform.scale(scale, scale);
 
-    return new Padding(
-      padding: new EdgeInsets.symmetric(
-          vertical: verticalMargin, horizontal: horizontalMargin),
-      child: new Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Story.
-          new ClipRRect(
-            borderRadius:
-                new BorderRadius.circular(4.0 * (1.0 - _focusProgress)),
-            child: new Container(
-              decoration:
-                  new BoxDecoration(backgroundColor: new Color(0xFFFF0000)),
-              height: height,
-              width: width,
-              child: new Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // The story bar that pushes down the story.
-                  new StoryBar(
-                    key: _storyBarKey,
-                    story: config.story,
-                    minimizedHeight: _kStoryBarMinimizedHeight,
-                    maximizedHeight: _kStoryBarMaximizedHeight,
-                    startMaximized: config.startFocused,
-                  ),
+    return new Offstage(
+      offstage: config.story.inactive,
+      child: new Padding(
+        padding: new EdgeInsets.symmetric(
+            vertical: verticalMargin, horizontal: horizontalMargin),
+        child: new Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Story.
+            new ClipRRect(
+              borderRadius:
+                  new BorderRadius.circular(4.0 * (1.0 - _focusProgress)),
+              child: new Container(
+                decoration:
+                    new BoxDecoration(backgroundColor: new Color(0xFFFF0000)),
+                height: height,
+                width: width,
+                child: new Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // The story bar that pushes down the story.
+                    new StoryBar(
+                      key: _storyBarKey,
+                      story: config.story,
+                      minimizedHeight: _kStoryBarMinimizedHeight,
+                      maximizedHeight: _kStoryBarMaximizedHeight,
+                      startMaximized: config.startFocused,
+                    ),
 
-                  // The scaled and clipped story.  When full size, the story will
-                  // no longer be scaled or clipped due to the nature of the
-                  // calculations of scale, width, height, and margins above.
-                  new Flexible(
-                    child: new Transform(
-                      transform: transform,
-                      alignment: FractionalOffset.topCenter,
-                      child: new Stack(
-                        children: [
-                          // Touch listener that activates in full screen mode.
-                          // When a touch comes in we hide the story bar.
-                          new Listener(
-                            onPointerDown:
-                                (_focusProgress == 1.0 && !config.multiColumn)
-                                    ? (PointerDownEvent event) {
-                                        _storyBarKey.currentState.hide();
-                                      }
-                                    : null,
-                            behavior: HitTestBehavior.translucent,
-                            child: new OverflowBox(
-                              alignment: FractionalOffset.topCenter,
-                              minWidth: config.fullSize.width,
-                              maxWidth: config.fullSize.width,
-                              minHeight: config.fullSize.height -
-                                  (config.multiColumn
-                                      ? _kStoryBarMaximizedHeight
-                                      : 0.0),
-                              maxHeight: config.fullSize.height -
-                                  (config.multiColumn
-                                      ? _kStoryBarMaximizedHeight
-                                      : 0.0),
-                              child: config.story.builder(context),
-                            ),
-                          ),
-
-                          // Vertical gesture detector that activates in full screen
-                          // mode.  When a drag down from top of screen occurs we
-                          // show the story bar.
-                          new Positioned(
-                            top: 0.0,
-                            left: 0.0,
-                            right: 0.0,
-                            height: _kVerticalGestureDetectorHeight,
-                            child: new GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onVerticalDragUpdate:
+                    // The scaled and clipped story.  When full size, the story will
+                    // no longer be scaled or clipped due to the nature of the
+                    // calculations of scale, width, height, and margins above.
+                    new Flexible(
+                      child: new Transform(
+                        transform: transform,
+                        alignment: FractionalOffset.topCenter,
+                        child: new Stack(
+                          children: [
+                            // Touch listener that activates in full screen mode.
+                            // When a touch comes in we hide the story bar.
+                            new Listener(
+                              onPointerDown:
                                   (_focusProgress == 1.0 && !config.multiColumn)
-                                      ? (DragUpdateDetails details) {
-                                          _storyBarKey.currentState.show();
+                                      ? (PointerDownEvent event) {
+                                          _storyBarKey.currentState.hide();
                                         }
                                       : null,
+                              behavior: HitTestBehavior.translucent,
+                              child: new OverflowBox(
+                                alignment: FractionalOffset.topCenter,
+                                minWidth: config.fullSize.width,
+                                maxWidth: config.fullSize.width,
+                                minHeight: config.fullSize.height -
+                                    (config.multiColumn
+                                        ? _kStoryBarMaximizedHeight
+                                        : 0.0),
+                                maxHeight: config.fullSize.height -
+                                    (config.multiColumn
+                                        ? _kStoryBarMaximizedHeight
+                                        : 0.0),
+                                child: config.story.builder(context),
+                              ),
                             ),
-                          ),
-                        ],
+
+                            // Vertical gesture detector that activates in full screen
+                            // mode.  When a drag down from top of screen occurs we
+                            // show the story bar.
+                            new Positioned(
+                              top: 0.0,
+                              left: 0.0,
+                              right: 0.0,
+                              height: _kVerticalGestureDetectorHeight,
+                              child: new GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onVerticalDragUpdate: (_focusProgress == 1.0 &&
+                                        !config.multiColumn)
+                                    ? (DragUpdateDetails details) {
+                                        _storyBarKey.currentState.show();
+                                      }
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Inline Story Title.
-          new Container(
-            height: _inlineStoryTitleHeight,
-            width: width,
-            child: new OverflowBox(
-              minHeight: _kStoryInlineTitleHeight,
-              maxHeight: _kStoryInlineTitleHeight,
-              child: new Padding(
-                padding: const EdgeInsets.only(left: 16.0, top: 8.0),
-                child: new Opacity(
-                  opacity: 1.0 - _focusProgress,
-                  child: new StoryTitle(title: config.story.title),
+                  ],
                 ),
               ),
             ),
-          ),
-        ],
+
+            // Inline Story Title.
+            new Container(
+              height: _inlineStoryTitleHeight,
+              width: width,
+              child: new OverflowBox(
+                minHeight: _kStoryInlineTitleHeight,
+                maxHeight: _kStoryInlineTitleHeight,
+                child: new Padding(
+                  padding: const EdgeInsets.only(left: 16.0, top: 8.0),
+                  child: new Opacity(
+                    opacity: 1.0 - _focusProgress,
+                    child: new StoryTitle(title: config.story.title),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

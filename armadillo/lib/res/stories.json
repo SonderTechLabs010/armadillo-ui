@@ -219,6 +219,19 @@
       "lastInteraction": "10000",
       "culmulativeInteraction": "10",
       "content": "packages/armadillo/res/Armadillo.png"
+    },
+    {
+      "id": "story_inactive",
+      "title": "Story Inactive",
+      "color": "0xFF808080",
+      "avatar": "packages/armadillo/res/User.png",
+      "icons": [
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "lastInteraction": "10000",
+      "culmulativeInteraction": "10",
+      "content": "packages/armadillo/res/Armadillo.png",
+      "inactive": "true"
     }
   ],
   "suggestions": [
@@ -350,6 +363,17 @@
       ],
       "image": "packages/armadillo/res/Armadillo.png",
       "image_type": "person"
+    },
+    {
+      "id": "suggestion_activate",
+      "title": "Activate Inactive Story",
+      "selection_type": "launch",
+      "icons": [
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "image": "packages/armadillo/res/Armadillo.png",
+      "image_type": "other",
+      "story_id": "story_inactive"
     }
   ],
   "story_suggestions_map": {
@@ -364,7 +388,8 @@
       "suggestion_08",
       "suggestion_09",
       "suggestion_10",
-      "suggestion_11"
+      "suggestion_11",
+      "suggestion_activate"
     ],
     "story_01": [
       "suggestion_01",

@@ -57,6 +57,7 @@ class StoryManager extends ConfigManager {
                     minutes: int.parse(story['culmulativeInteraction']),
                   ),
                   themeColor: new Color(int.parse(story['color'])),
+                  inactive: 'true' == (story['inactive'] ?? 'false'),
                 ),
           )
           .toList();
@@ -72,7 +73,12 @@ class StoryManager extends ConfigManager {
   /// comes into focus.
   void interactionStarted(Story story) {
     _stories.removeWhere((Story s) => s.id == story.id);
-    _stories.add(story.copyWith(lastInteraction: new DateTime.now()));
+    _stories.add(
+      story.copyWith(
+        lastInteraction: new DateTime.now(),
+        inactive: false,
+      ),
+    );
     notifyListeners();
     suggestionManager.storyFocusChanged(story);
   }
