@@ -135,13 +135,7 @@ class Conductor extends StatelessWidget {
                           (double quickSettingsProgress) => _recentListKey
                               .currentState
                               .quickSettingsProgress = quickSettingsProgress,
-                      onReturnToOriginButtonTap: () {
-                        _recentListScrollableKey.currentState.scrollTo(0.0,
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.fastOutSlowIn);
-                        _recentListKey.currentState.defocus();
-                        InheritedStoryManager.of(context).interactionStopped();
-                      },
+                      onReturnToOriginButtonTap: () => _goToOrigin(context),
                       onMinimize: () {
                         _suggestionOverlayKey.currentState.peek = false;
                         _suggestionOverlayKey.currentState.hide();
@@ -239,17 +233,32 @@ class Conductor extends StatelessWidget {
     _suggestionOverlayKey.currentState.hide();
   }
 
+  void _goToOrigin(BuildContext context) {
+    _recentListScrollableKey.currentState.scrollTo(0.0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.fastOutSlowIn);
+    _recentListKey.currentState.defocus();
+    InheritedStoryManager.of(context).interactionStopped();
+  }
+
   void _onSuggestionExpanded(Suggestion suggestion, BuildContext context) {
-    Story story = InheritedStoryManager
+    List<Story> targetStories = InheritedStoryManager
         .of(context)
         .stories
         .where((Story story) => story.id == suggestion.selectionStoryId)
-        .single;
+        .toList();
 
-    assert(story != null);
-
-    // Focus on the story.
-    _recentListKey.currentState.focusStory(story);
+    // There should be only one story with this id.  If that's not true, bail
+    // out.
+    if (targetStories.length != 1) {
+      print(
+          'WARNING: Found ${targetStories.length} stories with id ${suggestion.selectionStoryId}. Returning to origin.');
+      _goToOrigin(context);
+      _nowKey.currentState.maximize();
+    } else {
+      // Focus on the story.
+      _recentListKey.currentState.focusStory(targetStories[0]);
+    }
 
     // Unhide selected suggestion in suggestion list.
     _suggestionListKey.currentState.resetSelection();
