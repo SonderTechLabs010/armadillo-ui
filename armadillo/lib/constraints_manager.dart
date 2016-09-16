@@ -18,25 +18,27 @@ class ConstraintsManager extends ConfigManager {
   ];
 
   void load(AssetBundle assetBundle) {
-    assetBundle.loadString(_kJsonUrl).then((String json) {
-      final decodedJson = JSON.decode(json);
+    assetBundle.loadString(_kJsonUrl).then(parseJson);
+  }
 
-      // Load screen sizes.
-      _currentConstraints = decodedJson['screen_sizes']
-          .map(
-            (Map<String, Object> constraint) => new BoxConstraints.tightFor(
-                  width: constraint['width'] != null
-                      ? double.parse(constraint['width'])
-                      : null,
-                  height: constraint['height'] != null
-                      ? double.parse(constraint['height'])
-                      : null,
-                ),
-          )
-          .toList();
-      _currentConstraints.insert(0, const BoxConstraints());
-      notifyListeners();
-    });
+  void parseJson(String json) {
+    final decodedJson = JSON.decode(json);
+
+    // Load screen sizes.
+    _currentConstraints = decodedJson['screen_sizes']
+        .map(
+          (Map<String, Object> constraint) => new BoxConstraints.tightFor(
+                width: constraint['width'] != null
+                    ? double.parse(constraint['width'])
+                    : null,
+                height: constraint['height'] != null
+                    ? double.parse(constraint['height'])
+                    : null,
+              ),
+        )
+        .toList();
+    _currentConstraints.insert(0, const BoxConstraints());
+    notifyListeners();
   }
 
   List<BoxConstraints> get constraints => _currentConstraints;
