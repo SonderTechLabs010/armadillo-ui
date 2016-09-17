@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import 'config_manager.dart';
+import 'time_stringer.dart';
 
 const String _kUserImage = 'packages/armadillo/res/User.png';
 const String _kBatteryImageWhite =
@@ -15,6 +16,24 @@ const String _kBatteryImageGrey600 =
 
 /// Manages the contents of [Now].
 class NowManager extends ConfigManager {
+  final TimeStringer _timeStringer = new TimeStringer();
+
+  @override
+  void addListener(VoidCallback listener) {
+    super.addListener(listener);
+    if (listenerCount == 1) {
+      _timeStringer.addListener(notifyListeners);
+    }
+  }
+
+  @override
+  void removeListener(VoidCallback listener) {
+    super.removeListener(listener);
+    if (listenerCount == 0) {
+      _timeStringer.removeListener(notifyListeners);
+    }
+  }
+
   double _quickSettingsProgress = 0.0;
 
   set quickSettingsProgress(double quickSettingsProgress) {
@@ -25,13 +44,13 @@ class NowManager extends ConfigManager {
   Widget get user => new Image.asset(_kUserImage, fit: ImageFit.cover);
 
   Widget get userContextMaximized => new Text(
-        'Saturday 4:23 Sierra Vista'.toUpperCase(),
+        '${_timeStringer.longString} Mountain View'.toUpperCase(),
         style: _textStyle,
       );
 
   Widget get userContextMinimized => new Padding(
         padding: const EdgeInsets.only(left: 8.0),
-        child: new Text('4:23'),
+        child: new Text('${_timeStringer.shortString}'),
       );
 
   Widget get importantInfoMaximized => new Stack(

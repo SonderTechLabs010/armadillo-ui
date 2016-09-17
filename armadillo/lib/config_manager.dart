@@ -26,6 +26,8 @@ abstract class ConfigManager {
     _listeners.remove(listener);
   }
 
+  int get listenerCount => _listeners.length;
+
   /// Should be called only by [ConfigManager] when [config] has changed.
   void notifyListeners() {
     version++;

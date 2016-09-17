@@ -6,6 +6,7 @@ name: armadillo
 dependencies:
   flutter:
     path: ../third_party/flutter/packages/flutter
+  intl: ^0.14.0
   keyboard:
     path: ../keyboard
   sysui_widgets:
