@@ -422,37 +422,38 @@ class NowState extends TickingState<Now> {
           _quickSettingsRaiseDistance +
           _scrollOffsetDelta);
 
-  double get _userImageSize => 100.0 - (88.0 * _minimizationProgress);
+  double get _userImageSize => _lerp(100.0, 12.0, _minimizationProgress);
 
-  double get _userImageBorderWidth => 2.0 + (4.0 * _minimizationProgress);
+  double get _userImageBorderWidth => _lerp(2.0, 6.0, _minimizationProgress);
 
   double get _userImageTopOffset =>
-      (100.0 - 80 * _quickSettingsProgress) * (1.0 - _minimizationProgress) +
+      _lerp(100.0, 20.0, _quickSettingsProgress) *
+          (1.0 - _minimizationProgress) +
       ((config.minHeight - _userImageSize) / 2.0) * _minimizationProgress;
 
   double get _quickSettingsBackgroundTopOffset =>
       _userImageTopOffset + ((_userImageSize / 2.0) * _quickSettingsProgress);
 
   double get _quickSettingsBackgroundBorderRadius =>
-      50.0 - 46.0 * _quickSettingsProgress;
+      _lerp(50.0, 4.0, _quickSettingsProgress);
 
   double get _quickSettingsBackgroundWidth =>
       InheritedNowManager.of(context).quickSettingsBackgroundMaximizedWidth *
       _quickSettingsProgress *
       (1.0 - _minimizationProgress);
 
-  double get _quickSettingsBackgroundHeight =>
-      (128.0 + // padding and space for user info
-          _quickSettingsHeight) *
-      _quickSettingsProgress *
-      (1.0 - _minimizationProgress);
+  double get _quickSettingsBackgroundHeight => _lerp(
+      0.0,
+      128.0 + // padding and space for user info
+          _quickSettingsHeight,
+      _quickSettingsProgress * (1.0 - _minimizationProgress));
 
   double get _quickSettingsHeight =>
       _quickSettingsProgress * _quickSettingsMaximizedHeight;
 
   double get _fallAwayOpacity => (1.0 - _fallAwayProgress).clamp(0.0, 1.0);
 
-  double get _slideInDistance => 10.0 * (1.0 - _slideInProgress);
+  double get _slideInDistance => _lerp(10.0, 0.0, _slideInProgress);
 
   double get _quickSettingsRaiseDistance =>
       config.quickSettingsHeightBump * _quickSettingsProgress;
@@ -489,6 +490,10 @@ class NowState extends TickingState<Now> {
       ((_quickSettingsProgress - (1.0 - _kFallAwayDurationFraction)) /
           _kFallAwayDurationFraction));
 
+  double _lerp(double a, double b, double t) {
+    return (1.0 - t) * a + t * b;
+  }
+
   // Width of quick settings maximized info
   // (ie battery icon/desc | wifi icon/desc | network icon/desc)
   double get _importantInfoMaximizedWidth {
@@ -496,6 +501,6 @@ class NowState extends TickingState<Now> {
     double minWidth = InheritedNowManager.of(context).importantInfoMinWidth;
     double qsBackgroundMaximizedWidth =
         InheritedNowManager.of(context).quickSettingsBackgroundMaximizedWidth;
-    return minWidth + (qsBackgroundMaximizedWidth - minWidth) * t;
+    return _lerp(minWidth, qsBackgroundMaximizedWidth, t);
   }
 }
