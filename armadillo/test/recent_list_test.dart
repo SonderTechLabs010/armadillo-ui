@@ -107,6 +107,7 @@ class DummyStoryManager extends StoryManager {
         (int index) => new Story(
               id: new ValueKey(storyKeys[index]),
               builder: (_) => new Container(key: storyKeys[index]),
+              wideBuilder: (_) => new Container(key: storyKeys[index]),
               title: '',
               avatar: (_) => new Container(),
               lastInteraction: new DateTime.now(),
