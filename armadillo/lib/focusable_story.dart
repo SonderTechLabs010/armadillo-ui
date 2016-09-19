@@ -46,6 +46,7 @@ const double _kStoryInlineTitleHeight = 32.0;
 class Story {
   final Object id;
   final WidgetBuilder builder;
+  final WidgetBuilder wideBuilder;
   final List<WidgetBuilder> icons;
   final WidgetBuilder avatar;
   final String title;
@@ -57,6 +58,7 @@ class Story {
   Story(
       {this.id,
       this.builder,
+      this.wideBuilder,
       this.title,
       this.icons: const <WidgetBuilder>[],
       this.avatar,
@@ -68,6 +70,7 @@ class Story {
   Story copyWith({DateTime lastInteraction, bool inactive}) => new Story(
       id: this.id,
       builder: this.builder,
+      wideBuilder: this.wideBuilder,
       lastInteraction: lastInteraction ?? this.lastInteraction,
       cumulativeInteractionDuration: this.cumulativeInteractionDuration,
       themeColor: this.themeColor,
@@ -300,7 +303,9 @@ class FocusableStoryState extends TickingState<FocusableStory> {
                                     (config.multiColumn
                                         ? _kStoryBarMaximizedHeight
                                         : 0.0),
-                                child: config.story.builder(context),
+                                child: config.multiColumn
+                                    ? config.story.wideBuilder(context)
+                                    : config.story.builder(context),
                               ),
                             ),
 

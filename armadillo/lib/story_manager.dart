@@ -36,6 +36,11 @@ class StoryManager extends ConfigManager {
                         alignment: FractionalOffset.topCenter,
                         fit: ImageFit.cover,
                       ),
+                  wideBuilder: (_) => new Image.asset(
+                        story['contentWide'] ?? story['content'],
+                        alignment: FractionalOffset.topCenter,
+                        fit: ImageFit.cover,
+                      ),
                   title: story['title'],
                   icons: (story['icons'] as List<String>)
                       .map(

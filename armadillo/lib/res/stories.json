@@ -10,7 +10,8 @@
       ],
       "lastInteraction": "0",
       "culmulativeInteraction": "0",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "content": "packages/armadillo/res/Armadillo.png",
+      "contentWide": "packages/armadillo/res/Armadillo.png"
     },
     {
       "id": "story_02",
@@ -23,7 +24,8 @@
       ],
       "lastInteraction": "5",
       "culmulativeInteraction": "10",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "content": "packages/armadillo/res/Armadillo.png",
+      "contentWide": "packages/armadillo/res/Armadillo.png"
     },
     {
       "id": "story_04",
@@ -37,7 +39,8 @@
       ],
       "lastInteraction": "10",
       "culmulativeInteraction": "20",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "content": "packages/armadillo/res/Armadillo.png",
+      "contentWide": "packages/armadillo/res/Armadillo.png"
     },
     {
       "id": "story_03",
@@ -52,7 +55,8 @@
       ],
       "lastInteraction": "20",
       "culmulativeInteraction": "30",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "content": "packages/armadillo/res/Armadillo.png",
+      "contentWide": "packages/armadillo/res/Armadillo.png"
     },
     {
       "id": "story_05",
@@ -68,7 +72,8 @@
       ],
       "lastInteraction": "40",
       "culmulativeInteraction": "40",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "content": "packages/armadillo/res/Armadillo.png",
+      "contentWide": "packages/armadillo/res/Armadillo.png"
     },
     {
       "id": "story_07",
