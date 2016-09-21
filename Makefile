@@ -61,6 +61,9 @@ ifeq ($(flag_sync), yes)
 	# Force an update of Flutter's dependencies.
 	third_party/flutter/bin/flutter precache
 	cd tools/get_dependencies && $(pub) upgrade && $(pub) run bin/main.dart upgrade
+	(cd ../magenta; ./scripts/build-magenta-x86-64)
+	../scripts/build-sysroot.sh -c -t x86_64
+
 else
 	@:
 endif
