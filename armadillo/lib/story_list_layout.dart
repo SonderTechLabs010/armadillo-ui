@@ -74,6 +74,19 @@ class StoryListLayout {
       return const <_StoryMetadata>[];
     }
 
+    // Assert that the stories are in the correct order.
+    assert(() {
+      for (int i = 1; i < storiesToLayout.length; i++) {
+        bool inOrder =
+            storiesToLayout[i - 1].lastInteraction.millisecondsSinceEpoch >=
+                storiesToLayout[i].lastInteraction.millisecondsSinceEpoch;
+        if (!inOrder) {
+          return false;
+        }
+      }
+      return true;
+    });
+
     // Convert the story list into [StoryMetadata]s determining juggling minutes
     // along the way.  See [_kJugglingThresholdMinutes].
     int jugglingStoryCount = 0; // The number of stories being juggled.

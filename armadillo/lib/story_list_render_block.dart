@@ -164,22 +164,16 @@ class StoryListRenderBlock extends RenderBlock {
   }
 
   List<Story> get _stories {
-    final List<Story> inactiveStories = <Story>[];
     final List<Story> stories = <Story>[];
     {
       RenderBox child = firstChild;
       while (child != null) {
         final StoryListRenderBlockParentData childParentData = child.parentData;
         assert(childParentData.story != null);
-        if (childParentData.story.inactive) {
-          inactiveStories.add(childParentData.story);
-        } else {
-          stories.add(childParentData.story);
-        }
+        stories.add(childParentData.story);
         child = childParentData.nextSibling;
       }
     }
-    stories.addAll(inactiveStories);
     return stories;
   }
 

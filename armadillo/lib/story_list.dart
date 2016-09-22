@@ -77,6 +77,10 @@ class StoryListState extends State<StoryList> {
     List<Story> stories = new List<Story>.from(
       InheritedStoryManager.of(context).stories,
     );
+
+    // Remove inactive stories.
+    stories.removeWhere((Story a) => a.inactive);
+
     // Sort recently interacted with stories to the start of the list.
     stories.sort((Story a, Story b) =>
         b.lastInteraction.millisecondsSinceEpoch -

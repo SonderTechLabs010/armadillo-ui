@@ -104,14 +104,14 @@ class StoryManager extends ConfigManager {
     math.Random random = new math.Random();
     DateTime storyInteractionTime = new DateTime.now();
     _stories = new List<Story>.generate(_stories.length, (int index) {
-      storyInteractionTime.subtract(
+      storyInteractionTime = storyInteractionTime.subtract(
           new Duration(minutes: math.max(0, random.nextInt(100) - 70)));
       Duration interaction = new Duration(minutes: random.nextInt(60));
       Story story = _stories[index].copyWith(
         lastInteraction: storyInteractionTime,
         cumulativeInteractionDuration: interaction,
       );
-      storyInteractionTime.subtract(interaction);
+      storyInteractionTime = storyInteractionTime.subtract(interaction);
       return story;
     });
     notifyListeners();
