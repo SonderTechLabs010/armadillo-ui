@@ -153,8 +153,9 @@ class SuggestionManager extends ConfigManager {
       _currentSuggestions = _storySuggestionsMap[_activeStory?.id] ??
           _storySuggestionsMap[new ValueKey('none')];
     } else {
-      List<Suggestion> suggestions =
-          new List<Suggestion>.from(_storySuggestionsMap[new ValueKey('none')]);
+      List<Suggestion> suggestions = new List<Suggestion>.from(
+          _storySuggestionsMap[new ValueKey('ask')] ??
+              _storySuggestionsMap[new ValueKey('none')]);
       suggestions.sort((Suggestion a, Suggestion b) {
         int minADistance = math.min(
           a.title
