@@ -12,8 +12,8 @@ import 'expand_suggestion.dart';
 import 'keyboard_device_extension.dart';
 import 'now.dart';
 import 'peeking_overlay.dart';
-import 'recent_list.dart';
 import 'splash_suggestion.dart';
+import 'story_list.dart';
 import 'story_manager.dart';
 import 'suggestion_list.dart';
 import 'suggestion_manager.dart';
@@ -32,16 +32,15 @@ const _kQuickSettingsHeightBump = 120.0;
 const _kSuggestionOverlayPeekHeight = 116.0;
 
 /// If the width of the [Conductor] exceeds this value we will switch to
-/// multicolumn mode for the [RecentList].
-const double _kRecentListMultiColumnWidthThreshold = 600.0;
+/// multicolumn mode for the [StoryList].
+const double _kStoryListMultiColumnWidthThreshold = 500.0;
 
 /// If the width of the [Conductor] exceeds this value we will switch to
 /// multicolumn mode for the [SuggestionList].
 const double _kSuggestionListMultiColumnWidthThreshold = 800.0;
 
-final GlobalKey<RecentListState> _recentListKey =
-    new GlobalKey<RecentListState>();
-final GlobalKey<ScrollableState> _recentListScrollableKey =
+final GlobalKey<StoryListState> _storyListKey = new GlobalKey<StoryListState>();
+final GlobalKey<ScrollableState> _storyListScrollableKey =
     new GlobalKey<ScrollableState>();
 final GlobalKey<SuggestionListState> _suggestionListKey =
     new GlobalKey<SuggestionListState>();
@@ -56,19 +55,19 @@ final GlobalKey<KeyboardState> _keyboardKey = new GlobalKey<KeyboardState>();
 
 /// The key for adding [Suggestion]s to the [SelectedSuggestionOverlay].  This
 /// is to allow us to animate from a [Suggestion] in an open [SuggestionList]
-/// to a [Story] focused in the [RecentList].
+/// to a [Story] focused in the [StoryList].
 final GlobalKey<SelectedSuggestionOverlayState> _selectedSuggestionOverlayKey =
     new GlobalKey<SelectedSuggestionOverlayState>();
 
-/// Manages the position, size, and state of the recent list, user context,
+/// Manages the position, size, and state of the story list, user context,
 /// suggestion overlay, device extensions. interruption overlay, and quick
 /// settings overlay.
 class Conductor extends StatelessWidget {
   /// Note in particular the magic we're employing here to make the user
-  /// state appear to be a part of the recent list:
-  /// By giving the recent list bottom padding and clipping its bottom to the
+  /// state appear to be a part of the story list:
+  /// By giving the story list bottom padding and clipping its bottom to the
   /// size of the final user state bar we have the user state appear to be
-  /// a part of the recent list and yet prevent the recent list from painting
+  /// a part of the story list and yet prevent the story list from painting
   /// behind it.
   @override
   Widget build(BuildContext context) => new DeviceExtender(
@@ -92,22 +91,22 @@ class Conductor extends StatelessWidget {
             }
             return new Stack(
               children: [
-                // Recent List.
+                // Story List.
                 new Positioned(
                   left: 0.0,
                   right: 0.0,
                   top: 0.0,
                   bottom: _kMinimizedNowHeight,
-                  child: new RecentList(
-                    key: _recentListKey,
+                  child: new StoryList(
+                    key: _storyListKey,
                     multiColumn: constraints.maxWidth >
-                        _kRecentListMultiColumnWidthThreshold,
+                        _kStoryListMultiColumnWidthThreshold,
                     parentSize: new Size(
                       constraints.maxWidth,
                       constraints.maxHeight - _kMinimizedNowHeight,
                     ),
                     quickSettingsHeightBump: _kQuickSettingsHeightBump,
-                    scrollableKey: _recentListScrollableKey,
+                    scrollableKey: _storyListScrollableKey,
                     padding: new EdgeInsets.only(
                       bottom: _kMaximizedNowHeight - _kMinimizedNowHeight,
                     ),
@@ -131,7 +130,7 @@ class Conductor extends StatelessWidget {
                       maxHeight: _kMaximizedNowHeight,
                       quickSettingsHeightBump: _kQuickSettingsHeightBump,
                       onQuickSettingsProgressChange:
-                          (double quickSettingsProgress) => _recentListKey
+                          (double quickSettingsProgress) => _storyListKey
                               .currentState
                               .quickSettingsProgress = quickSettingsProgress,
                       onReturnToOriginButtonTap: () => _goToOrigin(context),
@@ -215,7 +214,7 @@ class Conductor extends StatelessWidget {
 
                 // Selected Suggestion Overlay.
                 // This is only visible in transitoning the user from a Suggestion
-                // in an open SuggestionList to a focused Story in the RecentList.
+                // in an open SuggestionList to a focused Story in the StoryList.
                 new SelectedSuggestionOverlay(
                   key: _selectedSuggestionOverlayKey,
                 ),
@@ -233,10 +232,10 @@ class Conductor extends StatelessWidget {
   }
 
   void _goToOrigin(BuildContext context) {
-    _recentListScrollableKey.currentState.scrollTo(0.0,
+    _storyListScrollableKey.currentState.scrollTo(0.0,
         duration: const Duration(milliseconds: 500),
         curve: Curves.fastOutSlowIn);
-    _recentListKey.currentState.defocus();
+    _storyListKey.currentState.defocus();
     InheritedStoryManager.of(context).interactionStopped();
   }
 
@@ -256,7 +255,7 @@ class Conductor extends StatelessWidget {
       _nowKey.currentState.maximize();
     } else {
       // Focus on the story.
-      _recentListKey.currentState.focusStory(targetStories[0]);
+      _storyListKey.currentState.focusStory(targetStories[0]);
     }
 
     // Unhide selected suggestion in suggestion list.

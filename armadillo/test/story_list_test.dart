@@ -5,67 +5,67 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
 
-import '../lib/recent_list.dart';
+import '../lib/story_list.dart';
 import '../lib/story_manager.dart';
 
 const int _kStoryCount = 4;
-const double _kRecentListWidthSingleColumn = 500.0;
-const double _kRecentListHorizontalMarginsSingleColumn = 16.0;
-const double _kRecentListWidthMultiColumn = 700.0;
-const double _kRecentListHeight = 600.0;
+const double _kWidthSingleColumn = 500.0;
+const double _kHorizontalMarginsSingleColumn = 16.0;
+const double _kWidthMultiColumn = 700.0;
+const double _kHeight = 600.0;
 const double _kStoryBarMaximizedHeight = 48.0;
 
 void main() {
-  testWidgets('Single Column RecentList children extend to fit parent',
+  testWidgets('Single Column StoryList children extend to fit parent',
       (WidgetTester tester) async {
-    GlobalKey recentListKey = new GlobalKey();
+    GlobalKey storyListKey = new GlobalKey();
 
     List<GlobalKey> storyKeys =
         new List<GlobalKey>.generate(4, (int index) => new GlobalKey());
 
-    RecentList recentList = new RecentList(
-      key: recentListKey,
+    StoryList storyList = new StoryList(
+      key: storyListKey,
       multiColumn: false,
       quickSettingsHeightBump: 200.0,
       parentSize: new Size(
-        _kRecentListWidthSingleColumn,
-        _kRecentListHeight,
+        _kWidthSingleColumn,
+        _kHeight,
       ),
     );
     StoryManager storyManager = new DummyStoryManager(storyKeys: storyKeys);
     await tester.pumpWidget(new InheritedStoryManager(
         storyManager: storyManager,
         child: new Center(
-            child: new Container(
-                width: _kRecentListWidthSingleColumn, child: recentList))));
-    expect(find.byKey(recentListKey), isNotNull);
+            child:
+                new Container(width: _kWidthSingleColumn, child: storyList))));
+    expect(find.byKey(storyListKey), isNotNull);
     expect(
-      tester.getSize(find.byKey(recentListKey)).width,
-      _kRecentListWidthSingleColumn,
+      tester.getSize(find.byKey(storyListKey)).width,
+      _kWidthSingleColumn,
     );
     storyKeys.forEach((GlobalKey key) {
       final finder = find.byKey(key);
       expect(finder, isNotNull);
       final size = tester.getSize(finder);
-      expect(size.width, _kRecentListWidthSingleColumn);
+      expect(size.width, _kWidthSingleColumn);
     });
   });
 
   testWidgets(
-      'Multicolumn RecentList children do not extend to fit parent and are instead 16/9 aspect ratio',
+      'Multicolumn StoryList children do not extend to fit parent and are instead 16/9 aspect ratio',
       (WidgetTester tester) async {
-    GlobalKey recentListKey = new GlobalKey();
+    GlobalKey storyListKey = new GlobalKey();
 
     List<GlobalKey> storyKeys =
         new List<GlobalKey>.generate(4, (int index) => new GlobalKey());
 
-    RecentList recentList = new RecentList(
-      key: recentListKey,
+    StoryList storyList = new StoryList(
+      key: storyListKey,
       multiColumn: true,
       quickSettingsHeightBump: 200.0,
       parentSize: new Size(
-        _kRecentListWidthMultiColumn,
-        _kRecentListHeight,
+        _kWidthMultiColumn,
+        _kHeight,
       ),
     );
     StoryManager storyManager = new DummyStoryManager(storyKeys: storyKeys);
@@ -75,23 +75,23 @@ void main() {
         storyManager: storyManager,
         child: new Center(
           child: new Container(
-            width: _kRecentListWidthMultiColumn,
-            child: recentList,
+            width: _kWidthMultiColumn,
+            child: storyList,
           ),
         ),
       ),
     );
-    expect(find.byKey(recentListKey), isNotNull);
+    expect(find.byKey(storyListKey), isNotNull);
     expect(
-      tester.getSize(find.byKey(recentListKey)).width,
-      _kRecentListWidthMultiColumn,
+      tester.getSize(find.byKey(storyListKey)).width,
+      _kWidthMultiColumn,
     );
     storyKeys.forEach((GlobalKey key) {
       final finder = find.byKey(key);
       expect(finder, isNotNull);
       final size = tester.getSize(finder);
-      expect(size.width, _kRecentListWidthMultiColumn);
-      expect(size.height, _kRecentListHeight - _kStoryBarMaximizedHeight);
+      expect(size.width, _kWidthMultiColumn);
+      expect(size.height, _kHeight - _kStoryBarMaximizedHeight);
     });
   });
 }

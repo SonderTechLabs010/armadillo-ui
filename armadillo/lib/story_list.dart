@@ -16,7 +16,7 @@ export 'focusable_story.dart' show Story, OnStoryFocused;
 /// In multicolumn mode, the distance the right column will be offset up.
 const double _kRightBump = 64.0;
 
-class RecentList extends StatefulWidget {
+class StoryList extends StatefulWidget {
   final Key scrollableKey;
   final ScrollListener onScroll;
   final VoidCallback onStoryFocusStarted;
@@ -25,7 +25,7 @@ class RecentList extends StatefulWidget {
   final double quickSettingsHeightBump;
   final bool multiColumn;
 
-  RecentList({
+  StoryList({
     Key key,
     this.scrollableKey,
     this.padding,
@@ -38,10 +38,10 @@ class RecentList extends StatefulWidget {
       : super(key: key);
 
   @override
-  RecentListState createState() => new RecentListState();
+  StoryListState createState() => new StoryListState();
 }
 
-class RecentListState extends State<RecentList> {
+class StoryListState extends State<StoryList> {
   /// When true, list scrolling is disabled and vertical gestures will no longer
   /// be stolen by the [Scrollable] with the key [config.scrollableKey].
   /// This gets set to true when a [Story] comes into focus.
@@ -84,7 +84,7 @@ class RecentListState extends State<RecentList> {
 
     return new Stack(
       children: [
-        // Recent List.
+        // Story List.
         new Positioned(
           left: 0.0,
           right: 0.0,
@@ -93,7 +93,7 @@ class RecentListState extends State<RecentList> {
           child: new ScrollConfiguration(
             delegate:
                 new LockingScrollConfigurationDelegate(lock: _lockScrolling),
-            child: new RecentListBlock(
+            child: new StoryListBlock(
               scrollableKey: config.scrollableKey,
               padding: config.padding,
               onScroll: config.onScroll,
@@ -273,9 +273,9 @@ class LockedUnboundedBehavior extends UnboundedBehavior {
   bool get isScrollable => false;
 }
 
-class RecentListBlock extends Block {
+class StoryListBlock extends Block {
   final bool multiColumn;
-  RecentListBlock(
+  StoryListBlock(
       {Key key,
       List<Widget> children,
       EdgeInsets padding,
@@ -297,7 +297,7 @@ class RecentListBlock extends Block {
   @override
   Widget build(BuildContext context) {
     Widget contents =
-        new RecentListBlockBody(multiColumn: multiColumn, children: children);
+        new StoryListBlockBody(multiColumn: multiColumn, children: children);
     if (padding != null)
       contents = new Padding(padding: padding, child: contents);
     return new ScrollableViewport(
@@ -312,25 +312,25 @@ class RecentListBlock extends Block {
   }
 }
 
-class RecentListBlockBody extends BlockBody {
+class StoryListBlockBody extends BlockBody {
   final bool multiColumn;
-  RecentListBlockBody({Key key, this.multiColumn, List<Widget> children})
+  StoryListBlockBody({Key key, this.multiColumn, List<Widget> children})
       : super(key: key, mainAxis: Axis.vertical, children: children);
 
   @override
-  RecentListRenderBlock createRenderObject(BuildContext context) =>
-      new RecentListRenderBlock(multiColumn: multiColumn);
+  StoryListRenderBlock createRenderObject(BuildContext context) =>
+      new StoryListRenderBlock(multiColumn: multiColumn);
 
   @override
   void updateRenderObject(
-      BuildContext context, RecentListRenderBlock renderObject) {
+      BuildContext context, StoryListRenderBlock renderObject) {
     renderObject.mainAxis = mainAxis;
     renderObject.multiColumn = multiColumn;
   }
 }
 
-class RecentListRenderBlock extends RenderBlock {
-  RecentListRenderBlock({List<RenderBox> children, bool multiColumn})
+class StoryListRenderBlock extends RenderBlock {
+  StoryListRenderBlock({List<RenderBox> children, bool multiColumn})
       : _multiColumn = multiColumn,
         super(children: children, mainAxis: Axis.vertical);
 
