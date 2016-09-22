@@ -22,7 +22,10 @@ const int _kJugglingThresholdMinutes = 120;
 abstract class StoryLayout {
   Size get size;
   Offset get offset;
-  Rect get bounds;
+  Rect get bounds => offset & size;
+
+  @override
+  String toString() => 'StoryLayout($size, $offset)';
 }
 
 class StoryListLayout {
@@ -399,7 +402,7 @@ class StoryListLayout {
 
 /// Stores positions and sizes of a story as it goes through the
 /// [StoryLayout.layout] function.
-class _StoryMetadata implements StoryLayout {
+class _StoryMetadata extends StoryLayout {
   final int interactionMinutes;
   final int jugglingMinutes;
 
@@ -410,9 +413,6 @@ class _StoryMetadata implements StoryLayout {
   Size size = Size.zero;
 
   _StoryMetadata({this.interactionMinutes, this.jugglingMinutes});
-
-  @override
-  Rect get bounds => offset & size;
 
   double get right => offset.dx + size.width;
   double get bottom => offset.dy + size.height;

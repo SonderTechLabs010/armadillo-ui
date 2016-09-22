@@ -12,12 +12,12 @@ import 'expand_suggestion.dart';
 import 'keyboard_device_extension.dart';
 import 'now.dart';
 import 'peeking_overlay.dart';
+import 'selected_suggestion_overlay.dart';
 import 'splash_suggestion.dart';
 import 'story_list.dart';
 import 'story_manager.dart';
 import 'suggestion_list.dart';
 import 'suggestion_manager.dart';
-import 'selected_suggestion_overlay.dart';
 
 /// The height of [Now]'s bar when minimized.
 const _kMinimizedNowHeight = 50.0;
@@ -73,16 +73,17 @@ class Conductor extends StatelessWidget {
   Widget build(BuildContext context) => new DeviceExtender(
         deviceExtensions: [
           new KeyboardDeviceExtension(
-              key: _keyboardDeviceExtensionKey,
-              keyboardKey: _keyboardKey,
-              onText: (String text) =>
-                  _suggestionListKey.currentState.append(text),
-              onSuggestion: (String suggestion) =>
-                  _suggestionListKey.currentState.onSuggestion(suggestion),
-              onDelete: () => _suggestionListKey.currentState.backspace(),
-              onGo: () {
-                _suggestionListKey.currentState.selectFirstSuggestions();
-              }),
+            key: _keyboardDeviceExtensionKey,
+            keyboardKey: _keyboardKey,
+            onText: (String text) =>
+                _suggestionListKey.currentState.append(text),
+            onSuggestion: (String suggestion) =>
+                _suggestionListKey.currentState.onSuggestion(suggestion),
+            onDelete: () => _suggestionListKey.currentState.backspace(),
+            onGo: () {
+              _suggestionListKey.currentState.selectFirstSuggestions();
+            },
+          ),
         ],
         child: new LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
@@ -232,10 +233,13 @@ class Conductor extends StatelessWidget {
   }
 
   void _goToOrigin(BuildContext context) {
-    _storyListScrollableKey.currentState.scrollTo(0.0,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.fastOutSlowIn);
+    _storyListScrollableKey.currentState.scrollTo(
+      0.0,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.fastOutSlowIn,
+    );
     _storyListKey.currentState.defocus();
+    _nowKey.currentState.maximize();
     InheritedStoryManager.of(context).interactionStopped();
   }
 
