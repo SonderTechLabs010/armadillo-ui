@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
+import 'dart:convert' as convert;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,7 +25,7 @@ class StoryManager extends ConfigManager {
 
   void load(AssetBundle assetBundle) {
     assetBundle.loadString(_kJsonUrl).then((String json) {
-      final decodedJson = JSON.decode(json);
+      final decodedJson = convert.JSON.decode(json);
 
       // Load stories
       _stories = decodedJson["stories"]
@@ -96,6 +97,23 @@ class StoryManager extends ConfigManager {
   void addStory(Story story) {
     _stories.removeWhere((Story s) => s.id == story.id);
     _stories.add(story);
+    notifyListeners();
+  }
+
+  void randomizeStoryTimes() {
+    math.Random random = new math.Random();
+    DateTime storyInteractionTime = new DateTime.now();
+    _stories = new List<Story>.generate(_stories.length, (int index) {
+      storyInteractionTime.subtract(
+          new Duration(minutes: math.max(0, random.nextInt(100) - 70)));
+      Duration interaction = new Duration(minutes: random.nextInt(60));
+      Story story = _stories[index].copyWith(
+        lastInteraction: storyInteractionTime,
+        cumulativeInteractionDuration: interaction,
+      );
+      storyInteractionTime.subtract(interaction);
+      return story;
+    });
     notifyListeners();
   }
 }

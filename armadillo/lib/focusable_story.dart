@@ -67,17 +67,24 @@ class Story {
       this.themeColor,
       this.inactive: false});
 
-  Story copyWith({DateTime lastInteraction, bool inactive}) => new Story(
-      id: this.id,
-      builder: this.builder,
-      wideBuilder: this.wideBuilder,
-      lastInteraction: lastInteraction ?? this.lastInteraction,
-      cumulativeInteractionDuration: this.cumulativeInteractionDuration,
-      themeColor: this.themeColor,
-      icons: new List.from(this.icons),
-      avatar: this.avatar,
-      title: this.title,
-      inactive: inactive ?? this.inactive);
+  Story copyWith({
+    DateTime lastInteraction,
+    Duration cumulativeInteractionDuration,
+    bool inactive,
+  }) =>
+      new Story(
+        id: this.id,
+        builder: this.builder,
+        wideBuilder: this.wideBuilder,
+        lastInteraction: lastInteraction ?? this.lastInteraction,
+        cumulativeInteractionDuration:
+            cumulativeInteractionDuration ?? this.cumulativeInteractionDuration,
+        themeColor: this.themeColor,
+        icons: new List.from(this.icons),
+        avatar: this.avatar,
+        title: this.title,
+        inactive: inactive ?? this.inactive,
+      );
 
   /// A [Story] is bigger if it has been used often and recently.
   double getHeight({bool multiColumn, double parentWidth}) {

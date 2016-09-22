@@ -14,6 +14,7 @@ import 'child_constraints_changer.dart';
 import 'constraints_manager.dart';
 import 'now_manager.dart';
 import 'story_manager.dart';
+import 'story_time_randomizer.dart';
 import 'suggestion_manager.dart';
 
 Future main() async {
@@ -27,14 +28,17 @@ Future main() async {
   runApp(
     new WidgetsApp(
       onGenerateRoute: (RouteSettings settings) => new DelegatingPageRoute(
-            (_) => new ChildConstraintsChanger(
-                  constraintsManager: constraintsManager,
-                  child: new DefaultAssetBundle(
-                    bundle: defaultBundle,
-                    child: new Armadillo(
-                      storyManager: storyManager,
-                      suggestionManager: suggestionManager,
-                      nowManager: nowManager,
+            (_) => new StoryTimeRandomizer(
+                  storyManager: storyManager,
+                  child: new ChildConstraintsChanger(
+                    constraintsManager: constraintsManager,
+                    child: new DefaultAssetBundle(
+                      bundle: defaultBundle,
+                      child: new Armadillo(
+                        storyManager: storyManager,
+                        suggestionManager: suggestionManager,
+                        nowManager: nowManager,
+                      ),
                     ),
                   ),
                 ),
