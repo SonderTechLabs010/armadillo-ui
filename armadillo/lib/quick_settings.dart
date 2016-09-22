@@ -32,6 +32,7 @@ const String _kBrightnessHighGrey600 =
     'packages/armadillo/res/ic_brightness_high_grey600.png';
 const String _kVolumeUpGrey600 =
     'packages/armadillo/res/ic_volume_up_grey600.png';
+const Color _kActiveSliderColor = const Color.fromARGB(255, 153, 234, 216);
 
 class QuickSettings extends StatefulWidget {
   @override
@@ -48,109 +49,105 @@ class _QuickSettingsState extends State<QuickSettings> {
 
   @override
   Widget build(BuildContext context) {
-    return new Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: new Material(
-        type: MaterialType.canvas,
-        color: Colors.white,
-        child: new Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            new Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: new Divider(height: 1.0, color: Colors.grey[600]),
+    return new Material(
+      type: MaterialType.canvas,
+      color: Colors.transparent,
+      child: new Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          new Divider(height: 4.0, color: Colors.grey[300]),
+          new Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: new Row(children: [
+                new Flexible(
+                  flex: 3,
+                  child: new IconSlider(
+                    value: _volumeSliderValue,
+                    min: 0.0,
+                    max: 100.0,
+                    activeColor: _kActiveSliderColor,
+                    thumbImage: new AssetImage(_kVolumeUpGrey600),
+                    onChanged: (double value) {
+                      setState(() {
+                        _volumeSliderValue = value;
+                      });
+                    },
+                  ),
+                ),
+                new Flexible(
+                  flex: 3,
+                  child: new IconSlider(
+                    value: _brightnessSliderValue,
+                    min: 0.0,
+                    max: 100.0,
+                    activeColor: _kActiveSliderColor,
+                    thumbImage: new AssetImage(_kBrightnessHighGrey600),
+                    onChanged: (double value) {
+                      setState(() {
+                        _brightnessSliderValue = value;
+                      });
+                    },
+                  ),
+                ),
+                new Flexible(
+                  flex: 1,
+                  child: new ToggleIcon(
+                    key: _kAirplaneModeToggle,
+                    imageList: [
+                      _kAirplaneModeInactiveGrey600,
+                      _kAirplaneModeActiveBlack,
+                    ],
+                    initialImageIndex: 1,
+                    width: _kIconSize,
+                    height: _kIconSize,
+                  ),
+                ),
+                new Flexible(
+                  flex: 1,
+                  child: new ToggleIcon(
+                    key: _kDoNotDisturbModeToggle,
+                    imageList: [
+                      _kDoNoDisturbOnBlack,
+                      _kDoNoDisturbOffGrey600,
+                    ],
+                    initialImageIndex: 0,
+                    width: _kIconSize,
+                    height: _kIconSize,
+                  ),
+                ),
+                new Flexible(
+                  flex: 1,
+                  child: new ToggleIcon(
+                    key: _kScreenRotationToggle,
+                    imageList: [
+                      kScreenLockRotationBlack,
+                      kScreenRotationBlack,
+                    ],
+                    initialImageIndex: 0,
+                    width: _kIconSize,
+                    height: _kIconSize,
+                  ),
+                ),
+              ])),
+          new Divider(height: 4.0, color: Colors.grey[300]),
+          new GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              print('Make Inline Quick Settings into Story!');
+            },
+            child: new Container(
+              padding: const EdgeInsets.all(16.0),
+              child: new Text(
+                'MORE',
+                textAlign: TextAlign.center,
+                style: new TextStyle(
+                    fontWeight: FontWeight.w700, color: Colors.grey[600]),
+              ),
             ),
-            new Row(children: [
-              new Flexible(
-                flex: 3,
-                child: new IconSlider(
-                  value: _volumeSliderValue,
-                  min: 0.0,
-                  max: 100.0,
-                  thumbImage: new AssetImage(_kVolumeUpGrey600),
-                  onChanged: (double value) {
-                    setState(() {
-                      _volumeSliderValue = value;
-                    });
-                  },
-                ),
-              ),
-              new Flexible(
-                flex: 3,
-                child: new IconSlider(
-                  value: _brightnessSliderValue,
-                  min: 0.0,
-                  max: 100.0,
-                  thumbImage: new AssetImage(_kBrightnessHighGrey600),
-                  onChanged: (double value) {
-                    setState(() {
-                      _brightnessSliderValue = value;
-                    });
-                  },
-                ),
-              ),
-              new Flexible(
-                flex: 1,
-                child: new ToggleIcon(
-                  key: _kAirplaneModeToggle,
-                  imageList: [
-                    _kAirplaneModeInactiveGrey600,
-                    _kAirplaneModeActiveBlack,
-                  ],
-                  initialImageIndex: 1,
-                  width: _kIconSize,
-                  height: _kIconSize,
-                ),
-              ),
-              new Flexible(
-                flex: 1,
-                child: new ToggleIcon(
-                  key: _kDoNotDisturbModeToggle,
-                  imageList: [
-                    _kDoNoDisturbOnBlack,
-                    _kDoNoDisturbOffGrey600,
-                  ],
-                  initialImageIndex: 0,
-                  width: _kIconSize,
-                  height: _kIconSize,
-                ),
-              ),
-              new Flexible(
-                flex: 1,
-                child: new ToggleIcon(
-                  key: _kScreenRotationToggle,
-                  imageList: [
-                    kScreenLockRotationBlack,
-                    kScreenRotationBlack,
-                  ],
-                  initialImageIndex: 0,
-                  width: _kIconSize,
-                  height: _kIconSize,
-                ),
-              ),
-            ]),
-            new Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: new Divider(height: 1.0, color: Colors.grey[600])),
-            new GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                print('Make Inline Quick Settings into Story!');
-              },
-              child: new Container(
-                padding: const EdgeInsets.all(16.0),
-                child: new Text(
-                  'MORE',
-                  textAlign: TextAlign.center,
-                  style: new TextStyle(
-                      fontWeight: FontWeight.w700, color: Colors.grey[600]),
-                ),
-              ),
-            )
-          ],
-        ),
+          )
+        ],
       ),
     );
   }

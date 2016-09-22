@@ -28,7 +28,10 @@ const double _kImportantInfoIconSize = 24.0;
 const double _kImportantInfoMinWidth = _kImportantInfoIconSize;
 
 // The width of the quick settings background when fully maximized
-const double _kQuickSettingsBackgroundMaximizedWidth = 424.0;
+const double _kQuickSettingsBackgroundMaximizedWidth = 400.0;
+
+// Padding between an icon and the text label to the right in important info
+const double _kIconLabelPadding = 4.0;
 
 /// Manages the contents of [Now].
 class NowManager extends ConfigManager {
@@ -77,7 +80,9 @@ class NowManager extends ConfigManager {
         child: new Text('${_timeStringer.shortString}'),
       );
 
-  double get importantInfoMinWidth => _kImportantInfoMinWidth;
+  double get importantInfoMinWidth =>
+      _kImportantInfoMinWidth +
+      2 * 8.0; // TODO(mikejurka): pull this into constant
 
   double get quickSettingsBackgroundMaximizedWidth =>
       _kQuickSettingsBackgroundMaximizedWidth;
@@ -125,6 +130,8 @@ class NowManager extends ConfigManager {
                   child: new Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
+                      // spacer
+                      new Container(width: _kIconLabelPadding, height: 1.0),
                       // battery text
                       new Flexible(
                         child: new Opacity(
@@ -148,6 +155,8 @@ class NowManager extends ConfigManager {
                           fit: ImageFit.cover,
                         ),
                       ),
+                      // spacer
+                      new Container(width: _kIconLabelPadding, height: 1.0),
                       // wifi text
                       new Flexible(
                         child: new Opacity(
@@ -172,6 +181,8 @@ class NowManager extends ConfigManager {
                           fit: ImageFit.cover,
                         ),
                       ),
+                      // spacer
+                      new Container(width: _kIconLabelPadding, height: 1.0),
                       // network text
                       new Flexible(
                         child: new Opacity(

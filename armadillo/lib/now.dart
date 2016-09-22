@@ -29,6 +29,8 @@ const _kNowMinimizationScrollOffsetThreshold = 120.0;
 /// settings [Now].
 const _kNowQuickSettingsHideScrollOffsetThreshold = 16.0;
 
+const _kQuickSettingsHorizontalPadding = 8.0;
+
 /// Shows the user, the user's context, and important settings.  When minimized
 /// also shows an affordance for seeing missed interruptions.
 class Now extends StatefulWidget {
@@ -87,6 +89,7 @@ class NowState extends TickingState<Now> {
       initValue: _kMinimizationSimulationTarget, desc: _kSimulationDesc);
 
   final GlobalKey _quickSettingsKey = new GlobalKey();
+  final GlobalKey _importantInfoMaximizedKey = new GlobalKey();
 
   NowMinimizedInfoFader _nowMinimizedInfoFader;
 
@@ -96,6 +99,7 @@ class NowState extends TickingState<Now> {
 
   // initialized in showQuickSettings
   double _quickSettingsMaximizedHeight = 0.0;
+  double _importantInfoMaximizedHeight = 0.0;
 
   @override
   void initState() {
@@ -146,8 +150,8 @@ class NowState extends TickingState<Now> {
                 children: [
                   // Quick Settings Background.
                   new Positioned(
-                    left: 8.0,
-                    right: 8.0,
+                    left: _kQuickSettingsHorizontalPadding,
+                    right: _kQuickSettingsHorizontalPadding,
                     top: _quickSettingsBackgroundTopOffset,
                     child: new Center(
                       child: new Container(
@@ -165,13 +169,15 @@ class NowState extends TickingState<Now> {
 
                   // User Image, User Context Text, and Important Information when maximized.
                   new Positioned(
-                    left: 8.0,
-                    right: 8.0,
+                    left: _kQuickSettingsHorizontalPadding,
+                    right: _kQuickSettingsHorizontalPadding,
                     top: _userImageTopOffset,
                     child: new Center(
                       child: new Column(
                         children: [
+                          // User Image.
                           new Stack(children: [
+                            // Shadow.
                             new Opacity(
                               opacity: _quickSettingsProgress,
                               child: new Container(
@@ -183,6 +189,7 @@ class NowState extends TickingState<Now> {
                                 ),
                               ),
                             ),
+                            // The actual user image.
                             new ClipOval(
                               child: new GestureDetector(
                                 behavior: HitTestBehavior.opaque,
@@ -208,6 +215,7 @@ class NowState extends TickingState<Now> {
                               ),
                             ),
                           ]),
+                          // User Context Text when maximized.
                           new Padding(
                             padding: const EdgeInsets.only(top: 24.0),
                             child: new Opacity(
@@ -217,8 +225,10 @@ class NowState extends TickingState<Now> {
                                   .userContextMaximized,
                             ),
                           ),
+                          // Important Information when maximized.
                           new Container(
                               width: _importantInfoMaximizedWidth,
+                              key: _importantInfoMaximizedKey,
                               child: new Padding(
                                 padding: const EdgeInsets.only(top: 16.0),
                                 child: new Opacity(
@@ -228,27 +238,37 @@ class NowState extends TickingState<Now> {
                                       .importantInfoMaximized,
                                 ),
                               )),
-                          new Container(
+                          // Quick Settings.
+                          new Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 0.0, vertical: 8.0),
+                            child: new Container(
                               height: _quickSettingsHeight,
                               width: _quickSettingsBackgroundWidth,
                               child: new ClipRect(
-                                  child: new OverflowBox(
-                                      // don't use parent height as constraint
-                                      maxHeight: double.INFINITY,
-                                      minHeight: 0.0,
-                                      maxWidth: InheritedNowManager
+                                child: new OverflowBox(
+                                  // don't use parent height as constraint
+                                  maxHeight: double.INFINITY,
+                                  minHeight: 0.0,
+                                  maxWidth: InheritedNowManager
                                           .of(context)
-                                          .quickSettingsBackgroundMaximizedWidth,
-                                      minWidth: 0.0,
-                                      child: new Opacity(
-                                          opacity:
-                                              _quickSettingsSlideUpProgress,
-                                          child: new Center(
-                                              child: new Container(
-                                                  key: _quickSettingsKey,
-                                                  child: InheritedNowManager
-                                                      .of(context)
-                                                      .quickSettings)))))),
+                                          .quickSettingsBackgroundMaximizedWidth -
+                                      _kQuickSettingsHorizontalPadding * 2,
+                                  minWidth: 0.0,
+                                  child: new Opacity(
+                                    opacity: _quickSettingsSlideUpProgress,
+                                    child: new Center(
+                                      child: new Container(
+                                          key: _quickSettingsKey,
+                                          child: InheritedNowManager
+                                              .of(context)
+                                              .quickSettings),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -374,8 +394,12 @@ class NowState extends TickingState<Now> {
   }
 
   void showQuickSettings() {
-    RenderBox r = _quickSettingsKey.currentContext.findRenderObject();
-    _quickSettingsMaximizedHeight = r.size.height;
+    RenderBox renderBoxQuickSettings =
+        _quickSettingsKey.currentContext.findRenderObject();
+    _quickSettingsMaximizedHeight = renderBoxQuickSettings.size.height;
+    RenderBox renderBoxImportantInfoMaximized =
+        _importantInfoMaximizedKey.currentContext.findRenderObject();
+    _importantInfoMaximizedHeight = renderBoxImportantInfoMaximized.size.height;
 
     if (!_revealingQuickSettings) {
       _quickSettingsSimulation.target = _kQuickSettingsSimulationTarget;
@@ -442,11 +466,14 @@ class NowState extends TickingState<Now> {
       _quickSettingsProgress *
       (1.0 - _minimizationProgress);
 
-  double get _quickSettingsBackgroundHeight => _lerp(
-      0.0,
-      128.0 + // padding and space for user info
-          _quickSettingsHeight,
-      _quickSettingsProgress * (1.0 - _minimizationProgress));
+  double get _quickSettingsBackgroundHeight {
+    return _lerp(
+        0.0,
+        98.0 + // padding and space for user info
+            _importantInfoMaximizedHeight +
+            _quickSettingsHeight,
+        _quickSettingsProgress * (1.0 - _minimizationProgress));
+  }
 
   double get _quickSettingsHeight =>
       _quickSettingsProgress * _quickSettingsMaximizedHeight;
