@@ -18,6 +18,7 @@ class Story {
   final Duration cumulativeInteractionDuration;
   final Color themeColor;
   final bool inactive;
+  final Object storyBarKeyObject;
 
   Story({
     this.id,
@@ -30,7 +31,9 @@ class Story {
     this.cumulativeInteractionDuration,
     this.themeColor,
     this.inactive: false,
-  });
+    Object storyBarKeyObject,
+  })
+      : this.storyBarKeyObject = storyBarKeyObject ?? new Object();
 
   Story copyWith({
     DateTime lastInteraction,
@@ -49,5 +52,6 @@ class Story {
         avatar: this.avatar,
         title: this.title,
         inactive: inactive ?? this.inactive,
+        storyBarKeyObject: this.storyBarKeyObject,
       );
 }

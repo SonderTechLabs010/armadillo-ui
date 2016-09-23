@@ -22,14 +22,14 @@ class StoryBar extends StatefulWidget {
   final Story story;
   final double minimizedHeight;
   final double maximizedHeight;
-  final bool startMaximized;
-  StoryBar(
-      {Key key,
-      this.story,
-      this.minimizedHeight,
-      this.maximizedHeight,
-      this.startMaximized: true})
-      : super(key: key);
+  StoryBar({
+    Key key,
+    Story story,
+    this.minimizedHeight,
+    this.maximizedHeight,
+  })
+      : this.story = story,
+        super(key: key);
 
   @override
   StoryBarState createState() => new StoryBarState();
@@ -43,29 +43,10 @@ class StoryBarState extends TickingState<StoryBar> {
   void initState() {
     super.initState();
     _heightSimulation = new RK4SpringSimulation(
-        initValue: config.startMaximized
-            ? config.maximizedHeight
-            : config.minimizedHeight,
-        desc: _kHeightSimulationDesc);
-    _showHeight =
-        config.startMaximized ? config.maximizedHeight : config.minimizedHeight;
-  }
-
-  @override
-  void didUpdateConfig(StoryBar oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    if (config.story.id != oldConfig.story.id ||
-        ((config.startMaximized != oldConfig.startMaximized) &&
-            config.startMaximized)) {
-      _heightSimulation = new RK4SpringSimulation(
-          initValue: config.startMaximized
-              ? config.maximizedHeight
-              : config.minimizedHeight,
-          desc: _kHeightSimulationDesc);
-      _showHeight = config.startMaximized
-          ? config.maximizedHeight
-          : config.minimizedHeight;
-    }
+      initValue: config.minimizedHeight,
+      desc: _kHeightSimulationDesc,
+    );
+    _showHeight = config.minimizedHeight;
   }
 
   @override
@@ -146,7 +127,13 @@ class StoryBarState extends TickingState<StoryBar> {
     startTicking();
   }
 
-  void maximize() {
+  void maximize({bool jumpToFinish: false}) {
+    if (jumpToFinish) {
+      _heightSimulation = new RK4SpringSimulation(
+        initValue: config.maximizedHeight,
+        desc: _kHeightSimulationDesc,
+      );
+    }
     _showHeight = config.maximizedHeight;
     show();
   }

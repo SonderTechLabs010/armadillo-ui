@@ -4,9 +4,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
+import 'simulation_builder.dart';
 import 'story.dart';
+import 'story_bar.dart';
+import 'story_keys.dart';
 import 'story_list_render_block.dart';
 import 'story_list_render_block_parent_data.dart';
 import 'story_manager.dart';
@@ -17,8 +21,10 @@ const double _kRightBump = 64.0;
 
 const double _kStoryInlineTitleHeight = 20.0;
 
+const double _kStoryBarMinimizedHeight = 12.0;
+const double _kStoryBarMaximizedHeight = 48.0;
+
 class StoryList extends StatefulWidget {
-  final Key scrollableKey;
   final ScrollListener onScroll;
   final VoidCallback onStoryFocusStarted;
   final EdgeInsets padding;
@@ -28,7 +34,6 @@ class StoryList extends StatefulWidget {
 
   StoryList({
     Key key,
-    this.scrollableKey,
     this.padding,
     this.onScroll,
     this.onStoryFocusStarted,
@@ -43,14 +48,13 @@ class StoryList extends StatefulWidget {
 }
 
 class StoryListState extends State<StoryList> {
+  final GlobalKey<ScrollableState> _scrollableKey =
+      new GlobalKey<ScrollableState>();
+
   /// When true, list scrolling is disabled and vertical gestures will no longer
   /// be stolen by the [Scrollable] with the key [config.scrollableKey].
   /// This gets set to true when a [Story] comes into focus.
   bool _lockScrolling = false;
-
-  /// When set, this story will begin fully expanded with its story bar
-  /// maximized.
-  Story _initiallyFocusedStory;
 
   double _quickSettingsProgress = 0.0;
   double _onFocusScrollOffset = 0.0;
@@ -61,8 +65,7 @@ class StoryListState extends State<StoryList> {
   set quickSettingsProgress(double quickSettingsProgress) {
     // When quick settings starts being shown, scroll to 0.0.
     if (_quickSettingsProgress == 0.0 && quickSettingsProgress > 0.0) {
-      GlobalKey<ScrollableState> scrollableKey = config.scrollableKey;
-      scrollableKey.currentState.scrollTo(
+      _scrollableKey.currentState.scrollTo(
         0.0,
         duration: const Duration(milliseconds: 500),
         curve: Curves.fastOutSlowIn,
@@ -85,9 +88,6 @@ class StoryListState extends State<StoryList> {
         b.lastInteraction.millisecondsSinceEpoch -
         a.lastInteraction.millisecondsSinceEpoch);
 
-    Story initiallyFocusedStory = _initiallyFocusedStory;
-    _initiallyFocusedStory = null;
-
     return new Stack(
       children: [
         // Recent List.
@@ -100,62 +100,79 @@ class StoryListState extends State<StoryList> {
             delegate:
                 new LockingScrollConfigurationDelegate(lock: _lockScrolling),
             child: new StoryListBlock(
-              scrollableKey: config.scrollableKey,
+              scrollableKey: _scrollableKey,
               padding: config.padding,
               onScroll: config.onScroll,
               parentSize: config.parentSize,
               scrollOffset: _onFocusScrollOffset,
               children: stories.map(
                 (Story story) {
-                  final stackChildren = <Widget>[
-                    new StoryWidget(
-                      key: new GlobalObjectKey(story.id),
-                      fullSize: config.parentSize,
-                      story: story,
-                      onStoryFocused: focusStory,
-                      onFocusProgressChanged: () => setState(() {}),
-                      multiColumn: config.multiColumn,
-                      startFocused: initiallyFocusedStory?.id == story.id,
-                    ),
-                  ];
-                  if (!_lockScrolling) {
-                    stackChildren.add(
-                      new Positioned(
-                        left: 0.0,
-                        right: 0.0,
-                        top: 0.0,
-                        bottom: 0.0,
-                        child: new GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            // Bring tapped story into focus.
-                            StoryWidgetState tappedFocusableStoryState =
-                                new GlobalObjectKey(story.id).currentState;
-                            tappedFocusableStoryState.focused = true;
-
-                            // Lock scrolling.
-                            setState(() {
-                              _lockScrolling = true;
-                              GlobalKey<ScrollableState> scrollableKey =
-                                  config.scrollableKey;
-                              _onFocusScrollOffset =
-                                  scrollableKey.currentState.scrollOffset;
-                            });
-
-                            config.onStoryFocusStarted?.call();
-                          },
-                        ),
-                      ),
-                    );
-                  }
                   return new StoryListChild(
                     story: story,
                     focusProgress:
-                        new GlobalObjectKey<StoryWidgetState>(story.id)
+                        new GlobalObjectKey<SimulationBuilderState>(story.id)
                                 .currentState
-                                ?.focusProgress ??
+                                ?.progress ??
                             0.0,
-                    child: new Stack(children: stackChildren),
+                    child: new Stack(
+                      children: <Widget>[
+                        new SimulationBuilder(
+                          key: new GlobalObjectKey(story.id),
+                          initialSimulationProgress: 0.0,
+                          builder: (BuildContext context, double progress) =>
+                              new StoryWidget(
+                                focusProgress: progress,
+                                fullSize: config.parentSize,
+                                story: story,
+                                multiColumn: config.multiColumn,
+                                storyBar: new StoryBar(
+                                  key: StoryKeys.storyBarKey(story),
+                                  story: story,
+                                  minimizedHeight: _kStoryBarMinimizedHeight,
+                                  maximizedHeight: _kStoryBarMaximizedHeight,
+                                ),
+                              ),
+                          onSimulationChanged: (double progress, bool isDone) {
+                            setState(() {});
+                            if (progress == 1.0 && isDone) {
+                              focusStory(story);
+                            }
+                          },
+                        ),
+                        new Positioned(
+                          left: 0.0,
+                          right: 0.0,
+                          top: 0.0,
+                          bottom: 0.0,
+                          child: new Offstage(
+                            offstage: _lockScrolling,
+                            child: new GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () {
+                                // Bring tapped story into focus.
+                                StoryKeys
+                                    .storyFocusSimulationKey(story)
+                                    .currentState
+                                    ?.forward();
+                                StoryKeys
+                                    .storyBarKey(story)
+                                    .currentState
+                                    ?.maximize();
+
+                                // Lock scrolling.
+                                setState(() {
+                                  _lockScrolling = true;
+                                  _onFocusScrollOffset =
+                                      _scrollableKey.currentState.scrollOffset;
+                                });
+
+                                config.onStoryFocusStarted?.call();
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ).toList(),
@@ -168,33 +185,36 @@ class StoryListState extends State<StoryList> {
 
   void defocus() {
     // Unfocus all stories.
-    _defocusAllStories();
+    InheritedStoryManager.of(context).stories.forEach(_unfocusStory);
 
     // Unlock scrolling.
     setState(() {
       _lockScrolling = false;
-      GlobalKey<ScrollableState> scrollableKey = config.scrollableKey;
-      scrollableKey.currentState.scrollTo(0.0);
+      _scrollableKey.currentState.scrollTo(0.0);
       _onFocusScrollOffset = 0.0;
     });
   }
 
   void focusStory(Story story) {
-    _defocusAllStories();
+    InheritedStoryManager
+        .of(context)
+        .stories
+        .where((Story s) => s.id != story.id)
+        .forEach(_unfocusStory);
     InheritedStoryManager.of(context).interactionStarted(story);
+    StoryKeys
+        .storyFocusSimulationKey(story)
+        .currentState
+        ?.forward(jumpToFinish: true);
+    StoryKeys.storyBarKey(story).currentState?.maximize(jumpToFinish: true);
     setState(() {
-      _initiallyFocusedStory = story;
       _lockScrolling = true;
     });
   }
 
-  void _defocusAllStories() {
-    InheritedStoryManager.of(context).stories.forEach(
-      (Story s) {
-        new GlobalObjectKey<StoryWidgetState>(s.id).currentState?.focused =
-            false;
-      },
-    );
+  void _unfocusStory(Story s) {
+    StoryKeys.storyFocusSimulationKey(s).currentState?.reverse();
+    StoryKeys.storyBarKey(s).currentState?.minimize();
   }
 
   double get _quickSettingsHeightDelta =>

@@ -5,8 +5,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sysui_widgets/rk4_spring_simulation.dart';
-import 'package:sysui_widgets/ticking_state.dart';
 
 import 'story.dart';
 import 'story_bar.dart';
@@ -39,118 +37,32 @@ const double _kStoryBarMinimizedHeight = 12.0;
 const double _kStoryBarMaximizedHeight = 48.0;
 const double _kStoryInlineTitleHeight = 20.0;
 
-typedef void OnStoryFocused(Story story);
-typedef void ProgressListener(double progress, bool isDone);
-
 /// The visual representation of a [Story].  A [Story] has a default size but
 /// will expand to [fullSize] when it comes into focus.  [StoryWidget]s are
 /// intended to be children of [StoryList].
-class StoryWidget extends StatefulWidget {
+class StoryWidget extends StatelessWidget {
   final Story story;
   final bool multiColumn;
   final Size fullSize;
-  final OnStoryFocused onStoryFocused;
-  final VoidCallback onFocusProgressChanged;
-  final bool startFocused;
-  StoryWidget(
-      {Key key,
-      this.story,
-      this.multiColumn,
-      this.fullSize,
-      this.onStoryFocused,
-      this.onFocusProgressChanged,
-      this.startFocused})
-      : super(key: key);
-
-  @override
-  StoryWidgetState createState() => new StoryWidgetState();
-}
-
-const RK4SpringDescription _kFocusSimulationDesc =
-    const RK4SpringDescription(tension: 450.0, friction: 50.0);
-const double _kFocusSimulationTarget = 200.0;
-
-class StoryWidgetState extends TickingState<StoryWidget> {
-  final Set<ProgressListener> _listeners = new Set<ProgressListener>();
-  final GlobalKey<StoryBarState> _storyBarKey = new GlobalKey<StoryBarState>();
-
-  /// The simulation for maximizing a [Story] to [config.fullSize].
-  RK4SpringSimulation _focusSimulation =
-      new RK4SpringSimulation(initValue: 0.0, desc: _kFocusSimulationDesc);
-  bool _focused = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusSimulation = new RK4SpringSimulation(
-      initValue: config.startFocused ? _kFocusSimulationTarget : 0.0,
-      desc: _kFocusSimulationDesc,
-    );
-    _focusSimulation.target = _kFocusSimulationTarget;
-    _focused = config.startFocused;
-  }
-
-  @override
-  void didUpdateConfig(StoryWidget oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    if (config.story.id != oldConfig.story.id ||
-        ((config.startFocused != oldConfig.startFocused) &&
-            config.startFocused)) {
-      _focusSimulation = new RK4SpringSimulation(
-          initValue: config.startFocused ? _kFocusSimulationTarget : 0.0,
-          desc: _kFocusSimulationDesc);
-      _focusSimulation.target = _kFocusSimulationTarget;
-      _focused = config.startFocused;
-    }
-  }
-
-  bool get focused => _focused;
-  set focused(bool focused) {
-    if (focused != _focused) {
-      _focused = focused;
-      _focusSimulation.target = _focused ? _kFocusSimulationTarget : 0.0;
-      startTicking();
-      if (focused) {
-        _storyBarKey.currentState.maximize();
-      } else {
-        _storyBarKey.currentState.minimize();
-      }
-    }
-  }
-
-  double get focusProgress => _focusSimulation.value / _kFocusSimulationTarget;
-
-  @override
-  bool handleTick(double elapsedSeconds) {
-    bool wasDone = _focusSimulation.isDone;
-    if (wasDone) {
-      return false;
-    }
-
-    // Tick the focus simulation.
-    _focusSimulation.elapseTime(elapsedSeconds);
-
-    // Notify listeners of progress change.
-    _listeners.toList().forEach((ProgressListener listener) {
-      listener(focusProgress, _focusSimulation.isDone);
-    });
-
-    config.onFocusProgressChanged?.call();
-
-    // Notify that the story has come into focus.
-    if (_focusSimulation.isDone &&
-        focusProgress == 1.0 &&
-        config.onStoryFocused != null) {
-      config.onStoryFocused(config.story);
-    }
-
-    return !_focusSimulation.isDone;
-  }
+  final double focusProgress;
+  final StoryBar storyBar;
+  final GlobalKey<StoryBarState> storyBarKey;
+  StoryWidget({
+    Key key,
+    this.story,
+    this.multiColumn,
+    this.fullSize,
+    this.focusProgress,
+    StoryBar storyBar,
+  })
+      : this.storyBar = storyBar,
+        this.storyBarKey = storyBar.key,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return new Offstage(
-      offstage: config.story.inactive,
+      offstage: story.inactive,
       child: new Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -167,13 +79,7 @@ class StoryWidgetState extends TickingState<StoryWidget> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // The story bar that pushes down the story.
-                    new StoryBar(
-                      key: _storyBarKey,
-                      story: config.story,
-                      minimizedHeight: _kStoryBarMinimizedHeight,
-                      maximizedHeight: _kStoryBarMaximizedHeight,
-                      startMaximized: config.startFocused,
-                    ),
+                    storyBar,
 
                     // The scaled and clipped story.  When full size, the story will
                     // no longer be scaled or clipped due to the nature of the
@@ -185,27 +91,29 @@ class StoryWidgetState extends TickingState<StoryWidget> {
                           // When a touch comes in we hide the story bar.
                           new Listener(
                             onPointerDown:
-                                (focusProgress == 1.0 && !config.multiColumn)
+                                (focusProgress == 1.0 && !multiColumn)
                                     ? (PointerDownEvent event) {
-                                        _storyBarKey.currentState.hide();
+                                        storyBarKey.currentState.hide();
                                       }
                                     : null,
                             behavior: HitTestBehavior.translucent,
-                            child: new OverflowBox(
-                              alignment: FractionalOffset.topCenter,
-                              minWidth: config.fullSize.width,
-                              maxWidth: config.fullSize.width,
-                              minHeight: config.fullSize.height -
-                                  (config.multiColumn
-                                      ? _kStoryBarMaximizedHeight
-                                      : 0.0),
-                              maxHeight: config.fullSize.height -
-                                  (config.multiColumn
-                                      ? _kStoryBarMaximizedHeight
-                                      : 0.0),
-                              child: config.multiColumn
-                                  ? config.story.wideBuilder(context)
-                                  : config.story.builder(context),
+                            child: new ClipRect(
+                              child: new OverflowBox(
+                                alignment: FractionalOffset.topCenter,
+                                minWidth: fullSize.width,
+                                maxWidth: fullSize.width,
+                                minHeight: fullSize.height -
+                                    (multiColumn
+                                        ? _kStoryBarMaximizedHeight
+                                        : 0.0),
+                                maxHeight: fullSize.height -
+                                    (multiColumn
+                                        ? _kStoryBarMaximizedHeight
+                                        : 0.0),
+                                child: multiColumn
+                                    ? story.wideBuilder(context)
+                                    : story.builder(context),
+                              ),
                             ),
                           ),
 
@@ -220,9 +128,9 @@ class StoryWidgetState extends TickingState<StoryWidget> {
                             child: new GestureDetector(
                               behavior: HitTestBehavior.translucent,
                               onVerticalDragUpdate:
-                                  (focusProgress == 1.0 && !config.multiColumn)
+                                  (focusProgress == 1.0 && !multiColumn)
                                       ? (DragUpdateDetails details) {
-                                          _storyBarKey.currentState.show();
+                                          storyBarKey.currentState.show();
                                         }
                                       : null,
                             ),
@@ -252,7 +160,7 @@ class StoryWidgetState extends TickingState<StoryWidget> {
                   opacity: 1.0 - focusProgress,
                   child: new Align(
                     alignment: FractionalOffset.bottomLeft,
-                    child: new StoryTitle(title: config.story.title),
+                    child: new StoryTitle(title: story.title),
                   ),
                 ),
               ),
@@ -265,12 +173,4 @@ class StoryWidgetState extends TickingState<StoryWidget> {
 
   double get _inlineStoryTitleHeight =>
       _kStoryInlineTitleHeight * (1.0 - focusProgress);
-
-  void addProgressListener(ProgressListener listener) {
-    _listeners.add(listener);
-  }
-
-  void removeProgressListener(ProgressListener listener) {
-    _listeners.remove(listener);
-  }
 }

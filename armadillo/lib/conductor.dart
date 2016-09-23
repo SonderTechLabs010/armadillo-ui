@@ -41,8 +41,6 @@ const double _kStoryListMultiColumnWidthThreshold = 500.0;
 const double _kSuggestionListMultiColumnWidthThreshold = 800.0;
 
 final GlobalKey<StoryListState> _storyListKey = new GlobalKey<StoryListState>();
-final GlobalKey<ScrollableState> _storyListScrollableKey =
-    new GlobalKey<ScrollableState>();
 final GlobalKey<SuggestionListState> _suggestionListKey =
     new GlobalKey<SuggestionListState>();
 final GlobalKey<ScrollableState> _suggestionListScrollableKey =
@@ -108,7 +106,6 @@ class Conductor extends StatelessWidget {
                       constraints.maxHeight - _kMinimizedNowHeight,
                     ),
                     quickSettingsHeightBump: _kQuickSettingsHeightBump,
-                    scrollableKey: _storyListScrollableKey,
                     padding: new EdgeInsets.only(
                       bottom: _kMaximizedNowHeight - _kMinimizedNowHeight,
                     ),
@@ -234,11 +231,6 @@ class Conductor extends StatelessWidget {
   }
 
   void _goToOrigin(BuildContext context) {
-    _storyListScrollableKey.currentState.scrollTo(
-      0.0,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.fastOutSlowIn,
-    );
     _storyListKey.currentState.defocus();
     _nowKey.currentState.maximize();
     InheritedStoryManager.of(context).interactionStopped();
