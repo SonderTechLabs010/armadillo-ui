@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-import 'focusable_story.dart';
 import 'story.dart';
 import 'story_list_render_block.dart';
 import 'story_list_render_block_parent_data.dart';
 import 'story_manager.dart';
+import 'story_widget.dart';
 
 /// In multicolumn mode, the distance the right column will be offset up.
 const double _kRightBump = 64.0;
@@ -108,7 +108,7 @@ class StoryListState extends State<StoryList> {
               children: stories.map(
                 (Story story) {
                   final stackChildren = <Widget>[
-                    new FocusableStory(
+                    new StoryWidget(
                       key: new GlobalObjectKey(story.id),
                       fullSize: config.parentSize,
                       story: story,
@@ -129,7 +129,7 @@ class StoryListState extends State<StoryList> {
                           behavior: HitTestBehavior.opaque,
                           onTap: () {
                             // Bring tapped story into focus.
-                            FocusableStoryState tappedFocusableStoryState =
+                            StoryWidgetState tappedFocusableStoryState =
                                 new GlobalObjectKey(story.id).currentState;
                             tappedFocusableStoryState.focused = true;
 
@@ -191,7 +191,7 @@ class StoryListState extends State<StoryList> {
   void _defocusAllStories() {
     InheritedStoryManager.of(context).stories.forEach(
       (Story s) {
-        new GlobalObjectKey<FocusableStoryState>(s.id).currentState?.focused =
+        new GlobalObjectKey<StoryWidgetState>(s.id).currentState?.focused =
             false;
       },
     );

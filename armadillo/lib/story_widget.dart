@@ -43,16 +43,16 @@ typedef void OnStoryFocused(Story story);
 typedef void ProgressListener(double progress, bool isDone);
 
 /// The visual representation of a [Story].  A [Story] has a default size but
-/// will expand to [fullSize] when it comes into focus.  [FocusableStory]s are
-/// intended to be children of [RecentList].
-class FocusableStory extends StatefulWidget {
+/// will expand to [fullSize] when it comes into focus.  [StoryWidget]s are
+/// intended to be children of [StoryList].
+class StoryWidget extends StatefulWidget {
   final Story story;
   final bool multiColumn;
   final Size fullSize;
   final OnStoryFocused onStoryFocused;
   final VoidCallback onFocusProgressChanged;
   final bool startFocused;
-  FocusableStory(
+  StoryWidget(
       {Key key,
       this.story,
       this.multiColumn,
@@ -63,14 +63,14 @@ class FocusableStory extends StatefulWidget {
       : super(key: key);
 
   @override
-  FocusableStoryState createState() => new FocusableStoryState();
+  StoryWidgetState createState() => new StoryWidgetState();
 }
 
 const RK4SpringDescription _kFocusSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
 const double _kFocusSimulationTarget = 200.0;
 
-class FocusableStoryState extends TickingState<FocusableStory> {
+class StoryWidgetState extends TickingState<StoryWidget> {
   final Set<ProgressListener> _listeners = new Set<ProgressListener>();
   final GlobalKey<StoryBarState> _storyBarKey = new GlobalKey<StoryBarState>();
 
@@ -91,7 +91,7 @@ class FocusableStoryState extends TickingState<FocusableStory> {
   }
 
   @override
-  void didUpdateConfig(FocusableStory oldConfig) {
+  void didUpdateConfig(StoryWidget oldConfig) {
     super.didUpdateConfig(oldConfig);
     if (config.story.id != oldConfig.story.id ||
         ((config.startFocused != oldConfig.startFocused) &&
