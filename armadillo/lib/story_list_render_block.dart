@@ -23,9 +23,11 @@ class StoryListRenderBlock extends RenderBlock {
     List<RenderBox> children,
     Size parentSize,
     double scrollOffset,
+    double bottomPadding,
   })
       : _parentSize = parentSize,
         _scrollOffset = scrollOffset,
+        _bottomPadding = bottomPadding,
         super(children: children, mainAxis: Axis.vertical);
 
   Size get parentSize => _parentSize;
@@ -42,6 +44,15 @@ class StoryListRenderBlock extends RenderBlock {
   set scrollOffset(double value) {
     if (_scrollOffset != value) {
       _scrollOffset = value;
+      markNeedsLayout();
+    }
+  }
+
+  double get bottomPadding => _bottomPadding;
+  double _bottomPadding;
+  set bottomPadding(double value) {
+    if (_bottomPadding != value) {
+      _bottomPadding = value;
       markNeedsLayout();
     }
   }
@@ -129,7 +140,7 @@ class StoryListRenderBlock extends RenderBlock {
           ),
           _lerp(
             storyLayout.offset.dy + listHeight,
-            listHeight - parentSize.height - _scrollOffset,
+            listHeight - parentSize.height - _scrollOffset + _bottomPadding,
             childParentData.focusProgress,
           ),
         );
@@ -137,7 +148,12 @@ class StoryListRenderBlock extends RenderBlock {
       });
     }
 
-    size = constraints.constrain(new Size(constraints.maxWidth, listHeight));
+    size = constraints.constrain(
+      new Size(
+        constraints.maxWidth,
+        listHeight + _bottomPadding,
+      ),
+    );
 
     assert(!size.isInfinite);
   }

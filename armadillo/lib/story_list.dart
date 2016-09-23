@@ -27,14 +27,14 @@ const double _kStoryBarMaximizedHeight = 48.0;
 class StoryList extends StatefulWidget {
   final ScrollListener onScroll;
   final VoidCallback onStoryFocusStarted;
-  final EdgeInsets padding;
+  final double bottomPadding;
   final Size parentSize;
   final double quickSettingsHeightBump;
   final bool multiColumn;
 
   StoryList({
     Key key,
-    this.padding,
+    this.bottomPadding,
     this.onScroll,
     this.onStoryFocusStarted,
     this.parentSize,
@@ -101,7 +101,7 @@ class StoryListState extends State<StoryList> {
                 new LockingScrollConfigurationDelegate(lock: _lockScrolling),
             child: new StoryListBlock(
               scrollableKey: _scrollableKey,
-              padding: config.padding,
+              bottomPadding: config.bottomPadding,
               onScroll: config.onScroll,
               parentSize: config.parentSize,
               scrollOffset: _onFocusScrollOffset,
@@ -260,10 +260,11 @@ class LockedUnboundedBehavior extends UnboundedBehavior {
 class StoryListBlock extends Block {
   final Size parentSize;
   final double scrollOffset;
+  final double bottomPadding;
   StoryListBlock({
     Key key,
     List<Widget> children,
-    EdgeInsets padding,
+    this.bottomPadding,
     ScrollListener onScroll,
     Key scrollableKey,
     this.parentSize,
@@ -272,7 +273,6 @@ class StoryListBlock extends Block {
       : super(
           key: key,
           children: children,
-          padding: padding,
           scrollDirection: Axis.vertical,
           scrollAnchor: ViewportAnchor.end,
           onScroll: onScroll,
@@ -283,36 +283,33 @@ class StoryListBlock extends Block {
   }
 
   @override
-  Widget build(BuildContext context) {
-    Widget contents = new StoryListBlockBody(
-      children: children,
-      parentSize: parentSize,
-      scrollOffset: scrollOffset - (padding?.bottom ?? 0.0),
-    );
-    if (padding != null) {
-      contents = new Padding(padding: padding, child: contents);
-    }
-    return new ScrollableViewport(
-      scrollableKey: scrollableKey,
-      initialScrollOffset: initialScrollOffset,
-      scrollDirection: scrollDirection,
-      scrollAnchor: scrollAnchor,
-      onScrollStart: onScrollStart,
-      onScroll: onScroll,
-      onScrollEnd: onScrollEnd,
-      child: contents,
-    );
-  }
+  Widget build(BuildContext context) => new ScrollableViewport(
+        scrollableKey: scrollableKey,
+        initialScrollOffset: initialScrollOffset,
+        scrollDirection: scrollDirection,
+        scrollAnchor: scrollAnchor,
+        onScrollStart: onScrollStart,
+        onScroll: onScroll,
+        onScrollEnd: onScrollEnd,
+        child: new StoryListBlockBody(
+          children: children,
+          parentSize: parentSize,
+          scrollOffset: scrollOffset,
+          bottomPadding: bottomPadding,
+        ),
+      );
 }
 
 class StoryListBlockBody extends BlockBody {
   final Size parentSize;
   final double scrollOffset;
+  final double bottomPadding;
   StoryListBlockBody({
     Key key,
     List<Widget> children,
     this.parentSize,
     this.scrollOffset,
+    this.bottomPadding,
   })
       : super(key: key, mainAxis: Axis.vertical, children: children);
 
@@ -321,6 +318,7 @@ class StoryListBlockBody extends BlockBody {
       new StoryListRenderBlock(
         parentSize: parentSize,
         scrollOffset: scrollOffset,
+        bottomPadding: bottomPadding,
       );
 
   @override
@@ -329,6 +327,7 @@ class StoryListBlockBody extends BlockBody {
     renderObject.mainAxis = mainAxis;
     renderObject.parentSize = parentSize;
     renderObject.scrollOffset = scrollOffset;
+    renderObject.bottomPadding = bottomPadding;
   }
 }
 

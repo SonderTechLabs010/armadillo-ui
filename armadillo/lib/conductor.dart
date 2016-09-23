@@ -106,9 +106,7 @@ class Conductor extends StatelessWidget {
                       constraints.maxHeight - _kMinimizedNowHeight,
                     ),
                     quickSettingsHeightBump: _kQuickSettingsHeightBump,
-                    padding: new EdgeInsets.only(
-                      bottom: _kMaximizedNowHeight - _kMinimizedNowHeight,
-                    ),
+                    bottomPadding: _kMaximizedNowHeight - _kMinimizedNowHeight,
                     onScroll: (double scrollOffset) =>
                         _nowKey.currentState.scrollOffset = scrollOffset,
                     onStoryFocusStarted: _minimizeNow,
