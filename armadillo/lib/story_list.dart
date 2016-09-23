@@ -151,7 +151,7 @@ class StoryListState extends State<StoryList> {
                   return new StoryListChild(
                     story: story,
                     focusProgress:
-                        new GlobalObjectKey<FocusableStoryState>(story.id)
+                        new GlobalObjectKey<StoryWidgetState>(story.id)
                                 .currentState
                                 ?.focusProgress ??
                             0.0,
