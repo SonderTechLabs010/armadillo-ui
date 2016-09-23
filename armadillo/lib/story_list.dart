@@ -168,12 +168,7 @@ class StoryListState extends State<StoryList> {
 
   void defocus() {
     // Unfocus all stories.
-    InheritedStoryManager.of(context).stories.forEach(
-      (Story s) {
-        new GlobalObjectKey<FocusableStoryState>(s.id).currentState?.focused =
-            false;
-      },
-    );
+    _defocusAllStories();
 
     // Unlock scrolling.
     setState(() {
@@ -185,11 +180,21 @@ class StoryListState extends State<StoryList> {
   }
 
   void focusStory(Story story) {
+    _defocusAllStories();
     InheritedStoryManager.of(context).interactionStarted(story);
     setState(() {
       _initiallyFocusedStory = story;
       _lockScrolling = true;
     });
+  }
+
+  void _defocusAllStories() {
+    InheritedStoryManager.of(context).stories.forEach(
+      (Story s) {
+        new GlobalObjectKey<FocusableStoryState>(s.id).currentState?.focused =
+            false;
+      },
+    );
   }
 
   double get _quickSettingsHeightDelta =>
