@@ -171,7 +171,7 @@ class StoryListState extends State<StoryList> {
     // Unfocus all stories.
     InheritedStoryManager.of(context).stories.forEach(
       (Story s) {
-        new GlobalObjectKey<FocusableStoryState>(s.id).currentState.focused =
+        new GlobalObjectKey<FocusableStoryState>(s.id).currentState?.focused =
             false;
       },
     );
