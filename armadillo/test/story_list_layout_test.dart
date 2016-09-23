@@ -5,7 +5,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
 
-import '../lib/focusable_story.dart';
+import '../lib/story.dart';
 import '../lib/story_list_layout.dart';
 
 final DateTime _kCurrentTime = new DateTime.now();

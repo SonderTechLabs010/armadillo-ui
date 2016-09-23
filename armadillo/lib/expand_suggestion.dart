@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/rk4_spring_simulation.dart';
 
 import 'selected_suggestion_overlay.dart';
-import 'suggestion_manager.dart';
+import 'suggestion.dart';
 import 'suggestion_widget.dart';
 
 typedef void OnSuggestionExpanded(Suggestion suggestion);

@@ -4,7 +4,7 @@
 
 import 'package:flutter/rendering.dart';
 
-import 'focusable_story.dart';
+import 'story.dart';
 
 class StoryListRenderBlockParentData extends BlockParentData {
   final RenderObject owner;

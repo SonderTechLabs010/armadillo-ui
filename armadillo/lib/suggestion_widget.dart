@@ -5,7 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'suggestion_manager.dart';
+import 'suggestion.dart';
 
 const String _kMicImageGrey600 =
     'packages/armadillo/res/ic_mic_grey600_1x_web_24dp.png';

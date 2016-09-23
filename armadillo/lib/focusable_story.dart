@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
+import 'story.dart';
 import 'story_bar.dart';
 import 'story_title.dart';
 
@@ -39,83 +38,6 @@ const double _kVerticalGestureDetectorHeight = 32.0;
 const double _kStoryBarMinimizedHeight = 12.0;
 const double _kStoryBarMaximizedHeight = 48.0;
 const double _kStoryInlineTitleHeight = 20.0;
-
-/// The representation of a Story.  A Story's contents are display as a [Widget]
-/// provided by [builder] while the size of a story in the [RecentList] is
-/// determined by [lastInteraction] and [cumulativeInteractionDuration].
-class Story {
-  final Object id;
-  final WidgetBuilder builder;
-  final WidgetBuilder wideBuilder;
-  final List<WidgetBuilder> icons;
-  final WidgetBuilder avatar;
-  final String title;
-  final DateTime lastInteraction;
-  final Duration cumulativeInteractionDuration;
-  final Color themeColor;
-  final bool inactive;
-
-  Story({
-    this.id,
-    this.builder,
-    this.wideBuilder,
-    this.title,
-    this.icons: const <WidgetBuilder>[],
-    this.avatar,
-    this.lastInteraction,
-    this.cumulativeInteractionDuration,
-    this.themeColor,
-    this.inactive: false,
-  });
-
-  Story copyWith({
-    DateTime lastInteraction,
-    Duration cumulativeInteractionDuration,
-    bool inactive,
-  }) =>
-      new Story(
-        id: this.id,
-        builder: this.builder,
-        wideBuilder: this.wideBuilder,
-        lastInteraction: lastInteraction ?? this.lastInteraction,
-        cumulativeInteractionDuration:
-            cumulativeInteractionDuration ?? this.cumulativeInteractionDuration,
-        themeColor: this.themeColor,
-        icons: new List.from(this.icons),
-        avatar: this.avatar,
-        title: this.title,
-        inactive: inactive ?? this.inactive,
-      );
-
-  /// A [Story] is bigger if it has been used often and recently.
-  double getHeight({bool multiColumn, double parentWidth}) {
-    double sizeFactor = 1.0;
-    if (multiColumn) {
-      double maxStoryWidth = (parentWidth / 2.0 - _kMultiColumnMargin);
-      double maxStoryHeight = maxStoryWidth / _kWidthToHeightRatio;
-      sizeFactor = maxStoryHeight / (2.0 * _kMinimumStoryHeight);
-    }
-    double sizeRatio =
-        1.0 + (_culmulativeInteractionDurationRatio * _lastInteractionRatio);
-    return _kMinimumStoryHeight * sizeRatio * sizeFactor;
-  }
-
-  double getVerticalMargin({bool multiColumn}) {
-    return multiColumn
-        ? _kMultiColumnMinimumStoryMargin * (0.25 + _lastInteractionRatio) * 2.0
-        : _kSingleColumnStoryMargin / 2.0;
-  }
-
-  double get _culmulativeInteractionDurationRatio =>
-      cumulativeInteractionDuration.inMinutes.toDouble() / 60.0;
-
-  double get _lastInteractionRatio =>
-      1.0 -
-      math.min(
-          1.0,
-          new DateTime.now().difference(lastInteraction).inMinutes.toDouble() /
-              60.0);
-}
 
 typedef void OnStoryFocused(Story story);
 typedef void ProgressListener(double progress, bool isDone);

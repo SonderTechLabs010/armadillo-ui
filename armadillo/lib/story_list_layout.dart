@@ -6,7 +6,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
-import 'focusable_story.dart';
+import 'story.dart';
 
 /// If [StoryListLayout.size] is wider than this, the stories will be laid out
 /// into multiple columns instead of a single column.

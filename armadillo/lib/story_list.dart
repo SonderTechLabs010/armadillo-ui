@@ -7,11 +7,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'focusable_story.dart';
+import 'story.dart';
 import 'story_list_render_block.dart';
 import 'story_list_render_block_parent_data.dart';
 import 'story_manager.dart';
-
-export 'focusable_story.dart' show Story, OnStoryFocused;
 
 /// In multicolumn mode, the distance the right column will be offset up.
 const double _kRightBump = 64.0;

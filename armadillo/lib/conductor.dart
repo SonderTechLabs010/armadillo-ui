@@ -14,10 +14,11 @@ import 'now.dart';
 import 'peeking_overlay.dart';
 import 'selected_suggestion_overlay.dart';
 import 'splash_suggestion.dart';
+import 'story.dart';
 import 'story_list.dart';
 import 'story_manager.dart';
+import 'suggestion.dart';
 import 'suggestion_list.dart';
-import 'suggestion_manager.dart';
 
 /// The height of [Now]'s bar when minimized.
 const _kMinimizedNowHeight = 50.0;

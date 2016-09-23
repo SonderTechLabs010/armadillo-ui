@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
-import 'suggestion_manager.dart';
+import 'suggestion.dart';
 
 typedef void OnSuggestionExpanded(Suggestion suggestion);
 

@@ -9,7 +9,7 @@ import 'package:sysui_widgets/rk4_spring_simulation.dart';
 
 import 'selected_suggestion_overlay.dart';
 import 'splash_painter.dart';
-import 'suggestion_manager.dart';
+import 'suggestion.dart';
 import 'suggestion_widget.dart';
 
 typedef void OnSuggestionExpanded(Suggestion suggestion);

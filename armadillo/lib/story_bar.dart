@@ -10,7 +10,7 @@ import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/three_column_aligned_layout_delegate.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
-import 'focusable_story.dart';
+import 'story.dart';
 import 'story_title.dart';
 
 const RK4SpringDescription _kHeightSimulationDesc =

@@ -6,7 +6,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
 
-import 'focusable_story.dart';
+import 'story.dart';
 import 'story_list_layout.dart';
 import 'story_list_render_block_parent_data.dart';
 

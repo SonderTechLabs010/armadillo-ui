@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'config_manager.dart';
-import 'focusable_story.dart';
+import 'story.dart';
 import 'suggestion_manager.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/stories.json';
