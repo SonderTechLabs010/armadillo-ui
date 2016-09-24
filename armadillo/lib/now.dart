@@ -42,6 +42,7 @@ class Now extends StatefulWidget {
   final VoidCallback onReturnToOriginButtonTap;
   final VoidCallback onMinimize;
   final VoidCallback onMaximize;
+  final VoidCallback onQuickSettingsMaximized;
 
   /// [onBarVerticalDragUpdate] and [onBarVerticalDragEnd] will be called only
   /// when a vertical drag occurs on [Now] when in its fully minimized bar
@@ -58,6 +59,7 @@ class Now extends StatefulWidget {
     this.onReturnToOriginButtonTap,
     this.onMinimize,
     this.onMaximize,
+    this.onQuickSettingsMaximized,
     this.onBarVerticalDragUpdate,
     this.onBarVerticalDragEnd,
   })
@@ -404,6 +406,7 @@ class NowState extends TickingState<Now> {
     if (!_revealingQuickSettings) {
       _quickSettingsSimulation.target = _kQuickSettingsSimulationTarget;
       startTicking();
+      config.onQuickSettingsMaximized?.call();
     }
   }
 

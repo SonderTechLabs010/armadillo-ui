@@ -12,13 +12,16 @@ import 'expand_suggestion.dart';
 import 'keyboard_device_extension.dart';
 import 'now.dart';
 import 'peeking_overlay.dart';
+import 'scroll_locker.dart';
 import 'selected_suggestion_overlay.dart';
 import 'splash_suggestion.dart';
 import 'story.dart';
+import 'story_keys.dart';
 import 'story_list.dart';
 import 'story_manager.dart';
 import 'suggestion.dart';
 import 'suggestion_list.dart';
+import 'vertical_shifter.dart';
 
 /// The height of [Now]'s bar when minimized.
 const _kMinimizedNowHeight = 50.0;
@@ -40,7 +43,6 @@ const double _kStoryListMultiColumnWidthThreshold = 500.0;
 /// multicolumn mode for the [SuggestionList].
 const double _kSuggestionListMultiColumnWidthThreshold = 800.0;
 
-final GlobalKey<StoryListState> _storyListKey = new GlobalKey<StoryListState>();
 final GlobalKey<SuggestionListState> _suggestionListKey =
     new GlobalKey<SuggestionListState>();
 final GlobalKey<ScrollableState> _suggestionListScrollableKey =
@@ -51,6 +53,16 @@ final GlobalKey<PeekingOverlayState> _suggestionOverlayKey =
 final GlobalKey<DeviceExtensionState> _keyboardDeviceExtensionKey =
     new GlobalKey<DeviceExtensionState>();
 final GlobalKey<KeyboardState> _keyboardKey = new GlobalKey<KeyboardState>();
+
+/// The [VerticalShifter] is used to shift the [StoryList] up when [Now]'s
+/// inline quick settings are activated.
+final GlobalKey<VerticalShifterState> _verticalShifterKey =
+    new GlobalKey<VerticalShifterState>();
+
+final GlobalKey<ScrollableState> _scrollableKey =
+    new GlobalKey<ScrollableState>();
+final GlobalKey<ScrollLockerState> _scrollLockerKey =
+    new GlobalKey<ScrollLockerState>();
 
 /// The key for adding [Suggestion]s to the [SelectedSuggestionOverlay].  This
 /// is to allow us to animate from a [Suggestion] in an open [SuggestionList]
@@ -97,19 +109,34 @@ class Conductor extends StatelessWidget {
                   right: 0.0,
                   top: 0.0,
                   bottom: _kMinimizedNowHeight,
-                  child: new StoryList(
-                    key: _storyListKey,
-                    multiColumn: constraints.maxWidth >
-                        _kStoryListMultiColumnWidthThreshold,
-                    parentSize: new Size(
-                      constraints.maxWidth,
-                      constraints.maxHeight - _kMinimizedNowHeight,
+                  child: new VerticalShifter(
+                    key: _verticalShifterKey,
+                    verticalShift: _kQuickSettingsHeightBump,
+                    child: new ScrollLocker(
+                      key: _scrollLockerKey,
+                      child: new StoryList(
+                        scrollableKey: _scrollableKey,
+                        multiColumn: constraints.maxWidth >
+                            _kStoryListMultiColumnWidthThreshold,
+                        parentSize: new Size(
+                          constraints.maxWidth,
+                          constraints.maxHeight - _kMinimizedNowHeight,
+                        ),
+                        quickSettingsHeightBump: _kQuickSettingsHeightBump,
+                        bottomPadding:
+                            _kMaximizedNowHeight - _kMinimizedNowHeight,
+                        onScroll: (double scrollOffset) =>
+                            _nowKey.currentState.scrollOffset = scrollOffset,
+                        onStoryFocusStarted: () {
+                          // Lock scrolling.
+                          _scrollLockerKey.currentState.lock();
+                          _minimizeNow();
+                        },
+                        onStoryFocusCompleted: (Story story) {
+                          _focusStory(context, story);
+                        },
+                      ),
                     ),
-                    quickSettingsHeightBump: _kQuickSettingsHeightBump,
-                    bottomPadding: _kMaximizedNowHeight - _kMinimizedNowHeight,
-                    onScroll: (double scrollOffset) =>
-                        _nowKey.currentState.scrollOffset = scrollOffset,
-                    onStoryFocusStarted: _minimizeNow,
                   ),
                 ),
 
@@ -127,10 +154,18 @@ class Conductor extends StatelessWidget {
                       maxHeight: _kMaximizedNowHeight,
                       quickSettingsHeightBump: _kQuickSettingsHeightBump,
                       onQuickSettingsProgressChange:
-                          (double quickSettingsProgress) => _storyListKey
+                          (double quickSettingsProgress) => _verticalShifterKey
                               .currentState
-                              .quickSettingsProgress = quickSettingsProgress,
+                              .shiftProgress = quickSettingsProgress,
                       onReturnToOriginButtonTap: () => _goToOrigin(context),
+                      onQuickSettingsMaximized: () {
+                        // When quick settings starts being shown, scroll to 0.0.
+                        _scrollableKey.currentState.scrollTo(
+                          0.0,
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.fastOutSlowIn,
+                        );
+                      },
                       onMinimize: () {
                         _suggestionOverlayKey.currentState.peek = false;
                         _suggestionOverlayKey.currentState.hide();
@@ -221,6 +256,43 @@ class Conductor extends StatelessWidget {
         ),
       );
 
+  void _defocus(BuildContext context) {
+    // Unfocus all stories.
+    InheritedStoryManager.of(context).stories.forEach(_unfocusStory);
+
+    // Unlock scrolling.
+    _scrollLockerKey.currentState.unlock();
+    _scrollableKey.currentState.scrollTo(0.0);
+  }
+
+  void _focusStory(BuildContext context, Story story) {
+    InheritedStoryManager
+        .of(context)
+        .stories
+        .where((Story s) => s.id != story.id)
+        .forEach(_unfocusStory);
+
+    // Tell the [StoryManager] the story is now in focus.  This will move the
+    // [Story] to the front of the [StoryList].
+    InheritedStoryManager.of(context).interactionStarted(story);
+
+    // Ensure the focused story is completely expanded.
+    StoryKeys
+        .storyFocusSimulationKey(story)
+        .currentState
+        ?.forward(jumpToFinish: true);
+
+    // Ensure the focused story's story bar is full open.
+    StoryKeys.storyBarKey(story).currentState?.maximize(jumpToFinish: true);
+
+    _scrollLockerKey.currentState.lock();
+  }
+
+  void _unfocusStory(Story s) {
+    StoryKeys.storyFocusSimulationKey(s).currentState?.reverse();
+    StoryKeys.storyBarKey(s).currentState?.minimize();
+  }
+
   void _minimizeNow() {
     _nowKey.currentState.minimize();
     _nowKey.currentState.hideQuickSettings();
@@ -229,7 +301,7 @@ class Conductor extends StatelessWidget {
   }
 
   void _goToOrigin(BuildContext context) {
-    _storyListKey.currentState.defocus();
+    _defocus(context);
     _nowKey.currentState.maximize();
     InheritedStoryManager.of(context).interactionStopped();
   }
@@ -250,7 +322,7 @@ class Conductor extends StatelessWidget {
       _nowKey.currentState.maximize();
     } else {
       // Focus on the story.
-      _storyListKey.currentState.focusStory(targetStories[0]);
+      _focusStory(context, targetStories[0]);
     }
 
     // Unhide selected suggestion in suggestion list.
