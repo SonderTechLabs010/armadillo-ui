@@ -5,9 +5,9 @@
 name: keyboard
 dependencies:
   flutter:
-    path: ../third_party/flutter/packages/flutter
+    sdk: flutter
   sysui_widgets:
     path: ../widgets
 dev_dependencies:
   flutter_test:
-    path: ../third_party/flutter/packages/flutter_test
+    sdk: flutter

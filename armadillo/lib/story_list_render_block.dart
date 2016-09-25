@@ -26,8 +26,8 @@ class StoryListRenderBlock extends RenderBlock {
     double bottomPadding,
   })
       : _parentSize = parentSize,
-        _scrollOffset = scrollOffset,
-        _bottomPadding = bottomPadding,
+        _scrollOffset = scrollOffset ?? 0.0,
+        _bottomPadding = bottomPadding ?? 0.0,
         super(children: children, mainAxis: Axis.vertical);
 
   Size get parentSize => _parentSize;

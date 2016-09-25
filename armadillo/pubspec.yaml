@@ -5,7 +5,7 @@
 name: armadillo
 dependencies:
   flutter:
-    path: ../third_party/flutter/packages/flutter
+    sdk: flutter
   intl: ^0.14.0
   keyboard:
     path: ../keyboard
@@ -13,4 +13,4 @@ dependencies:
     path: ../widgets
 dev_dependencies:
   flutter_test:
-    path: ../third_party/flutter/packages/flutter_test
+    sdk: flutter
