@@ -98,21 +98,19 @@ class StoryWidget extends StatelessWidget {
                                     : null,
                             behavior: HitTestBehavior.translucent,
                             child: new ClipRect(
-                              child: new OverflowBox(
+                              child: new FittedBox(
+                                fit: ImageFit.cover,
                                 alignment: FractionalOffset.topCenter,
-                                minWidth: fullSize.width,
-                                maxWidth: fullSize.width,
-                                minHeight: fullSize.height -
-                                    (multiColumn
-                                        ? _kStoryBarMaximizedHeight
-                                        : 0.0),
-                                maxHeight: fullSize.height -
-                                    (multiColumn
-                                        ? _kStoryBarMaximizedHeight
-                                        : 0.0),
-                                child: multiColumn
-                                    ? story.wideBuilder(context)
-                                    : story.builder(context),
+                                child: new SizedBox(
+                                  width: fullSize.width,
+                                  height: fullSize.height -
+                                      (multiColumn
+                                          ? _kStoryBarMaximizedHeight
+                                          : 0.0),
+                                  child: multiColumn
+                                      ? story.wideBuilder(context)
+                                      : story.builder(context),
+                                ),
                               ),
                             ),
                           ),
