@@ -5,12 +5,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
-
-import 'package:flutter/material.dart';
 
 /// A material design slider.
 /// Adapted from Flutter's Slider class. Adds the ability to set an image
@@ -44,7 +43,7 @@ import 'package:flutter/material.dart';
 ///  * <https://www.google.com/design/spec/components/sliders.html>
 ///
 
-class IconSlider extends StatelessWidget {
+class IconSlider extends StatefulWidget {
   /// Creates a material design slider with an icon for the picker.
   ///
   /// The slider itself does not maintain any state. Instead, when the state of
@@ -119,21 +118,27 @@ class IconSlider extends StatelessWidget {
   /// If null, do not draw any image.
   final ImageProvider thumbImage;
 
+  @override
+  _IconSliderState createState() => new _IconSliderState();
+}
+
+class _IconSliderState extends State<IconSlider> with TickerProviderStateMixin {
   void _handleChanged(double value) {
-    assert(onChanged != null);
-    onChanged(value * (max - min) + min);
+    assert(config.onChanged != null);
+    config.onChanged(value * (config.max - config.min) + config.min);
   }
 
   @override
   Widget build(BuildContext context) {
     return new _IconSliderRenderObjectWidget(
-        value: (value - min) / (max - min),
-        divisions: divisions,
-        label: label,
-        activeColor: activeColor ?? Theme.of(context).accentColor,
-        thumbImage: thumbImage,
+        value: (config.value - config.min) / (config.max - config.min),
+        divisions: config.divisions,
+        label: config.label,
+        activeColor: config.activeColor ?? Theme.of(context).accentColor,
+        thumbImage: config.thumbImage,
         configuration: createLocalImageConfiguration(context),
-        onChanged: onChanged != null ? _handleChanged : null);
+        onChanged: config.onChanged != null ? _handleChanged : null,
+        vsync: this);
   }
 }
 
@@ -146,7 +151,8 @@ class _IconSliderRenderObjectWidget extends LeafRenderObjectWidget {
       this.activeColor,
       this.thumbImage,
       this.configuration,
-      this.onChanged})
+      this.onChanged,
+      this.vsync})
       : super(key: key);
 
   final double value;
@@ -156,16 +162,19 @@ class _IconSliderRenderObjectWidget extends LeafRenderObjectWidget {
   final ImageProvider thumbImage;
   final ImageConfiguration configuration;
   final ValueChanged<double> onChanged;
+  final TickerProvider vsync;
 
   @override
   _RenderIconSlider createRenderObject(BuildContext context) =>
       new _RenderIconSlider(
-          value: value,
-          divisions: divisions,
-          label: label,
-          activeColor: activeColor,
-          thumbImage: thumbImage,
-          onChanged: onChanged);
+        value: value,
+        divisions: divisions,
+        label: label,
+        activeColor: activeColor,
+        thumbImage: thumbImage,
+        onChanged: onChanged,
+        vsync: vsync,
+      );
 
   @override
   void updateRenderObject(
@@ -179,6 +188,8 @@ class _IconSliderRenderObjectWidget extends LeafRenderObjectWidget {
       ..configuration = configuration
       ..onChanged = onChanged;
   }
+  // Ticker provider cannot change since there's a 1:1 relationship between
+  // the _SliderRenderObjectWidget object and the _SliderState object.
 }
 
 const double _kThumbRadius = 6.0;
@@ -222,14 +233,16 @@ BoxConstraints _getAdditionalConstraints(String label) {
 
 class _RenderIconSlider extends RenderConstrainedBox
     implements SemanticActionHandler {
-  _RenderIconSlider(
-      {double value,
-      int divisions,
-      String label,
-      Color activeColor,
-      ImageProvider thumbImage,
-      ImageConfiguration configuration,
-      this.onChanged})
+  _RenderIconSlider({
+    double value,
+    int divisions,
+    String label,
+    Color activeColor,
+    ImageProvider thumbImage,
+    ImageConfiguration configuration,
+    this.onChanged,
+    TickerProvider vsync,
+  })
       : _value = value,
         _divisions = divisions,
         _activeColor = activeColor,
@@ -242,14 +255,17 @@ class _RenderIconSlider extends RenderConstrainedBox
       ..onStart = _handleDragStart
       ..onUpdate = _handleDragUpdate
       ..onEnd = _handleDragEnd;
-    _reactionController =
-        new AnimationController(duration: kRadialReactionDuration);
+    _reactionController = new AnimationController(
+      duration: kRadialReactionDuration,
+      vsync: vsync,
+    );
     _reaction = new CurvedAnimation(
         parent: _reactionController,
         curve: Curves.fastOutSlowIn)..addListener(markNeedsPaint);
     _position = new AnimationController(
         value: value,
-        duration: _kDiscreteTransitionDuration)..addListener(markNeedsPaint);
+        duration: _kDiscreteTransitionDuration,
+        vsync: vsync)..addListener(markNeedsPaint);
   }
 
   double get value => _value;
