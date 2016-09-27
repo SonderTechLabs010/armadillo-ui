@@ -85,40 +85,23 @@ class StoryList extends StatelessWidget {
         builder: (BuildContext context, double progress) => new StoryListChild(
               story: story,
               focusProgress: progress,
-              child: new Stack(
-                children: <Widget>[
-                  _createStory(story, progress),
-                  new Positioned(
-                    left: 0.0,
-                    right: 0.0,
-                    top: 0.0,
-                    bottom: 0.0,
-                    child: _createGainFocusButton(stories, story),
-                  ),
-                ],
-              ),
+              child: _createStory(stories, story, progress),
             ),
       );
 
-  Widget _createStory(Story story, double progress) => new StoryWidget(
-        focusProgress: progress,
-        fullSize: parentSize,
-        story: story,
-        multiColumn: multiColumn,
-        storyBar: new StoryBar(
-          key: StoryKeys.storyBarKey(story),
+  Widget _createStory(List<Story> stories, Story story, double progress) =>
+      new StoryWidget(
+          focusProgress: progress,
+          fullSize: parentSize,
           story: story,
-          minimizedHeight: _kStoryBarMinimizedHeight,
-          maximizedHeight: _kStoryBarMaximizedHeight,
-        ),
-      );
-
-  Widget _createGainFocusButton(List<Story> stories, Story story) =>
-      new Offstage(
-        offstage: _inFocus(story),
-        child: new GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
+          multiColumn: multiColumn,
+          storyBar: new StoryBar(
+            key: StoryKeys.storyBarKey(story),
+            story: story,
+            minimizedHeight: _kStoryBarMinimizedHeight,
+            maximizedHeight: _kStoryBarMaximizedHeight,
+          ),
+          onGainFocus: () {
             bool storyInFocus = false;
             stories.forEach((Story s) {
               if (_inFocus(s)) {
@@ -133,9 +116,7 @@ class StoryList extends StatelessWidget {
 
               onStoryFocusStarted?.call();
             }
-          },
-        ),
-      );
+          });
 
   bool _inFocus(Story s) =>
       (StoryKeys.storyFocusSimulationKey(s).currentState?.progress ?? 0.0) >
