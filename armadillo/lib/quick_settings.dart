@@ -34,6 +34,10 @@ const String _kVolumeUpGrey600 =
     'packages/armadillo/res/ic_volume_up_grey600.png';
 const Color _kActiveSliderColor = const Color.fromARGB(255, 153, 234, 216);
 
+/// If [QuickSettings size] is wider than this, the contents will be laid out
+/// into multiple columns instead of a single column.
+const double _kMultiColumnWidthThreshold = 450.0;
+
 class QuickSettings extends StatefulWidget {
   @override
   _QuickSettingsState createState() => new _QuickSettingsState();
@@ -47,6 +51,118 @@ class _QuickSettingsState extends State<QuickSettings> {
   final GlobalKey _kDoNotDisturbModeToggle = new GlobalKey();
   final GlobalKey _kScreenRotationToggle = new GlobalKey();
 
+  Widget _divider() {
+    return new Divider(height: 4.0, color: Colors.grey[300]);
+  }
+
+  Widget _volumeIconSlider() => new IconSlider(
+        value: _volumeSliderValue,
+        min: 0.0,
+        max: 100.0,
+        activeColor: _kActiveSliderColor,
+        thumbImage: new AssetImage(_kVolumeUpGrey600),
+        onChanged: (double value) {
+          setState(() {
+            _volumeSliderValue = value;
+          });
+        },
+      );
+
+  Widget _brightnessIconSlider() => new IconSlider(
+        value: _brightnessSliderValue,
+        min: 0.0,
+        max: 100.0,
+        activeColor: _kActiveSliderColor,
+        thumbImage: new AssetImage(_kBrightnessHighGrey600),
+        onChanged: (double value) {
+          setState(() {
+            _brightnessSliderValue = value;
+          });
+        },
+      );
+
+  Widget _airplaneModeToggleIcon() => new ToggleIcon(
+        key: _kAirplaneModeToggle,
+        imageList: [
+          _kAirplaneModeInactiveGrey600,
+          _kAirplaneModeActiveBlack,
+        ],
+        initialImageIndex: 1,
+        width: _kIconSize,
+        height: _kIconSize,
+      );
+
+  Widget _doNotDisturbToggleIcon() => new ToggleIcon(
+        key: _kDoNotDisturbModeToggle,
+        imageList: [
+          _kDoNoDisturbOnBlack,
+          _kDoNoDisturbOffGrey600,
+        ],
+        initialImageIndex: 0,
+        width: _kIconSize,
+        height: _kIconSize,
+      );
+
+  Widget _screenRotationToggleIcon() => new ToggleIcon(
+        key: _kScreenRotationToggle,
+        imageList: [
+          kScreenLockRotationBlack,
+          kScreenRotationBlack,
+        ],
+        initialImageIndex: 0,
+        width: _kIconSize,
+        height: _kIconSize,
+      );
+
+  Widget _buildForNarrowScreen(BuildContext context) {
+    return new Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _volumeIconSlider(),
+          _brightnessIconSlider(),
+          _divider(),
+          new Row(children: [
+            new Flexible(
+              flex: 1,
+              child: _airplaneModeToggleIcon(),
+            ),
+            new Flexible(
+              flex: 1,
+              child: _doNotDisturbToggleIcon(),
+            ),
+            new Flexible(
+              flex: 1,
+              child: _screenRotationToggleIcon(),
+            ),
+          ]),
+        ]);
+  }
+
+  Widget _buildForWideScreen(BuildContext context) => new Row(children: [
+        new Flexible(
+          flex: 3,
+          child: _volumeIconSlider(),
+        ),
+        new Flexible(
+          flex: 3,
+          child: _brightnessIconSlider(),
+        ),
+        new Flexible(
+          flex: 1,
+          child: _airplaneModeToggleIcon(),
+        ),
+        new Flexible(
+          flex: 1,
+          child: _doNotDisturbToggleIcon(),
+        ),
+        new Flexible(
+          flex: 1,
+          child: _screenRotationToggleIcon(),
+        ),
+      ]);
+
   @override
   Widget build(BuildContext context) {
     return new Material(
@@ -57,81 +173,16 @@ class _QuickSettingsState extends State<QuickSettings> {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          new Divider(height: 4.0, color: Colors.grey[300]),
+          _divider(),
           new Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: new Row(children: [
-                new Flexible(
-                  flex: 3,
-                  child: new IconSlider(
-                    value: _volumeSliderValue,
-                    min: 0.0,
-                    max: 100.0,
-                    activeColor: _kActiveSliderColor,
-                    thumbImage: new AssetImage(_kVolumeUpGrey600),
-                    onChanged: (double value) {
-                      setState(() {
-                        _volumeSliderValue = value;
-                      });
-                    },
-                  ),
-                ),
-                new Flexible(
-                  flex: 3,
-                  child: new IconSlider(
-                    value: _brightnessSliderValue,
-                    min: 0.0,
-                    max: 100.0,
-                    activeColor: _kActiveSliderColor,
-                    thumbImage: new AssetImage(_kBrightnessHighGrey600),
-                    onChanged: (double value) {
-                      setState(() {
-                        _brightnessSliderValue = value;
-                      });
-                    },
-                  ),
-                ),
-                new Flexible(
-                  flex: 1,
-                  child: new ToggleIcon(
-                    key: _kAirplaneModeToggle,
-                    imageList: [
-                      _kAirplaneModeInactiveGrey600,
-                      _kAirplaneModeActiveBlack,
-                    ],
-                    initialImageIndex: 1,
-                    width: _kIconSize,
-                    height: _kIconSize,
-                  ),
-                ),
-                new Flexible(
-                  flex: 1,
-                  child: new ToggleIcon(
-                    key: _kDoNotDisturbModeToggle,
-                    imageList: [
-                      _kDoNoDisturbOnBlack,
-                      _kDoNoDisturbOffGrey600,
-                    ],
-                    initialImageIndex: 0,
-                    width: _kIconSize,
-                    height: _kIconSize,
-                  ),
-                ),
-                new Flexible(
-                  flex: 1,
-                  child: new ToggleIcon(
-                    key: _kScreenRotationToggle,
-                    imageList: [
-                      kScreenLockRotationBlack,
-                      kScreenRotationBlack,
-                    ],
-                    initialImageIndex: 0,
-                    width: _kIconSize,
-                    height: _kIconSize,
-                  ),
-                ),
-              ])),
-          new Divider(height: 4.0, color: Colors.grey[300]),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: new LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) =>
+                    (constraints.maxWidth > _kMultiColumnWidthThreshold)
+                        ? _buildForWideScreen(context)
+                        : _buildForNarrowScreen(context)),
+          ),
+          _divider(),
           new GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {

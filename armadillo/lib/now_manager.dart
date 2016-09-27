@@ -27,9 +27,6 @@ const double _kImportantInfoIconSize = 24.0;
 // the first icon (the battery icon)
 const double _kImportantInfoMinWidth = _kImportantInfoIconSize;
 
-// The width of the quick settings background when fully maximized
-const double _kQuickSettingsBackgroundMaximizedWidth = 400.0;
-
 // Padding between an icon and the text label to the right in important info
 const double _kIconLabelPadding = 4.0;
 
@@ -84,11 +81,7 @@ class NowManager extends ConfigManager {
       _kImportantInfoMinWidth +
       2 * 8.0; // TODO(mikejurka): pull this into constant
 
-  double get quickSettingsBackgroundMaximizedWidth =>
-      _kQuickSettingsBackgroundMaximizedWidth;
-
-  Widget get importantInfoMaximized {
-    double maxWidth = _kQuickSettingsBackgroundMaximizedWidth;
+  Widget importantInfoMaximized(double maxWidth) {
     return new Container(
       // TODO(mikejurka): don't hardcode height after OverflowBox is fixed
       height: 32.0,
