@@ -88,7 +88,12 @@ class Conductor extends StatelessWidget {
           builder: (BuildContext context, BoxConstraints constraints) =>
               (constraints.maxWidth == 0.0 || constraints.maxHeight == 0.0)
                   ? new Offstage(offstage: true)
+                  // NOTE: The Overlay *must* be a child of the LayoutBuilder
+                  // due to https://github.com/flutter/flutter/issues/6119.
                   : new Overlay(
+                      // We need a new key each time to ensure initialEntries is
+                      // reused on constraints change.
+                      key: new GlobalKey(),
                       initialEntries: [
                         new OverlayEntry(
                           builder: (BuildContext context) => new Stack(

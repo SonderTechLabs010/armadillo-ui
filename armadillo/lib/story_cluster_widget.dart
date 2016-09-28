@@ -7,11 +7,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'long_hover_detector.dart';
+import 'optional_wrapper.dart';
 import 'story.dart';
-import 'story_bar.dart';
 import 'story_cluster.dart';
-import 'story_keys.dart';
 import 'story_manager.dart';
+import 'story_panels.dart';
 import 'story_title.dart';
 
 /// The minimum story height.
@@ -64,48 +64,65 @@ class StoryClusterWidget extends StatelessWidget {
       : super(key: key);
 
   @override
-  Widget build(BuildContext context) => new DragTarget<StoryCluster>(
-        onWillAccept: (StoryCluster data) {
-          // Don't accept empty data.
-          if (data == null || data.stories.isEmpty) {
-            return false;
-          }
-
-          // Don't accept data if it would put us over the story limit.
-          if (storyCluster.stories.length + data.stories.length >
-              _kMaxStories) {
-            return false;
-          }
-
-          // Don't accept data that has a story that matches any of our current
-          // stories.
-          bool result = true;
-          data.stories.forEach((Story s1) {
-            if (result) {
-              storyCluster.stories.forEach((Story s2) {
-                if (result && s1.id == s2.id) {
-                  result = false;
+  Widget build(BuildContext context) => new OptionalWrapper(
+        // Don't accept data if we're focused or focusing.
+        useWrapper: _isUnfocused,
+        builder: (BuildContext context, Widget child) =>
+            new DragTarget<StoryCluster>(
+              onWillAccept: (StoryCluster data) {
+                // Don't accept empty data.
+                if (data == null || data.stories.isEmpty) {
+                  return false;
                 }
-              });
-            }
-          });
 
-          return result;
-        },
-        onAccept: (StoryCluster data) {
-          InheritedStoryManager
-              .of(context)
-              .combine(source: data, target: storyCluster);
-        },
-        builder: (
-          BuildContext context,
-          List<StoryCluster> candidateData,
-          List<dynamic> rejectedData,
-        ) =>
-            new LongHoverDetector(
-              hovering: candidateData.isNotEmpty,
-              onLongHover: onGainFocus,
-              child: new LongPressDraggable(
+                // Don't accept data if it would put us over the story limit.
+                if (storyCluster.stories.length + data.stories.length >
+                    _kMaxStories) {
+                  return false;
+                }
+
+                // Don't accept data that has a story that matches any of our current
+                // stories.
+                bool result = true;
+                data.stories.forEach((Story s1) {
+                  if (result) {
+                    storyCluster.stories.forEach((Story s2) {
+                      if (result && s1.id == s2.id) {
+                        result = false;
+                      }
+                    });
+                  }
+                });
+
+                return result;
+              },
+              onAccept: (StoryCluster data) {
+                InheritedStoryManager
+                    .of(context)
+                    .combine(source: data, target: storyCluster);
+              },
+              builder: (
+                BuildContext context,
+                List<StoryCluster> candidateData,
+                List<dynamic> rejectedData,
+              ) =>
+                  _getUnfocusedDragTargetChild(context,
+                      hasCandidates: candidateData.isNotEmpty),
+            ),
+        child: _getStoryClusterWithInlineStoryTitle(context, highlight: false),
+      );
+
+  Widget _getUnfocusedDragTargetChild(
+    BuildContext context, {
+    bool hasCandidates,
+  }) =>
+      new LongHoverDetector(
+        hovering: hasCandidates,
+        onLongHover: onGainFocus,
+        child: new OptionalWrapper(
+          useWrapper: _isUnfocused && !hasCandidates,
+          builder: (BuildContext context, Widget child) =>
+              new LongPressDraggable(
                 data: storyCluster,
                 feedbackOffset:
                     new Offset(-_kDraggedStoryRadius, -_kDraggedStoryRadius),
@@ -129,12 +146,13 @@ class StoryClusterWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                child: _getStoryClusterWithInlineStoryTitle(
-                  context,
-                  highlight: candidateData.isNotEmpty,
-                ),
+                child: child,
               ),
-            ),
+          child: _getStoryClusterWithInlineStoryTitle(
+            context,
+            highlight: hasCandidates,
+          ),
+        ),
       );
 
   Widget _getStoryClusterWithInlineStoryTitle(
@@ -175,46 +193,13 @@ class StoryClusterWidget extends StatelessWidget {
         child: new ClipRRect(
           borderRadius:
               new BorderRadius.circular(_lerp(4.0, 0.0, focusProgress)),
-          child: new Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: storyCluster.stories
-                .map((Story story) => new Flexible(
-                      child: new Padding(
-                        padding: new EdgeInsets.only(
-                          left: storyCluster.stories[0] == story
-                              ? 0.0
-                              : _lerp(4.0, 8.0, focusProgress),
-                        ),
-                        child: _getStory(context, story),
-                      ),
-                    ))
-                .toList(),
+          child: new StoryPanels(
+            stories: storyCluster.stories,
+            focusProgress: focusProgress,
+            multiColumn: multiColumn,
+            fullSize: fullSize,
           ),
         ),
-      );
-
-  Widget _getStory(BuildContext context, Story story) => new Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // The story bar that pushes down the story.
-          new StoryBar(
-            key: StoryKeys.storyBarKey(story),
-            story: story,
-            minimizedHeight: _kStoryBarMinimizedHeight,
-            maximizedHeight: _kStoryBarMaximizedHeight,
-          ),
-
-          // The story itself.
-          new Flexible(
-            child: new Stack(
-              children: [
-                _getStoryContents(context, story),
-                _getTouchDetectorToHideStoryBar(story),
-                _getVerticalDragDetectorToShowStoryBar(story),
-              ],
-            ),
-          ),
-        ],
       );
 
   /// The Story Title that hovers below the story itself.
@@ -240,20 +225,6 @@ class StoryClusterWidget extends StatelessWidget {
         ),
       );
 
-  /// The scaled and clipped story.  When full size, the story will
-  /// no longer be scaled or clipped.
-  Widget _getStoryContents(BuildContext context, Story story) => new FittedBox(
-        fit: ImageFit.cover,
-        alignment: FractionalOffset.topCenter,
-        child: new SizedBox(
-          width: fullSize.width,
-          height:
-              fullSize.height - (multiColumn ? _kStoryBarMaximizedHeight : 0.0),
-          child:
-              multiColumn ? story.wideBuilder(context) : story.builder(context),
-        ),
-      );
-
   Widget get _focusOnTap => new Positioned(
         left: 0.0,
         right: 0.0,
@@ -268,42 +239,7 @@ class StoryClusterWidget extends StatelessWidget {
         ),
       );
 
-  /// Touch listener that activates in full screen mode.
-  /// When a touch comes in we hide the story bar.
-  Widget _getTouchDetectorToHideStoryBar(Story story) => new Positioned(
-        top: 0.0,
-        left: 0.0,
-        right: 0.0,
-        bottom: 0.0,
-        child: new Offstage(
-          offstage: _storyBarIsImmutable,
-          child: new Listener(
-            behavior: HitTestBehavior.translucent,
-            onPointerDown: (_) =>
-                StoryKeys.storyBarKey(story).currentState.hide(),
-          ),
-        ),
-      );
-
-  /// Vertical gesture detector that activates in full screen
-  /// mode.  When a drag down from top of screen occurs we
-  /// show the story bar.
-  Widget _getVerticalDragDetectorToShowStoryBar(Story story) => new Positioned(
-        top: 0.0,
-        left: 0.0,
-        right: 0.0,
-        height: _kVerticalGestureDetectorHeight,
-        child: new Offstage(
-          offstage: _storyBarIsImmutable,
-          child: new GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onVerticalDragUpdate: (_) =>
-                StoryKeys.storyBarKey(story).currentState.show(),
-          ),
-        ),
-      );
-
-  bool get _storyBarIsImmutable => (focusProgress != 1.0 || multiColumn);
+  bool get _isUnfocused => focusProgress == 0.0;
 
   double get _inlineStoryTitleHeight =>
       _lerp(_kStoryInlineTitleHeight, 0.0, focusProgress);
