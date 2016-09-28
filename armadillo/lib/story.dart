@@ -24,7 +24,7 @@ class Story {
     this.id,
     this.builder,
     this.wideBuilder,
-    this.title,
+    this.title: '',
     this.icons: const <WidgetBuilder>[],
     this.avatar,
     this.lastInteraction,

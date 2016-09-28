@@ -4,6 +4,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
+import 'package:sysui_widgets/delegating_page_route.dart';
 
 import '../lib/story.dart';
 import '../lib/story_cluster.dart';
@@ -37,11 +38,16 @@ void main() {
       ),
     );
     StoryManager storyManager = new DummyStoryManager(storyKeys: storyKeys);
-    await tester.pumpWidget(new InheritedStoryManager(
-        storyManager: storyManager,
-        child: new Center(
-            child:
-                new Container(width: _kWidthSingleColumn, child: storyList))));
+    await tester.pumpWidget(
+      _wrapWithWidgetsApp(
+        child: new InheritedStoryManager(
+          storyManager: storyManager,
+          child: new Center(
+            child: new Container(width: _kWidthSingleColumn, child: storyList),
+          ),
+        ),
+      ),
+    );
     expect(find.byKey(storyListKey), isNotNull);
     expect(
       tester.getSize(find.byKey(storyListKey)).width,
@@ -77,12 +83,14 @@ void main() {
     StoryManager storyManager = new DummyStoryManager(storyKeys: storyKeys);
 
     await tester.pumpWidget(
-      new InheritedStoryManager(
-        storyManager: storyManager,
-        child: new Center(
-          child: new Container(
-            width: _kWidthMultiColumn,
-            child: storyList,
+      _wrapWithWidgetsApp(
+        child: new InheritedStoryManager(
+          storyManager: storyManager,
+          child: new Center(
+            child: new Container(
+              width: _kWidthMultiColumn,
+              child: storyList,
+            ),
           ),
         ),
       ),
@@ -126,3 +134,10 @@ class DummyStoryManager extends StoryManager {
             ),
       );
 }
+
+Widget _wrapWithWidgetsApp({Widget child}) => new WidgetsApp(
+      onGenerateRoute: (RouteSettings settings) => new DelegatingPageRoute(
+            (_) => child,
+            settings: settings,
+          ),
+    );
