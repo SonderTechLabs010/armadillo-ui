@@ -7,11 +7,12 @@ import 'package:flutter/widgets.dart';
 import 'simulation_builder.dart';
 import 'story.dart';
 import 'story_bar.dart';
+import 'story_cluster.dart';
 
 class StoryKeys {
   static GlobalKey<StoryBarState> storyBarKey(Story story) =>
       new GlobalObjectKey<StoryBarState>(story.storyBarKeyObject);
-  static GlobalKey<SimulationBuilderState> storyFocusSimulationKey(
-          Story story) =>
-      new GlobalObjectKey(story.id);
+  static GlobalKey<SimulationBuilderState> storyClusterFocusSimulationKey(
+          StoryCluster storyCluster) =>
+      new GlobalObjectKey(storyCluster.id);
 }

@@ -6,7 +6,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
-import 'story.dart';
+import 'story_cluster.dart';
 
 /// If [StoryListLayout.size] is wider than this, the stories will be laid out
 /// into multiple columns instead of a single column.
@@ -57,9 +57,9 @@ class StoryListLayout {
     _multiColumn = _kMultiColumnWidthThreshold <= size.width;
   }
 
-  /// [storiesToLayout] must be sorted by decreasing
+  /// [storyClustersToLayout] must be sorted by decreasing
   /// [Story.lastInteraction].
-  /// [storiesToLayout] are expected to have non-overlapping interaction
+  /// [storyClustersToLayout] are expected to have non-overlapping interaction
   /// durations.  This algorithm may not work if they do.
   /// [currentTime] should typically be [DateTime.now] and will be used to
   /// compare against the [Story.lastInteraction] timestamps.
@@ -67,19 +67,20 @@ class StoryListLayout {
   /// y: the bottom of the list is y = 0.0 with decreasing y as you go up.
   /// x: the center of the list is x = 0.0 with decreasing x as you go left.
   List<StoryLayout> layout({
-    List<Story> storiesToLayout,
+    List<StoryCluster> storyClustersToLayout,
     DateTime currentTime,
   }) {
-    if (storiesToLayout?.isEmpty ?? true) {
+    if (storyClustersToLayout?.isEmpty ?? true) {
       return const <_StoryMetadata>[];
     }
 
     // Assert that the stories are in the correct order.
     assert(() {
-      for (int i = 1; i < storiesToLayout.length; i++) {
-        bool inOrder =
-            storiesToLayout[i - 1].lastInteraction.millisecondsSinceEpoch >=
-                storiesToLayout[i].lastInteraction.millisecondsSinceEpoch;
+      for (int i = 1; i < storyClustersToLayout.length; i++) {
+        bool inOrder = storyClustersToLayout[i - 1]
+                .lastInteraction
+                .millisecondsSinceEpoch >=
+            storyClustersToLayout[i].lastInteraction.millisecondsSinceEpoch;
         if (!inOrder) {
           return false;
         }
@@ -91,18 +92,19 @@ class StoryListLayout {
     // along the way.  See [_kJugglingThresholdMinutes].
     int jugglingStoryCount = 0; // The number of stories being juggled.
     List<_StoryMetadata> stories = new List<_StoryMetadata>.generate(
-      storiesToLayout.length,
+      storyClustersToLayout.length,
       (int index) {
-        Story storyToLayout = storiesToLayout[index];
+        StoryCluster storyClusterToLayout = storyClustersToLayout[index];
 
-        int minutesSinceLastInteraction =
-            currentTime.difference(storyToLayout.lastInteraction).inMinutes;
+        int minutesSinceLastInteraction = currentTime
+            .difference(storyClusterToLayout.lastInteraction)
+            .inMinutes;
 
         int possibleJugglingMinutes = math.max(
             0, _kJugglingThresholdMinutes - minutesSinceLastInteraction);
 
         int storyJugglingMinutes = math.min(
-            storyToLayout.cumulativeInteractionDuration.inMinutes,
+            storyClusterToLayout.cumulativeInteractionDuration.inMinutes,
             possibleJugglingMinutes);
 
         if (storyJugglingMinutes > 0) {
@@ -111,7 +113,7 @@ class StoryListLayout {
 
         return new _StoryMetadata(
           interactionMinutes:
-              storyToLayout.cumulativeInteractionDuration.inMinutes,
+              storyClusterToLayout.cumulativeInteractionDuration.inMinutes,
           jugglingMinutes: storyJugglingMinutes,
         );
       },

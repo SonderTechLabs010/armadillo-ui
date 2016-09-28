@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 
 import 'config_manager.dart';
 import 'story.dart';
+import 'story_cluster.dart';
 import 'suggestion_manager.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/stories.json';
@@ -19,7 +20,7 @@ const String _kJsonUrl = 'packages/armadillo/res/stories.json';
 /// user interaction.
 class StoryManager extends ConfigManager {
   final SuggestionManager suggestionManager;
-  List<Story> _stories = const <Story>[];
+  List<StoryCluster> _storyClusters = const <StoryCluster>[];
 
   StoryManager({this.suggestionManager});
 
@@ -28,43 +29,45 @@ class StoryManager extends ConfigManager {
       final decodedJson = convert.JSON.decode(json);
 
       // Load stories
-      _stories = decodedJson["stories"]
+      _storyClusters = decodedJson["stories"]
           .map(
-            (Map<String, Object> story) => new Story(
-                  id: new ValueKey(story['id']),
-                  builder: (_) => new Image.asset(
-                        story['content'],
-                        alignment: FractionalOffset.topCenter,
-                        fit: ImageFit.cover,
+            (Map<String, Object> story) => new StoryCluster(stories: [
+                  new Story(
+                    id: new ValueKey(story['id']),
+                    builder: (_) => new Image.asset(
+                          story['content'],
+                          alignment: FractionalOffset.topCenter,
+                          fit: ImageFit.cover,
+                        ),
+                    wideBuilder: (_) => new Image.asset(
+                          story['contentWide'] ?? story['content'],
+                          alignment: FractionalOffset.topCenter,
+                          fit: ImageFit.cover,
+                        ),
+                    title: story['title'],
+                    icons: (story['icons'] as List<String>)
+                        .map(
+                          (String icon) => (BuildContext context) =>
+                              new Image.asset(icon,
+                                  fit: ImageFit.cover, color: Colors.white),
+                        )
+                        .toList(),
+                    avatar: (_) => new Image.asset(
+                          story['avatar'],
+                          fit: ImageFit.cover,
+                        ),
+                    lastInteraction: new DateTime.now().subtract(
+                      new Duration(
+                        seconds: int.parse(story['lastInteraction']),
                       ),
-                  wideBuilder: (_) => new Image.asset(
-                        story['contentWide'] ?? story['content'],
-                        alignment: FractionalOffset.topCenter,
-                        fit: ImageFit.cover,
-                      ),
-                  title: story['title'],
-                  icons: (story['icons'] as List<String>)
-                      .map(
-                        (String icon) => (BuildContext context) =>
-                            new Image.asset(icon,
-                                fit: ImageFit.cover, color: Colors.white),
-                      )
-                      .toList(),
-                  avatar: (_) => new Image.asset(
-                        story['avatar'],
-                        fit: ImageFit.cover,
-                      ),
-                  lastInteraction: new DateTime.now().subtract(
-                    new Duration(
-                      seconds: int.parse(story['lastInteraction']),
                     ),
+                    cumulativeInteractionDuration: new Duration(
+                      minutes: int.parse(story['culmulativeInteraction']),
+                    ),
+                    themeColor: new Color(int.parse(story['color'])),
+                    inactive: 'true' == (story['inactive'] ?? 'false'),
                   ),
-                  cumulativeInteractionDuration: new Duration(
-                    minutes: int.parse(story['culmulativeInteraction']),
-                  ),
-                  themeColor: new Color(int.parse(story['color'])),
-                  inactive: 'true' == (story['inactive'] ?? 'false'),
-                ),
+                ]),
           )
           .toList();
 
@@ -72,49 +75,57 @@ class StoryManager extends ConfigManager {
     });
   }
 
-  List<Story> get stories => _stories;
+  List<StoryCluster> get storyClusters => _storyClusters;
 
   /// Updates the [Story.lastInteraction] of [story] to be [DateTime.now].
   /// This method is to be called whenever a [Story]'s [Story.builder] [Widget]
   /// comes into focus.
-  void interactionStarted(Story story) {
-    _stories.removeWhere((Story s) => s.id == story.id);
-    _stories.add(
-      story.copyWith(
+  void interactionStarted(StoryCluster storyCluster) {
+    _storyClusters.removeWhere((StoryCluster s) => s.id == storyCluster.id);
+    _storyClusters.add(
+      storyCluster.copyWith(
         lastInteraction: new DateTime.now(),
         inactive: false,
       ),
     );
     notifyListeners();
-    suggestionManager.storyFocusChanged(story);
+    suggestionManager.storyClusterFocusChanged(storyCluster);
   }
 
   void interactionStopped() {
     notifyListeners();
-    suggestionManager.storyFocusChanged(null);
+    suggestionManager.storyClusterFocusChanged(null);
   }
 
-  void addStory(Story story) {
-    _stories.removeWhere((Story s) => s.id == story.id);
-    _stories.add(story);
+  void addStoryCluster(StoryCluster storyCluster) {
+    _storyClusters.removeWhere((StoryCluster s) => s.id == storyCluster.id);
+    _storyClusters.add(storyCluster);
     notifyListeners();
   }
 
   void randomizeStoryTimes() {
     math.Random random = new math.Random();
     DateTime storyInteractionTime = new DateTime.now();
-    _stories = new List<Story>.generate(_stories.length, (int index) {
+    _storyClusters =
+        new List<StoryCluster>.generate(_storyClusters.length, (int index) {
       storyInteractionTime = storyInteractionTime.subtract(
           new Duration(minutes: math.max(0, random.nextInt(100) - 70)));
       Duration interaction = new Duration(minutes: random.nextInt(60));
-      Story story = _stories[index].copyWith(
+      StoryCluster storyCluster = _storyClusters[index].copyWith(
         lastInteraction: storyInteractionTime,
         cumulativeInteractionDuration: interaction,
       );
       storyInteractionTime = storyInteractionTime.subtract(interaction);
-      return story;
+      return storyCluster;
     });
     notifyListeners();
+  }
+
+  void combine({StoryCluster source, StoryCluster target}) {
+    _storyClusters.removeWhere(
+        (StoryCluster s) => (s.id == source.id) || (s.id == target.id));
+    target.stories.addAll(source.stories);
+    _storyClusters.add(target.copyWith());
   }
 }
 

@@ -9,7 +9,7 @@ import 'package:flutter/widgets.dart';
 
 import 'simulation_builder.dart';
 import 'story.dart';
-import 'story_bar.dart';
+import 'story_cluster.dart';
 import 'story_cluster_widget.dart';
 import 'story_keys.dart';
 import 'story_list_render_block.dart';
@@ -21,15 +21,12 @@ const double _kRightBump = 64.0;
 
 const double _kStoryInlineTitleHeight = 20.0;
 
-const double _kStoryBarMinimizedHeight = 12.0;
-const double _kStoryBarMaximizedHeight = 48.0;
-
-typedef void OnStoryFocusCompleted(Story story);
+typedef void OnStoryClusterFocusCompleted(StoryCluster storyCluster);
 
 class StoryList extends StatelessWidget {
   final ScrollListener onScroll;
-  final VoidCallback onStoryFocusStarted;
-  final OnStoryFocusCompleted onStoryFocusCompleted;
+  final VoidCallback onStoryClusterFocusStarted;
+  final OnStoryClusterFocusCompleted onStoryClusterFocusCompleted;
   final double bottomPadding;
   final Size parentSize;
   final double quickSettingsHeightBump;
@@ -41,8 +38,8 @@ class StoryList extends StatelessWidget {
     this.scrollableKey,
     this.bottomPadding,
     this.onScroll,
-    this.onStoryFocusStarted,
-    this.onStoryFocusCompleted,
+    this.onStoryClusterFocusStarted,
+    this.onStoryClusterFocusCompleted,
     this.parentSize,
     this.quickSettingsHeightBump,
     this.multiColumn: false,
@@ -51,75 +48,110 @@ class StoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Story> stories = new List<Story>.from(
-      InheritedStoryManager.of(context).stories,
+    List<StoryCluster> storyClusters = new List<StoryCluster>.from(
+      InheritedStoryManager.of(context).storyClusters,
     );
 
-    // Remove inactive stories.
-    stories.removeWhere((Story a) => a.inactive);
+    // Remove clusters with any inactive stories.
+    List<StoryCluster> inactiveStoryClusters = <StoryCluster>[];
+    storyClusters.removeWhere(
+      (StoryCluster storyCluster) {
+        bool clusterInactive =
+            !storyCluster.stories.every((Story story) => !story.inactive);
+        if (clusterInactive) {
+          inactiveStoryClusters.add(storyCluster);
+        }
+        return clusterInactive;
+      },
+    );
 
     // Sort recently interacted with stories to the start of the list.
-    stories.sort((Story a, Story b) =>
+    storyClusters.sort((StoryCluster a, StoryCluster b) =>
         b.lastInteraction.millisecondsSinceEpoch -
         a.lastInteraction.millisecondsSinceEpoch);
 
-    return new StoryListBlock(
-      scrollableKey: scrollableKey,
-      bottomPadding: bottomPadding,
-      onScroll: onScroll,
-      parentSize: parentSize,
-      children: stories
-          .map((Story story) => _createFocusableStory(stories, story))
-          .toList(),
+    // IMPORTANT:  In order for activation of inactive stories from suggestions
+    // to work we must have them in the widget tree.
+    List<Widget> stackChildren = new List.from(
+      inactiveStoryClusters.map(
+        (StoryCluster storyCluster) => new Offstage(
+              offstage: true,
+              child: new SimulationBuilder(
+                key: StoryKeys.storyClusterFocusSimulationKey(storyCluster),
+                builder: (BuildContext context, double progress) =>
+                    _createStoryCluster(storyClusters, storyCluster, 0.0),
+              ),
+            ),
+      ),
     );
+
+    stackChildren.add(
+      new StoryListBlock(
+        scrollableKey: scrollableKey,
+        bottomPadding: bottomPadding,
+        onScroll: onScroll,
+        parentSize: parentSize,
+        children: storyClusters
+            .map((StoryCluster storyCluster) =>
+                _createFocusableStoryCluster(storyClusters, storyCluster))
+            .toList(),
+      ),
+    );
+
+    return new Stack(children: stackChildren);
   }
 
-  Widget _createFocusableStory(List<Story> stories, Story story) =>
+  Widget _createFocusableStoryCluster(
+          List<StoryCluster> storyClusters, StoryCluster storyCluster) =>
       new SimulationBuilder(
-        key: StoryKeys.storyFocusSimulationKey(story),
+        key: StoryKeys.storyClusterFocusSimulationKey(storyCluster),
         onSimulationChanged: (double progress, bool isDone) {
           if (progress == 1.0 && isDone) {
-            onStoryFocusCompleted?.call(story);
+            onStoryClusterFocusCompleted?.call(storyCluster);
           }
         },
         builder: (BuildContext context, double progress) => new StoryListChild(
-              story: story,
+              storyCluster: storyCluster,
               focusProgress: progress,
-              child: _createStory(stories, story, progress),
+              child: _createStoryCluster(storyClusters, storyCluster, progress),
             ),
       );
 
-  Widget _createStory(List<Story> stories, Story story, double progress) =>
-      new StoryWidget(
+  Widget _createStoryCluster(
+    List<StoryCluster> storyClusters,
+    StoryCluster storyCluster,
+    double progress,
+  ) =>
+      new StoryClusterWidget(
           focusProgress: progress,
           fullSize: parentSize,
-          story: story,
+          storyCluster: storyCluster,
           multiColumn: multiColumn,
-          storyBar: new StoryBar(
-            key: StoryKeys.storyBarKey(story),
-            story: story,
-            minimizedHeight: _kStoryBarMinimizedHeight,
-            maximizedHeight: _kStoryBarMaximizedHeight,
-          ),
           onGainFocus: () {
-            bool storyInFocus = false;
-            stories.forEach((Story s) {
+            bool storyClusterInFocus = false;
+            storyClusters.forEach((StoryCluster s) {
               if (_inFocus(s)) {
-                storyInFocus = true;
+                storyClusterInFocus = true;
               }
             });
 
-            if (!storyInFocus) {
+            if (!storyClusterInFocus) {
               // Bring tapped story into focus.
-              StoryKeys.storyFocusSimulationKey(story).currentState?.forward();
-              StoryKeys.storyBarKey(story).currentState?.maximize();
+              StoryKeys
+                  .storyClusterFocusSimulationKey(storyCluster)
+                  .currentState
+                  ?.forward();
+              storyCluster.stories.forEach((Story story) {
+                StoryKeys.storyBarKey(story).currentState?.maximize();
+              });
 
-              onStoryFocusStarted?.call();
+              onStoryClusterFocusStarted?.call();
             }
           });
 
-  bool _inFocus(Story s) =>
-      (StoryKeys.storyFocusSimulationKey(s).currentState?.progress ?? 0.0) >
+  bool _inFocus(StoryCluster s) =>
+      (StoryKeys.storyClusterFocusSimulationKey(s).currentState?.progress ??
+          0.0) >
       0.0;
 }
 
@@ -199,11 +231,11 @@ class StoryListBlockBody extends BlockBody {
 }
 
 class StoryListChild extends ParentDataWidget<StoryListBlockBody> {
-  final Story story;
+  final StoryCluster storyCluster;
   final double focusProgress;
   StoryListChild({
     Widget child,
-    this.story,
+    this.storyCluster,
     this.focusProgress,
   })
       : super(child: child);
@@ -211,13 +243,14 @@ class StoryListChild extends ParentDataWidget<StoryListBlockBody> {
   void applyParentData(RenderObject renderObject) {
     assert(renderObject.parentData is StoryListRenderBlockParentData);
     final StoryListRenderBlockParentData parentData = renderObject.parentData;
-    parentData.story = story;
+    parentData.storyCluster = storyCluster;
     parentData.focusProgress = focusProgress;
   }
 
   @override
   void debugFillDescription(List<String> description) {
     super.debugFillDescription(description);
-    description.add('story: $story, focusProgress: $focusProgress');
+    description
+        .add('storyCluster: $storyCluster, focusProgress: $focusProgress');
   }
 }

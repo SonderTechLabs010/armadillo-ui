@@ -16,6 +16,7 @@ import 'scroll_locker.dart';
 import 'selected_suggestion_overlay.dart';
 import 'splash_suggestion.dart';
 import 'story.dart';
+import 'story_cluster.dart';
 import 'story_keys.dart';
 import 'story_list.dart';
 import 'story_manager.dart';
@@ -127,13 +128,14 @@ class Conductor extends StatelessWidget {
                             _kMaximizedNowHeight - _kMinimizedNowHeight,
                         onScroll: (double scrollOffset) =>
                             _nowKey.currentState.scrollOffset = scrollOffset,
-                        onStoryFocusStarted: () {
+                        onStoryClusterFocusStarted: () {
                           // Lock scrolling.
                           _scrollLockerKey.currentState.lock();
                           _minimizeNow();
                         },
-                        onStoryFocusCompleted: (Story story) {
-                          _focusStory(context, story);
+                        onStoryClusterFocusCompleted:
+                            (StoryCluster storyCluster) {
+                          _focusStoryCluster(context, storyCluster);
                         },
                       ),
                     ),
@@ -257,40 +259,47 @@ class Conductor extends StatelessWidget {
       );
 
   void _defocus(BuildContext context) {
-    // Unfocus all stories.
-    InheritedStoryManager.of(context).stories.forEach(_unfocusStory);
+    // Unfocus all story clusters.
+    InheritedStoryManager
+        .of(context)
+        .storyClusters
+        .forEach(_unfocusStoryCluster);
 
     // Unlock scrolling.
     _scrollLockerKey.currentState.unlock();
     _scrollableKey.currentState.scrollTo(0.0);
   }
 
-  void _focusStory(BuildContext context, Story story) {
+  void _focusStoryCluster(BuildContext context, StoryCluster storyCluster) {
     InheritedStoryManager
         .of(context)
-        .stories
-        .where((Story s) => s.id != story.id)
-        .forEach(_unfocusStory);
+        .storyClusters
+        .where((StoryCluster s) => s.id != storyCluster.id)
+        .forEach(_unfocusStoryCluster);
 
     // Tell the [StoryManager] the story is now in focus.  This will move the
     // [Story] to the front of the [StoryList].
-    InheritedStoryManager.of(context).interactionStarted(story);
+    InheritedStoryManager.of(context).interactionStarted(storyCluster);
 
     // Ensure the focused story is completely expanded.
     StoryKeys
-        .storyFocusSimulationKey(story)
+        .storyClusterFocusSimulationKey(storyCluster)
         .currentState
         ?.forward(jumpToFinish: true);
 
     // Ensure the focused story's story bar is full open.
-    StoryKeys.storyBarKey(story).currentState?.maximize(jumpToFinish: true);
+    storyCluster.stories.forEach((Story story) {
+      StoryKeys.storyBarKey(story).currentState?.maximize(jumpToFinish: true);
+    });
 
     _scrollLockerKey.currentState.lock();
   }
 
-  void _unfocusStory(Story s) {
-    StoryKeys.storyFocusSimulationKey(s).currentState?.reverse();
-    StoryKeys.storyBarKey(s).currentState?.minimize();
+  void _unfocusStoryCluster(StoryCluster s) {
+    StoryKeys.storyClusterFocusSimulationKey(s).currentState?.reverse();
+    s.stories.forEach((Story story) {
+      StoryKeys.storyBarKey(story).currentState?.minimize();
+    });
   }
 
   void _minimizeNow() {
@@ -307,22 +316,29 @@ class Conductor extends StatelessWidget {
   }
 
   void _onSuggestionExpanded(Suggestion suggestion, BuildContext context) {
-    List<Story> targetStories = InheritedStoryManager
+    List<StoryCluster> targetStoryClusters = InheritedStoryManager
         .of(context)
-        .stories
-        .where((Story story) => story.id == suggestion.selectionStoryId)
-        .toList();
+        .storyClusters
+        .where((StoryCluster storyCluster) {
+      bool result = false;
+      storyCluster.stories.forEach((Story story) {
+        if (story.id == suggestion.selectionStoryId) {
+          result = true;
+        }
+      });
+      return result;
+    }).toList();
 
-    // There should be only one story with this id.  If that's not true, bail
-    // out.
-    if (targetStories.length != 1) {
+    // There should be only one story cluster with a story with this id.  If
+    // that's not true, bail out.
+    if (targetStoryClusters.length != 1) {
       print(
-          'WARNING: Found ${targetStories.length} stories with id ${suggestion.selectionStoryId}. Returning to origin.');
+          'WARNING: Found ${targetStoryClusters.length} story clusters with a story with id ${suggestion.selectionStoryId}. Returning to origin.');
       _goToOrigin(context);
       _nowKey.currentState.maximize();
     } else {
-      // Focus on the story.
-      _focusStory(context, targetStories[0]);
+      // Focus on the story cluster.
+      _focusStoryCluster(context, targetStoryClusters[0]);
     }
 
     // Unhide selected suggestion in suggestion list.

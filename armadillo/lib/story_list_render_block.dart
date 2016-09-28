@@ -6,7 +6,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
 
-import 'story.dart';
+import 'story_cluster.dart';
 import 'story_list_layout.dart';
 import 'story_list_render_block_parent_data.dart';
 
@@ -96,7 +96,7 @@ class StoryListRenderBlock extends RenderBlock {
     StoryListLayout layout = new StoryListLayout(size: parentSize);
 
     List<StoryLayout> storyLayout = layout.layout(
-      storiesToLayout: _stories,
+      storyClustersToLayout: _storyClusters,
       currentTime: new DateTime.now(),
     );
 
@@ -179,18 +179,18 @@ class StoryListRenderBlock extends RenderBlock {
     return children;
   }
 
-  List<Story> get _stories {
-    final List<Story> stories = <Story>[];
+  List<StoryCluster> get _storyClusters {
+    final List<StoryCluster> storyClusters = <StoryCluster>[];
     {
       RenderBox child = firstChild;
       while (child != null) {
         final StoryListRenderBlockParentData childParentData = child.parentData;
-        assert(childParentData.story != null);
-        stories.add(childParentData.story);
+        assert(childParentData.storyCluster != null);
+        storyClusters.add(childParentData.storyCluster);
         child = childParentData.nextSibling;
       }
     }
-    return stories;
+    return storyClusters;
   }
 
   double _lerp(double a, double b, double t) {

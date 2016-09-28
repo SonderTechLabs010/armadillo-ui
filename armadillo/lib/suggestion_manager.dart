@@ -12,6 +12,7 @@ import 'package:keyboard/word_suggestion_service.dart';
 
 import 'config_manager.dart';
 import 'story.dart';
+import 'story_cluster.dart';
 import 'suggestion.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/stories.json';
@@ -22,7 +23,7 @@ class SuggestionManager extends ConfigManager {
   Map<Object, List<Suggestion>> _storySuggestionsMap =
       const <Object, List<Suggestion>>{};
   List<Suggestion> _currentSuggestions = const <Suggestion>[];
-  Story _activeStory;
+  StoryCluster _activeStoryCluster;
   String _askText;
 
   void load(AssetBundle assetBundle) {
@@ -109,17 +110,30 @@ class SuggestionManager extends ConfigManager {
     _updateSuggestions();
   }
 
-  /// Updates the [suggestions] based on the currently focused [story].  If no
-  /// story is in focus, [story] should be null.
-  void storyFocusChanged(Story story) {
-    _activeStory = story;
+  /// Updates the [suggestions] based on the currently focused storyCluster].  If no
+  /// story is in focus, [storyCluster] should be null.
+  void storyClusterFocusChanged(StoryCluster storyCluster) {
+    _activeStoryCluster = storyCluster;
     _updateSuggestions();
   }
 
   void _updateSuggestions() {
     if (_askText?.isEmpty ?? true) {
-      _currentSuggestions = _storySuggestionsMap[_activeStory?.id] ??
-          _storySuggestionsMap[new ValueKey('none')];
+      List<Suggestion> suggestions = <Suggestion>[];
+      if (_activeStoryCluster != null) {
+        _activeStoryCluster.stories.forEach((Story story) {
+          if (_storySuggestionsMap[story.id] != null) {
+            _storySuggestionsMap[story.id].forEach((Suggestion suggestion) {
+              if (!suggestions.contains(suggestion)) {
+                suggestions.add(suggestion);
+              }
+            });
+          }
+        });
+      }
+      _currentSuggestions = suggestions.isNotEmpty
+          ? suggestions
+          : _storySuggestionsMap[new ValueKey('none')];
     } else {
       List<Suggestion> suggestions = new List<Suggestion>.from(
           _storySuggestionsMap[new ValueKey('ask')] ??

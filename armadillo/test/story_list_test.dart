@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
 
 import '../lib/story.dart';
+import '../lib/story_cluster.dart';
 import '../lib/story_list.dart';
 import '../lib/story_manager.dart';
 
@@ -107,17 +108,21 @@ class DummyStoryManager extends StoryManager {
   DummyStoryManager({this.storyKeys}) : super();
 
   @override
-  List<Story> get stories => new List<Story>.generate(
+  List<StoryCluster> get storyClusters => new List<StoryCluster>.generate(
         storyKeys.length,
-        (int index) => new Story(
-              id: new ValueKey(storyKeys[index]),
-              builder: (_) => new Container(key: storyKeys[index]),
-              wideBuilder: (_) => new Container(key: storyKeys[index]),
-              title: '',
-              avatar: (_) => new Container(),
-              lastInteraction: new DateTime.now(),
-              cumulativeInteractionDuration: const Duration(minutes: 5),
-              themeColor: new Color(0xFFFFFFFF),
+        (int index) => new StoryCluster(
+              stories: [
+                new Story(
+                  id: new ValueKey(storyKeys[index]),
+                  builder: (_) => new Container(key: storyKeys[index]),
+                  wideBuilder: (_) => new Container(key: storyKeys[index]),
+                  title: '',
+                  avatar: (_) => new Container(),
+                  lastInteraction: new DateTime.now(),
+                  cumulativeInteractionDuration: const Duration(minutes: 5),
+                  themeColor: new Color(0xFFFFFFFF),
+                ),
+              ],
             ),
       );
 }

@@ -54,4 +54,10 @@ class Story {
         inactive: inactive ?? this.inactive,
         storyBarKeyObject: this.storyBarKeyObject,
       );
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  bool operator ==(other) => (other is Story && other.id == id);
 }

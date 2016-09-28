@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
 
 import '../lib/story.dart';
+import '../lib/story_cluster.dart';
 import '../lib/story_list_layout.dart';
 
 final DateTime _kCurrentTime = new DateTime.now();
@@ -169,7 +170,7 @@ void main() {
     Size size = new Size(100.0, 100.0);
     StoryListLayout layout = new StoryListLayout(size: size);
     List<StoryLayout> stories = layout.layout(
-      storiesToLayout: null,
+      storyClustersToLayout: null,
       currentTime: _kCurrentTime,
     );
     expect(stories.isEmpty, true);
@@ -179,7 +180,7 @@ void main() {
     Size size = new Size(1000.0, 100.0);
     StoryListLayout layout = new StoryListLayout(size: size);
     List<StoryLayout> stories = layout.layout(
-      storiesToLayout: null,
+      storyClustersToLayout: null,
       currentTime: _kCurrentTime,
     );
     expect(stories.isEmpty, true);
@@ -189,7 +190,7 @@ void main() {
     Size size = new Size(100.0, 100.0);
     StoryListLayout layout = new StoryListLayout(size: size);
     List<StoryLayout> stories = layout.layout(
-      storiesToLayout: [],
+      storyClustersToLayout: [],
       currentTime: _kCurrentTime,
     );
     expect(stories.isEmpty, true);
@@ -199,7 +200,7 @@ void main() {
     Size size = new Size(1000.0, 100.0);
     StoryListLayout layout = new StoryListLayout(size: size);
     List<StoryLayout> stories = layout.layout(
-      storiesToLayout: [],
+      storyClustersToLayout: [],
       currentTime: _kCurrentTime,
     );
     expect(stories.isEmpty, true);
@@ -208,7 +209,9 @@ void main() {
   test('Single column, some stories in, some stories out.', () {
     StoryListLayout layout = new StoryListLayout(size: _k360x640Size);
     List<StoryLayout> stories = layout.layout(
-      storiesToLayout: _kDummyStories,
+      storyClustersToLayout: _kDummyStories
+          .map((Story story) => new StoryCluster(stories: [story]))
+          .toList(),
       currentTime: _kCurrentTime,
     );
     expect(stories.length, _kDummyStories.length);
@@ -243,7 +246,9 @@ void main() {
   test('Multi column, some stories in, some stories out.', () {
     StoryListLayout layout = new StoryListLayout(size: _k1280x900Size);
     List<StoryLayout> stories = layout.layout(
-      storiesToLayout: _kDummyStories,
+      storyClustersToLayout: _kDummyStories
+          .map((Story story) => new StoryCluster(stories: [story]))
+          .toList(),
       currentTime: _kCurrentTime,
     );
     expect(stories.length, _kDummyStories.length);

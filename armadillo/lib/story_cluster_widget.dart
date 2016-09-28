@@ -8,6 +8,9 @@ import 'package:flutter/widgets.dart';
 
 import 'story.dart';
 import 'story_bar.dart';
+import 'story_cluster.dart';
+import 'story_keys.dart';
+import 'story_manager.dart';
 import 'story_title.dart';
 
 /// The minimum story height.
@@ -37,47 +40,68 @@ const double _kStoryBarMinimizedHeight = 12.0;
 const double _kStoryBarMaximizedHeight = 48.0;
 const double _kStoryInlineTitleHeight = 20.0;
 const double _kDraggedStoryRadius = 75.0;
+const int _kMaxStories = 4;
 
 /// The visual representation of a [Story].  A [Story] has a default size but
-/// will expand to [fullSize] when it comes into focus.  [StoryWidget]s are
-/// intended to be children of [StoryList].
-class StoryWidget extends StatelessWidget {
-  final Story story;
+/// will expand to [fullSize] when it comes into focus.  [StoryClusterWidget]s
+/// are intended to be children of [StoryList].
+class StoryClusterWidget extends StatelessWidget {
+  final StoryCluster storyCluster;
   final bool multiColumn;
   final Size fullSize;
   final double focusProgress;
-  final StoryBar storyBar;
-  final GlobalKey<StoryBarState> storyBarKey;
   final VoidCallback onGainFocus;
-  StoryWidget({
+  StoryClusterWidget({
     Key key,
-    this.story,
+    this.storyCluster,
     this.multiColumn,
     this.fullSize,
     this.focusProgress,
-    StoryBar storyBar,
     this.onGainFocus,
   })
-      : this.storyBar = storyBar,
-        this.storyBarKey = storyBar.key,
-        super(key: key);
+      : super(key: key);
 
   @override
-  Widget build(BuildContext context) => new DragTarget<Story>(
-        onWillAccept: (Story data) {
-          // TODO(apwilson): Don't accept if we already have too many stories.
-          return data.id != story.id;
+  Widget build(BuildContext context) => new DragTarget<StoryCluster>(
+        onWillAccept: (StoryCluster data) {
+          // Don't accept empty data.
+          if (data == null || data.stories.isEmpty) {
+            return false;
+          }
+
+          // Don't accept data if it would put us over the story limit.
+          if (storyCluster.stories.length + data.stories.length >
+              _kMaxStories) {
+            return false;
+          }
+
+          // Don't accept data that has a story that matches any of our current
+          // stories.
+          bool result = true;
+          data.stories.forEach((Story s1) {
+            if (result) {
+              storyCluster.stories.forEach((Story s2) {
+                if (result && s1.id == s2.id) {
+                  result = false;
+                }
+              });
+            }
+          });
+
+          return result;
         },
-        onAccept: (Story data) {
-          // TODO(apwilson): Join the story with the others.
+        onAccept: (StoryCluster data) {
+          InheritedStoryManager
+              .of(context)
+              .combine(source: data, target: storyCluster);
         },
         builder: (
           BuildContext context,
-          List<Story> candidateData,
+          List<StoryCluster> candidateData,
           List<dynamic> rejectedData,
         ) =>
             new LongPressDraggable(
-              data: story,
+              data: storyCluster,
               feedbackOffset:
                   new Offset(-_kDraggedStoryRadius, -_kDraggedStoryRadius),
               dragAnchor: DragAnchor.pointer,
@@ -93,47 +117,88 @@ class StoryWidget extends StatelessWidget {
                   child: new Container(
                     width: 2.0 * _kDraggedStoryRadius,
                     height: 2.0 * _kDraggedStoryRadius,
-                    child: _getStoryWithInlineStoryTitle(context),
+                    decoration: new BoxDecoration(
+                      backgroundColor: new Color(0xFFFFFF00),
+                    ),
+                    // TODO(apwilson): Re-add in this child.  Right now an
+                    // assert occurs due to possible duplicate keys.
+                    //child: _getStoryClusterWithInlineStoryTitle(context),
                   ),
                 ),
               ),
-              child: _getStoryWithInlineStoryTitle(context),
+              child: _getStoryClusterWithInlineStoryTitle(context),
             ),
       );
 
-  Widget _getStoryWithInlineStoryTitle(BuildContext context) => new Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+  Widget _getStoryClusterWithInlineStoryTitle(BuildContext context) =>
+      new Stack(
         children: [
-          _getStory(context),
-          _inlineStoryTitle,
+          new Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _getStoryCluster(context),
+              _inlineStoryTitle,
+            ],
+          ),
+          _focusOnTap,
         ],
       );
 
   /// The Story including its StoryBar.
-  Widget _getStory(BuildContext context) => new Flexible(
+  Widget _getStoryCluster(BuildContext context) {
+    return new Flexible(
+      child: new Container(
+        decoration: new BoxDecoration(
+          boxShadow: kElevationToShadow[12],
+          borderRadius:
+              new BorderRadius.circular(_lerp(4.0, 0.0, focusProgress)),
+        ),
         child: new ClipRRect(
-          borderRadius: new BorderRadius.circular(4.0 * (1.0 - focusProgress)),
-          child: new Column(
+          borderRadius:
+              new BorderRadius.circular(_lerp(4.0, 0.0, focusProgress)),
+          child: new Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // The story bar that pushes down the story.
-              storyBar,
-
-              // The story itself.
-              new Flexible(
-                child: new Stack(
-                  children: [
-                    _getStoryContents(context),
-                    _touchDetectorToHideStoryBar,
-                    _verticalDragDetectorToShowStoryBar,
-                    _focusOnTap,
-                  ],
-                ),
-              ),
-            ],
+            children: storyCluster.stories
+                .map((Story story) => new Flexible(
+                      child: new Padding(
+                        padding: new EdgeInsets.only(
+                          left: storyCluster.stories[0] == story
+                              ? 0.0
+                              : _lerp(4.0, 8.0, focusProgress),
+                        ),
+                        child: _getStory(context, story),
+                      ),
+                    ))
+                .toList(),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _getStory(BuildContext context, Story story) => new Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // The story bar that pushes down the story.
+          new StoryBar(
+            key: StoryKeys.storyBarKey(story),
+            story: story,
+            minimizedHeight: _kStoryBarMinimizedHeight,
+            maximizedHeight: _kStoryBarMaximizedHeight,
+          ),
+
+          // The story itself.
+          new Flexible(
+            child: new Stack(
+              children: [
+                _getStoryContents(context, story),
+                _getTouchDetectorToHideStoryBar(story),
+                _getVerticalDragDetectorToShowStoryBar(story),
+              ],
+            ),
+          ),
+        ],
       );
 
   /// The Story Title that hovers below the story itself.
@@ -152,7 +217,7 @@ class StoryWidget extends StatelessWidget {
               opacity: 1.0 - focusProgress,
               child: new Align(
                 alignment: FractionalOffset.bottomLeft,
-                child: new StoryTitle(title: story.title),
+                child: new StoryTitle(title: storyCluster.title),
               ),
             ),
           ),
@@ -161,7 +226,7 @@ class StoryWidget extends StatelessWidget {
 
   /// The scaled and clipped story.  When full size, the story will
   /// no longer be scaled or clipped.
-  Widget _getStoryContents(BuildContext context) => new FittedBox(
+  Widget _getStoryContents(BuildContext context, Story story) => new FittedBox(
         fit: ImageFit.cover,
         alignment: FractionalOffset.topCenter,
         child: new SizedBox(
@@ -189,7 +254,7 @@ class StoryWidget extends StatelessWidget {
 
   /// Touch listener that activates in full screen mode.
   /// When a touch comes in we hide the story bar.
-  Widget get _touchDetectorToHideStoryBar => new Positioned(
+  Widget _getTouchDetectorToHideStoryBar(Story story) => new Positioned(
         top: 0.0,
         left: 0.0,
         right: 0.0,
@@ -198,7 +263,8 @@ class StoryWidget extends StatelessWidget {
           offstage: _storyBarIsImmutable,
           child: new Listener(
             behavior: HitTestBehavior.translucent,
-            onPointerDown: (_) => storyBarKey.currentState.hide(),
+            onPointerDown: (_) =>
+                StoryKeys.storyBarKey(story).currentState.hide(),
           ),
         ),
       );
@@ -206,7 +272,7 @@ class StoryWidget extends StatelessWidget {
   /// Vertical gesture detector that activates in full screen
   /// mode.  When a drag down from top of screen occurs we
   /// show the story bar.
-  Widget get _verticalDragDetectorToShowStoryBar => new Positioned(
+  Widget _getVerticalDragDetectorToShowStoryBar(Story story) => new Positioned(
         top: 0.0,
         left: 0.0,
         right: 0.0,
@@ -215,7 +281,8 @@ class StoryWidget extends StatelessWidget {
           offstage: _storyBarIsImmutable,
           child: new GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onVerticalDragUpdate: (_) => storyBarKey.currentState.show(),
+            onVerticalDragUpdate: (_) =>
+                StoryKeys.storyBarKey(story).currentState.show(),
           ),
         ),
       );
@@ -223,5 +290,7 @@ class StoryWidget extends StatelessWidget {
   bool get _storyBarIsImmutable => (focusProgress != 1.0 || multiColumn);
 
   double get _inlineStoryTitleHeight =>
-      _kStoryInlineTitleHeight * (1.0 - focusProgress);
+      _lerp(_kStoryInlineTitleHeight, 0.0, focusProgress);
+
+  double _lerp(double a, double b, double t) => (1.0 - t) * a + t * b;
 }

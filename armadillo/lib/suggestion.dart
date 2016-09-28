@@ -35,4 +35,10 @@ class Suggestion {
     this.image,
     this.imageType,
   });
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  bool operator ==(other) => (other is Suggestion && other.id == id);
 }

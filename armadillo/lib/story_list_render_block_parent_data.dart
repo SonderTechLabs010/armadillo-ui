@@ -4,11 +4,11 @@
 
 import 'package:flutter/rendering.dart';
 
-import 'story.dart';
+import 'story_cluster.dart';
 
 class StoryListRenderBlockParentData extends BlockParentData {
   final RenderObject owner;
-  Story story;
+  StoryCluster storyCluster;
   double _focusProgress;
 
   StoryListRenderBlockParentData(this.owner);
