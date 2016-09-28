@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+import 'long_hover_detector.dart';
 import 'story.dart';
 import 'story_bar.dart';
 import 'story_cluster.dart';
@@ -101,33 +102,37 @@ class StoryClusterWidget extends StatelessWidget {
           List<StoryCluster> candidateData,
           List<dynamic> rejectedData,
         ) =>
-            new LongPressDraggable(
-              data: storyCluster,
-              feedbackOffset:
-                  new Offset(-_kDraggedStoryRadius, -_kDraggedStoryRadius),
-              dragAnchor: DragAnchor.pointer,
-              maxSimultaneousDrags: 1,
-              onDraggableCanceled: (Velocity velocity, Offset offset) {
-                // TODO(apwilson): Somehow animate back the 'childWhenDragging.
-              },
-              childWhenDragging: new Container(),
-              feedback: new Transform(
-                transform: new Matrix4.translationValues(
-                    -_kDraggedStoryRadius, -_kDraggedStoryRadius, 0.0),
-                child: new ClipOval(
-                  child: new Container(
-                    width: 2.0 * _kDraggedStoryRadius,
-                    height: 2.0 * _kDraggedStoryRadius,
-                    foregroundDecoration: new BoxDecoration(
-                      backgroundColor: new Color(0x80FFFF00),
+            new LongHoverDetector(
+              hovering: candidateData.isNotEmpty,
+              onLongHover: onGainFocus,
+              child: new LongPressDraggable(
+                data: storyCluster,
+                feedbackOffset:
+                    new Offset(-_kDraggedStoryRadius, -_kDraggedStoryRadius),
+                dragAnchor: DragAnchor.pointer,
+                maxSimultaneousDrags: 1,
+                onDraggableCanceled: (Velocity velocity, Offset offset) {
+                  // TODO(apwilson): Somehow animate back the 'childWhenDragging.
+                },
+                childWhenDragging: new Container(),
+                feedback: new Transform(
+                  transform: new Matrix4.translationValues(
+                      -_kDraggedStoryRadius, -_kDraggedStoryRadius, 0.0),
+                  child: new ClipOval(
+                    child: new Container(
+                      width: 2.0 * _kDraggedStoryRadius,
+                      height: 2.0 * _kDraggedStoryRadius,
+                      foregroundDecoration: new BoxDecoration(
+                        backgroundColor: new Color(0x80FFFF00),
+                      ),
+                      child: _getStoryCluster(context),
                     ),
-                    child: _getStoryCluster(context),
                   ),
                 ),
-              ),
-              child: _getStoryClusterWithInlineStoryTitle(
-                context,
-                highlight: candidateData.isNotEmpty,
+                child: _getStoryClusterWithInlineStoryTitle(
+                  context,
+                  highlight: candidateData.isNotEmpty,
+                ),
               ),
             ),
       );
