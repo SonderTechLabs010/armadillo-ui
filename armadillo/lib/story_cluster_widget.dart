@@ -41,6 +41,7 @@ const double _kStoryBarMaximizedHeight = 48.0;
 const double _kStoryInlineTitleHeight = 20.0;
 const double _kDraggedStoryRadius = 75.0;
 const int _kMaxStories = 4;
+const Color _kTargetOverlayColor = const Color.fromARGB(128, 153, 234, 216);
 
 /// The visual representation of a [Story].  A [Story] has a default size but
 /// will expand to [fullSize] when it comes into focus.  [StoryClusterWidget]s
@@ -117,22 +118,32 @@ class StoryClusterWidget extends StatelessWidget {
                   child: new Container(
                     width: 2.0 * _kDraggedStoryRadius,
                     height: 2.0 * _kDraggedStoryRadius,
+                    foregroundDecoration: new BoxDecoration(
+                      backgroundColor: new Color(0x80FFFF00),
+                    ),
                     child: _getStoryCluster(context),
                   ),
                 ),
               ),
-              child: _getStoryClusterWithInlineStoryTitle(context),
+              child: _getStoryClusterWithInlineStoryTitle(
+                context,
+                highlight: candidateData.isNotEmpty,
+              ),
             ),
       );
 
-  Widget _getStoryClusterWithInlineStoryTitle(BuildContext context) =>
+  Widget _getStoryClusterWithInlineStoryTitle(
+    BuildContext context, {
+    bool highlight: false,
+  }) =>
       new Stack(
         children: [
           new Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              new Flexible(child: _getStoryCluster(context)),
+              new Flexible(
+                  child: _getStoryCluster(context, highlight: highlight)),
               _inlineStoryTitle,
             ],
           ),
@@ -141,12 +152,21 @@ class StoryClusterWidget extends StatelessWidget {
       );
 
   /// The Story including its StoryBar.
-  Widget _getStoryCluster(BuildContext context) => new Container(
+  Widget _getStoryCluster(
+    BuildContext context, {
+    bool highlight: false,
+  }) =>
+      new Container(
         decoration: new BoxDecoration(
           boxShadow: kElevationToShadow[12],
           borderRadius:
               new BorderRadius.circular(_lerp(4.0, 0.0, focusProgress)),
         ),
+        foregroundDecoration: highlight
+            ? new BoxDecoration(
+                backgroundColor: _kTargetOverlayColor,
+              )
+            : null,
         child: new ClipRRect(
           borderRadius:
               new BorderRadius.circular(_lerp(4.0, 0.0, focusProgress)),
