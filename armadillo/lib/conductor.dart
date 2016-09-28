@@ -83,179 +83,180 @@ class Conductor extends StatelessWidget {
   /// behind it.
   @override
   Widget build(BuildContext context) => new DeviceExtender(
-        deviceExtensions: [
-          new KeyboardDeviceExtension(
-            key: _keyboardDeviceExtensionKey,
-            keyboardKey: _keyboardKey,
-            onText: (String text) =>
-                _suggestionListKey.currentState.append(text),
-            onSuggestion: (String suggestion) =>
-                _suggestionListKey.currentState.onSuggestion(suggestion),
-            onDelete: () => _suggestionListKey.currentState.backspace(),
-            onGo: () {
-              _suggestionListKey.currentState.selectFirstSuggestions();
+        deviceExtensions: [_getKeyboard()],
+        child: new LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) =>
+              (constraints.maxWidth == 0.0 || constraints.maxHeight == 0.0)
+                  ? new Offstage(offstage: true)
+                  : new Overlay(
+                      initialEntries: [
+                        new OverlayEntry(
+                          builder: (BuildContext context) => new Stack(
+                                children: [
+                                  // Story List.
+                                  new Positioned(
+                                    left: 0.0,
+                                    right: 0.0,
+                                    top: 0.0,
+                                    bottom: _kMinimizedNowHeight,
+                                    child: _getStoryList(context, constraints),
+                                  ),
+
+                                  // Now.
+                                  _getNow(context),
+
+                                  // Suggestions Overlay.
+                                  _getSuggestionOverlay(context, constraints),
+
+                                  // Selected Suggestion Overlay.
+                                  _getSelectedSuggestionOverlay(),
+                                ],
+                              ),
+                        ),
+                      ],
+                    ),
+        ),
+      );
+
+  Widget _getKeyboard() => new KeyboardDeviceExtension(
+        key: _keyboardDeviceExtensionKey,
+        keyboardKey: _keyboardKey,
+        onText: (String text) => _suggestionListKey.currentState.append(text),
+        onSuggestion: (String suggestion) =>
+            _suggestionListKey.currentState.onSuggestion(suggestion),
+        onDelete: () => _suggestionListKey.currentState.backspace(),
+        onGo: () {
+          _suggestionListKey.currentState.selectFirstSuggestions();
+        },
+      );
+
+  Widget _getStoryList(BuildContext context, BoxConstraints constraints) =>
+      new VerticalShifter(
+        key: _verticalShifterKey,
+        verticalShift: _kQuickSettingsHeightBump,
+        child: new ScrollLocker(
+          key: _scrollLockerKey,
+          child: new StoryList(
+            scrollableKey: _scrollableKey,
+            multiColumn:
+                constraints.maxWidth > _kStoryListMultiColumnWidthThreshold,
+            parentSize: new Size(
+              constraints.maxWidth,
+              constraints.maxHeight - _kMinimizedNowHeight,
+            ),
+            quickSettingsHeightBump: _kQuickSettingsHeightBump,
+            bottomPadding: _kMaximizedNowHeight - _kMinimizedNowHeight,
+            onScroll: (double scrollOffset) =>
+                _nowKey.currentState.scrollOffset = scrollOffset,
+            onStoryClusterFocusStarted: () {
+              // Lock scrolling.
+              _scrollLockerKey.currentState.lock();
+              _minimizeNow();
+            },
+            onStoryClusterFocusCompleted: (StoryCluster storyCluster) {
+              _focusStoryCluster(context, storyCluster);
             },
           ),
-        ],
-        child: new LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            if (constraints.maxWidth == 0.0 || constraints.maxHeight == 0.0) {
-              return new Offstage(offstage: true);
-            }
-            return new Stack(
-              children: [
-                // Story List.
-                new Positioned(
-                  left: 0.0,
-                  right: 0.0,
-                  top: 0.0,
-                  bottom: _kMinimizedNowHeight,
-                  child: new VerticalShifter(
-                    key: _verticalShifterKey,
-                    verticalShift: _kQuickSettingsHeightBump,
-                    child: new ScrollLocker(
-                      key: _scrollLockerKey,
-                      child: new StoryList(
-                        scrollableKey: _scrollableKey,
-                        multiColumn: constraints.maxWidth >
-                            _kStoryListMultiColumnWidthThreshold,
-                        parentSize: new Size(
-                          constraints.maxWidth,
-                          constraints.maxHeight - _kMinimizedNowHeight,
-                        ),
-                        quickSettingsHeightBump: _kQuickSettingsHeightBump,
-                        bottomPadding:
-                            _kMaximizedNowHeight - _kMinimizedNowHeight,
-                        onScroll: (double scrollOffset) =>
-                            _nowKey.currentState.scrollOffset = scrollOffset,
-                        onStoryClusterFocusStarted: () {
-                          // Lock scrolling.
-                          _scrollLockerKey.currentState.lock();
-                          _minimizeNow();
-                        },
-                        onStoryClusterFocusCompleted:
-                            (StoryCluster storyCluster) {
-                          _focusStoryCluster(context, storyCluster);
-                        },
-                      ),
-                    ),
-                  ),
-                ),
+        ),
+      );
 
-                // Now.  We place Now in a RepaintBoundary as its animations
-                // don't require its parent and siblings to redraw.
-                new Positioned(
-                  bottom: 0.0,
-                  left: 0.0,
-                  right: 0.0,
-                  top: 0.0,
-                  child: new RepaintBoundary(
-                    child: new Now(
-                      key: _nowKey,
-                      minHeight: _kMinimizedNowHeight,
-                      maxHeight: _kMaximizedNowHeight,
-                      quickSettingsHeightBump: _kQuickSettingsHeightBump,
-                      onQuickSettingsProgressChange:
-                          (double quickSettingsProgress) => _verticalShifterKey
-                              .currentState
-                              .shiftProgress = quickSettingsProgress,
-                      onReturnToOriginButtonTap: () => _goToOrigin(context),
-                      onQuickSettingsMaximized: () {
-                        // When quick settings starts being shown, scroll to 0.0.
-                        _scrollableKey.currentState.scrollTo(
-                          0.0,
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.fastOutSlowIn,
-                        );
-                      },
-                      onMinimize: () {
-                        _suggestionOverlayKey.currentState.peek = false;
-                        _suggestionOverlayKey.currentState.hide();
-                      },
-                      onMaximize: () {
-                        _suggestionOverlayKey.currentState.peek = true;
-                        _suggestionOverlayKey.currentState.hide();
-                      },
-                      onBarVerticalDragUpdate: (DragUpdateDetails details) =>
-                          _suggestionOverlayKey.currentState
-                              .onVerticalDragUpdate(details),
-                      onBarVerticalDragEnd: (DragEndDetails details) =>
-                          _suggestionOverlayKey.currentState
-                              .onVerticalDragEnd(details),
-                    ),
-                  ),
-                ),
-
-                // Suggestions Overlay.
-                new PeekingOverlay(
-                  key: _suggestionOverlayKey,
-                  peekHeight: _kSuggestionOverlayPeekHeight,
-                  onHide: () {
-                    _keyboardDeviceExtensionKey.currentState?.hide();
-                    _suggestionListScrollableKey.currentState?.scrollTo(
-                      0.0,
-                      duration: const Duration(milliseconds: 1000),
-                      curve: Curves.fastOutSlowIn,
-                    );
-                    _suggestionListKey.currentState?.clear();
-                    _suggestionListKey.currentState?.stopAsking();
-                  },
-                  child: new SuggestionList(
-                    key: _suggestionListKey,
-                    scrollableKey: _suggestionListScrollableKey,
-                    multiColumn: constraints.maxWidth >
-                        _kSuggestionListMultiColumnWidthThreshold,
-                    onAskingStarted: () {
-                      _suggestionOverlayKey.currentState.show();
-                      _keyboardDeviceExtensionKey.currentState.show();
-                    },
-                    onAskingEnded: () =>
-                        _keyboardDeviceExtensionKey.currentState.hide(),
-                    onAskTextChanged: (String text) =>
-                        _keyboardKey.currentState.updateSuggestions(
-                          _suggestionListKey.currentState.text,
-                        ),
-                    onSuggestionSelected:
-                        (Suggestion suggestion, Rect globalBounds) {
-                      _selectedSuggestionOverlayKey.currentState
-                          .suggestionSelected(
-                        expansionBehavior: suggestion.selectionType ==
-                                SelectionType.launchStory
-                            ? new ExpandSuggestion(
-                                suggestion: suggestion,
-                                suggestionInitialGlobalBounds: globalBounds,
-                                onSuggestionExpanded: (Suggestion suggestion) =>
-                                    _onSuggestionExpanded(
-                                      suggestion,
-                                      context,
-                                    ),
-                                minimizedNowBarHeight: _kMinimizedNowHeight,
-                              )
-                            : new SplashSuggestion(
-                                suggestion: suggestion,
-                                suggestionInitialGlobalBounds: globalBounds,
-                                onSuggestionExpanded: (Suggestion suggestion) =>
-                                    _onSuggestionExpanded(
-                                      suggestion,
-                                      context,
-                                    ),
-                              ),
-                      );
-                      _minimizeNow();
-                    },
-                  ),
-                ),
-
-                // Selected Suggestion Overlay.
-                // This is only visible in transitoning the user from a Suggestion
-                // in an open SuggestionList to a focused Story in the StoryList.
-                new SelectedSuggestionOverlay(
-                  key: _selectedSuggestionOverlayKey,
-                ),
-              ],
+  // We place Now in a RepaintBoundary as its animations
+  // don't require its parent and siblings to redraw.
+  Widget _getNow(BuildContext context) => new RepaintBoundary(
+        child: new Now(
+          key: _nowKey,
+          minHeight: _kMinimizedNowHeight,
+          maxHeight: _kMaximizedNowHeight,
+          quickSettingsHeightBump: _kQuickSettingsHeightBump,
+          onQuickSettingsProgressChange: (double quickSettingsProgress) =>
+              _verticalShifterKey.currentState.shiftProgress =
+                  quickSettingsProgress,
+          onReturnToOriginButtonTap: () => _goToOrigin(context),
+          onQuickSettingsMaximized: () {
+            // When quick settings starts being shown, scroll to 0.0.
+            _scrollableKey.currentState.scrollTo(
+              0.0,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.fastOutSlowIn,
             );
           },
+          onMinimize: () {
+            _suggestionOverlayKey.currentState.peek = false;
+            _suggestionOverlayKey.currentState.hide();
+          },
+          onMaximize: () {
+            _suggestionOverlayKey.currentState.peek = true;
+            _suggestionOverlayKey.currentState.hide();
+          },
+          onBarVerticalDragUpdate: (DragUpdateDetails details) =>
+              _suggestionOverlayKey.currentState.onVerticalDragUpdate(details),
+          onBarVerticalDragEnd: (DragEndDetails details) =>
+              _suggestionOverlayKey.currentState.onVerticalDragEnd(details),
         ),
+      );
+
+  Widget _getSuggestionOverlay(
+          BuildContext context, BoxConstraints constraints) =>
+      new PeekingOverlay(
+        key: _suggestionOverlayKey,
+        peekHeight: _kSuggestionOverlayPeekHeight,
+        onHide: () {
+          _keyboardDeviceExtensionKey.currentState?.hide();
+          _suggestionListScrollableKey.currentState?.scrollTo(
+            0.0,
+            duration: const Duration(milliseconds: 1000),
+            curve: Curves.fastOutSlowIn,
+          );
+          _suggestionListKey.currentState?.clear();
+          _suggestionListKey.currentState?.stopAsking();
+        },
+        child: new SuggestionList(
+          key: _suggestionListKey,
+          scrollableKey: _suggestionListScrollableKey,
+          multiColumn:
+              constraints.maxWidth > _kSuggestionListMultiColumnWidthThreshold,
+          onAskingStarted: () {
+            _suggestionOverlayKey.currentState.show();
+            _keyboardDeviceExtensionKey.currentState.show();
+          },
+          onAskingEnded: () => _keyboardDeviceExtensionKey.currentState.hide(),
+          onAskTextChanged: (String text) =>
+              _keyboardKey.currentState.updateSuggestions(
+                _suggestionListKey.currentState.text,
+              ),
+          onSuggestionSelected: (Suggestion suggestion, Rect globalBounds) {
+            _selectedSuggestionOverlayKey.currentState.suggestionSelected(
+              expansionBehavior:
+                  suggestion.selectionType == SelectionType.launchStory
+                      ? new ExpandSuggestion(
+                          suggestion: suggestion,
+                          suggestionInitialGlobalBounds: globalBounds,
+                          onSuggestionExpanded: (Suggestion suggestion) =>
+                              _onSuggestionExpanded(
+                                suggestion,
+                                context,
+                              ),
+                          minimizedNowBarHeight: _kMinimizedNowHeight,
+                        )
+                      : new SplashSuggestion(
+                          suggestion: suggestion,
+                          suggestionInitialGlobalBounds: globalBounds,
+                          onSuggestionExpanded: (Suggestion suggestion) =>
+                              _onSuggestionExpanded(
+                                suggestion,
+                                context,
+                              ),
+                        ),
+            );
+            _minimizeNow();
+          },
+        ),
+      );
+
+  // This is only visible in transitoning the user from a Suggestion
+  // in an open SuggestionList to a focused Story in the StoryList.
+  Widget _getSelectedSuggestionOverlay() => new SelectedSuggestionOverlay(
+        key: _selectedSuggestionOverlayKey,
       );
 
   void _defocus(BuildContext context) {

@@ -117,12 +117,7 @@ class StoryClusterWidget extends StatelessWidget {
                   child: new Container(
                     width: 2.0 * _kDraggedStoryRadius,
                     height: 2.0 * _kDraggedStoryRadius,
-                    decoration: new BoxDecoration(
-                      backgroundColor: new Color(0xFFFFFF00),
-                    ),
-                    // TODO(apwilson): Re-add in this child.  Right now an
-                    // assert occurs due to possible duplicate keys.
-                    //child: _getStoryClusterWithInlineStoryTitle(context),
+                    child: _getStoryCluster(context),
                   ),
                 ),
               ),
@@ -137,7 +132,7 @@ class StoryClusterWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _getStoryCluster(context),
+              new Flexible(child: _getStoryCluster(context)),
               _inlineStoryTitle,
             ],
           ),
@@ -146,9 +141,7 @@ class StoryClusterWidget extends StatelessWidget {
       );
 
   /// The Story including its StoryBar.
-  Widget _getStoryCluster(BuildContext context) {
-    return new Flexible(
-      child: new Container(
+  Widget _getStoryCluster(BuildContext context) => new Container(
         decoration: new BoxDecoration(
           boxShadow: kElevationToShadow[12],
           borderRadius:
@@ -173,9 +166,7 @@ class StoryClusterWidget extends StatelessWidget {
                 .toList(),
           ),
         ),
-      ),
-    );
-  }
+      );
 
   Widget _getStory(BuildContext context, Story story) => new Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

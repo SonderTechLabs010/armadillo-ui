@@ -7,7 +7,6 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/default_bundle.dart';
-import 'package:sysui_widgets/delegating_page_route.dart';
 
 import 'armadillo.dart';
 import 'child_constraints_changer.dart';
@@ -24,26 +23,22 @@ Future main() async {
   );
   NowManager nowManager = new NowManager();
   ConstraintsManager constraintsManager = new ConstraintsManager();
-
   runApp(
-    new WidgetsApp(
-      onGenerateRoute: (RouteSettings settings) => new DelegatingPageRoute(
-            (_) => new StoryTimeRandomizer(
-                  storyManager: storyManager,
-                  child: new ChildConstraintsChanger(
-                    constraintsManager: constraintsManager,
-                    child: new DefaultAssetBundle(
-                      bundle: defaultBundle,
-                      child: new Armadillo(
-                        storyManager: storyManager,
-                        suggestionManager: suggestionManager,
-                        nowManager: nowManager,
-                      ),
-                    ),
-                  ),
-                ),
-            settings: settings,
+    new CheckedModeBanner(
+      child: new StoryTimeRandomizer(
+        storyManager: storyManager,
+        child: new ChildConstraintsChanger(
+          constraintsManager: constraintsManager,
+          child: new DefaultAssetBundle(
+            bundle: defaultBundle,
+            child: new Armadillo(
+              storyManager: storyManager,
+              suggestionManager: suggestionManager,
+              nowManager: nowManager,
+            ),
           ),
+        ),
+      ),
     ),
   );
 
