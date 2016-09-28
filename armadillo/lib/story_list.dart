@@ -10,11 +10,11 @@ import 'package:flutter/widgets.dart';
 import 'simulation_builder.dart';
 import 'story.dart';
 import 'story_bar.dart';
+import 'story_cluster_widget.dart';
 import 'story_keys.dart';
 import 'story_list_render_block.dart';
 import 'story_list_render_block_parent_data.dart';
 import 'story_manager.dart';
-import 'story_widget.dart';
 
 /// In multicolumn mode, the distance the right column will be offset up.
 const double _kRightBump = 64.0;
