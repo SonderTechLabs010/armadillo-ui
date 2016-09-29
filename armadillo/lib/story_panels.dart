@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/widgets.dart';
@@ -25,12 +26,10 @@ const double _kFocusedStoryMargin = 8.0;
 class StoryPanels extends StatelessWidget {
   final List<Story> stories;
   final double focusProgress;
-  final bool multiColumn;
   final Size fullSize;
   StoryPanels({
     this.stories,
     this.focusProgress,
-    this.multiColumn,
     this.fullSize,
   });
 
@@ -41,6 +40,7 @@ class StoryPanels extends StatelessWidget {
           _rowCount,
           (int rowIndex) => new Flexible(
                 child: new Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: new List<Widget>.generate(
                     _columnCount(rowIndex),
                     (int columnIndex) => new Flexible(
@@ -94,7 +94,8 @@ class StoryPanels extends StatelessWidget {
         ),
       );
 
-  int _columnCount(int rowIndex) => (stories.length - rowIndex * 2);
+  int _columnCount(int rowIndex) =>
+      math.min(2, (stories.length - rowIndex * 2));
   int get _rowCount => stories.length > 2 ? 2 : 1;
   int _storyIndex(int rowIndex, int columnIndex) => rowIndex * 2 + columnIndex;
 
@@ -132,13 +133,7 @@ class StoryPanels extends StatelessWidget {
 
           // The story itself.
           new Flexible(
-            child: new Stack(
-              children: [
-                _getStoryContents(context, story, size),
-                _getTouchDetectorToHideStoryBar(story),
-                _getVerticalDragDetectorToShowStoryBar(story),
-              ],
-            ),
+            child: _getStoryContents(context, story, size),
           ),
         ],
       );
@@ -151,46 +146,8 @@ class StoryPanels extends StatelessWidget {
         alignment: FractionalOffset.topCenter,
         child: new SizedBox(
           width: size.width,
-          height: size.height - (multiColumn ? _kStoryBarMaximizedHeight : 0.0),
-          child:
-              multiColumn ? story.wideBuilder(context) : story.builder(context),
+          height: size.height - _kStoryBarMaximizedHeight,
+          child: story.wideBuilder(context),
         ),
       );
-
-  /// Touch listener that activates in full screen mode.
-  /// When a touch comes in we hide the story bar.
-  Widget _getTouchDetectorToHideStoryBar(Story story) => new Positioned(
-        top: 0.0,
-        left: 0.0,
-        right: 0.0,
-        bottom: 0.0,
-        child: new Offstage(
-          offstage: _storyBarIsImmutable,
-          child: new Listener(
-            behavior: HitTestBehavior.translucent,
-            onPointerDown: (_) =>
-                StoryKeys.storyBarKey(story).currentState.hide(),
-          ),
-        ),
-      );
-
-  /// Vertical gesture detector that activates in full screen
-  /// mode.  When a drag down from top of screen occurs we
-  /// show the story bar.
-  Widget _getVerticalDragDetectorToShowStoryBar(Story story) => new Positioned(
-        top: 0.0,
-        left: 0.0,
-        right: 0.0,
-        height: _kVerticalGestureDetectorHeight,
-        child: new Offstage(
-          offstage: _storyBarIsImmutable,
-          child: new GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onVerticalDragUpdate: (_) =>
-                StoryKeys.storyBarKey(story).currentState.show(),
-          ),
-        ),
-      );
-
-  bool get _storyBarIsImmutable => (focusProgress != 1.0 || multiColumn);
 }

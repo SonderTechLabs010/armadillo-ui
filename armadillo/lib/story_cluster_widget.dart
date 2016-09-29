@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 import 'long_hover_detector.dart';
 import 'optional_wrapper.dart';
 import 'story.dart';
+import 'story_carousel.dart';
 import 'story_cluster.dart';
 import 'story_manager.dart';
 import 'story_panels.dart';
@@ -195,12 +196,18 @@ class StoryClusterWidget extends StatelessWidget {
         child: new ClipRRect(
           borderRadius:
               new BorderRadius.circular(lerpDouble(4.0, 0.0, focusProgress)),
-          child: new StoryPanels(
-            stories: storyCluster.stories,
-            focusProgress: focusProgress,
-            multiColumn: multiColumn,
-            fullSize: fullSize,
-          ),
+          child: multiColumn
+              ? new StoryPanels(
+                  stories: storyCluster.stories,
+                  focusProgress: focusProgress,
+                  fullSize: fullSize,
+                )
+              : new StoryCarousel(
+                  key: new GlobalObjectKey(storyCluster.carouselId),
+                  stories: storyCluster.stories,
+                  focusProgress: focusProgress,
+                  fullSize: fullSize,
+                ),
         ),
       );
 
