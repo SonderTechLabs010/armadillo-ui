@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/rendering.dart';
 
@@ -110,9 +111,9 @@ class StoryListRenderBlock extends RenderBlock {
       storyLayout.forEach((StoryLayout storyLayout) {
         final StoryListRenderBlockParentData childParentData = child.parentData;
         // Layout the child.
-        double childHeight = _lerp(
+        double childHeight = lerpDouble(
           storyLayout.size.height +
-              _lerp(
+              lerpDouble(
                 _kStoryInlineTitleHeight,
                 0.0,
                 childParentData.focusProgress,
@@ -122,7 +123,7 @@ class StoryListRenderBlock extends RenderBlock {
         );
         child.layout(
           new BoxConstraints.tightFor(
-            width: _lerp(
+            width: lerpDouble(
               storyLayout.size.width,
               parentSize.width,
               childParentData.focusProgress,
@@ -133,12 +134,12 @@ class StoryListRenderBlock extends RenderBlock {
         );
         // Position the child.
         childParentData.offset = new Offset(
-          _lerp(
+          lerpDouble(
             storyLayout.offset.dx + constraints.maxWidth / 2.0,
             0.0,
             childParentData.focusProgress,
           ),
-          _lerp(
+          lerpDouble(
             storyLayout.offset.dy + listHeight,
             listHeight - parentSize.height - _scrollOffset + _bottomPadding,
             childParentData.focusProgress,
@@ -191,9 +192,5 @@ class StoryListRenderBlock extends RenderBlock {
       }
     }
     return storyClusters;
-  }
-
-  double _lerp(double a, double b, double t) {
-    return (1.0 - t) * a + t * b;
   }
 }

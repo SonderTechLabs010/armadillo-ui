@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:ui' show lerpDouble;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -183,7 +185,7 @@ class StoryClusterWidget extends StatelessWidget {
         decoration: new BoxDecoration(
           boxShadow: kElevationToShadow[12],
           borderRadius:
-              new BorderRadius.circular(_lerp(4.0, 0.0, focusProgress)),
+              new BorderRadius.circular(lerpDouble(4.0, 0.0, focusProgress)),
         ),
         foregroundDecoration: highlight
             ? new BoxDecoration(
@@ -192,7 +194,7 @@ class StoryClusterWidget extends StatelessWidget {
             : null,
         child: new ClipRRect(
           borderRadius:
-              new BorderRadius.circular(_lerp(4.0, 0.0, focusProgress)),
+              new BorderRadius.circular(lerpDouble(4.0, 0.0, focusProgress)),
           child: new StoryPanels(
             stories: storyCluster.stories,
             focusProgress: focusProgress,
@@ -242,7 +244,5 @@ class StoryClusterWidget extends StatelessWidget {
   bool get _isUnfocused => focusProgress == 0.0;
 
   double get _inlineStoryTitleHeight =>
-      _lerp(_kStoryInlineTitleHeight, 0.0, focusProgress);
-
-  double _lerp(double a, double b, double t) => (1.0 - t) * a + t * b;
+      lerpDouble(_kStoryInlineTitleHeight, 0.0, focusProgress);
 }

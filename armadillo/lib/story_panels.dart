@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/widgets.dart';
 
@@ -48,7 +48,7 @@ class StoryPanels extends StatelessWidget {
                             padding: new EdgeInsets.only(
                               left: columnIndex == 0
                                   ? 0.0
-                                  : _lerp(
+                                  : lerpDouble(
                                         _kUnfocusedStoryMargin,
                                         _kFocusedStoryMargin,
                                         focusProgress,
@@ -57,7 +57,7 @@ class StoryPanels extends StatelessWidget {
                               right: columnIndex == 1 ||
                                       _columnCount(rowIndex) == 1
                                   ? 0.0
-                                  : _lerp(
+                                  : lerpDouble(
                                         _kUnfocusedStoryMargin,
                                         _kFocusedStoryMargin,
                                         focusProgress,
@@ -65,7 +65,7 @@ class StoryPanels extends StatelessWidget {
                                       2.0,
                               top: rowIndex == 0
                                   ? 0.0
-                                  : _lerp(
+                                  : lerpDouble(
                                         _kUnfocusedStoryMargin,
                                         _kFocusedStoryMargin,
                                         focusProgress,
@@ -73,7 +73,7 @@ class StoryPanels extends StatelessWidget {
                                       2.0,
                               bottom: rowIndex == 1 || _rowCount == 1
                                   ? 0.0
-                                  : _lerp(
+                                  : lerpDouble(
                                         _kUnfocusedStoryMargin,
                                         _kFocusedStoryMargin,
                                         focusProgress,
@@ -193,6 +193,4 @@ class StoryPanels extends StatelessWidget {
       );
 
   bool get _storyBarIsImmutable => (focusProgress != 1.0 || multiColumn);
-
-  double _lerp(double a, double b, double t) => (1.0 - t) * a + t * b;
 }
