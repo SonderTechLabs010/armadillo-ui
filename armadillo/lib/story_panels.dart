@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/widgets.dart';
 
+import 'optional_wrapper.dart';
 import 'story.dart';
 import 'story_bar.dart';
+import 'story_cluster.dart';
+import 'story_cluster_drag_feedback.dart';
 import 'story_keys.dart';
+import 'story_manager.dart';
 
 /// The height of the vertical gesture detector used to reveal the story bar in
 /// full screen mode.
@@ -21,20 +26,86 @@ const double _kStoryBarMinimizedHeight = 12.0;
 const double _kStoryBarMaximizedHeight = 48.0;
 const double _kUnfocusedStoryMargin = 4.0;
 const double _kFocusedStoryMargin = 8.0;
+const double _kDraggedStoryRadius = 75.0;
+const double _kStorySplitAreaWidth = 64.0;
+const int _kMaxStories = 4;
 
 /// Displays up to four stories in a grid-like layout.
 class StoryPanels extends StatelessWidget {
-  final List<Story> stories;
+  final StoryCluster storyCluster;
   final double focusProgress;
   final Size fullSize;
   StoryPanels({
-    this.stories,
+    this.storyCluster,
     this.focusProgress,
     this.fullSize,
   });
 
   @override
-  Widget build(BuildContext context) => new Column(
+  Widget build(BuildContext context) => _getDragTarget(
+        context: context,
+        child: _getPanels(context),
+      );
+
+  Widget _getDragTarget({BuildContext context, Widget child}) =>
+      new DragTarget<StoryCluster>(
+        // We set the key to be based on the specific stories of the StoryCluster
+        // because we need to rebuild when the stories in the storyCluster change.
+        // Otherwise, when you pick up a story from this cluster we will ignore it
+        // on the first onWillAccept call.  This ensures when the clusters are
+        // recreated we will call onWillAccept again.
+        key: new GlobalObjectKey(Story.storyListHashCode(storyCluster.stories)),
+        onWillAccept: (StoryCluster data) {
+          // Don't accept empty data.
+          if (data == null || data.stories.isEmpty) {
+            return false;
+          }
+
+          // Don't accept data if it would put us over the story limit.
+          if (storyCluster.stories.length + data.stories.length >
+              _kMaxStories) {
+            return false;
+          }
+
+          // Don't accept data that has a story that matches any of our current
+          // stories.
+          bool result = true;
+          data.stories.forEach((Story s1) {
+            if (result) {
+              storyCluster.stories.forEach((Story s2) {
+                if (result && s1.id == s2.id) {
+                  result = false;
+                }
+              });
+            }
+          });
+
+          return result;
+        },
+        onAccept: (StoryCluster data) {
+          InheritedStoryManager
+              .of(context)
+              .combine(source: data, target: storyCluster);
+          data.stories.forEach((Story story) {
+            StoryKeys.storyBarKey(story).currentState?.maximize();
+          });
+        },
+        builder: (
+          BuildContext context,
+          List<StoryCluster> candidateData,
+          List<dynamic> rejectedData,
+        ) =>
+            new Padding(
+              padding: new EdgeInsets.all(
+                candidateData.isEmpty
+                    ? 0.0
+                    : _kStorySplitAreaWidth * focusProgress,
+              ),
+              child: child,
+            ),
+      );
+
+  Widget _getPanels(BuildContext context) => new Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: new List<Widget>.generate(
           _rowCount,
@@ -82,7 +153,10 @@ class StoryPanels extends StatelessWidget {
                             ),
                             child: _getStory(
                                 context,
-                                stories[_storyIndex(rowIndex, columnIndex)],
+                                storyCluster.stories[_storyIndex(
+                                  rowIndex,
+                                  columnIndex,
+                                )],
                                 _getSizeFromStoryIndex(
                                   _storyIndex(rowIndex, columnIndex),
                                 )),
@@ -95,19 +169,19 @@ class StoryPanels extends StatelessWidget {
       );
 
   int _columnCount(int rowIndex) =>
-      math.min(2, (stories.length - rowIndex * 2));
-  int get _rowCount => stories.length > 2 ? 2 : 1;
+      math.min(2, (storyCluster.stories.length - rowIndex * 2));
+  int get _rowCount => storyCluster.stories.length > 2 ? 2 : 1;
   int _storyIndex(int rowIndex, int columnIndex) => rowIndex * 2 + columnIndex;
 
   Size _getSizeFromStoryIndex(int storyIndex) {
-    if (stories.length == 1) {
+    if (storyCluster.stories.length == 1) {
       return fullSize;
     }
-    if (stories.length == 2) {
+    if (storyCluster.stories.length == 2) {
       return new Size(
           (fullSize.width - _kFocusedStoryMargin) / 2.0, fullSize.height);
     }
-    if (stories.length == 3) {
+    if (storyCluster.stories.length == 3) {
       if (storyIndex < 2) {
         return new Size(
             (fullSize.width - _kFocusedStoryMargin) / 2.0, fullSize.height);
@@ -120,15 +194,54 @@ class StoryPanels extends StatelessWidget {
     }
   }
 
+  Widget _getStoryBarDraggableWrapper({
+    BuildContext context,
+    Story story,
+    Widget child,
+  }) =>
+      new OptionalWrapper(
+        // Don't allow dragging if we're the only story.
+        useWrapper: storyCluster.stories.length > 1,
+        builder: (BuildContext context, Widget child) => new LongPressDraggable(
+              key: new GlobalObjectKey(story.clusterDraggableId),
+              data: new StoryCluster.fromStory(story),
+              dragAnchor: DragAnchor.pointer,
+              maxSimultaneousDrags: 1,
+              onDraggableCanceled: (Velocity velocity, Offset offset) {
+                // TODO(apwilson): This should eventually never happen.
+              },
+              childWhenDragging: new Builder(builder: (BuildContext context) {
+                scheduleMicrotask(() {
+                  InheritedStoryManager
+                      .of(context)
+                      .split(story: story, from: storyCluster);
+                  StoryKeys.storyBarKey(story).currentState?.minimize();
+                });
+                return new Offstage(offstage: true);
+              }),
+              feedback: new StoryClusterDragFeedback(
+                storyCluster: new StoryCluster.fromStory(story),
+                fullSize: fullSize,
+                multiColumn: true,
+              ),
+              child: child,
+            ),
+        child: child,
+      );
+
   Widget _getStory(BuildContext context, Story story, Size size) => new Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // The story bar that pushes down the story.
-          new StoryBar(
-            key: StoryKeys.storyBarKey(story),
+          _getStoryBarDraggableWrapper(
+            context: context,
             story: story,
-            minimizedHeight: _kStoryBarMinimizedHeight,
-            maximizedHeight: _kStoryBarMaximizedHeight,
+            child: new StoryBar(
+              key: StoryKeys.storyBarKey(story),
+              story: story,
+              minimizedHeight: _kStoryBarMinimizedHeight,
+              maximizedHeight: _kStoryBarMaximizedHeight,
+            ),
           ),
 
           // The story itself.

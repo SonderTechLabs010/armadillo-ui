@@ -126,6 +126,16 @@ class StoryManager extends ConfigManager {
         (StoryCluster s) => (s.id == source.id) || (s.id == target.id));
     target.stories.addAll(source.stories);
     _storyClusters.add(target.copyWith());
+    notifyListeners();
+  }
+
+  void split({Story story, StoryCluster from}) {
+    if (!from.stories.contains(story)) {
+      return;
+    }
+    from.stories.remove(story);
+    addStoryCluster(new StoryCluster.fromStory(story));
+    addStoryCluster(from.copyWith());
   }
 }
 

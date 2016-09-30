@@ -20,7 +20,7 @@ const double _kStoryBarMaximizedHeight = 48.0;
 const double _kUnfocusedStoryMargin = 4.0;
 const double _kFocusedStoryMargin = 8.0;
 
-/// Displays up to four stories in a grid-like layout.
+/// Displays up to four stories in a carousel layout.
 class StoryCarousel extends StatelessWidget {
   final List<Story> stories;
   final double focusProgress;

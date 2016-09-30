@@ -13,6 +13,7 @@ import 'optional_wrapper.dart';
 import 'story.dart';
 import 'story_carousel.dart';
 import 'story_cluster.dart';
+import 'story_cluster_drag_feedback.dart';
 import 'story_manager.dart';
 import 'story_panels.dart';
 import 'story_title.dart';
@@ -127,28 +128,18 @@ class StoryClusterWidget extends StatelessWidget {
           useWrapper: _isUnfocused && !hasCandidates,
           builder: (BuildContext context, Widget child) =>
               new LongPressDraggable(
+                key: new GlobalObjectKey(storyCluster.clusterDraggableId),
                 data: storyCluster,
-                feedbackOffset:
-                    new Offset(-_kDraggedStoryRadius, -_kDraggedStoryRadius),
                 dragAnchor: DragAnchor.pointer,
                 maxSimultaneousDrags: 1,
                 onDraggableCanceled: (Velocity velocity, Offset offset) {
                   // TODO(apwilson): Somehow animate back the 'childWhenDragging.
                 },
                 childWhenDragging: new Container(),
-                feedback: new Transform(
-                  transform: new Matrix4.translationValues(
-                      -_kDraggedStoryRadius, -_kDraggedStoryRadius, 0.0),
-                  child: new ClipOval(
-                    child: new Container(
-                      width: 2.0 * _kDraggedStoryRadius,
-                      height: 2.0 * _kDraggedStoryRadius,
-                      foregroundDecoration: new BoxDecoration(
-                        backgroundColor: new Color(0x80FFFF00),
-                      ),
-                      child: _getStoryCluster(context),
-                    ),
-                  ),
+                feedback: new StoryClusterDragFeedback(
+                  storyCluster: storyCluster,
+                  fullSize: fullSize,
+                  multiColumn: multiColumn,
                 ),
                 child: child,
               ),
@@ -199,7 +190,7 @@ class StoryClusterWidget extends StatelessWidget {
               new BorderRadius.circular(lerpDouble(4.0, 0.0, focusProgress)),
           child: multiColumn
               ? new StoryPanels(
-                  stories: storyCluster.stories,
+                  storyCluster: storyCluster,
                   focusProgress: focusProgress,
                   fullSize: fullSize,
                 )
@@ -241,7 +232,7 @@ class StoryClusterWidget extends StatelessWidget {
         top: 0.0,
         bottom: 0.0,
         child: new Offstage(
-          offstage: focusProgress > 0.0,
+          offstage: !_isUnfocused,
           child: new GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: onGainFocus,

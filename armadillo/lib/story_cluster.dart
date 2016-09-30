@@ -11,15 +11,30 @@ class StoryCluster {
   final List<Story> stories;
   final String title;
   final Object carouselId;
+  final Object clusterDraggableId;
 
-  StoryCluster({Object id, Object carouselId, List<Story> stories})
+  StoryCluster({
+    Object id,
+    Object carouselId,
+    Object clusterDraggableId,
+    List<Story> stories,
+  })
       : this.stories = stories,
         this.title = _getClusterTitle(stories),
         this.lastInteraction = _getClusterLastInteraction(stories),
         this.cumulativeInteractionDuration =
             _getClusterCumulativeInteractionDuration(stories),
         this.id = id ?? new Object(),
-        this.carouselId = carouselId ?? new Object();
+        this.carouselId = carouselId ?? new Object(),
+        this.clusterDraggableId = clusterDraggableId ?? new Object();
+
+  factory StoryCluster.fromStory(Story story) {
+    return new StoryCluster(
+      id: story.clusterId,
+      clusterDraggableId: story.clusterDraggableId,
+      stories: [story],
+    );
+  }
 
   StoryCluster copyWith({
     DateTime lastInteraction,
@@ -29,6 +44,7 @@ class StoryCluster {
       new StoryCluster(
         id: this.id,
         carouselId: this.carouselId,
+        clusterDraggableId: this.clusterDraggableId,
         stories: new List<Story>.generate(
           stories.length,
           (int index) => stories[index].copyWith(

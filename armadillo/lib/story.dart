@@ -19,6 +19,8 @@ class Story {
   final Color themeColor;
   final bool inactive;
   final Object storyBarKeyObject;
+  final Object clusterId;
+  final Object clusterDraggableId;
 
   Story({
     this.id,
@@ -32,8 +34,12 @@ class Story {
     this.themeColor,
     this.inactive: false,
     Object storyBarKeyObject,
+    Object clusterId,
+    Object clusterDraggableId,
   })
-      : this.storyBarKeyObject = storyBarKeyObject ?? new Object();
+      : this.storyBarKeyObject = storyBarKeyObject ?? new Object(),
+        this.clusterId = clusterId ?? new Object(),
+        this.clusterDraggableId = clusterDraggableId ?? new Object();
 
   Story copyWith({
     DateTime lastInteraction,
@@ -53,6 +59,8 @@ class Story {
         title: this.title,
         inactive: inactive ?? this.inactive,
         storyBarKeyObject: this.storyBarKeyObject,
+        clusterId: this.clusterId,
+        clusterDraggableId: this.clusterDraggableId,
       );
 
   @override
@@ -60,4 +68,7 @@ class Story {
 
   @override
   bool operator ==(other) => (other is Story && other.id == id);
+
+  static int storyListHashCode(List<Story> stories) =>
+      hashList(stories.map((Story s) => s.id));
 }
