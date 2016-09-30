@@ -103,6 +103,7 @@ class StoryClusterWidget extends StatelessWidget {
                 InheritedStoryManager
                     .of(context)
                     .combine(source: data, target: storyCluster);
+                onGainFocus();
               },
               builder: (
                 BuildContext context,
