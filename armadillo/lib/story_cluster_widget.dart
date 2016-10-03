@@ -41,7 +41,7 @@ const double _kMultiColumnMinimumStoryMargin = 8.0;
 /// use.
 const double _kVerticalGestureDetectorHeight = 32.0;
 
-const double _kStoryBarMinimizedHeight = 12.0;
+const double _kStoryBarMinimizedHeight = 4.0;
 const double _kStoryBarMaximizedHeight = 48.0;
 const double _kStoryInlineTitleHeight = 20.0;
 const double _kDraggedStoryRadius = 75.0;

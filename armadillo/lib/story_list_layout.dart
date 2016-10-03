@@ -15,6 +15,7 @@ const double _kMultiColumnWidthThreshold = 500.0;
 /// Stories that have been interacted with within this threshold from now are
 /// considered to be juggled.  Juggled stories have their sizes increased.
 const int _kJugglingThresholdMinutes = 120;
+const int _kMaxJugglingStoryCount = 8;
 
 /// The [size] the story should be.
 /// The [offset] of the story with respect to the bottom center of the list.
@@ -52,7 +53,7 @@ class StoryListLayout {
         (size.width - _kMultiColumnWidthThreshold) /
             _kMultiColumnWidthThreshold);
     _baseHorizontalGrid = 16.0 + (screenSizeAdjustment * 2.0).floor() * 4.0;
-    _baseVerticalGrid = 8.0 + (screenSizeAdjustment * 2.0).floor() * 4.0;
+    _baseVerticalGrid = 16.0 + (screenSizeAdjustment * 2.0).floor() * 4.0;
     _intraStoryInteractionScaling = 0.12 * screenSizeAdjustment;
     _multiColumn = _kMultiColumnWidthThreshold <= size.width;
   }
@@ -108,7 +109,8 @@ class StoryListLayout {
             possibleJugglingMinutes);
 
         if (storyJugglingMinutes > 0) {
-          jugglingStoryCount++;
+          jugglingStoryCount =
+              math.min(jugglingStoryCount + 1, _kMaxJugglingStoryCount);
         }
 
         return new _StoryMetadata(
@@ -161,7 +163,7 @@ class StoryListLayout {
             -story.size.width / 2,
             ((previousStory == null) ? 0.0 : previousStory.offset.dy) -
                 story.size.height -
-                _baseHorizontalGrid * 2,
+                _baseVerticalGrid * 2,
           );
           previousStory = story;
         },
@@ -190,7 +192,7 @@ class StoryListLayout {
           rows.add(row);
           row = <_StoryMetadata>[];
           rowWidth = 0.0;
-          rowTop -= story.size.height + _baseHorizontalGrid * 2;
+          rowTop -= story.size.height + _baseVerticalGrid * 2;
         }
       }
 
@@ -231,7 +233,8 @@ class StoryListLayout {
 
         // For every story in the row, scale it so the row's total width
         // becomes or comes closer to our target width.
-        {
+        // Apply only if the row contain more than 1 story
+        if (row.length > 1) {
           double maxRowWidth = _getMaxWidthForTop(
               -previousRowLastStoryTop + row[0].size.height,
               jugglingStoryCount);
@@ -289,7 +292,7 @@ class StoryListLayout {
                 // TODO(apwilson): Should be vertical grid not horizontal.
                 story.dy = intersectingStory.offset.dy -
                     story.size.height -
-                    _baseHorizontalGrid * 2.0;
+                    _baseVerticalGrid * 2.0;
               },
             );
 
@@ -299,7 +302,7 @@ class StoryListLayout {
                   0.25 *
                   math.min(
                     1.0,
-                    storyIndex / jugglingStoryCount * 0.25,
+                    storyIndex / jugglingStoryCount * 0.5,
                   );
               if (story.offset.dy > previousStory.offset.dy - staggerAmount) {
                 story.dy = previousStory.offset.dy - staggerAmount;
@@ -348,7 +351,7 @@ class StoryListLayout {
               // TODO(apwilson): Should be vertical grid not horizontal.
               maxTop = math.max(
                 maxTop,
-                intersectingStoryAbove.bottom + _baseHorizontalGrid * 4.0,
+                intersectingStoryAbove.bottom + _baseVerticalGrid * 2.0,
               );
             });
 
@@ -378,7 +381,7 @@ class StoryListLayout {
     if (_multiColumn) {
       double minWRatio = math.max(
         0.5,
-        1 - (size.width - _kMultiColumnWidthThreshold) / 1600.0,
+        1 - (size.width - _kMultiColumnWidthThreshold) / 1200.0,
       );
       minW = size.width * minWRatio - _baseHorizontalGrid;
     } else {
@@ -409,10 +412,13 @@ class StoryListLayout {
         (offset.dy / _baseVerticalGrid).floor() * _baseVerticalGrid,
       );
 
-  Size _alignSizeToGrid(Size size) => new Size(
-        (size.width / _baseHorizontalGrid).floor() * _baseHorizontalGrid,
-        (size.height / _baseVerticalGrid).floor() * _baseVerticalGrid,
-      );
+  Size _alignSizeToGrid(Size size) {
+    /// align the width to _baseHorizontalGrid then scale the heigth accordingly
+    double width =
+        (size.width / _baseHorizontalGrid).floor() * _baseHorizontalGrid;
+    double height = size.height * width / size.width;
+    return new Size(width, height);
+  }
 }
 
 /// Stores positions and sizes of a story as it goes through the

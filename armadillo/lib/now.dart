@@ -450,7 +450,7 @@ class NowState extends TickingState<Now> {
           _quickSettingsRaiseDistance +
           _scrollOffsetDelta);
 
-  double get _userImageSize => lerpDouble(100.0, 12.0, _minimizationProgress);
+  double get _userImageSize => lerpDouble(56.0, 12.0, _minimizationProgress);
 
   double get _userImageBorderWidth =>
       lerpDouble(2.0, 6.0, _minimizationProgress);

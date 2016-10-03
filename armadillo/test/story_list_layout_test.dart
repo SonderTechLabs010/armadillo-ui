@@ -9,6 +9,11 @@ import '../lib/story.dart';
 import '../lib/story_cluster.dart';
 import '../lib/story_list_layout.dart';
 
+/// Set this to true to see what the actual bounds will be in the case you need
+/// to update the expected bounds.  The output should be copy-pastable into the
+/// expected bounds array.
+const bool _kPrintBounds = false;
+
 final DateTime _kCurrentTime = new DateTime.now();
 final List<Story> _kDummyStories = <Story>[
   new Story(
@@ -111,58 +116,58 @@ final List<Story> _kDummyStories = <Story>[
 
 final Size _k1280x900Size = new Size(1280.0, 800.0);
 final List<Rect> _kExpectedRectsFor1280x800 = <Rect>[
-  new Rect.fromLTWH(-532.0, -220.0, 280.0, 180.0),
-  new Rect.fromLTWH(-224.0, -220.0, 392.0, 240.0),
-  new Rect.fromLTWH(196.0, -220.0, 336.0, 200.0),
-  new Rect.fromLTWH(-392.0, -520.0, 392.0, 240.0),
-  new Rect.fromLTWH(28.0, -540.0, 364.0, 220.0),
-  new Rect.fromLTWH(-364.0, -788.0, 280.0, 180.0),
-  new Rect.fromLTWH(-56.0, -840.0, 392.0, 240.0),
-  new Rect.fromLTWH(-336.0, -1080.0, 308.0, 180.0),
-  new Rect.fromLTWH(0.0, -1100.0, 308.0, 180.0),
-  new Rect.fromLTWH(-336.0, -1320.0, 308.0, 180.0),
-  new Rect.fromLTWH(0.0, -1340.0, 308.0, 180.0),
-  new Rect.fromLTWH(-308.0, -1560.0, 280.0, 180.0),
-  new Rect.fromLTWH(0.0, -1580.0, 280.0, 180.0),
-  new Rect.fromLTWH(-308.0, -1800.0, 280.0, 180.0),
-  new Rect.fromLTWH(0.0, -1840.0, 280.0, 180.0),
-  new Rect.fromLTWH(-308.0, -2040.0, 280.0, 180.0),
-  new Rect.fromLTWH(0.0, -2080.0, 280.0, 180.0),
-  new Rect.fromLTWH(-308.0, -2280.0, 280.0, 180.0),
-  new Rect.fromLTWH(0.0, -2320.0, 280.0, 180.0),
-  new Rect.fromLTWH(-308.0, -2520.0, 280.0, 180.0),
-  new Rect.fromLTWH(0.0, -2560.0, 280.0, 180.0),
-  new Rect.fromLTWH(-308.0, -2760.0, 280.0, 180.0),
-  new Rect.fromLTWH(0.0, -2800.0, 280.0, 180.0),
-  new Rect.fromLTWH(-364.0, -3040.0, 336.0, 220.0),
+  new Rect.fromLTWH(-532.0, -248.5, 280.0, 175.0),
+  new Rect.fromLTWH(-224.0, -248.5, 392.0, 245.0),
+  new Rect.fromLTWH(196.0, -294.0, 336.0, 210.0),
+  new Rect.fromLTWH(-364.0, -553.0, 364.0, 227.5),
+  new Rect.fromLTWH(28.0, -567.0, 336.0, 210.0),
+  new Rect.fromLTWH(-364.0, -871.5, 280.0, 175.0),
+  new Rect.fromLTWH(-56.0, -871.5, 392.0, 245.0),
+  new Rect.fromLTWH(-336.0, -1141.0, 308.0, 192.5),
+  new Rect.fromLTWH(0.0, -1197.0, 308.0, 192.5),
+  new Rect.fromLTWH(-308.0, -1393.0, 280.0, 175.0),
+  new Rect.fromLTWH(0.0, -1449.0, 280.0, 175.0),
+  new Rect.fromLTWH(-308.0, -1645.0, 280.0, 175.0),
+  new Rect.fromLTWH(0.0, -1701.0, 280.0, 175.0),
+  new Rect.fromLTWH(-308.0, -1897.0, 280.0, 175.0),
+  new Rect.fromLTWH(0.0, -1953.0, 280.0, 175.0),
+  new Rect.fromLTWH(-308.0, -2149.0, 280.0, 175.0),
+  new Rect.fromLTWH(0.0, -2205.0, 280.0, 175.0),
+  new Rect.fromLTWH(-308.0, -2401.0, 280.0, 175.0),
+  new Rect.fromLTWH(0.0, -2457.0, 280.0, 175.0),
+  new Rect.fromLTWH(-308.0, -2653.0, 280.0, 175.0),
+  new Rect.fromLTWH(0.0, -2709.0, 280.0, 175.0),
+  new Rect.fromLTWH(-308.0, -2897.5, 280.0, 175.0),
+  new Rect.fromLTWH(0.0, -2940.0, 280.0, 175.0),
+  new Rect.fromLTWH(-308.0, -3136.0, 292.0, 182.5),
 ];
 
 final Size _k360x640Size = new Size(360.0, 640.0);
 final List<Rect> _kExpectedRectsFor360x640 = <Rect>[
-  new Rect.fromLTWH(-164.0, -167.7116103318435, 328.0, 135.7116103318435),
-  new Rect.fromLTWH(-164.0, -346.00057999160555, 328.0, 146.28896965976205),
-  new Rect.fromLTWH(-164.0, -512.9052236900156, 328.0, 134.9046436984101),
-  new Rect.fromLTWH(-164.0, -677.4289386487437, 328.0, 132.52371495872808),
-  new Rect.fromLTWH(-164.0, -838.5283602852187, 328.0, 129.09942163647494),
-  new Rect.fromLTWH(-164.0, -997.0927465154688, 328.0, 126.56438623025007),
-  new Rect.fromLTWH(-164.0, -1153.9691722857604, 328.0, 124.87642577029148),
-  new Rect.fromLTWH(-164.0, -1308.9691722857604, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -1463.9691722857604, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -1618.9691722857604, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -1773.9691722857604, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -1928.9691722857604, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -2083.9691722857606, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -2238.9691722857606, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -2393.9691722857606, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -2548.9691722857606, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -2703.9691722857606, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -2858.9691722857606, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -3013.9691722857606, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -3168.9691722857606, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -3323.9691722857606, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -3478.9691722857606, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -3633.9691722857606, 328.0, 123.0),
-  new Rect.fromLTWH(-164.0, -3788.9691722857606, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -167.71160888671875, 328.0, 135.71160888671875),
+  new Rect.fromLTWH(-164.0, -346.0005798339844, 328.0, 146.28897094726562),
+  new Rect.fromLTWH(-164.0, -512.9052124023438, 328.0, 134.90463256835938),
+  new Rect.fromLTWH(-164.0, -677.428955078125, 328.0, 132.52374267578125),
+  new Rect.fromLTWH(-164.0, -838.5283813476562, 328.0, 129.09942626953125),
+  new Rect.fromLTWH(-164.0, -997.0927734375, 328.0, 126.56439208984375),
+  new Rect.fromLTWH(-164.0, -1153.9691162109375, 328.0, 124.8763427734375),
+  new Rect.fromLTWH(-164.0, -1308.9691162109375, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -1463.9691162109375, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -1618.9691162109375, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -1773.9691162109375, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -1928.9691162109375, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -2083.96923828125, 328.0, 123.0001220703125),
+  new Rect.fromLTWH(-164.0, -2238.96923828125, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -2393.96923828125, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -2548.96923828125, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -2703.96923828125, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -2858.96923828125, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -3013.96923828125, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -3168.96923828125, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -3323.96923828125, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -3478.96923828125, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -3633.96923828125, 328.0, 123.0),
+  new Rect.fromLTWH(-164.0, -3788.96923828125, 328.0, 123.0),
 ];
 
 void main() {
@@ -215,6 +220,11 @@ void main() {
       currentTime: _kCurrentTime,
     );
     expect(stories.length, _kDummyStories.length);
+
+    if (_kPrintBounds) {
+      _printBounds(stories);
+    }
+
     for (int i = 0; i < stories.length; i++) {
       Rect bounds = stories[i].bounds;
       expect(
@@ -252,6 +262,11 @@ void main() {
       currentTime: _kCurrentTime,
     );
     expect(stories.length, _kDummyStories.length);
+
+    if (_kPrintBounds) {
+      _printBounds(stories);
+    }
+
     for (int i = 0; i < stories.length; i++) {
       Rect bounds = stories[i].bounds;
       expect(
@@ -279,4 +294,15 @@ void main() {
       );
     }
   });
+}
+
+/// Call this before checking bounds in tests to print out what the
+/// actual bounds will be.  Use the output to update the expected bounds
+/// array when you're sure it's what you want.
+void _printBounds(List<StoryLayout> stories) {
+  for (int i = 0; i < stories.length; i++) {
+    Rect bounds = stories[i].bounds;
+    print(
+        'new Rect.fromLTWH(${bounds.left},${bounds.top},${bounds.width},${bounds.height}),');
+  }
 }

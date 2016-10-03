@@ -15,7 +15,8 @@ class StoryTitle extends StatelessWidget {
   Widget build(BuildContext context) => new Text(
         title.toUpperCase(),
         style: new TextStyle(
-          color: Colors.white,
+          fontSize: 11.0,
+          color: new Color.fromARGB(160, 255, 255, 255),
           fontWeight: FontWeight.w700,
           letterSpacing: 2.0,
         ),

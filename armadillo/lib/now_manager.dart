@@ -221,7 +221,7 @@ class NowManager extends ConfigManager {
   Widget get quickSettings => new QuickSettings();
 
   TextStyle get _textStyle => TextStyle.lerp(
-        new TextStyle(color: Colors.white),
+        new TextStyle(color: Colors.white, fontSize: 18.0, letterSpacing: 2.0),
         new TextStyle(color: Colors.grey[600]),
         _quickSettingsProgress,
       );

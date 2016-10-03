@@ -22,7 +22,7 @@ import 'story_manager.dart';
 /// use.
 const double _kVerticalGestureDetectorHeight = 32.0;
 
-const double _kStoryBarMinimizedHeight = 12.0;
+const double _kStoryBarMinimizedHeight = 4.0;
 const double _kStoryBarMaximizedHeight = 48.0;
 const double _kUnfocusedStoryMargin = 4.0;
 const double _kFocusedStoryMargin = 8.0;
