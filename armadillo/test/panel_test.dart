@@ -14,28 +14,28 @@ void main() {
     new Panel.fromLTRB(0.0, 0.0, 0.5, 1.0).split((Panel a, Panel b) {
       expect(a.sizeFactor, 0.25);
       expect(b.sizeFactor, 0.25);
-      expect(a.origin.dx, 0.0);
-      expect(a.origin.dy, 0.0);
-      expect(a.heightFactor, 0.5);
-      expect(a.widthFactor, 0.5);
-      expect(b.origin.dx, 0.0);
-      expect(b.origin.dy, 0.5);
-      expect(b.heightFactor, 0.5);
-      expect(b.widthFactor, 0.5);
+      expect(a.left, 0.0);
+      expect(a.top, 0.0);
+      expect(a.height, 0.5);
+      expect(a.width, 0.5);
+      expect(b.left, 0.0);
+      expect(b.top, 0.5);
+      expect(b.height, 0.5);
+      expect(b.width, 0.5);
     });
   });
   test('split vertically', () {
     new Panel.fromLTRB(0.0, 0.0, 1.0, 0.5).split((Panel a, Panel b) {
       expect(a.sizeFactor, 0.25);
       expect(b.sizeFactor, 0.25);
-      expect(a.origin.dx, 0.0);
-      expect(a.origin.dy, 0.0);
-      expect(a.heightFactor, 0.5);
-      expect(a.widthFactor, 0.5);
-      expect(b.origin.dx, 0.5);
-      expect(b.origin.dy, 0.0);
-      expect(b.heightFactor, 0.5);
-      expect(b.widthFactor, 0.5);
+      expect(a.left, 0.0);
+      expect(a.top, 0.0);
+      expect(a.height, 0.5);
+      expect(a.width, 0.5);
+      expect(b.left, 0.5);
+      expect(b.top, 0.0);
+      expect(b.height, 0.5);
+      expect(b.width, 0.5);
     });
   });
   test('absorb - full absorbtion', () {
@@ -44,10 +44,10 @@ void main() {
     a.absorb(b, (Panel result, Panel remainder) {
       expect(remainder.sizeFactor, 0.0);
       expect(result.sizeFactor, 0.5);
-      expect(result.origin.dx, 0.0);
-      expect(result.origin.dy, 0.0);
-      expect(result.heightFactor, 0.5);
-      expect(result.widthFactor, 1.0);
+      expect(result.left, 0.0);
+      expect(result.top, 0.0);
+      expect(result.height, 0.5);
+      expect(result.width, 1.0);
     });
   });
   test('absorb - partial absorbtion', () {
@@ -55,15 +55,15 @@ void main() {
     Panel b = new Panel.fromLTRB(0.0, 0.0, 0.5, 1.0);
     a.absorb(b, (Panel result, Panel remainder) {
       expect(remainder.sizeFactor, 0.25);
-      expect(remainder.origin.dx, 0.0);
-      expect(remainder.origin.dy, 0.5);
-      expect(remainder.heightFactor, 0.5);
-      expect(remainder.widthFactor, 0.5);
+      expect(remainder.left, 0.0);
+      expect(remainder.top, 0.5);
+      expect(remainder.height, 0.5);
+      expect(remainder.width, 0.5);
       expect(result.sizeFactor, 0.5);
-      expect(result.origin.dx, 0.0);
-      expect(result.origin.dy, 0.0);
-      expect(result.heightFactor, 0.5);
-      expect(result.widthFactor, 1.0);
+      expect(result.left, 0.0);
+      expect(result.top, 0.0);
+      expect(result.height, 0.5);
+      expect(result.width, 1.0);
     });
   });
   test('absorb - no absorbtion', () {

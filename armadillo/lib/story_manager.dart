@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'config_manager.dart';
+import 'panel.dart';
 import 'story.dart';
 import 'story_builder.dart';
 import 'story_cluster.dart';
@@ -57,17 +58,13 @@ class StoryManager extends ConfigManager {
     suggestionManager.storyClusterFocusChanged(storyCluster);
   }
 
+  /// Indicates the currently focused story cluster has been defocused.
   void interactionStopped() {
     notifyListeners();
     suggestionManager.storyClusterFocusChanged(null);
   }
 
-  void addStoryCluster(StoryCluster storyCluster) {
-    _storyClusters.removeWhere((StoryCluster s) => s.id == storyCluster.id);
-    _storyClusters.add(storyCluster);
-    notifyListeners();
-  }
-
+  /// Randomizes story interaction times within the story cluster.
   void randomizeStoryTimes() {
     math.Random random = new math.Random();
     DateTime storyInteractionTime = new DateTime.now();
@@ -86,21 +83,112 @@ class StoryManager extends ConfigManager {
     notifyListeners();
   }
 
-  void combine({StoryCluster source, StoryCluster target}) {
-    _storyClusters.removeWhere(
-        (StoryCluster s) => (s.id == source.id) || (s.id == target.id));
-    target.stories.addAll(source.stories);
-    _storyClusters.add(target.copyWith());
+  /// Adds [storyCluster] to the list of story clusters.
+  void add({StoryCluster storyCluster}) {
+    _storyClusters.removeWhere((StoryCluster s) => s.id == storyCluster.id);
+    _storyClusters.add(storyCluster);
     notifyListeners();
   }
 
-  void split({Story story, StoryCluster from}) {
-    if (!from.stories.contains(story)) {
-      return;
+  /// Adds [source]'s stories to [target]'s stories and removes [source] from
+  /// the list of story clusters.
+  void combine({StoryCluster source, StoryCluster target, Size size}) {
+    // Update grid locations.
+    for (int i = 0; i < source.stories.length; i++) {
+      Story sourceStory = source.stories[i];
+      Story largestStory = _getLargestStory(target.stories);
+      if (largestStory.panel.canBeSplitVertically(size.width) ||
+          largestStory.panel.canBeSplitHorizontally(size.height)) {
+        largestStory.panel.split((Panel a, Panel b) {
+          int largestIndex = target.stories.indexOf(largestStory);
+          target.stories.remove(largestStory);
+          target.stories.insert(
+            largestIndex,
+            largestStory.copyWith(panel: a),
+          );
+          target.stories.add(sourceStory.copyWith(panel: b));
+          target.normalizeSizes();
+        });
+        break;
+      } else {
+        // Switch to panels!
+        assert(false);
+      }
     }
-    from.stories.remove(story);
-    addStoryCluster(new StoryCluster.fromStory(story));
-    addStoryCluster(from.copyWith());
+
+    // We need to update the draggable id as in some cases this id could
+    // be used by one of the cluster's stories.
+    remove(storyCluster: source);
+    remove(storyCluster: target);
+    add(storyCluster: target.copyWith(clusterDraggableId: new Object()));
+  }
+
+  /// Removes [storyCluster] from the list of story clusters.
+  void remove({StoryCluster storyCluster}) {
+    _storyClusters.removeWhere((StoryCluster s) => (s.id == storyCluster.id));
+    notifyListeners();
+  }
+
+  /// Removes [storyToSplit] from [from]'s stories and updates [from]'s stories
+  /// panels.  [storyToSplit] becomes forms its own [StoryCluster] which is
+  /// added to the story cluster list.
+  void split({Story storyToSplit, StoryCluster from}) {
+    assert(from.stories.contains(storyToSplit));
+
+    // Update grid locations.
+    List<Story> stories = new List<Story>.from(from.stories);
+    stories.remove(storyToSplit);
+    stories.sort(
+      (Story a, Story b) => a.panel.sizeFactor > b.panel.sizeFactor
+          ? 1
+          : a.panel.sizeFactor < b.panel.sizeFactor ? -1 : 0,
+    );
+    Panel remainingAreaToAbsorb = storyToSplit.panel;
+    double remainingSize;
+    do {
+      remainingSize = remainingAreaToAbsorb.sizeFactor;
+      stories
+          .where((Story story) =>
+              story.panel.isAdjacentWithOriginAligned(remainingAreaToAbsorb))
+          .forEach((Story story) {
+        story.panel.absorb(remainingAreaToAbsorb,
+            (Panel absorbed, Panel remainder) {
+          int storyIndex = from.stories.indexOf(story);
+          from.stories.remove(story);
+          from.stories.insert(
+            storyIndex,
+            story.copyWith(panel: absorbed),
+          );
+          remainingAreaToAbsorb = remainder;
+        });
+      });
+    } while (remainingAreaToAbsorb.sizeFactor < remainingSize);
+    assert(remainingAreaToAbsorb.sizeFactor == 0.0);
+
+    from.stories.remove(storyToSplit);
+    from.normalizeSizes();
+
+    add(storyCluster: new StoryCluster.fromStory(storyToSplit));
+    add(storyCluster: from.copyWith());
+  }
+
+  // Determines the max number of rows and columns based on [size] and either
+  // does nothing, rearrange the panels to fit, or switches to tabs.
+  void normalize({Size size}) {
+    // TODO(apwilson): implement this!
+  }
+
+  Story _getLargestStory(List<Story> stories) {
+    double largestSize = -0.0;
+    Story largestStory;
+    stories.forEach((Story story) {
+      double storySize = story.panel.sizeFactor;
+      if (storySize > largestSize) {
+        largestSize = storySize;
+        largestStory = story;
+      }
+    });
+    return largestStory;
   }
 }
 

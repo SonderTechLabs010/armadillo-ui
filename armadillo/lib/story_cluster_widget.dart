@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+import 'armadillo_drag_target.dart';
 import 'long_hover_detector.dart';
 import 'optional_wrapper.dart';
 import 'story.dart';
@@ -75,16 +76,10 @@ class StoryClusterWidget extends StatelessWidget {
         // Don't accept data if we're focused or focusing.
         useWrapper: _isUnfocused,
         builder: (BuildContext context, Widget child) =>
-            new DragTarget<StoryCluster>(
-              onWillAccept: (StoryCluster data) {
+            new ArmadilloDragTarget<StoryCluster>(
+              onWillAccept: (StoryCluster data, Point point) {
                 // Don't accept empty data.
                 if (data == null || data.stories.isEmpty) {
-                  return false;
-                }
-
-                // Don't accept data if it would put us over the story limit.
-                if (storyCluster.stories.length + data.stories.length >
-                    _kMaxStories) {
                   return false;
                 }
 
@@ -103,16 +98,18 @@ class StoryClusterWidget extends StatelessWidget {
 
                 return result;
               },
-              onAccept: (StoryCluster data) {
-                InheritedStoryManager
-                    .of(context)
-                    .combine(source: data, target: storyCluster);
+              onAccept: (StoryCluster data, Point point) {
+                InheritedStoryManager.of(context).combine(
+                      source: data,
+                      target: storyCluster,
+                      size: fullSize,
+                    );
                 onGainFocus();
               },
               builder: (
                 BuildContext context,
-                List<StoryCluster> candidateData,
-                List<dynamic> rejectedData,
+                Map<StoryCluster, Point> candidateData,
+                Map<dynamic, Point> rejectedData,
               ) =>
                   _getUnfocusedDragTargetChild(context,
                       hasCandidates: candidateData.isNotEmpty),
@@ -130,14 +127,9 @@ class StoryClusterWidget extends StatelessWidget {
         child: new OptionalWrapper(
           useWrapper: _isUnfocused && !hasCandidates,
           builder: (BuildContext context, Widget child) =>
-              new LongPressDraggable(
+              new ArmadilloLongPressDraggable(
                 key: new GlobalObjectKey(storyCluster.clusterDraggableId),
                 data: storyCluster,
-                dragAnchor: DragAnchor.pointer,
-                maxSimultaneousDrags: 1,
-                onDraggableCanceled: (Velocity velocity, Offset offset) {
-                  // TODO(apwilson): Somehow animate back the 'childWhenDragging.
-                },
                 childWhenDragging: new Container(),
                 feedback: new StoryClusterDragFeedback(
                   storyCluster: storyCluster,

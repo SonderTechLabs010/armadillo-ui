@@ -76,21 +76,21 @@ typedef void PanelAbsorbedResultCallback(Panel combined, Panel remainder);
 /// We represent the bounds of a panel in these dimensionless [0.0, 1.0] values
 /// because a given [Panel] may need to be applied more than one 'real' size.
 class Panel {
-  final FractionalOffset origin;
-  final double heightFactor;
-  final double widthFactor;
+  final FractionalOffset _origin;
+  final double _heightFactor;
+  final double _widthFactor;
 
   Panel({
     FractionalOffset origin: FractionalOffset.topLeft,
     double heightFactor: 1.0,
     double widthFactor: 1.0,
   })
-      : origin = new FractionalOffset(
+      : _origin = new FractionalOffset(
           toGridValue(origin.dx),
           toGridValue(origin.dy),
         ),
-        heightFactor = toGridValue(heightFactor),
-        widthFactor = toGridValue(widthFactor) {
+        _heightFactor = toGridValue(heightFactor),
+        _widthFactor = toGridValue(widthFactor) {
     assert(origin.dx >= 0.0 && origin.dx <= 1.0);
     assert(origin.dy >= 0.0 && origin.dy <= 1.0);
     assert(origin.dx + widthFactor >= 0.0 && origin.dx + widthFactor <= 1.0);
@@ -105,49 +105,55 @@ class Panel {
         heightFactor: bottom - top,
       );
 
+  double get left => _origin.dx;
+  double get right => _origin.dx + _widthFactor;
+  double get top => _origin.dy;
+  double get bottom => _origin.dy + _heightFactor;
+  double get width => right - left;
+  double get height => bottom - top;
+
   /// Returns true if the panel can be split vertically without violating
   /// [smallestWidthFactor].
   bool canBeSplitVertically(double width) =>
-      widthFactor / 2.0 >= smallestWidthFactor(width);
+      _widthFactor / 2.0 >= smallestWidthFactor(width);
 
   /// Returns true if the panel can be split horizontally without violating
   /// [smallestHeightFactor].
   bool canBeSplitHorizontally(double height) =>
-      heightFactor / 2.0 >= smallestHeightFactor(height);
+      _heightFactor / 2.0 >= smallestHeightFactor(height);
 
   /// Splits the panel in half, passing the resulting two halves to
   /// [panelSplitResultCallback].
   void split(PanelSplitResultCallback panelSplitResultCallback) {
-    bool tall = heightFactor > widthFactor;
+    bool tall = _heightFactor > _widthFactor;
     Panel a = new Panel(
-      origin: origin,
-      heightFactor: tall ? heightFactor / 2.0 : heightFactor,
-      widthFactor: tall ? widthFactor : widthFactor / 2.0,
+      origin: _origin,
+      heightFactor: tall ? _heightFactor / 2.0 : _heightFactor,
+      widthFactor: tall ? _widthFactor : _widthFactor / 2.0,
     );
     Panel b = new Panel(
-      origin: origin +
+      origin: _origin +
           new FractionalOffset(
-            tall ? 0.0 : widthFactor / 2.0,
-            tall ? heightFactor / 2.0 : 0.0,
+            tall ? 0.0 : _widthFactor / 2.0,
+            tall ? _heightFactor / 2.0 : 0.0,
           ),
-      heightFactor: tall ? heightFactor / 2.0 : heightFactor,
-      widthFactor: tall ? widthFactor : widthFactor / 2.0,
+      heightFactor: tall ? _heightFactor / 2.0 : _heightFactor,
+      widthFactor: tall ? _widthFactor : _widthFactor / 2.0,
     );
     panelSplitResultCallback(a, b);
   }
 
   /// Returns true if [other.origin] aligns with [origin] in an axis.
-  bool isOriginAligned(Panel other) =>
-      (origin.dx == other.origin.dx || origin.dy == other.origin.dy);
+  bool isOriginAligned(Panel other) => (left == other.left || top == other.top);
 
   /// Returns true if [isOriginAligned] returns true and [other] shares
   /// an edge with this panel.
   bool isAdjacentWithOriginAligned(Panel other) =>
       isOriginAligned(other) &&
-      (origin.dx + widthFactor == other.origin.dx ||
-          origin.dy + heightFactor == other.origin.dy ||
-          other.origin.dx + other.widthFactor == origin.dx ||
-          other.origin.dy + other.heightFactor == origin.dy);
+      (right == other.left ||
+          bottom == other.top ||
+          other.right == left ||
+          other.bottom == top);
 
   /// Absorbs as much of [other] as it can.  Calls [panelAbsorbedResultCallback]
   /// with its new size and the remaining unabsorbed area.
@@ -159,12 +165,12 @@ class Panel {
       return;
     }
 
-    if (origin.dx == other.origin.dx && other.widthFactor >= widthFactor) {
-      double absorbedHeightFactor = this.heightFactor + other.heightFactor;
-      double widthFactor = this.widthFactor;
+    if (left == other.left && other.right >= right) {
+      double absorbedHeightFactor = _heightFactor + other._heightFactor;
+      double widthFactor = _widthFactor;
       FractionalOffset absorbedOrigin = new FractionalOffset(
-        origin.dx,
-        math.min(origin.dy, other.origin.dy),
+        left,
+        math.min(top, other.top),
       );
       panelAbsorbedResultCallback(
         new Panel(
@@ -173,19 +179,17 @@ class Panel {
           heightFactor: absorbedHeightFactor,
         ),
         new Panel(
-          origin:
-              new FractionalOffset(origin.dx + widthFactor, other.origin.dy),
-          widthFactor: other.widthFactor - widthFactor,
-          heightFactor: other.heightFactor,
+          origin: new FractionalOffset(right, other.top),
+          widthFactor: other._widthFactor - widthFactor,
+          heightFactor: other._heightFactor,
         ),
       );
-    } else if (origin.dy == other.origin.dy &&
-        other.heightFactor >= heightFactor) {
-      double absorbedWidthFactor = this.widthFactor + other.widthFactor;
-      double heightFactor = this.heightFactor;
+    } else if (top == other.top && other.bottom >= bottom) {
+      double absorbedWidthFactor = this._widthFactor + other._widthFactor;
+      double heightFactor = this._heightFactor;
       FractionalOffset absorbedOrigin = new FractionalOffset(
-        math.min(origin.dx, other.origin.dx),
-        origin.dy,
+        math.min(left, other.left),
+        top,
       );
       panelAbsorbedResultCallback(
         new Panel(
@@ -194,10 +198,9 @@ class Panel {
           heightFactor: heightFactor,
         ),
         new Panel(
-          origin:
-              new FractionalOffset(other.origin.dx, origin.dy + heightFactor),
-          widthFactor: other.widthFactor,
-          heightFactor: other.heightFactor - heightFactor,
+          origin: new FractionalOffset(other.left, bottom),
+          widthFactor: other._widthFactor,
+          heightFactor: other._heightFactor - heightFactor,
         ),
       );
     } else {
@@ -207,18 +210,18 @@ class Panel {
   }
 
   bool _overlaps(Panel other) {
-    Rect fractionalRect = new Rect.fromLTWH(
-      origin.dx,
-      origin.dy,
-      widthFactor,
-      heightFactor,
+    Rect fractionalRect = new Rect.fromLTRB(
+      left,
+      top,
+      right,
+      bottom,
     );
 
-    Rect otherFractionalRect = new Rect.fromLTWH(
-      other.origin.dx,
-      other.origin.dy,
-      other.widthFactor,
-      other.heightFactor,
+    Rect otherFractionalRect = new Rect.fromLTRB(
+      other.left,
+      other.top,
+      other.right,
+      other.bottom,
     );
 
     Rect intersection = fractionalRect.intersect(otherFractionalRect);
@@ -228,26 +231,22 @@ class Panel {
 
   /// Returns true if [other] is above [this] [Panel].
   bool isBelow(Panel other) =>
-      (other.origin.dy + other.heightFactor == origin.dy) &&
-      ((other.origin.dx >= origin.dx &&
-              other.origin.dx < origin.dx + widthFactor) ||
-          (other.origin.dx < origin.dx &&
-              other.origin.dx + other.widthFactor > origin.dx));
+      (other.bottom == top) &&
+      ((other.left >= left && other.left < right) ||
+          (other.left < left && other.right > left));
 
-  /// Returns true if [other] is to the left  of [this] [Panel].
+  /// Returns true if [other] is to the left of [this] [Panel].
   bool isRightOf(Panel other) =>
-      (other.origin.dx + other.widthFactor == origin.dx) &&
-      ((other.origin.dy >= origin.dy &&
-              other.origin.dy < origin.dy + heightFactor) ||
-          (other.origin.dy < origin.dy &&
-              other.origin.dy + other.heightFactor > origin.dy));
+      (other.right == left) &&
+      ((other.top >= top && other.top < bottom) ||
+          (other.top < top && other.bottom > top));
 
   /// Returns the area of the [Panel].
-  double get sizeFactor => widthFactor * heightFactor;
+  double get sizeFactor => _widthFactor * _heightFactor;
 
   @override
   String toString() {
-    return 'Panel(origin: $origin, widthFactor: $widthFactor, heightFactor: $heightFactor)';
+    return 'Panel(origin: $_origin, widthFactor: $_widthFactor, heightFactor: $_heightFactor)';
   }
 
   static void haveFullCoverage(List<Panel> panels) {
@@ -266,9 +265,7 @@ class Panel {
     // Next sum their areas - they should equal 1.0.
     int areaSum = 0;
     panels.forEach((Panel panel) {
-      areaSum +=
-          (panel.widthFactor * panel.heightFactor * _kGridLines * _kGridLines)
-              .round();
+      areaSum += (panel.sizeFactor * _kGridLines * _kGridLines).round();
     });
     if (areaSum != (_kGridLines.round() * _kGridLines.round())) {
       print('Area covered was not 1.0! $areaSum');

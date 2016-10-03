@@ -90,39 +90,46 @@ class Conductor extends StatelessWidget {
               return new Offstage(offstage: true);
             }
             StoryManager storyManager = InheritedStoryManager.of(context);
-            // NOTE: The Overlay *must* be a child of the LayoutBuilder
-            // due to https://github.com/flutter/flutter/issues/6119.
-            return new Overlay(
-              // We need a new key each time the max constraints change
-              // to ensure initialEntries is reused.
-              key: new GlobalObjectKey(
-                  constraints.maxWidth * constraints.maxHeight +
-                      constraints.maxWidth -
-                      constraints.maxHeight),
-              initialEntries: [
-                new OverlayEntry(
-                  builder: (BuildContext context) => new Stack(
-                        children: [
-                          // Story List.
-                          new Positioned(
-                            left: 0.0,
-                            right: 0.0,
-                            top: 0.0,
-                            bottom: _kMinimizedNowHeight,
-                            child: _getStoryList(storyManager, constraints),
-                          ),
+            Size fullSize = new Size(
+              constraints.maxWidth,
+              constraints.maxHeight - _kMinimizedNowHeight,
+            );
+            storyManager.normalize(size: fullSize);
 
-                          // Now.
-                          _getNow(storyManager),
-
-                          // Suggestions Overlay.
-                          _getSuggestionOverlay(storyManager, constraints),
-
-                          // Selected Suggestion Overlay.
-                          _getSelectedSuggestionOverlay(),
-                        ],
+            return new Stack(
+              children: [
+                new Positioned(
+                  left: 0.0,
+                  right: 0.0,
+                  top: 0.0,
+                  bottom: _kMinimizedNowHeight,
+                  // NOTE: The Overlay *must* be a child of the LayoutBuilder
+                  // due to https://github.com/flutter/flutter/issues/6119.
+                  // Story List.
+                  child: new Overlay(
+                    // We need a new key each time the max constraints change
+                    // to ensure initialEntries is reused.
+                    key: new GlobalObjectKey(
+                        constraints.maxWidth * constraints.maxHeight +
+                            constraints.maxWidth -
+                            constraints.maxHeight),
+                    initialEntries: [
+                      new OverlayEntry(
+                        builder: (BuildContext context) =>
+                            _getStoryList(storyManager, fullSize),
                       ),
+                    ],
+                  ),
                 ),
+
+                // Now.
+                _getNow(storyManager),
+
+                // Suggestions Overlay.
+                _getSuggestionOverlay(storyManager, fullSize),
+
+                // Selected Suggestion Overlay.
+                _getSelectedSuggestionOverlay(),
               ],
             );
           },
@@ -141,7 +148,7 @@ class Conductor extends StatelessWidget {
         },
       );
 
-  Widget _getStoryList(StoryManager storyManager, BoxConstraints constraints) =>
+  Widget _getStoryList(StoryManager storyManager, Size fullSize) =>
       new VerticalShifter(
         key: _verticalShifterKey,
         verticalShift: _kQuickSettingsHeightBump,
@@ -149,12 +156,8 @@ class Conductor extends StatelessWidget {
           key: _scrollLockerKey,
           child: new StoryList(
             scrollableKey: _scrollableKey,
-            multiColumn:
-                constraints.maxWidth > _kStoryListMultiColumnWidthThreshold,
-            parentSize: new Size(
-              constraints.maxWidth,
-              constraints.maxHeight - _kMinimizedNowHeight,
-            ),
+            multiColumn: fullSize.width > _kStoryListMultiColumnWidthThreshold,
+            parentSize: fullSize,
             quickSettingsHeightBump: _kQuickSettingsHeightBump,
             bottomPadding: _kMaximizedNowHeight - _kMinimizedNowHeight,
             onScroll: (double scrollOffset) =>
@@ -206,8 +209,7 @@ class Conductor extends StatelessWidget {
         ),
       );
 
-  Widget _getSuggestionOverlay(
-          StoryManager storyManager, BoxConstraints constraints) =>
+  Widget _getSuggestionOverlay(StoryManager storyManager, Size fullSize) =>
       new PeekingOverlay(
         key: _suggestionOverlayKey,
         peekHeight: _kSuggestionOverlayPeekHeight,
@@ -225,7 +227,7 @@ class Conductor extends StatelessWidget {
           key: _suggestionListKey,
           scrollableKey: _suggestionListScrollableKey,
           multiColumn:
-              constraints.maxWidth > _kSuggestionListMultiColumnWidthThreshold,
+              fullSize.width > _kSuggestionListMultiColumnWidthThreshold,
           onAskingStarted: () {
             _suggestionOverlayKey.currentState.show();
             _keyboardDeviceExtensionKey.currentState.show();

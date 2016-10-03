@@ -4,6 +4,8 @@
 
 import 'package:flutter/widgets.dart';
 
+import 'panel.dart';
+
 /// The representation of a Story.  A Story's contents are display as a [Widget]
 /// provided by [builder] while the size of a story in the [RecentList] is
 /// determined by [lastInteraction] and [cumulativeInteractionDuration].
@@ -20,6 +22,7 @@ class Story {
   final Object storyBarKeyObject;
   final Object clusterId;
   final Object clusterDraggableId;
+  final Panel panel;
 
   Story({
     this.id,
@@ -34,15 +37,19 @@ class Story {
     Object storyBarKeyObject,
     Object clusterId,
     Object clusterDraggableId,
+    Panel panel,
   })
       : this.storyBarKeyObject = storyBarKeyObject ?? new Object(),
         this.clusterId = clusterId ?? new Object(),
-        this.clusterDraggableId = clusterDraggableId ?? new Object();
+        this.clusterDraggableId = clusterDraggableId ?? new Object(),
+        this.panel = panel ?? new Panel();
 
   Story copyWith({
     DateTime lastInteraction,
     Duration cumulativeInteractionDuration,
     bool inactive,
+    Panel panel,
+    Object clusterDraggableId,
   }) =>
       new Story(
         id: this.id,
@@ -58,6 +65,7 @@ class Story {
         storyBarKeyObject: this.storyBarKeyObject,
         clusterId: this.clusterId,
         clusterDraggableId: this.clusterDraggableId,
+        panel: panel ?? this.panel,
       );
 
   @override
@@ -65,6 +73,9 @@ class Story {
 
   @override
   bool operator ==(other) => (other is Story && other.id == id);
+
+  @override
+  String toString() => 'Story( id: $id, title: $title, panel: $panel )';
 
   static int storyListHashCode(List<Story> stories) =>
       hashList(stories.map((Story s) => s.id));
