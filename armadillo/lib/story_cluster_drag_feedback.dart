@@ -56,12 +56,14 @@ class StoryClusterDragFeedback extends StatelessWidget {
                   storyCluster: storyCluster,
                   focusProgress: 0.0,
                   fullSize: fullSize,
+                  highlight: false,
                 )
               : new StoryCarousel(
                   key: new GlobalObjectKey(storyCluster.carouselId),
                   stories: storyCluster.stories,
                   focusProgress: 0.0,
                   fullSize: fullSize,
+                  highlight: false,
                 ),
         ),
       );

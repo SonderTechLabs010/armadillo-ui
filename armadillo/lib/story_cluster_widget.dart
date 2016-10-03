@@ -174,34 +174,20 @@ class StoryClusterWidget extends StatelessWidget {
     BuildContext context, {
     bool highlight: false,
   }) =>
-      new Container(
-        decoration: new BoxDecoration(
-          boxShadow: kElevationToShadow[12],
-          borderRadius:
-              new BorderRadius.circular(lerpDouble(4.0, 0.0, focusProgress)),
-        ),
-        foregroundDecoration: highlight
-            ? new BoxDecoration(
-                backgroundColor: _kTargetOverlayColor,
-              )
-            : null,
-        child: new ClipRRect(
-          borderRadius:
-              new BorderRadius.circular(lerpDouble(4.0, 0.0, focusProgress)),
-          child: multiColumn
-              ? new StoryPanels(
-                  storyCluster: storyCluster,
-                  focusProgress: focusProgress,
-                  fullSize: fullSize,
-                )
-              : new StoryCarousel(
-                  key: new GlobalObjectKey(storyCluster.carouselId),
-                  stories: storyCluster.stories,
-                  focusProgress: focusProgress,
-                  fullSize: fullSize,
-                ),
-        ),
-      );
+      multiColumn
+          ? new StoryPanels(
+              storyCluster: storyCluster,
+              focusProgress: focusProgress,
+              fullSize: fullSize,
+              highlight: highlight,
+            )
+          : new StoryCarousel(
+              key: new GlobalObjectKey(storyCluster.carouselId),
+              stories: storyCluster.stories,
+              focusProgress: focusProgress,
+              fullSize: fullSize,
+              highlight: highlight,
+            );
 
   /// The Story Title that hovers below the story itself.
   Widget get _inlineStoryTitle => new Container(

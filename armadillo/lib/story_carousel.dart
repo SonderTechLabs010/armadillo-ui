@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/widgets.dart';
+import 'dart:ui' show lerpDouble;
+
+import 'package:flutter/material.dart';
 
 import 'carousel.dart';
 import 'story.dart';
@@ -19,17 +21,20 @@ const double _kStoryBarMinimizedHeight = 12.0;
 const double _kStoryBarMaximizedHeight = 48.0;
 const double _kUnfocusedStoryMargin = 4.0;
 const double _kFocusedStoryMargin = 8.0;
+const Color _kTargetOverlayColor = const Color.fromARGB(128, 153, 234, 216);
 
 /// Displays up to four stories in a carousel layout.
 class StoryCarousel extends StatelessWidget {
   final List<Story> stories;
   final double focusProgress;
   final Size fullSize;
+  final bool highlight;
   StoryCarousel({
     Key key,
     this.stories,
     this.focusProgress,
     this.fullSize,
+    this.highlight,
   })
       : super(key: key);
 
@@ -44,28 +49,45 @@ class StoryCarousel extends StatelessWidget {
         locked: stories.length == 1,
       );
 
-  Widget _getStory(BuildContext context, Story story, Size size) => new Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // The story bar that pushes down the story.
-          new StoryBar(
-            key: StoryKeys.storyBarKey(story),
-            story: story,
-            minimizedHeight: _kStoryBarMinimizedHeight,
-            maximizedHeight: _kStoryBarMaximizedHeight,
-          ),
+  Widget _getStory(BuildContext context, Story story, Size size) =>
+      new Container(
+        decoration: new BoxDecoration(
+          boxShadow: kElevationToShadow[12],
+          borderRadius:
+              new BorderRadius.circular(lerpDouble(4.0, 0.0, focusProgress)),
+        ),
+        foregroundDecoration: highlight
+            ? new BoxDecoration(
+                backgroundColor: _kTargetOverlayColor,
+              )
+            : null,
+        child: new ClipRRect(
+          borderRadius:
+              new BorderRadius.circular(lerpDouble(4.0, 0.0, focusProgress)),
+          child: new Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // The story bar that pushes down the story.
+              new StoryBar(
+                key: StoryKeys.storyBarKey(story),
+                story: story,
+                minimizedHeight: _kStoryBarMinimizedHeight,
+                maximizedHeight: _kStoryBarMaximizedHeight,
+              ),
 
-          // The story itself.
-          new Flexible(
-            child: new Stack(
-              children: [
-                _getStoryContents(context, story, size),
-                _getTouchDetectorToHideStoryBar(story),
-                _getVerticalDragDetectorToShowStoryBar(story),
-              ],
-            ),
+              // The story itself.
+              new Flexible(
+                child: new Stack(
+                  children: [
+                    _getStoryContents(context, story, size),
+                    _getTouchDetectorToHideStoryBar(story),
+                    _getVerticalDragDetectorToShowStoryBar(story),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       );
 
   /// The scaled and clipped story.
