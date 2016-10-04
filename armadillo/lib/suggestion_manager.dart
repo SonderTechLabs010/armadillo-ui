@@ -185,9 +185,13 @@ class InheritedSuggestionManager
   /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
   /// returns true for the [InheritedSuggestionManager] returned by
   /// [BuildContext.inheritFromWidgetOfExactType].
-  static SuggestionManager of(BuildContext context) {
-    InheritedSuggestionManager inheritedSuggestionManager =
-        context.inheritFromWidgetOfExactType(InheritedSuggestionManager);
+  /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
+  /// to [SuggestionManager].
+  static SuggestionManager of(BuildContext context,
+      {bool rebuildOnChange: false}) {
+    InheritedSuggestionManager inheritedSuggestionManager = rebuildOnChange
+        ? context.inheritFromWidgetOfExactType(InheritedSuggestionManager)
+        : context.ancestorWidgetOfExactType(InheritedSuggestionManager);
     return inheritedSuggestionManager?.configManager;
   }
 }

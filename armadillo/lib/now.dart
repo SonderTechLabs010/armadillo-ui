@@ -213,7 +213,7 @@ class NowState extends TickingState<Now> {
                                     ),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: InheritedNowManager.of(context).user,
+                                  child: _nowManager(context).user,
                                 ),
                               ),
                             ),
@@ -223,9 +223,7 @@ class NowState extends TickingState<Now> {
                             padding: const EdgeInsets.only(top: 24.0),
                             child: new Opacity(
                               opacity: _fallAwayOpacity,
-                              child: InheritedNowManager
-                                  .of(context)
-                                  .userContextMaximized,
+                              child: _nowManager(context).userContextMaximized,
                             ),
                           ),
                           // Important Information when maximized.
@@ -236,8 +234,7 @@ class NowState extends TickingState<Now> {
                                 padding: const EdgeInsets.only(top: 16.0),
                                 child: new Opacity(
                                   opacity: _fallAwayOpacity,
-                                  child: InheritedNowManager
-                                      .of(context)
+                                  child: _nowManager(context)
                                       .importantInfoMaximized,
                                 ),
                               )),
@@ -253,8 +250,7 @@ class NowState extends TickingState<Now> {
                                   // don't use parent height as constraint
                                   maxHeight: double.INFINITY,
                                   minHeight: 0.0,
-                                  maxWidth: InheritedNowManager
-                                          .of(context)
+                                  maxWidth: _nowManager(context)
                                           .quickSettingsBackgroundMaximizedWidth -
                                       _kQuickSettingsHorizontalPadding * 2,
                                   minWidth: 0.0,
@@ -263,8 +259,7 @@ class NowState extends TickingState<Now> {
                                     child: new Center(
                                       child: new Container(
                                           key: _quickSettingsKey,
-                                          child: InheritedNowManager
-                                              .of(context)
+                                          child: _nowManager(context)
                                               .quickSettings),
                                     ),
                                   ),
@@ -292,12 +287,8 @@ class NowState extends TickingState<Now> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            InheritedNowManager
-                                .of(context)
-                                .userContextMinimized,
-                            InheritedNowManager
-                                .of(context)
-                                .importantInfoMinimized,
+                            _nowManager(context).userContextMinimized,
+                            _nowManager(context).importantInfoMinimized,
                           ],
                         ),
                       ),
@@ -370,10 +361,10 @@ class NowState extends TickingState<Now> {
       if (config.onQuickSettingsProgressChange != null) {
         config.onQuickSettingsProgressChange(_quickSettingsProgress);
       }
-      InheritedNowManager.of(context).quickSettingsProgress =
+      _nowManager(context, rebuildOnChange: false).quickSettingsProgress =
           _quickSettingsProgress;
-      InheritedNowManager.of(context).quickSettingsSlideUpProgress =
-          _quickSettingsSlideUpProgress;
+      _nowManager(context, rebuildOnChange: false)
+          .quickSettingsSlideUpProgress = _quickSettingsSlideUpProgress;
     }
 
     return continueTicking;
@@ -467,7 +458,7 @@ class NowState extends TickingState<Now> {
       lerpDouble(50.0, 4.0, _quickSettingsProgress);
 
   double get _quickSettingsBackgroundWidth =>
-      InheritedNowManager.of(context).quickSettingsBackgroundMaximizedWidth *
+      _nowManager(context).quickSettingsBackgroundMaximizedWidth *
       _quickSettingsProgress *
       (1.0 - _minimizationProgress);
 
@@ -526,9 +517,12 @@ class NowState extends TickingState<Now> {
   // (ie battery icon/desc | wifi icon/desc | network icon/desc)
   double get _importantInfoMaximizedWidth {
     double t = _quickSettingsProgress * (1.0 - _minimizationProgress);
-    double minWidth = InheritedNowManager.of(context).importantInfoMinWidth;
+    double minWidth = _nowManager(context).importantInfoMinWidth;
     double qsBackgroundMaximizedWidth =
-        InheritedNowManager.of(context).quickSettingsBackgroundMaximizedWidth;
+        _nowManager(context).quickSettingsBackgroundMaximizedWidth;
     return lerpDouble(minWidth, qsBackgroundMaximizedWidth, t);
   }
+
+  NowManager _nowManager(BuildContext context, {bool rebuildOnChange: true}) =>
+      InheritedNowManager.of(context, rebuildOnChange: rebuildOnChange);
 }

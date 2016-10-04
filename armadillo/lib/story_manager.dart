@@ -154,9 +154,12 @@ class InheritedStoryManager extends InheritedConfigManager<StoryManager> {
   /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
   /// returns true for the [InheritedStoryManager] returned by
   /// [BuildContext.inheritFromWidgetOfExactType].
-  static StoryManager of(BuildContext context) {
-    InheritedStoryManager inheritedStoryManager =
-        context.inheritFromWidgetOfExactType(InheritedStoryManager);
+  /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
+  /// to [StoryManager].
+  static StoryManager of(BuildContext context, {bool rebuildOnChange: false}) {
+    InheritedStoryManager inheritedStoryManager = rebuildOnChange
+        ? context.inheritFromWidgetOfExactType(InheritedStoryManager)
+        : context.ancestorWidgetOfExactType(InheritedStoryManager);
     return inheritedStoryManager?.configManager;
   }
 }

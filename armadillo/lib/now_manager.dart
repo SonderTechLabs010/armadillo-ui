@@ -234,9 +234,12 @@ class InheritedNowManager extends InheritedConfigManager<NowManager> {
   /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
   /// returns true for the [InheritedNowManager] returned by
   /// [BuildContext.inheritFromWidgetOfExactType].
-  static NowManager of(BuildContext context) {
-    InheritedNowManager inheritedNowManager =
-        context.inheritFromWidgetOfExactType(InheritedNowManager);
+  /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
+  /// to [NowManager].
+  static NowManager of(BuildContext context, {bool rebuildOnChange: false}) {
+    InheritedNowManager inheritedNowManager = rebuildOnChange
+        ? context.inheritFromWidgetOfExactType(InheritedNowManager)
+        : context.ancestorWidgetOfExactType(InheritedNowManager);
     return inheritedNowManager?.configManager;
   }
 }

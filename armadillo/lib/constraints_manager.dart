@@ -43,26 +43,3 @@ class ConstraintsManager extends ConfigManager {
 
   List<BoxConstraints> get constraints => _currentConstraints;
 }
-
-class InheritedConstraintManager
-    extends InheritedConfigManager<ConstraintsManager> {
-  InheritedConstraintManager({
-    Key key,
-    Widget child,
-    ConstraintsManager constraintsManager,
-  })
-      : super(
-          key: key,
-          child: child,
-          configManager: constraintsManager,
-        );
-
-  /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
-  /// returns true for the [InheritedConstraintManager] returned by
-  /// [BuildContext.inheritFromWidgetOfExactType].
-  static ConstraintsManager of(BuildContext context) {
-    InheritedConstraintManager inheritedConstraintManager =
-        context.inheritFromWidgetOfExactType(InheritedConstraintManager);
-    return inheritedConstraintManager?.configManager;
-  }
-}

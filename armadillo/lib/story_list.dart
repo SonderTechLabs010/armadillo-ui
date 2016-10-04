@@ -49,7 +49,7 @@ class StoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<StoryCluster> storyClusters = new List<StoryCluster>.from(
-      InheritedStoryManager.of(context).storyClusters,
+      InheritedStoryManager.of(context, rebuildOnChange: true).storyClusters,
     );
 
     // Remove clusters with any inactive stories.

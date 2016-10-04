@@ -201,7 +201,7 @@ class SuggestionListState extends State<SuggestionList> {
         child: new Block(
           scrollableKey: config.scrollableKey,
           children: InheritedSuggestionManager
-              .of(context)
+              .of(context, rebuildOnChange: true)
               .suggestions
               .map((Suggestion suggestion) => _createSuggestion(suggestion))
               .toList(),
@@ -209,8 +209,9 @@ class SuggestionListState extends State<SuggestionList> {
       );
 
   Widget _createTwoColumnBlock(BuildContext context) {
-    List<Suggestion> suggestions =
-        InheritedSuggestionManager.of(context).suggestions;
+    List<Suggestion> suggestions = InheritedSuggestionManager
+        .of(context, rebuildOnChange: true)
+        .suggestions;
     int minSuggestionsPerColumn = (suggestions.length / 2).floor();
     int additionalLeftSuggestions = suggestions.length % 2;
     int additionalRightSuggestions =
