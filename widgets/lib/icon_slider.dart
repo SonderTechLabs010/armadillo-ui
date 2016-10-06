@@ -454,7 +454,7 @@ class _RenderIconSlider extends RenderConstrainedBox
       // Don't fill the circle if you're drawing an image inside
       thumbStrokeWidth = 2.0;
       // Create a bigger circle if you have an image
-      thumbRadius += 5.0;
+      thumbRadius += 8.0;
     }
     if (value == 0) {
       // Don't fill the circle if you're drawing an image
@@ -529,22 +529,21 @@ class _RenderIconSlider extends RenderConstrainedBox
         _labelPainter.paint(canvas, labelOffset);
         return;
       } else {
-        final Color reactionBaseColor =
-            value == 0.0 ? _kActiveTrackColor : _activeColor;
-        final Paint reactionPaint = new Paint()
-          ..color = reactionBaseColor.withAlpha(kRadialReactionAlpha);
+        // Don't draw a reaction circle if you have an icon
+        if (thumbImage == null) {
+          final Color reactionBaseColor =
+              value == 0.0 ? _kActiveTrackColor : _activeColor;
+          final Paint reactionPaint = new Paint()
+            ..color = reactionBaseColor.withAlpha(kRadialReactionAlpha);
 
-        canvas.drawCircle(thumbCenter,
-            _kReactionRadiusTween.evaluate(_reaction), reactionPaint);
+          canvas.drawCircle(thumbCenter,
+              _kReactionRadiusTween.evaluate(_reaction), reactionPaint);
+        }
       }
     }
 
-    Paint thumbPaint = primaryPaint;
-
-    if (value == 0.0) {
-      // Use the neutral color is value is 0
-      thumbPaint = trackPaint;
-    }
+    // Use the neutral color to draw thumb circle
+    Paint thumbPaint = trackPaint;
 
     if (thumbStrokeWidth != 0.0) {
       // Set the style to stroke if we've set a non-zero stroke width
