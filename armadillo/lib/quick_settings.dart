@@ -32,7 +32,9 @@ const String _kBrightnessHighGrey600 =
     'packages/armadillo/res/ic_brightness_high_grey600.png';
 const String _kVolumeUpGrey600 =
     'packages/armadillo/res/ic_volume_up_grey600.png';
-const Color _kActiveSliderColor = const Color.fromARGB(255, 153, 234, 216);
+
+const Color _kTurquoise = const Color(0xFF1DE9B6);
+const Color _kActiveSliderColor = _kTurquoise;
 
 /// If [QuickSettings size] is wider than this, the contents will be laid out
 /// into multiple columns instead of a single column.
