@@ -233,7 +233,7 @@ BoxConstraints _getAdditionalConstraints(String label) {
 }
 
 class _RenderIconSlider extends RenderConstrainedBox
-    implements SemanticActionHandler {
+    implements SemanticsActionHandler {
   _RenderIconSlider({
     double value,
     int divisions,
@@ -579,23 +579,23 @@ class _RenderIconSlider extends RenderConstrainedBox
   }
 
   @override
-  bool get isSemanticBoundary => isInteractive;
+  bool get isSemanticsBoundary => isInteractive;
 
   @override
-  SemanticAnnotator get semanticAnnotator => _annotate;
+  SemanticsAnnotator get semanticAnnotator => _annotate;
 
   void _annotate(SemanticsNode semantics) {
     if (isInteractive) semantics.addAdjustmentActions();
   }
 
   @override
-  void performAction(SemanticAction action) {
+  void performAction(SemanticsAction action) {
     switch (action) {
-      case SemanticAction.increase:
+      case SemanticsAction.increase:
         if (isInteractive)
           onChanged((value + _kAdjustmentUnit).clamp(0.0, 1.0));
         break;
-      case SemanticAction.decrease:
+      case SemanticsAction.decrease:
         if (isInteractive)
           onChanged((value - _kAdjustmentUnit).clamp(0.0, 1.0));
         break;
