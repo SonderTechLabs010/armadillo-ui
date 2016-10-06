@@ -176,7 +176,6 @@ class NowState extends TickingState<Now> {
                     ),
                   ),
                 ),
-
                 // User Image, User Context Text, and Important Information when maximized.
                 new Positioned(
                   left: _kQuickSettingsHorizontalPadding,
@@ -185,46 +184,8 @@ class NowState extends TickingState<Now> {
                   child: new Center(
                     child: new Column(
                       children: [
-                        // User Image.
-                        new Stack(children: [
-                          // Shadow.
-                          new Opacity(
-                            opacity: _quickSettingsProgress,
-                            child: new Container(
-                              width: _userImageSize,
-                              height: _userImageSize,
-                              decoration: new BoxDecoration(
-                                boxShadow: kElevationToShadow[12],
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                          // The actual user image.
-                          new ClipOval(
-                            child: new GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () {
-                                if (!_revealingQuickSettings) {
-                                  showQuickSettings();
-                                } else {
-                                  hideQuickSettings();
-                                }
-                              },
-                              child: new Container(
-                                width: _userImageSize,
-                                height: _userImageSize,
-                                foregroundDecoration: new BoxDecoration(
-                                  border: new Border.all(
-                                    color: new Color(0xFFFFFFFF),
-                                    width: _userImageBorderWidth,
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: _nowManager(context).user,
-                              ),
-                            ),
-                          ),
-                        ]),
+                        // User Profile image
+                        _buildUserImage(),
                         // User Context Text when maximized.
                         new Padding(
                           padding: const EdgeInsets.only(top: 24.0),
@@ -246,101 +207,141 @@ class NowState extends TickingState<Now> {
                                         _quickSettingsBackgroundMaximizedWidth),
                               ),
                             )),
-                        // Quick Settings.
-                        new Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 0.0, vertical: 8.0),
-                          child: new Container(
-                            height: _quickSettingsHeight,
-                            width: _quickSettingsBackgroundWidth,
-                            child: new ClipRect(
-                              child: new OverflowBox(
-                                // don't use parent height as constraint
-                                maxHeight: double.INFINITY,
-                                minHeight: 0.0,
-                                maxWidth:
-                                    _quickSettingsBackgroundMaximizedWidth,
-                                minWidth: 0.0,
-                                child: new Opacity(
-                                  opacity: _quickSettingsSlideUpProgress,
-                                  child: new Center(
-                                    child: new Container(
-                                        key: _quickSettingsKey,
-                                        child:
-                                            _nowManager(context).quickSettings),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                        // Quick Settings
+                        _buildQuickSettings(),
                       ],
                     ),
                   ),
                 ),
 
                 // User Context Text and Important Information when minimized.
-                new Align(
-                  alignment: FractionalOffset.bottomCenter,
-                  child: new Container(
-                    height: config.minHeight,
-                    padding: new EdgeInsets.symmetric(
-                        horizontal: 8.0 + _slideInDistance),
-                    child: new Opacity(
-                      opacity: 0.6 *
-                          _slideInProgress *
-                          _nowMinimizedInfoFader.opacity,
-                      child: new Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _nowManager(context).userContextMinimized,
-                          _nowManager(context).importantInfoMinimized,
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                _buildMinimizedUserContextTextAndImportantInformation(),
 
-                // Button bar.  These buttons are only enabled when we're nearly
-                // fully minimized.
-                new Offstage(
-                  offstage: _buttonTapDisabled,
-                  child: new GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onVerticalDragUpdate: config.onBarVerticalDragUpdate,
-                    onVerticalDragEnd: config.onBarVerticalDragEnd,
-                    child: new Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        new Flexible(
-                            child: new GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTapDown: (_) {
-                            _nowMinimizedInfoFader.fadeIn();
-                          },
-                        )),
-                        new GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: config.onReturnToOriginButtonTap,
-                          child: new Container(width: config.minHeight),
-                        ),
-                        new Flexible(
-                            child: new GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTapDown: (_) {
-                            _nowMinimizedInfoFader.fadeIn();
-                          },
-                        )),
-                      ],
-                    ),
-                  ),
-                ),
+                // Minimized button bar gesture detector. Only enabled when
+                // we're nearly fully minimized.
+                _buildMinimizedButtonBarGestureDetector(),
               ],
             ),
           );
           return now;
         },
+      );
+
+  Widget _buildUserImage() => new Stack(children: [
+        // Shadow.
+        new Opacity(
+          opacity: _quickSettingsProgress,
+          child: new Container(
+            width: _userImageSize,
+            height: _userImageSize,
+            decoration: new BoxDecoration(
+              boxShadow: kElevationToShadow[12],
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+        // The actual user image.
+        new ClipOval(
+          child: new GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              if (!_revealingQuickSettings) {
+                showQuickSettings();
+              } else {
+                hideQuickSettings();
+              }
+            },
+            child: new Container(
+              width: _userImageSize,
+              height: _userImageSize,
+              foregroundDecoration: new BoxDecoration(
+                border: new Border.all(
+                  color: new Color(0xFFFFFFFF),
+                  width: _userImageBorderWidth,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: _nowManager(context).user,
+            ),
+          ),
+        ),
+      ]);
+
+  Widget _buildQuickSettings() => new Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
+        child: new Container(
+          height: _quickSettingsHeight,
+          width: _quickSettingsBackgroundWidth,
+          child: new ClipRect(
+            child: new OverflowBox(
+              // don't use parent height as constraint
+              maxHeight: double.INFINITY,
+              minHeight: 0.0,
+              maxWidth: _quickSettingsBackgroundMaximizedWidth,
+              minWidth: 0.0,
+              child: new Opacity(
+                opacity: _quickSettingsSlideUpProgress,
+                child: new Center(
+                  child: new Container(
+                      key: _quickSettingsKey,
+                      child: _nowManager(context).quickSettings),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+  Widget _buildMinimizedUserContextTextAndImportantInformation() => new Align(
+        alignment: FractionalOffset.bottomCenter,
+        child: new Container(
+          height: config.minHeight,
+          padding: new EdgeInsets.symmetric(horizontal: 8.0 + _slideInDistance),
+          child: new Opacity(
+            opacity: 0.6 * _slideInProgress * _nowMinimizedInfoFader.opacity,
+            child: new Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _nowManager(context).userContextMinimized,
+                _nowManager(context).importantInfoMinimized,
+              ],
+            ),
+          ),
+        ),
+      );
+
+  Widget _buildMinimizedButtonBarGestureDetector() => new Offstage(
+        offstage: _buttonTapDisabled,
+        child: new GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onVerticalDragUpdate: config.onBarVerticalDragUpdate,
+          onVerticalDragEnd: config.onBarVerticalDragEnd,
+          child: new Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              new Flexible(
+                  child: new GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (_) {
+                  _nowMinimizedInfoFader.fadeIn();
+                },
+              )),
+              new GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: config.onReturnToOriginButtonTap,
+                child: new Container(width: config.minHeight),
+              ),
+              new Flexible(
+                  child: new GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (_) {
+                  _nowMinimizedInfoFader.fadeIn();
+                },
+              )),
+            ],
+          ),
+        ),
       );
 
   @override
