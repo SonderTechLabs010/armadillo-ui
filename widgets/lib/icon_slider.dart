@@ -172,6 +172,7 @@ class _IconSliderRenderObjectWidget extends LeafRenderObjectWidget {
         label: label,
         activeColor: activeColor,
         thumbImage: thumbImage,
+        configuration: configuration,
         onChanged: onChanged,
         vsync: vsync,
       );
@@ -187,9 +188,9 @@ class _IconSliderRenderObjectWidget extends LeafRenderObjectWidget {
       ..thumbImage = thumbImage
       ..configuration = configuration
       ..onChanged = onChanged;
+      // Ticker provider cannot change since there's a 1:1 relationship between
+      // the _SliderRenderObjectWidget object and the _SliderState object.
   }
-  // Ticker provider cannot change since there's a 1:1 relationship between
-  // the _SliderRenderObjectWidget object and the _SliderState object.
 }
 
 const double _kThumbRadius = 6.0;
