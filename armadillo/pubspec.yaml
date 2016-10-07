@@ -6,11 +6,19 @@ name: armadillo
 dependencies:
   flutter:
     sdk: flutter
+  gallery:
+    path: ../../modules/gallery
   intl: ^0.14.0
   keyboard:
     path: ../keyboard
+  models:
+    path: ../../modules/packages/models
   sysui_widgets:
     path: ../widgets
+  util:
+    path: ../../modules/packages/util
+  widgets:
+    path: ../../modules/packages/widgets
 dev_dependencies:
   flutter_test:
     sdk: flutter

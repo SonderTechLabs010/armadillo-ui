@@ -1,7 +1,7 @@
 {
   "stories": [
     {
-      "id": "story_01",
+      "id": "story_00",
       "title": "Story Alpha",
       "color": "0xFFFF5722",
       "avatar": "packages/armadillo/res/User.png",
@@ -10,37 +10,37 @@
       ],
       "lastInteraction": "0",
       "culmulativeInteraction": "0",
-      "content": "packages/armadillo/res/Armadillo.png",
-      "contentWide": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png",
+        "imageWide": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
-      "id": "story_02",
-      "title": "Story Beta",
+      "id": "story_01",
+      "title": "Inbox",
       "color": "0xFFFF9800",
       "avatar": "packages/armadillo/res/User.png",
       "icons": [
-        "packages/armadillo/res/flutter-mark-square-100.png",
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
       "lastInteraction": "5",
       "culmulativeInteraction": "10",
-      "content": "packages/armadillo/res/Armadillo.png",
-      "contentWide": "packages/armadillo/res/Armadillo.png"
+      "module": "email/inbox",
+      "state": {}
     },
     {
-      "id": "story_04",
+      "id": "story_02",
       "title": "Story Delta",
       "color": "0xFFFFEB3B",
       "avatar": "packages/armadillo/res/User.png",
       "icons": [
-        "packages/armadillo/res/flutter-mark-square-100.png",
-        "packages/armadillo/res/flutter-mark-square-100.png",
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
       "lastInteraction": "10",
       "culmulativeInteraction": "20",
-      "content": "packages/armadillo/res/Armadillo.png",
-      "contentWide": "packages/armadillo/res/Armadillo.png"
+      "module": "email/thread",
+      "state": {}
     },
     {
       "id": "story_03",
@@ -48,15 +48,12 @@
       "color": "0xFFFFC107",
       "avatar": "packages/armadillo/res/User.png",
       "icons": [
-        "packages/armadillo/res/flutter-mark-square-100.png",
-        "packages/armadillo/res/flutter-mark-square-100.png",
-        "packages/armadillo/res/flutter-mark-square-100.png",
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
       "lastInteraction": "20",
       "culmulativeInteraction": "30",
-      "content": "packages/armadillo/res/Armadillo.png",
-      "contentWide": "packages/armadillo/res/Armadillo.png"
+      "module": "email/menu",
+      "state": {}
     },
     {
       "id": "story_05",
@@ -64,16 +61,12 @@
       "color": "0xFFCDDC39",
       "avatar": "packages/armadillo/res/User.png",
       "icons": [
-        "packages/armadillo/res/flutter-mark-square-100.png",
-        "packages/armadillo/res/flutter-mark-square-100.png",
-        "packages/armadillo/res/flutter-mark-square-100.png",
-        "packages/armadillo/res/flutter-mark-square-100.png",
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
       "lastInteraction": "40",
       "culmulativeInteraction": "40",
-      "content": "packages/armadillo/res/Armadillo.png",
-      "contentWide": "packages/armadillo/res/Armadillo.png"
+      "module": "email/editor",
+      "state": {}
     },
     {
       "id": "story_07",
@@ -90,7 +83,10 @@
       ],
       "lastInteraction": "80",
       "culmulativeInteraction": "50",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
       "id": "story_06",
@@ -108,7 +104,10 @@
       ],
       "lastInteraction": "160",
       "culmulativeInteraction": "60",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
       "id": "story_08",
@@ -127,7 +126,10 @@
       ],
       "lastInteraction": "320",
       "culmulativeInteraction": "0",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
       "id": "story_09",
@@ -139,7 +141,10 @@
       ],
       "lastInteraction": "640",
       "culmulativeInteraction": "10",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
       "id": "story_10",
@@ -151,7 +156,10 @@
       ],
       "lastInteraction": "1280",
       "culmulativeInteraction": "20",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
       "id": "story_11",
@@ -163,7 +171,10 @@
       ],
       "lastInteraction": "2560",
       "culmulativeInteraction": "30",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
       "id": "story_12",
@@ -175,7 +186,10 @@
       ],
       "lastInteraction": "5120",
       "culmulativeInteraction": "40",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
       "id": "story_13",
@@ -187,7 +201,10 @@
       ],
       "lastInteraction": "10000",
       "culmulativeInteraction": "50",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
       "id": "story_14",
@@ -199,7 +216,10 @@
       ],
       "lastInteraction": "10000",
       "culmulativeInteraction": "60",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
       "id": "story_15",
@@ -211,7 +231,10 @@
       ],
       "lastInteraction": "10000",
       "culmulativeInteraction": "0",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
       "id": "story_16",
@@ -223,7 +246,10 @@
       ],
       "lastInteraction": "10000",
       "culmulativeInteraction": "10",
-      "content": "packages/armadillo/res/Armadillo.png"
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      }
     },
     {
       "id": "story_inactive",
@@ -235,7 +261,10 @@
       ],
       "lastInteraction": "10000",
       "culmulativeInteraction": "10",
-      "content": "packages/armadillo/res/Armadillo.png",
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/Armadillo.png"
+      },
       "inactive": "true"
     }
   ],

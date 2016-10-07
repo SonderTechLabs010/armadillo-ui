@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 
 import 'config_manager.dart';
 import 'story.dart';
+import 'story_builder.dart';
 import 'story_cluster.dart';
 import 'suggestion_manager.dart';
 
@@ -30,46 +31,9 @@ class StoryManager extends ConfigManager {
 
       // Load stories
       _storyClusters = decodedJson["stories"]
-          .map(
-            (Map<String, Object> story) => new StoryCluster(stories: [
-                  new Story(
-                    id: new ValueKey(story['id']),
-                    builder: (_) => new LayoutBuilder(
-                          builder: (BuildContext context,
-                                  BoxConstraints constraints) =>
-                              new Image.asset(
-                                (constraints.maxWidth > constraints.maxHeight)
-                                    ? story['contentWide'] ?? story['content']
-                                    : story['content'],
-                                alignment: FractionalOffset.topCenter,
-                                fit: ImageFit.cover,
-                              ),
-                        ),
-                    title: story['title'],
-                    icons: (story['icons'] as List<String>)
-                        .map(
-                          (String icon) => (BuildContext context) =>
-                              new Image.asset(icon,
-                                  fit: ImageFit.cover, color: Colors.white),
-                        )
-                        .toList(),
-                    avatar: (_) => new Image.asset(
-                          story['avatar'],
-                          fit: ImageFit.cover,
-                        ),
-                    lastInteraction: new DateTime.now().subtract(
-                      new Duration(
-                        seconds: int.parse(story['lastInteraction']),
-                      ),
-                    ),
-                    cumulativeInteractionDuration: new Duration(
-                      minutes: int.parse(story['culmulativeInteraction']),
-                    ),
-                    themeColor: new Color(int.parse(story['color'])),
-                    inactive: 'true' == (story['inactive'] ?? 'false'),
-                  ),
-                ]),
-          )
+          .map((Map<String, Object> story) => new StoryCluster(stories: [
+                storyBuilder(story),
+              ]))
           .toList();
 
       notifyListeners();

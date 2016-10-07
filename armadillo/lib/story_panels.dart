@@ -254,7 +254,10 @@ class StoryPanels extends StatelessWidget {
 
           // The story itself.
           new Flexible(
-            child: _getStoryContents(context, story, size),
+            child: new Container(
+              decoration: new BoxDecoration(backgroundColor: story.themeColor),
+              child: _getStoryContents(context, story, size),
+            ),
           ),
         ],
       );
