@@ -25,6 +25,7 @@ class SuggestionManager extends ConfigManager {
   List<Suggestion> _currentSuggestions = const <Suggestion>[];
   StoryCluster _activeStoryCluster;
   String _askText;
+  bool _asking = false;
 
   void load(AssetBundle assetBundle) {
     assetBundle.loadString(_kJsonUrl).then((String json) {
@@ -110,6 +111,11 @@ class SuggestionManager extends ConfigManager {
     _updateSuggestions();
   }
 
+  set asking(bool asking) {
+    _asking = asking;
+    _updateSuggestions();
+  }
+
   /// Updates the [suggestions] based on the currently focused storyCluster].  If no
   /// story is in focus, [storyCluster] should be null.
   void storyClusterFocusChanged(StoryCluster storyCluster) {
@@ -119,21 +125,25 @@ class SuggestionManager extends ConfigManager {
 
   void _updateSuggestions() {
     if (_askText?.isEmpty ?? true) {
-      List<Suggestion> suggestions = <Suggestion>[];
-      if (_activeStoryCluster != null) {
-        _activeStoryCluster.stories.forEach((Story story) {
-          if (_storySuggestionsMap[story.id] != null) {
-            _storySuggestionsMap[story.id].forEach((Suggestion suggestion) {
-              if (!suggestions.contains(suggestion)) {
-                suggestions.add(suggestion);
-              }
-            });
-          }
-        });
+      if (_asking) {
+        _currentSuggestions = [];
+      } else {
+        List<Suggestion> suggestions = <Suggestion>[];
+        if (_activeStoryCluster != null) {
+          _activeStoryCluster.stories.forEach((Story story) {
+            if (_storySuggestionsMap[story.id] != null) {
+              _storySuggestionsMap[story.id].forEach((Suggestion suggestion) {
+                if (!suggestions.contains(suggestion)) {
+                  suggestions.add(suggestion);
+                }
+              });
+            }
+          });
+        }
+        _currentSuggestions = suggestions.isNotEmpty
+            ? suggestions
+            : _storySuggestionsMap[new ValueKey('none')];
       }
-      _currentSuggestions = suggestions.isNotEmpty
-          ? suggestions
-          : _storySuggestionsMap[new ValueKey('none')];
     } else {
       List<Suggestion> suggestions = new List<Suggestion>.from(
           _storySuggestionsMap[new ValueKey('ask')] ??

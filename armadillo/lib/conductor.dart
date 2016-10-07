@@ -85,44 +85,47 @@ class Conductor extends StatelessWidget {
   Widget build(BuildContext context) => new DeviceExtender(
         deviceExtensions: [_getKeyboard()],
         child: new LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) =>
-              (constraints.maxWidth == 0.0 || constraints.maxHeight == 0.0)
-                  ? new Offstage(offstage: true)
-                  // NOTE: The Overlay *must* be a child of the LayoutBuilder
-                  // due to https://github.com/flutter/flutter/issues/6119.
-                  : new Overlay(
-                      // We need a new key each time the max constraints change
-                      // to ensure initialEntries is reused.
-                      key: new GlobalObjectKey(
-                          constraints.maxWidth * constraints.maxHeight +
-                              constraints.maxWidth -
-                              constraints.maxHeight),
-                      initialEntries: [
-                        new OverlayEntry(
-                          builder: (BuildContext context) => new Stack(
-                                children: [
-                                  // Story List.
-                                  new Positioned(
-                                    left: 0.0,
-                                    right: 0.0,
-                                    top: 0.0,
-                                    bottom: _kMinimizedNowHeight,
-                                    child: _getStoryList(context, constraints),
-                                  ),
+          builder: (BuildContext context, BoxConstraints constraints) {
+            if (constraints.maxWidth == 0.0 || constraints.maxHeight == 0.0) {
+              return new Offstage(offstage: true);
+            }
+            StoryManager storyManager = InheritedStoryManager.of(context);
+            // NOTE: The Overlay *must* be a child of the LayoutBuilder
+            // due to https://github.com/flutter/flutter/issues/6119.
+            return new Overlay(
+              // We need a new key each time the max constraints change
+              // to ensure initialEntries is reused.
+              key: new GlobalObjectKey(
+                  constraints.maxWidth * constraints.maxHeight +
+                      constraints.maxWidth -
+                      constraints.maxHeight),
+              initialEntries: [
+                new OverlayEntry(
+                  builder: (BuildContext context) => new Stack(
+                        children: [
+                          // Story List.
+                          new Positioned(
+                            left: 0.0,
+                            right: 0.0,
+                            top: 0.0,
+                            bottom: _kMinimizedNowHeight,
+                            child: _getStoryList(storyManager, constraints),
+                          ),
 
-                                  // Now.
-                                  _getNow(context),
+                          // Now.
+                          _getNow(storyManager),
 
-                                  // Suggestions Overlay.
-                                  _getSuggestionOverlay(context, constraints),
+                          // Suggestions Overlay.
+                          _getSuggestionOverlay(storyManager, constraints),
 
-                                  // Selected Suggestion Overlay.
-                                  _getSelectedSuggestionOverlay(),
-                                ],
-                              ),
-                        ),
-                      ],
-                    ),
+                          // Selected Suggestion Overlay.
+                          _getSelectedSuggestionOverlay(),
+                        ],
+                      ),
+                ),
+              ],
+            );
+          },
         ),
       );
 
@@ -138,7 +141,7 @@ class Conductor extends StatelessWidget {
         },
       );
 
-  Widget _getStoryList(BuildContext context, BoxConstraints constraints) =>
+  Widget _getStoryList(StoryManager storyManager, BoxConstraints constraints) =>
       new VerticalShifter(
         key: _verticalShifterKey,
         verticalShift: _kQuickSettingsHeightBump,
@@ -162,7 +165,7 @@ class Conductor extends StatelessWidget {
               _minimizeNow();
             },
             onStoryClusterFocusCompleted: (StoryCluster storyCluster) {
-              _focusStoryCluster(context, storyCluster);
+              _focusStoryCluster(storyManager, storyCluster);
             },
           ),
         ),
@@ -170,7 +173,7 @@ class Conductor extends StatelessWidget {
 
   // We place Now in a RepaintBoundary as its animations
   // don't require its parent and siblings to redraw.
-  Widget _getNow(BuildContext context) => new RepaintBoundary(
+  Widget _getNow(StoryManager storyManager) => new RepaintBoundary(
         child: new Now(
           key: _nowKey,
           minHeight: _kMinimizedNowHeight,
@@ -179,7 +182,7 @@ class Conductor extends StatelessWidget {
           onQuickSettingsProgressChange: (double quickSettingsProgress) =>
               _verticalShifterKey.currentState.shiftProgress =
                   quickSettingsProgress,
-          onReturnToOriginButtonTap: () => _goToOrigin(context),
+          onReturnToOriginButtonTap: () => _goToOrigin(storyManager),
           onQuickSettingsMaximized: () {
             // When quick settings starts being shown, scroll to 0.0.
             _scrollableKey.currentState.scrollTo(
@@ -204,7 +207,7 @@ class Conductor extends StatelessWidget {
       );
 
   Widget _getSuggestionOverlay(
-          BuildContext context, BoxConstraints constraints) =>
+          StoryManager storyManager, BoxConstraints constraints) =>
       new PeekingOverlay(
         key: _suggestionOverlayKey,
         peekHeight: _kSuggestionOverlayPeekHeight,
@@ -242,7 +245,7 @@ class Conductor extends StatelessWidget {
                           onSuggestionExpanded: (Suggestion suggestion) =>
                               _onSuggestionExpanded(
                                 suggestion,
-                                context,
+                                storyManager,
                               ),
                           minimizedNowBarHeight: _kMinimizedNowHeight,
                         )
@@ -252,7 +255,7 @@ class Conductor extends StatelessWidget {
                           onSuggestionExpanded: (Suggestion suggestion) =>
                               _onSuggestionExpanded(
                                 suggestion,
-                                context,
+                                storyManager,
                               ),
                         ),
             );
@@ -267,28 +270,26 @@ class Conductor extends StatelessWidget {
         key: _selectedSuggestionOverlayKey,
       );
 
-  void _defocus(BuildContext context) {
+  void _defocus(StoryManager storyManager) {
     // Unfocus all story clusters.
-    InheritedStoryManager
-        .of(context)
-        .storyClusters
-        .forEach(_unfocusStoryCluster);
+    storyManager.storyClusters.forEach(_unfocusStoryCluster);
 
     // Unlock scrolling.
     _scrollLockerKey.currentState.unlock();
     _scrollableKey.currentState.scrollTo(0.0);
   }
 
-  void _focusStoryCluster(BuildContext context, StoryCluster storyCluster) {
-    InheritedStoryManager
-        .of(context)
-        .storyClusters
+  void _focusStoryCluster(
+    StoryManager storyManager,
+    StoryCluster storyCluster,
+  ) {
+    storyManager.storyClusters
         .where((StoryCluster s) => s.id != storyCluster.id)
         .forEach(_unfocusStoryCluster);
 
     // Tell the [StoryManager] the story is now in focus.  This will move the
     // [Story] to the front of the [StoryList].
-    InheritedStoryManager.of(context).interactionStarted(storyCluster);
+    storyManager.interactionStarted(storyCluster);
 
     // Ensure the focused story is completely expanded.
     StoryKeys
@@ -318,17 +319,15 @@ class Conductor extends StatelessWidget {
     _suggestionOverlayKey.currentState.hide();
   }
 
-  void _goToOrigin(BuildContext context) {
-    _defocus(context);
+  void _goToOrigin(StoryManager storyManager) {
+    _defocus(storyManager);
     _nowKey.currentState.maximize();
-    InheritedStoryManager.of(context).interactionStopped();
+    storyManager.interactionStopped();
   }
 
-  void _onSuggestionExpanded(Suggestion suggestion, BuildContext context) {
-    List<StoryCluster> targetStoryClusters = InheritedStoryManager
-        .of(context)
-        .storyClusters
-        .where((StoryCluster storyCluster) {
+  void _onSuggestionExpanded(Suggestion suggestion, StoryManager storyManager) {
+    List<StoryCluster> targetStoryClusters =
+        storyManager.storyClusters.where((StoryCluster storyCluster) {
       bool result = false;
       storyCluster.stories.forEach((Story story) {
         if (story.id == suggestion.selectionStoryId) {
@@ -343,11 +342,11 @@ class Conductor extends StatelessWidget {
     if (targetStoryClusters.length != 1) {
       print(
           'WARNING: Found ${targetStoryClusters.length} story clusters with a story with id ${suggestion.selectionStoryId}. Returning to origin.');
-      _goToOrigin(context);
+      _goToOrigin(storyManager);
       _nowKey.currentState.maximize();
     } else {
       // Focus on the story cluster.
-      _focusStoryCluster(context, targetStoryClusters[0]);
+      _focusStoryCluster(storyManager, targetStoryClusters[0]);
     }
 
     // Unhide selected suggestion in suggestion list.

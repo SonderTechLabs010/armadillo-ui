@@ -91,6 +91,7 @@ class SuggestionListState extends State<SuggestionList> {
   void stopAsking() {
     setState(() {
       _asking = false;
+      InheritedSuggestionManager.of(context).asking = _asking;
     });
   }
 
@@ -122,6 +123,7 @@ class SuggestionListState extends State<SuggestionList> {
                     onTap: () {
                       setState(() {
                         _asking = !_asking;
+                        InheritedSuggestionManager.of(context).asking = _asking;
                         if (_asking) {
                           if (config.onAskingStarted != null) {
                             config.onAskingStarted();
@@ -157,6 +159,7 @@ class SuggestionListState extends State<SuggestionList> {
                     behavior: HitTestBehavior.opaque,
                     onTap: () {
                       _asking = !_asking;
+                      InheritedSuggestionManager.of(context).asking = _asking;
                       if (_asking) {
                         if (config.onAskingStarted != null) {
                           config.onAskingStarted();
