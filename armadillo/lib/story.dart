@@ -10,7 +10,6 @@ import 'package:flutter/widgets.dart';
 class Story {
   final Object id;
   final WidgetBuilder builder;
-  final WidgetBuilder wideBuilder;
   final List<WidgetBuilder> icons;
   final WidgetBuilder avatar;
   final String title;
@@ -25,7 +24,6 @@ class Story {
   Story({
     this.id,
     this.builder,
-    this.wideBuilder,
     this.title: '',
     this.icons: const <WidgetBuilder>[],
     this.avatar,
@@ -49,7 +47,6 @@ class Story {
       new Story(
         id: this.id,
         builder: this.builder,
-        wideBuilder: this.wideBuilder,
         lastInteraction: lastInteraction ?? this.lastInteraction,
         cumulativeInteractionDuration:
             cumulativeInteractionDuration ?? this.cumulativeInteractionDuration,

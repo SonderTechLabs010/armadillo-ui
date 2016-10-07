@@ -268,7 +268,7 @@ class StoryPanels extends StatelessWidget {
         child: new SizedBox(
           width: size.width,
           height: size.height - _kStoryBarMaximizedHeight,
-          child: story.wideBuilder(context),
+          child: story.builder(context),
         ),
       );
 }

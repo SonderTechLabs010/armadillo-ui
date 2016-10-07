@@ -34,15 +34,16 @@ class StoryManager extends ConfigManager {
             (Map<String, Object> story) => new StoryCluster(stories: [
                   new Story(
                     id: new ValueKey(story['id']),
-                    builder: (_) => new Image.asset(
-                          story['content'],
-                          alignment: FractionalOffset.topCenter,
-                          fit: ImageFit.cover,
-                        ),
-                    wideBuilder: (_) => new Image.asset(
-                          story['contentWide'] ?? story['content'],
-                          alignment: FractionalOffset.topCenter,
-                          fit: ImageFit.cover,
+                    builder: (_) => new LayoutBuilder(
+                          builder: (BuildContext context,
+                                  BoxConstraints constraints) =>
+                              new Image.asset(
+                                (constraints.maxWidth > constraints.maxHeight)
+                                    ? story['contentWide'] ?? story['content']
+                                    : story['content'],
+                                alignment: FractionalOffset.topCenter,
+                                fit: ImageFit.cover,
+                              ),
                         ),
                     title: story['title'],
                     icons: (story['icons'] as List<String>)
