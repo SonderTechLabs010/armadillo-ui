@@ -43,6 +43,7 @@ class Now extends StatefulWidget {
   final double quickSettingsHeightBump;
   final OnQuickSettingsProgressChange onQuickSettingsProgressChange;
   final VoidCallback onReturnToOriginButtonTap;
+  final VoidCallback onShowQuickSettingsOverlay;
   final VoidCallback onMinimize;
   final VoidCallback onMaximize;
   final VoidCallback onQuickSettingsMaximized;
@@ -60,6 +61,7 @@ class Now extends StatefulWidget {
     this.quickSettingsHeightBump,
     this.onQuickSettingsProgressChange,
     this.onReturnToOriginButtonTap,
+    this.onShowQuickSettingsOverlay,
     this.onMinimize,
     this.onMaximize,
     this.onQuickSettingsMaximized,
@@ -95,6 +97,8 @@ class NowState extends TickingState<Now> {
 
   final GlobalKey _quickSettingsKey = new GlobalKey();
   final GlobalKey _importantInfoMaximizedKey = new GlobalKey();
+  final GlobalKey _userContextTextKey = new GlobalKey();
+  final GlobalKey _userImageKey = new GlobalKey();
 
   NowMinimizedInfoFader _nowMinimizedInfoFader;
 
@@ -105,6 +109,8 @@ class NowState extends TickingState<Now> {
   // initialized in showQuickSettings
   double _quickSettingsMaximizedHeight = 0.0;
   double _importantInfoMaximizedHeight = 0.0;
+  double _userContextTextHeight = 0.0;
+  double _userImageHeight = 0.0;
 
   // The width of the quick settings when fully maximized. Initialized in build().
   double _quickSettingsWidth;
@@ -168,7 +174,7 @@ class NowState extends TickingState<Now> {
                       height: _quickSettingsBackgroundHeight,
                       width: _quickSettingsBackgroundWidth,
                       decoration: new BoxDecoration(
-                        backgroundColor: new Color(0xFFFFFFFF),
+                        backgroundColor: Colors.white,
                         borderRadius: new BorderRadius.circular(
                           _quickSettingsBackgroundBorderRadius,
                         ),
@@ -188,6 +194,7 @@ class NowState extends TickingState<Now> {
                         _buildUserImage(),
                         // User Context Text when maximized.
                         new Padding(
+                          key: _userContextTextKey,
                           padding: const EdgeInsets.only(top: 24.0),
                           child: new Opacity(
                             opacity: _fallAwayOpacity,
@@ -196,8 +203,8 @@ class NowState extends TickingState<Now> {
                         ),
                         // Important Information when maximized.
                         new Container(
-                            width: _importantInfoMaximizedWidth,
                             key: _importantInfoMaximizedKey,
+                            width: _importantInfoMaximizedWidth,
                             child: new Padding(
                               padding: const EdgeInsets.only(top: 16.0),
                               child: new Opacity(
@@ -227,7 +234,7 @@ class NowState extends TickingState<Now> {
         },
       );
 
-  Widget _buildUserImage() => new Stack(children: [
+  Widget _buildUserImage() => new Stack(key: _userImageKey, children: [
         // Shadow.
         new Opacity(
           opacity: _quickSettingsProgress,
@@ -280,12 +287,12 @@ class NowState extends TickingState<Now> {
               maxWidth: _quickSettingsBackgroundMaximizedWidth,
               minWidth: 0.0,
               child: new Opacity(
+                key: _quickSettingsKey,
                 opacity: _quickSettingsSlideUpProgress,
-                child: new Center(
-                  child: new Container(
-                      key: _quickSettingsKey,
-                      child: _nowManager(context).quickSettings),
-                ),
+                child: new Column(children: [
+                  new Divider(height: 4.0, color: Colors.grey[300]),
+                  new Container(child: _nowManager(context).quickSettings),
+                ]),
               ),
             ),
           ),
@@ -330,6 +337,7 @@ class NowState extends TickingState<Now> {
               new GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: config.onReturnToOriginButtonTap,
+                onLongPress: config.onShowQuickSettingsOverlay,
                 child: new Container(width: config.minHeight),
               ),
               new Flexible(
@@ -398,12 +406,15 @@ class NowState extends TickingState<Now> {
   }
 
   void showQuickSettings() {
-    RenderBox renderBoxQuickSettings =
-        _quickSettingsKey.currentContext.findRenderObject();
-    _quickSettingsMaximizedHeight = renderBoxQuickSettings.size.height;
-    RenderBox renderBoxImportantInfoMaximized =
-        _importantInfoMaximizedKey.currentContext.findRenderObject();
-    _importantInfoMaximizedHeight = renderBoxImportantInfoMaximized.size.height;
+    double heightFromKey(GlobalKey key) {
+      RenderBox box = key.currentContext.findRenderObject();
+      return box.size.height;
+    }
+
+    _quickSettingsMaximizedHeight = heightFromKey(_quickSettingsKey);
+    _importantInfoMaximizedHeight = heightFromKey(_importantInfoMaximizedKey);
+    _userContextTextHeight = heightFromKey(_userContextTextKey);
+    _userImageHeight = heightFromKey(_userImageKey);
 
     if (!_revealingQuickSettings) {
       _quickSettingsSimulation.target = _kQuickSettingsSimulationTarget;
@@ -478,7 +489,9 @@ class NowState extends TickingState<Now> {
   double get _quickSettingsBackgroundHeight {
     return lerpDouble(
         0.0,
-        98.0 + // padding and space for user info
+        -_userImageTopOffset +
+            _userImageHeight +
+            _userContextTextHeight +
             _importantInfoMaximizedHeight +
             _quickSettingsHeight,
         _quickSettingsProgress * (1.0 - _minimizationProgress));

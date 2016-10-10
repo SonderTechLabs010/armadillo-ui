@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:ui' show lerpDouble;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/icon_slider.dart';
@@ -39,6 +41,115 @@ const Color _kActiveSliderColor = _kTurquoise;
 /// If [QuickSettings size] is wider than this, the contents will be laid out
 /// into multiple columns instead of a single column.
 const double _kMultiColumnWidthThreshold = 450.0;
+
+class QuickSettingsOverlay extends StatefulWidget {
+  final double minimizedNowBarHeight;
+
+  QuickSettingsOverlay({
+    Key key,
+    this.minimizedNowBarHeight,
+  })
+      : super(key: key);
+
+  @override
+  QuickSettingsOverlayState createState() => new QuickSettingsOverlayState();
+}
+
+class QuickSettingsOverlayState extends State<QuickSettingsOverlay>
+    with SingleTickerProviderStateMixin {
+  double _volumeSliderValue = 0.0;
+  double _brightnessSliderValue = 0.0;
+
+  AnimationController _quickSettingsAnimControl;
+
+  @override
+  void initState() {
+    super.initState();
+    _quickSettingsAnimControl = new AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
+  }
+
+  void show() {
+    setState(() {
+      _quickSettingsAnimControl.forward();
+    });
+  }
+
+  void hide() {
+    setState(() {
+      _quickSettingsAnimControl.reverse();
+    });
+  }
+
+  Widget _buildQuickSettingsOverlayContent() => new Align(
+        alignment: FractionalOffset.bottomCenter,
+        child: new Opacity(
+          opacity: lerpDouble(0.0, 1.0, _quickSettingsAnimControl.value),
+          child: new RepaintBoundary(
+            child: new Container(
+                decoration: new BoxDecoration(
+                    backgroundColor: Colors.white,
+                    borderRadius: new BorderRadius.circular(
+                      4.0,
+                    )),
+                child: new QuickSettings()),
+          ),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) => new AnimatedBuilder(
+      animation: _quickSettingsAnimControl,
+      builder: (BuildContext c, Widget child) {
+        return new Offstage(
+          offstage:
+              _quickSettingsAnimControl.status == AnimationStatus.dismissed,
+          child: new Stack(
+            children: [
+              new Positioned(
+                left: 0.0,
+                top: 0.0,
+                right: 0.0,
+                bottom: 0.0,
+                child: new IgnorePointer(
+                  child: new Container(
+                    decoration: new BoxDecoration(
+                      backgroundColor: Color.lerp(Colors.transparent,
+                          Colors.black87, _quickSettingsAnimControl.value),
+                    ),
+                  ),
+                ),
+              ),
+              new Positioned(
+                left: 0.0,
+                top: 0.0,
+                right: 0.0,
+                bottom: 0.0,
+                child: new Offstage(
+                  offstage: !(_quickSettingsAnimControl.status ==
+                          AnimationStatus.completed ||
+                      _quickSettingsAnimControl.status ==
+                          AnimationStatus.forward),
+                  child: new GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      hide();
+                    },
+                  ),
+                ),
+              ),
+              new Positioned(
+                bottom: lerpDouble(8.0, 8.0 + config.minimizedNowBarHeight,
+                    _quickSettingsAnimControl.value),
+                left: 8.0,
+                right: 8.0,
+                child: _buildQuickSettingsOverlayContent(),
+              ),
+            ],
+          ),
+        );
+      });
+}
 
 class QuickSettings extends StatefulWidget {
   @override
@@ -122,9 +233,15 @@ class _QuickSettingsState extends State<QuickSettings> {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _volumeIconSlider(),
-          _brightnessIconSlider(),
-          _divider(),
+          new Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: _volumeIconSlider()),
+          new Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: _brightnessIconSlider()),
+          new Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: _divider()),
           new Row(children: [
             new Flexible(
               flex: 1,
@@ -175,7 +292,6 @@ class _QuickSettingsState extends State<QuickSettings> {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _divider(),
           new Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: new LayoutBuilder(

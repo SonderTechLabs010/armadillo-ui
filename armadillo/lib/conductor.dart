@@ -10,6 +10,7 @@ import 'package:sysui_widgets/device_extension_state.dart';
 import 'device_extender.dart';
 import 'expand_suggestion.dart';
 import 'keyboard_device_extension.dart';
+import 'quick_settings.dart';
 import 'now.dart';
 import 'peeking_overlay.dart';
 import 'scroll_locker.dart';
@@ -49,6 +50,8 @@ final GlobalKey<SuggestionListState> _suggestionListKey =
 final GlobalKey<ScrollableState> _suggestionListScrollableKey =
     new GlobalKey<ScrollableState>();
 final GlobalKey<NowState> _nowKey = new GlobalKey<NowState>();
+final GlobalKey<QuickSettingsOverlayState> _quickSettingsOverlayKey =
+    new GlobalKey<QuickSettingsOverlayState>();
 final GlobalKey<PeekingOverlayState> _suggestionOverlayKey =
     new GlobalKey<PeekingOverlayState>();
 final GlobalKey<DeviceExtensionState> _keyboardDeviceExtensionKey =
@@ -130,6 +133,11 @@ class Conductor extends StatelessWidget {
 
                 // Selected Suggestion Overlay.
                 _getSelectedSuggestionOverlay(),
+
+                // Quick Settings Overlay.
+                new QuickSettingsOverlay(
+                    key: _quickSettingsOverlayKey,
+                    minimizedNowBarHeight: _kMinimizedNowHeight),
               ],
             );
           },
@@ -186,6 +194,8 @@ class Conductor extends StatelessWidget {
               _verticalShifterKey.currentState.shiftProgress =
                   quickSettingsProgress,
           onReturnToOriginButtonTap: () => _goToOrigin(storyManager),
+          onShowQuickSettingsOverlay: () =>
+              _quickSettingsOverlayKey.currentState.show(),
           onQuickSettingsMaximized: () {
             // When quick settings starts being shown, scroll to 0.0.
             _scrollableKey.currentState.scrollTo(
