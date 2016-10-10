@@ -188,8 +188,8 @@ class _IconSliderRenderObjectWidget extends LeafRenderObjectWidget {
       ..thumbImage = thumbImage
       ..configuration = configuration
       ..onChanged = onChanged;
-      // Ticker provider cannot change since there's a 1:1 relationship between
-      // the _SliderRenderObjectWidget object and the _SliderState object.
+    // Ticker provider cannot change since there's a 1:1 relationship between
+    // the _SliderRenderObjectWidget object and the _SliderState object.
   }
 }
 
@@ -579,10 +579,10 @@ class _RenderIconSlider extends RenderConstrainedBox
   }
 
   @override
-  bool get isSemanticsBoundary => isInteractive;
+  bool get isSemanticBoundary => isInteractive;
 
   @override
-  SemanticsAnnotator get semanticAnnotator => _annotate;
+  SemanticsAnnotator get semanticsAnnotator => _annotate;
 
   void _annotate(SemanticsNode semantics) {
     if (isInteractive) semantics.addAdjustmentActions();
