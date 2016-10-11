@@ -48,6 +48,9 @@ const double _kDraggedStoryRadius = 75.0;
 const int _kMaxStories = 4;
 const Color _kTargetOverlayColor = const Color.fromARGB(128, 153, 234, 216);
 
+/// Set to true to use a carousel in single column mode.
+const bool _kUseCarousel = false;
+
 /// The visual representation of a [Story].  A [Story] has a default size but
 /// will expand to [fullSize] when it comes into focus.  [StoryClusterWidget]s
 /// are intended to be children of [StoryList].
@@ -174,7 +177,7 @@ class StoryClusterWidget extends StatelessWidget {
     BuildContext context, {
     bool highlight: false,
   }) =>
-      multiColumn
+      multiColumn || !_kUseCarousel
           ? new StoryPanels(
               storyCluster: storyCluster,
               focusProgress: focusProgress,
