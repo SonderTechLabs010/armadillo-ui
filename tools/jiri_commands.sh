@@ -12,7 +12,8 @@
 #   - branch: list projects which have non-master branches;
 #   - master: switch all projects to their master branch;
 #   - local: list projects which are not currently on the master branch;
-#   - delete: delete a branch in all projects.
+#   - delete: delete a branch in all projects;
+#   - status: list uncommitted changes.
 
 command=$1
 project=`pwd`
@@ -37,6 +38,13 @@ elif [[ "$command" == "delete" ]]; then
   branch=$2
   if [[ "$branches" == *"$branch"* ]]; then
     echo $project
+    git checkout master
     git branch -D $branch
+  fi
+elif [[ "$command" == "status" ]]; then
+  changes=`git status -s`
+  if [[ "$changes" != "" ]]; then
+    echo $project
+    echo "$changes"
   fi
 fi
