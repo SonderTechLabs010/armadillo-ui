@@ -16,6 +16,7 @@ const double _kMultiColumnWidthThreshold = 500.0;
 /// considered to be juggled.  Juggled stories have their sizes increased.
 const int _kJugglingThresholdMinutes = 120;
 const int _kMaxJugglingStoryCount = 8;
+const int _kMinSideMargin = 8;
 
 /// The [size] the story should be.
 /// The [offset] of the story with respect to the bottom center of the list.
@@ -109,8 +110,12 @@ class StoryListLayout {
             possibleJugglingMinutes);
 
         if (storyJugglingMinutes > 0) {
-          jugglingStoryCount =
-              math.min(jugglingStoryCount + 1, _kMaxJugglingStoryCount);
+          jugglingStoryCount ++;
+          // Constrain the number of juggling stories within _kMaxJugglingStoryCount
+          if (jugglingStoryCount > _kMaxJugglingStoryCount) {
+            storyJugglingMinutes = 0;
+            jugglingStoryCount = _kMaxJugglingStoryCount;
+          }
         }
 
         return new _StoryMetadata(
@@ -236,11 +241,14 @@ class StoryListLayout {
         // Apply only if the row contain more than 1 story
         if (row.length > 1) {
           double maxRowWidth = _getMaxWidthForTop(
-              -previousRowLastStoryTop + row[0].size.height,
+              -previousRowLastStoryTop,
               jugglingStoryCount);
-          double targetRowWidth =
+          // If row width is larger than max, fit the width to max. If smaller, adjust to make it closer to the max
+          double targetRowWidth = (maxRowWidth < originalRowWidth) ?
+              maxRowWidth :
               originalRowWidth + (maxRowWidth - originalRowWidth) * 0.5;
-          double scale = (targetRowWidth / originalRowWidth).clamp(0.8, 1.2);
+          double scale = (targetRowWidth / originalRowWidth).clamp(0.7, 1.3);
+
           row.forEach((_StoryMetadata story) {
             story.size = _alignSizeToGrid(story.size * scale);
           });
@@ -363,6 +371,7 @@ class StoryListLayout {
         });
       }
     }
+
     return stories;
   }
 
@@ -383,9 +392,9 @@ class StoryListLayout {
         0.5,
         1 - (size.width - _kMultiColumnWidthThreshold) / 1200.0,
       );
-      minW = size.width * minWRatio - _baseHorizontalGrid;
+      minW = size.width * minWRatio - _kMinSideMargin * 2.0;
     } else {
-      minW = size.width - _baseHorizontalGrid * 2;
+      minW = size.width - _kMinSideMargin * 2.0;
     }
     return minW;
   }
@@ -400,7 +409,7 @@ class StoryListLayout {
       0.9,
       1 - (size.width - _kMultiColumnWidthThreshold) / 4200.0,
     );
-    double maxW = size.width * maxWRatio - _baseHorizontalGrid;
+    double maxW = size.width * maxWRatio - _kMinSideMargin * 2.0;
     double l = size.height * (jugglingStoryCount / 3.0 + 0.5);
     double t = (l - top) / l - 0.25;
     double r = _smoothstep(0.0, 1.0, t);
