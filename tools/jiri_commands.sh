@@ -38,7 +38,9 @@ elif [[ "$command" == "delete" ]]; then
   branch=$2
   if [[ "$branches" == *"$branch"* ]]; then
     echo $project
-    git checkout master
+    if [[ "$current_branch" == "$branch" ]]; then
+      git checkout master
+    fi
     git branch -D $branch
   fi
 elif [[ "$command" == "status" ]]; then
@@ -47,4 +49,6 @@ elif [[ "$command" == "status" ]]; then
     echo $project
     echo "$changes"
   fi
+else
+  echo "Unknown command: $command"
 fi
