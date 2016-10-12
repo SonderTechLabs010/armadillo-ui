@@ -22,22 +22,34 @@ branches=`git for-each-ref --format='%(refname:short)' refs/heads/`
 
 if [[ "$command" == "branch" ]]; then
   if [[ "$branches" != "master" ]]; then
-    echo $project
+    tput setaf 4
+    echo "$project"
+    tput sgr0
     echo "$branches"
   fi
 elif [[ "$command" == "master" ]]; then
   if [[ "$current_branch" != "master" ]]; then
-    echo $project
+    tput setaf 4
+    echo "$project"
+    tput sgr0
     git checkout master
   fi
 elif [[ "$command" == "local" ]]; then
   if [[ "$current_branch" != "master" ]]; then
-    echo "$project is on $current_branch"
+    tput setaf 4
+    echo -n "$project"
+    tput sgr0
+    echo -n " is on "
+    tput setaf 2
+    echo "$current_branch"
+    tput sgr0
   fi
 elif [[ "$command" == "delete" ]]; then
   branch=$2
   if [[ "$branches" == *"$branch"* ]]; then
-    echo $project
+    tput setaf 4
+    echo "$project"
+    tput sgr0
     if [[ "$current_branch" == "$branch" ]]; then
       git checkout master
     fi
@@ -46,7 +58,9 @@ elif [[ "$command" == "delete" ]]; then
 elif [[ "$command" == "status" ]]; then
   changes=`git status -s`
   if [[ "$changes" != "" ]]; then
-    echo $project
+    tput setaf 4
+    echo "$project"
+    tput sgr0
     echo "$changes"
   fi
 else
