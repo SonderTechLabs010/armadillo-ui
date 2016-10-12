@@ -34,6 +34,15 @@ function push_to_gerrit() {
   git push origin HEAD:refs/for/master
 }
 
+function jiro() {
+  local script=$TREE_ROOT/tools/jiri_commands.sh
+  if [[ "$1" == "help" ]]; then
+    $script help
+  else
+    jiri runp -exit-on-error=true $script $@
+  fi
+}
+
 PRUNE_ARGS="-name third_party -prune -o -name .git -prune -o -name out -prune -o -name .pub -prune -o -name packages -prune -o -name .packages -prune -o -name build -prune"
 GREP_COMMAND="grep -I -nH --color"
 
