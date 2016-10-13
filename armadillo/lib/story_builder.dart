@@ -41,7 +41,9 @@ Widget _widgetBuilder(String module, Map<String, Object> state) {
 Story storyBuilder(Map<String, Object> story) {
   return new Story(
     id: new ValueKey(story['id']),
-    builder: (_) => _widgetBuilder(story['module'], story['state']),
+    builder: (_) => new ScrollConfiguration(
+          child: _widgetBuilder(story['module'], story['state']),
+        ),
     title: story['title'],
     icons: (story['icons'] as List<String>)
         .map(

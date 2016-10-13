@@ -4,6 +4,8 @@
 
 name: armadillo
 dependencies:
+  clients:
+    path: ../../modules/packages/clients
   flutter:
     sdk: flutter
   gallery:
