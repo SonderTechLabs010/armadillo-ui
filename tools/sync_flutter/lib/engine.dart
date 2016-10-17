@@ -34,7 +34,7 @@ Future<FlutterDependencies> extractEngineDependencies(
 
   // Get the revision of flutter/engine.
   final revisionFile =
-      new File(path.join(flutterPath, 'internal', 'engine.version'));
+      new File(path.join(flutterPath,'bin', 'internal', 'engine.version'));
   final engineRevision = (await revisionFile.readAsString()).trim();
   print('Engine revision: $engineRevision');
 
