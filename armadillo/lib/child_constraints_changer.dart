@@ -11,7 +11,6 @@ import 'constraints_manager.dart';
 const double _kBezelMinimumWidth = 8.0;
 const double _kBezelExtension = 16.0;
 const double _kOuterBezelRadius = 16.0;
-const double _kInnerBezelRadius = 16.0;
 
 /// A widget that changes [child]'s constraints to one within [constraints]. An
 /// affordance to perform this change is placed in [ChildConstraintsChanger]'s
@@ -77,12 +76,9 @@ class ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
                       color: Colors.black, width: _kBezelMinimumWidth),
                   borderRadius: new BorderRadius.circular(_kOuterBezelRadius),
                   boxShadow: kElevationToShadow[12]),
-              child: new ClipRRect(
-                borderRadius: new BorderRadius.circular(_kInnerBezelRadius),
-                child: new ConstrainedBox(
-                  constraints: _currentConstraint,
-                  child: config.child,
-                ),
+              child: new ConstrainedBox(
+                constraints: _currentConstraint,
+                child: config.child,
               ),
             ),
           ),

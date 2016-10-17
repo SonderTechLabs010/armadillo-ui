@@ -27,6 +27,7 @@ const double _kStoryBarMinimizedHeight = 4.0;
 const double _kStoryBarMaximizedHeight = 48.0;
 const double _kUnfocusedStoryMargin = 4.0;
 const double _kStoryMargin = 8.0;
+const double _kCornerRadius = 12.0;
 const double _kDraggedStoryRadius = 75.0;
 const double _kStorySplitAreaWidth = 64.0;
 const int _kMaxStories = 4;
@@ -86,33 +87,28 @@ class StoryPanels extends StatelessWidget {
                 backgroundColor: _kTargetOverlayColor,
               )
             : null,
-        child: new ClipRRect(
-          borderRadius: new BorderRadius.circular(
-            lerpDouble(4.0, 0.0, focusProgress),
-          ),
-          child: new LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) =>
-                new Stack(
-                  children: storyCluster.stories
-                      .map(
-                        (Story story) => _getPositioned(
-                              panel: story.panel,
-                              currentSize: new Size(
-                                  constraints.maxWidth, constraints.maxHeight),
-                              fullSize: fullSize,
-                              child: _getStory(
-                                context,
-                                story,
-                                new Size(
-                                  fullSize.width * story.panel.width,
-                                  fullSize.height * story.panel.height,
-                                ),
+        child: new LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) =>
+              new Stack(
+                children: storyCluster.stories
+                    .map(
+                      (Story story) => _getPositioned(
+                            panel: story.panel,
+                            currentSize: new Size(
+                                constraints.maxWidth, constraints.maxHeight),
+                            fullSize: fullSize,
+                            child: _getStory(
+                              context,
+                              story,
+                              new Size(
+                                fullSize.width * story.panel.width,
+                                fullSize.height * story.panel.height,
                               ),
                             ),
-                      )
-                      .toList(),
-                ),
-          ),
+                          ),
+                    )
+                    .toList(),
+              ),
         ),
       );
 
@@ -136,7 +132,14 @@ class StoryPanels extends StatelessWidget {
       left: currentSize.width * panel.left + leftMargin,
       width: currentSize.width * panel.width - leftMargin - rightMargin,
       height: currentSize.height * panel.height - topMargin - bottomMargin,
-      child: child,
+      child: new ClipRRect(
+          borderRadius: new BorderRadius.all(
+            new Radius.elliptical(
+              widthScale * _kCornerRadius,
+              heightScale * _kCornerRadius,
+            ),
+          ),
+          child: child),
     );
   }
 

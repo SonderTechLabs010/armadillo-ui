@@ -15,6 +15,7 @@ import 'suggestion_manager.dart';
 
 const _kBackgroundOverlayColor = const Color(0xB0000000);
 const _kBackgroundImage = 'packages/armadillo/res/Background.jpg';
+const double _kDeviceScreenInnerBezelRadius = 12.0;
 
 /// The main app which controls the Fuchsia UI.
 class Armadillo extends StatefulWidget {
@@ -47,24 +48,32 @@ class ArmadilloState extends State<Armadillo> {
 
   @override
   Widget build(BuildContext context) => new Container(
-        decoration: new BoxDecoration(
-          backgroundImage: new BackgroundImage(
-            image: new AssetImage(_kBackgroundImage),
-            alignment: const FractionalOffset(0.4, 0.5),
-            fit: ImageFit.cover,
-            colorFilter: new ui.ColorFilter.mode(
-              _kBackgroundOverlayColor,
-              ui.TransferMode.srcATop,
-            ),
+        decoration: new BoxDecoration(backgroundColor: Colors.black),
+        child: new ClipRRect(
+          borderRadius: new BorderRadius.circular(
+            _kDeviceScreenInnerBezelRadius,
           ),
-        ),
-        child: new InheritedSuggestionManager(
-          suggestionManager: config.suggestionManager,
-          child: new InheritedStoryManager(
-            storyManager: config.storyManager,
-            child: new InheritedNowManager(
-              nowManager: config.nowManager,
-              child: new Conductor(),
+          child: new Container(
+            decoration: new BoxDecoration(
+              backgroundImage: new BackgroundImage(
+                image: new AssetImage(_kBackgroundImage),
+                alignment: const FractionalOffset(0.4, 0.5),
+                fit: ImageFit.cover,
+                colorFilter: new ui.ColorFilter.mode(
+                  _kBackgroundOverlayColor,
+                  ui.TransferMode.srcATop,
+                ),
+              ),
+            ),
+            child: new InheritedSuggestionManager(
+              suggestionManager: config.suggestionManager,
+              child: new InheritedStoryManager(
+                storyManager: config.storyManager,
+                child: new InheritedNowManager(
+                  nowManager: config.nowManager,
+                  child: new Conductor(),
+                ),
+              ),
             ),
           ),
         ),
