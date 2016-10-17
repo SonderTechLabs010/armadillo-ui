@@ -29,6 +29,10 @@ const Color _kDiscardTargetColor = const Color(0xFFFF0000);
 const Color _kBringToFrontTargetColor = const Color(0xFF00FF00);
 const Color _kStoryEdgeTargetColor = const Color(0xFF0000FF);
 
+/// Once a drag target is chosen, this is the distance a draggable must travel
+/// before new drag targets are considered.
+const double _kStickyDistance = 32.0;
+
 typedef void _OnPanelEvent(BuildContext context, StoryCluster data);
 
 /// Details about a target used by [PanelDragTargets].
@@ -145,7 +149,7 @@ class LineSegment {
 ///
 /// When an [ArmadilloLongPressDraggable] is above, [child] will be scaled down
 /// slightly depending on [focusProgress].
-class PanelDragTargets extends StatelessWidget {
+class PanelDragTargets extends StatefulWidget {
   final StoryCluster storyCluster;
   final Size fullSize;
   final Widget child;
@@ -161,7 +165,28 @@ class PanelDragTargets extends StatelessWidget {
     this.scale,
     this.focusProgress,
   })
-      : super(key: key) {
+      : super(key: key);
+
+  @override
+  PanelDragTargetsState createState() => new PanelDragTargetsState();
+}
+
+class PanelDragTargetsState extends State<PanelDragTargets> {
+  final Set<LineSegment> _targetLines = new Set<LineSegment>();
+  final Map<StoryCluster, Point> _closestTargetLockPoints =
+      new Map<StoryCluster, Point>();
+  final Map<StoryCluster, LineSegment> _closestTargets =
+      new Map<StoryCluster, LineSegment>();
+
+  @override
+  void initState() {
+    super.initState();
+    _populateTargetLines();
+  }
+
+  @override
+  void didUpdateConfig(PanelDragTargets oldConfig) {
+    super.didUpdateConfig(oldConfig);
     _populateTargetLines();
   }
 
@@ -175,9 +200,11 @@ class PanelDragTargets extends StatelessWidget {
         Map<StoryCluster, Point> candidateData,
         Map<dynamic, Point> rejectedData,
       ) {
+        _updateClosestTargets(candidateData);
+
         // Scale the child.
-        double childScale =
-            lerpDouble(1.0, candidateData.isEmpty ? 1.0 : scale, focusProgress);
+        double childScale = lerpDouble(1.0,
+            candidateData.isEmpty ? 1.0 : config.scale, config.focusProgress);
 
         List<Widget> stackChildren = [
           new Positioned(
@@ -188,22 +215,17 @@ class PanelDragTargets extends StatelessWidget {
             child: new Transform(
               transform: new Matrix4.identity().scaled(childScale, childScale),
               alignment: FractionalOffset.center,
-              child: child,
+              child: config.child,
             ),
           )
         ];
 
         // When we have a candidate and we're fully focused, show the target
         // lines.
-        if (candidateData.isNotEmpty && focusProgress == 1.0) {
+        if (candidateData.isNotEmpty && config.focusProgress == 1.0) {
           // Find out which line is the closest.
-          List<LineSegment> closestTargetLines = <LineSegment>[];
-          candidateData.keys.forEach((StoryCluster key) {
-            LineSegment closestTargetLine =
-                _getClosestLine(candidateData[key], key);
-            closestTargetLine.onHover?.call(context, key);
-            closestTargetLines.add(closestTargetLine);
-          });
+          List<LineSegment> closestTargetLines =
+              new List<LineSegment>.from(_closestTargets.values);
 
           // Add all the lines.
           stackChildren.addAll(
@@ -225,6 +247,47 @@ class PanelDragTargets extends StatelessWidget {
         return new Stack(children: stackChildren);
       });
 
+  void _updateClosestTargets(Map<StoryCluster, Point> candidateData) {
+    // Remove any candidates that no longer exist.
+    _closestTargetLockPoints.keys.toList().forEach((StoryCluster storyCluster) {
+      if (!candidateData.keys.contains(storyCluster)) {
+        _closestTargetLockPoints[storyCluster] = null;
+        _closestTargets[storyCluster] = null;
+      }
+    });
+
+    // For each candidate...
+    candidateData.keys.forEach((StoryCluster storyCluster) {
+      LineSegment closestLine =
+          _getClosestLine(candidateData[storyCluster], storyCluster);
+      Point lockPoint = _closestTargetLockPoints[storyCluster];
+
+      // ... lock to its closest line if this is the first time we've seen the
+      // candidate or it's an existing candidate whose closest line has changed
+      // and we've moved past the sticky distance for its lock point.
+      if ((lockPoint == null) ||
+          _closestTargets[storyCluster] != closestLine &&
+              ((lockPoint - candidateData[storyCluster]).distance >
+                  _kStickyDistance)) {
+        _lockClosestTarget(
+          storyCluster: storyCluster,
+          point: candidateData[storyCluster],
+          closestLine: closestLine,
+        );
+      }
+    });
+  }
+
+  void _lockClosestTarget({
+    StoryCluster storyCluster,
+    Point point,
+    LineSegment closestLine,
+  }) {
+    _closestTargetLockPoints[storyCluster] = point;
+    _closestTargets[storyCluster] = closestLine;
+    closestLine.onHover?.call(context, storyCluster);
+  }
+
   LineSegment _getClosestLine(Point point, StoryCluster data) {
     double minDistance = double.INFINITY;
     LineSegment closestLine;
@@ -240,18 +303,30 @@ class PanelDragTargets extends StatelessWidget {
     return closestLine;
   }
 
+  /// Creates the target lines for the configuration of panels represented by
+  /// the story cluster's stories.
+  ///
+  /// Typically this includes the following targets:
+  ///   1) Discard story target.
+  ///   2) Bring to front target.
+  ///   3) Convert to tabs target.
+  ///   4) Edge targets on top, bottom, left, and right of the cluster.
+  ///   5) Edge targets on top, bottom, left, and right of each panel.
   void _populateTargetLines() {
-    double verticalMargin = (1.0 - scale) / 2.0 * fullSize.height;
-    double horizontalMargin = (1.0 - scale) / 2.0 * fullSize.width;
+    _targetLines.clear();
+    double verticalMargin = (1.0 - config.scale) / 2.0 * config.fullSize.height;
+    double horizontalMargin =
+        (1.0 - config.scale) / 2.0 * config.fullSize.width;
 
-    int availableRows = maxRows(fullSize) - _currentRows;
+    int availableRows = maxRows(config.fullSize) - _currentRows;
     if (availableRows > 0) {
       // Top edge target.
       _targetLines.add(
         new LineSegment.horizontal(
           y: verticalMargin + _kTopEdgeTargetYOffset,
           left: horizontalMargin + _kStoryEdgeTargetInset,
-          right: fullSize.width - horizontalMargin - _kStoryEdgeTargetInset,
+          right:
+              config.fullSize.width - horizontalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
           onDrop: _addClusterAbovePanels,
@@ -261,9 +336,10 @@ class PanelDragTargets extends StatelessWidget {
       // Bottom edge target.
       _targetLines.add(
         new LineSegment.horizontal(
-          y: fullSize.height - verticalMargin,
+          y: config.fullSize.height - verticalMargin,
           left: horizontalMargin + _kStoryEdgeTargetInset,
-          right: fullSize.width - horizontalMargin - _kStoryEdgeTargetInset,
+          right:
+              config.fullSize.width - horizontalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
           onDrop: _addClusterBelowPanels,
@@ -272,13 +348,14 @@ class PanelDragTargets extends StatelessWidget {
     }
 
     // Left edge target.
-    int availableColumns = maxColumns(fullSize) - _currentColumns;
+    int availableColumns = maxColumns(config.fullSize) - _currentColumns;
     if (availableColumns > 0) {
       _targetLines.add(
         new LineSegment.vertical(
           x: horizontalMargin,
           top: verticalMargin,
-          bottom: fullSize.height - verticalMargin - _kStoryEdgeTargetInset,
+          bottom:
+              config.fullSize.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
           onDrop: _addClusterToLeftOfPanels,
@@ -288,9 +365,10 @@ class PanelDragTargets extends StatelessWidget {
       // Right edge target.
       _targetLines.add(
         new LineSegment.vertical(
-          x: fullSize.width - horizontalMargin,
+          x: config.fullSize.width - horizontalMargin,
           top: verticalMargin,
-          bottom: fullSize.height - verticalMargin - _kStoryEdgeTargetInset,
+          bottom:
+              config.fullSize.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
           onDrop: _addClusterToRightOfPanels,
@@ -303,10 +381,11 @@ class PanelDragTargets extends StatelessWidget {
       new LineSegment.horizontal(
         y: verticalMargin + _kStoryBarTargetYOffset,
         left: horizontalMargin + _kStoryEdgeTargetInset,
-        right: fullSize.width - horizontalMargin - _kStoryEdgeTargetInset,
+        right:
+            config.fullSize.width - horizontalMargin - _kStoryEdgeTargetInset,
         color: _kStoryBarTargetColor,
         maxStoriesCanAccept:
-            _kMaxStoriesPerCluster - storyCluster.stories.length,
+            _kMaxStoriesPerCluster - config.storyCluster.stories.length,
         onDrop: (BuildContext context, StoryCluster data) {
           // TODO(apwilson): Switch all the stories involved into tabs.
         },
@@ -318,7 +397,7 @@ class PanelDragTargets extends StatelessWidget {
       new LineSegment.horizontal(
         y: verticalMargin + _kDiscardTargetTopEdgeYOffset,
         left: horizontalMargin * 3.0,
-        right: fullSize.width - 3.0 * horizontalMargin,
+        right: config.fullSize.width - 3.0 * horizontalMargin,
         color: _kDiscardTargetColor,
         maxStoriesCanAccept: _kMaxStoriesPerCluster,
         onDrop: (BuildContext context, StoryCluster data) {
@@ -330,11 +409,11 @@ class PanelDragTargets extends StatelessWidget {
     // Bottom bring-to-front target.
     _targetLines.add(
       new LineSegment.horizontal(
-        y: fullSize.height -
+        y: config.fullSize.height -
             verticalMargin +
             _kBringToFrontTargetBottomEdgeYOffset,
         left: horizontalMargin * 3.0,
-        right: fullSize.width - 3.0 * horizontalMargin,
+        right: config.fullSize.width - 3.0 * horizontalMargin,
         color: _kBringToFrontTargetColor,
         maxStoriesCanAccept: _kMaxStoriesPerCluster,
         onDrop: (BuildContext context, StoryCluster data) {
@@ -345,9 +424,10 @@ class PanelDragTargets extends StatelessWidget {
     );
 
     // Story edge targets.
-    Point center = new Point(fullSize.width / 2.0, fullSize.height / 2.0);
-    storyCluster.panels.forEach((Panel panel) {
-      Rect bounds = _transform(panel, center, fullSize);
+    Point center =
+        new Point(config.fullSize.width / 2.0, config.fullSize.height / 2.0);
+    config.storyCluster.panels.forEach((Panel panel) {
+      Rect bounds = _transform(panel, center, config.fullSize);
 
       // If we can split vertically add vertical targets on left and right.
       int verticalSplits = _getVerticalSplitCount(panel);
@@ -440,9 +520,7 @@ class PanelDragTargets extends StatelessWidget {
 
     // 1) Make room for new stories.
     _makeRoom(
-      panels: this
-          .storyCluster
-          .panels
+      panels: config.storyCluster.panels
           .where((Panel panel) => panel.left == 0)
           .toList(),
       leftDelta: (_kAddedStorySpan * storiesToAdd.length),
@@ -470,9 +548,7 @@ class PanelDragTargets extends StatelessWidget {
 
     // 1) Make room for new stories.
     _makeRoom(
-      panels: this
-          .storyCluster
-          .panels
+      panels: config.storyCluster.panels
           .where((Panel panel) => panel.right == 1.0)
           .toList(),
       widthFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
@@ -496,9 +572,7 @@ class PanelDragTargets extends StatelessWidget {
 
     // 1) Make room for new stories.
     _makeRoom(
-      panels: this
-          .storyCluster
-          .panels
+      panels: config.storyCluster.panels
           .where((Panel panel) => panel.top == 0.0)
           .toList(),
       topDelta: (_kAddedStorySpan * storiesToAdd.length),
@@ -523,9 +597,7 @@ class PanelDragTargets extends StatelessWidget {
 
     // 1) Make room for new stories.
     _makeRoom(
-      panels: this
-          .storyCluster
-          .panels
+      panels: config.storyCluster.panels
           .where((Panel panel) => panel.bottom == 1.0)
           .toList(),
       heightFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
@@ -662,7 +734,7 @@ class PanelDragTargets extends StatelessWidget {
     InheritedStoryManager.of(context).remove(storyCluster: storyCluster);
   }
 
-  void _normalizeSizes() => storyCluster.normalizeSizes();
+  void _normalizeSizes() => config.storyCluster.normalizeSizes();
 
   /// Resizes the existing panels just enough to add new ones.
   void _makeRoom({
@@ -673,7 +745,7 @@ class PanelDragTargets extends StatelessWidget {
     double heightFactorDelta: 0.0,
   }) {
     panels.forEach((Panel panel) {
-      storyCluster.replace(
+      config.storyCluster.replace(
         panel: panel,
         withPanel: new Panel(
           origin: new FractionalOffset(
@@ -697,7 +769,7 @@ class PanelDragTargets extends StatelessWidget {
   }) {
     double dx = x;
     stories.forEach((Story story) {
-      storyCluster.add(
+      config.storyCluster.add(
         story: story,
         withPanel: new Panel(
           origin: new FractionalOffset(dx, top),
@@ -720,7 +792,7 @@ class PanelDragTargets extends StatelessWidget {
   }) {
     double dy = y;
     stories.forEach((Story story) {
-      storyCluster.add(
+      config.storyCluster.add(
         story: story,
         withPanel: new Panel(
           origin: new FractionalOffset(left, dy),
@@ -739,7 +811,7 @@ class PanelDragTargets extends StatelessWidget {
 
   int _getRows({double left, double right}) {
     Set<double> tops = new Set<double>();
-    storyCluster.panels
+    config.storyCluster.panels
         .where((Panel panel) =>
             (left <= panel.left && right > panel.left) ||
             (panel.left < left && panel.right > left))
@@ -751,7 +823,7 @@ class PanelDragTargets extends StatelessWidget {
 
   int _getColumns({double top, double bottom}) {
     Set<double> lefts = new Set<double>();
-    storyCluster.panels
+    config.storyCluster.panels
         .where((Panel panel) =>
             (top <= panel.top && bottom > panel.top) ||
             (top < panel.top && panel.bottom > top))
@@ -762,10 +834,11 @@ class PanelDragTargets extends StatelessWidget {
   }
 
   int _getHorizontalSplitCount(Panel panel) =>
-      maxRows(fullSize) - _getRows(left: panel.left, right: panel.right);
+      maxRows(config.fullSize) - _getRows(left: panel.left, right: panel.right);
 
   int _getVerticalSplitCount(Panel panel) =>
-      maxColumns(fullSize) - _getColumns(top: panel.top, bottom: panel.bottom);
+      maxColumns(config.fullSize) -
+      _getColumns(top: panel.top, bottom: panel.bottom);
 
   Rect _bounds(Panel panel, Size size) => new Rect.fromLTRB(
         panel.left * size.width,
@@ -775,7 +848,7 @@ class PanelDragTargets extends StatelessWidget {
       );
 
   Rect _transform(Panel panel, Point origin, Size size) =>
-      Rect.lerp(origin & Size.zero, _bounds(panel, size), scale);
+      Rect.lerp(origin & Size.zero, _bounds(panel, size), config.scale);
 
   static List<Story> _getVerticallySortedStories(StoryCluster storyCluster) {
     List<Story> sortedStories = new List.from(storyCluster.stories);
