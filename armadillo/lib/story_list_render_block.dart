@@ -106,6 +106,7 @@ class StoryListRenderBlock extends RenderBlock {
       listHeight = math.max(listHeight, -storyLayout.offset.dy);
     });
 
+    double maxFocusProgress = 0.0;
     {
       RenderBox child = firstChild;
       storyLayout.forEach((StoryLayout storyLayout) {
@@ -145,8 +146,28 @@ class StoryListRenderBlock extends RenderBlock {
             childParentData.focusProgress,
           ),
         );
+
+        maxFocusProgress = math.max(
+          maxFocusProgress,
+          childParentData.focusProgress,
+        );
+
         child = childParentData.nextSibling;
       });
+    }
+
+    // If any of the children are focused or focusing, shift all
+    // non-focused/non-focusing children off screen.
+    if (maxFocusProgress > 0.0) {
+      RenderBox child = firstChild;
+      while (child != null) {
+        final StoryListRenderBlockParentData childParentData = child.parentData;
+        if (childParentData.focusProgress == 0.0) {
+          childParentData.offset = childParentData.offset +
+              new Offset(0.0, -parentSize.height * maxFocusProgress);
+        }
+        child = childParentData.nextSibling;
+      }
     }
 
     size = constraints.constrain(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:ui' show lerpDouble;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -76,12 +76,6 @@ class StoryPanels extends StatelessWidget {
       );
 
   Widget _getPanels(BuildContext context) => new Container(
-        decoration: new BoxDecoration(
-          boxShadow: kElevationToShadow[12],
-          borderRadius: new BorderRadius.circular(
-            lerpDouble(4.0, 0.0, focusProgress),
-          ),
-        ),
         foregroundDecoration: highlight
             ? new BoxDecoration(
                 backgroundColor: _kTargetOverlayColor,
@@ -93,7 +87,7 @@ class StoryPanels extends StatelessWidget {
                 children: storyCluster.stories
                     .map(
                       (Story story) => _getPositioned(
-                            panel: story.panel,
+                            story: story,
                             currentSize: new Size(
                                 constraints.maxWidth, constraints.maxHeight),
                             fullSize: fullSize,
@@ -112,35 +106,47 @@ class StoryPanels extends StatelessWidget {
         ),
       );
 
-  Positioned _getPositioned({
-    Panel panel,
+  Widget _getPositioned({
+    Story story,
     Size currentSize,
     Size fullSize,
     Widget child,
   }) {
+    Panel panel = story.panel;
+
     double heightScale = currentSize.height / fullSize.height;
     double widthScale = currentSize.width / fullSize.width;
-    double scaledHorizontalMargin = _kStoryMargin / 2.0 * widthScale;
-    double scaledVerticalMargin = _kStoryMargin / 2.0 * heightScale;
+    double scale = math.min(widthScale, heightScale);
+    double scaledHorizontalMargin = _kStoryMargin / 2.0 * scale;
+    double scaledVerticalMargin = _kStoryMargin / 2.0 * scale;
     double topMargin = panel.top == 0.0 ? 0.0 : scaledVerticalMargin;
     double leftMargin = panel.left == 0.0 ? 0.0 : scaledHorizontalMargin;
     double bottomMargin = panel.bottom == 1.0 ? 0.0 : scaledVerticalMargin;
     double rightMargin = panel.right == 1.0 ? 0.0 : scaledHorizontalMargin;
 
-    return new Positioned(
-      top: currentSize.height * panel.top + topMargin,
-      left: currentSize.width * panel.left + leftMargin,
-      width: currentSize.width * panel.width - leftMargin - rightMargin,
-      height: currentSize.height * panel.height - topMargin - bottomMargin,
-      child: new ClipRRect(
-          borderRadius: new BorderRadius.all(
-            new Radius.elliptical(
-              widthScale * _kCornerRadius,
-              heightScale * _kCornerRadius,
-            ),
-          ),
-          child: child),
+    BorderRadius borderRadius = new BorderRadius.all(
+      new Radius.circular(scale * _kCornerRadius),
     );
+
+    return story.isPlaceHolder
+        ? new Offstage()
+        : new Positioned(
+            top: currentSize.height * panel.top + topMargin,
+            left: currentSize.width * panel.left + leftMargin,
+            width: currentSize.width * panel.width - leftMargin - rightMargin,
+            height:
+                currentSize.height * panel.height - topMargin - bottomMargin,
+            child: new Container(
+              decoration: new BoxDecoration(
+                boxShadow: kElevationToShadow[3],
+                borderRadius: borderRadius,
+              ),
+              child: new ClipRRect(
+                borderRadius: borderRadius,
+                child: child,
+              ),
+            ),
+          );
   }
 
   Widget _getStoryBarDraggableWrapper({
@@ -166,7 +172,7 @@ class StoryPanels extends StatelessWidget {
                     );
                 StoryKeys.storyBarKey(story).currentState?.minimize();
               },
-              childWhenDragging: new Offstage(offstage: true),
+              childWhenDragging: new Offstage(),
               feedback: new StoryClusterDragFeedback(
                 storyCluster: new StoryCluster.fromStory(story),
                 fullSize: fullSize,
@@ -177,30 +183,34 @@ class StoryPanels extends StatelessWidget {
         child: child,
       );
 
-  Widget _getStory(BuildContext context, Story story, Size size) => new Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // The story bar that pushes down the story.
-          _getStoryBarDraggableWrapper(
-            context: context,
-            story: story,
-            child: new StoryBar(
-              key: StoryKeys.storyBarKey(story),
-              story: story,
-              minimizedHeight: _kStoryBarMinimizedHeight,
-              maximizedHeight: _kStoryBarMaximizedHeight,
-            ),
-          ),
+  Widget _getStory(BuildContext context, Story story, Size size) =>
+      story.isPlaceHolder
+          ? new Offstage()
+          : new Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // The story bar that pushes down the story.
+                _getStoryBarDraggableWrapper(
+                  context: context,
+                  story: story,
+                  child: new StoryBar(
+                    key: StoryKeys.storyBarKey(story),
+                    story: story,
+                    minimizedHeight: _kStoryBarMinimizedHeight,
+                    maximizedHeight: _kStoryBarMaximizedHeight,
+                  ),
+                ),
 
-          // The story itself.
-          new Flexible(
-            child: new Container(
-              decoration: new BoxDecoration(backgroundColor: story.themeColor),
-              child: _getStoryContents(context, story, size),
-            ),
-          ),
-        ],
-      );
+                // The story itself.
+                new Flexible(
+                  child: new Container(
+                    decoration:
+                        new BoxDecoration(backgroundColor: story.themeColor),
+                    child: _getStoryContents(context, story, size),
+                  ),
+                ),
+              ],
+            );
 
   /// The scaled and clipped story.  When full size, the story will
   /// no longer be scaled or clipped.

@@ -68,6 +68,10 @@ class Story {
         panel: panel ?? this.panel,
       );
 
+  /// Returns true if the [Story] has no content and should just take up empty
+  /// space.
+  bool get isPlaceHolder => false;
+
   @override
   int get hashCode => id.hashCode;
 

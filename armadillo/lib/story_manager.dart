@@ -100,19 +100,13 @@ class StoryManager extends ConfigManager {
       if (largestStory.panel.canBeSplitVertically(size.width) ||
           largestStory.panel.canBeSplitHorizontally(size.height)) {
         largestStory.panel.split((Panel a, Panel b) {
-          int largestIndex = target.stories.indexOf(largestStory);
-          target.stories.remove(largestStory);
-          target.stories.insert(
-            largestIndex,
-            largestStory.copyWith(panel: a),
-          );
-          target.stories.add(sourceStory.copyWith(panel: b));
+          target.replace(panel: largestStory.panel, withPanel: a);
+          target.add(story: sourceStory, withPanel: b);
           target.normalizeSizes();
         });
         break;
       } else {
-        // Switch to panels!
-        assert(false);
+        print('Cannot add story as a panel!  We must switch to tabs!');
       }
     }
 
@@ -135,38 +129,7 @@ class StoryManager extends ConfigManager {
   void split({Story storyToSplit, StoryCluster from}) {
     assert(from.stories.contains(storyToSplit));
 
-    // Update grid locations.
-    List<Story> stories = new List<Story>.from(from.stories);
-    stories.remove(storyToSplit);
-    stories.sort(
-      (Story a, Story b) => a.panel.sizeFactor > b.panel.sizeFactor
-          ? 1
-          : a.panel.sizeFactor < b.panel.sizeFactor ? -1 : 0,
-    );
-    Panel remainingAreaToAbsorb = storyToSplit.panel;
-    double remainingSize;
-    do {
-      remainingSize = remainingAreaToAbsorb.sizeFactor;
-      stories
-          .where((Story story) =>
-              story.panel.isAdjacentWithOriginAligned(remainingAreaToAbsorb))
-          .forEach((Story story) {
-        story.panel.absorb(remainingAreaToAbsorb,
-            (Panel absorbed, Panel remainder) {
-          int storyIndex = from.stories.indexOf(story);
-          from.stories.remove(story);
-          from.stories.insert(
-            storyIndex,
-            story.copyWith(panel: absorbed),
-          );
-          remainingAreaToAbsorb = remainder;
-        });
-      });
-    } while (remainingAreaToAbsorb.sizeFactor < remainingSize);
-    assert(remainingAreaToAbsorb.sizeFactor == 0.0);
-
-    from.stories.remove(storyToSplit);
-    from.normalizeSizes();
+    from.absorb(storyToSplit);
 
     add(storyCluster: new StoryCluster.fromStory(storyToSplit));
     add(storyCluster: from.copyWith());
