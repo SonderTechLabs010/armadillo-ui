@@ -36,7 +36,7 @@ Future main() async {
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
 
-  SystemChrome.setEnabledSystemUIOverlays(0);
+  SystemChrome.setEnabledSystemUIOverlays([]);
   storyManager.load(defaultBundle);
   suggestionManager.load(defaultBundle);
   constraintsManager.load(defaultBundle);
