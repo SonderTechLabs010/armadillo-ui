@@ -16,6 +16,9 @@ import 'story_manager.dart';
 import 'story_time_randomizer.dart';
 import 'suggestion_manager.dart';
 
+/// Set to true to enable the performance overlay.
+const bool _kShowPerformanceOverlay = false;
+
 Future main() async {
   SuggestionManager suggestionManager = new SuggestionManager();
   StoryManager storyManager = new StoryManager(
@@ -23,7 +26,28 @@ Future main() async {
   );
   NowManager nowManager = new NowManager();
   ConstraintsManager constraintsManager = new ConstraintsManager();
-  runApp(
+
+  Widget app = _buildApp(
+    suggestionManager: suggestionManager,
+    storyManager: storyManager,
+    nowManager: nowManager,
+    constraintsManager: constraintsManager,
+  );
+
+  runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
+
+  SystemChrome.setEnabledSystemUIOverlays(0);
+  storyManager.load(defaultBundle);
+  suggestionManager.load(defaultBundle);
+  constraintsManager.load(defaultBundle);
+}
+
+Widget _buildApp({
+  SuggestionManager suggestionManager,
+  StoryManager storyManager,
+  NowManager nowManager,
+  ConstraintsManager constraintsManager,
+}) =>
     new CheckedModeBanner(
       child: new StoryTimeRandomizer(
         storyManager: storyManager,
@@ -39,11 +63,16 @@ Future main() async {
           ),
         ),
       ),
-    ),
-  );
+    );
 
-  SystemChrome.setEnabledSystemUIOverlays(0);
-  storyManager.load(defaultBundle);
-  suggestionManager.load(defaultBundle);
-  constraintsManager.load(defaultBundle);
-}
+Widget _buildPerformanceOverlay({Widget child}) => new Stack(
+      children: <Widget>[
+        child,
+        new Positioned(
+          top: 0.0,
+          left: 0.0,
+          right: 0.0,
+          child: new PerformanceOverlay.allEnabled(),
+        ),
+      ],
+    );
