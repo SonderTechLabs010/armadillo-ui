@@ -9,6 +9,13 @@ flutter_app("user_shell") {
 
   deps = [
     "//lib/flutter/packages/flutter",
+    "//modules/gallery",
+    "//modules/packages/clients",
+    "//modules/packages/util",
+    "//modules/packages/widgets",
     "//sysui/interfaces:interfaces_dart",
+    "//sysui/keyboard",
+    "//sysui/widgets",
+    "//third_party/dart-pkg/pub/intl",
   ]
 }
