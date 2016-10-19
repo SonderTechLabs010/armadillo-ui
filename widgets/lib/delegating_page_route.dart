@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:flutter/widgets.dart';
 
 /// A [PageRoute] delegating the construction of its UI to a separate class
@@ -12,8 +10,8 @@ class DelegatingPageRoute<T> extends PageRoute<T> {
   final WidgetBuilder _builder;
 
   DelegatingPageRoute(this._builder,
-      {Completer<T> completer, RouteSettings settings: const RouteSettings()})
-      : super(completer: completer, settings: settings);
+      {RouteSettings settings: const RouteSettings()})
+      : super(settings: settings);
 
   @override
   Duration get transitionDuration => const Duration(milliseconds: 1);

@@ -7,11 +7,12 @@
 # Environment setup
 
 export TREE_ROOT=`git rev-parse --show-toplevel`
+export FUCHSIA_ROOT="$TREE_ROOT/.."
 
-export DART_SDK="$TREE_ROOT/third_party/flutter/bin/cache/dart-sdk"
+export DART_SDK="$FUCHSIA_ROOT/lib/flutter/bin/cache/dart-sdk"
 export PATH="$DART_SDK/bin:$PATH"
 export PATH="$HOME/.pub-cache/bin:$PATH"
-export PATH="$TREE_ROOT/third_party/flutter/bin:$PATH"
+export PATH="$FUCHSIA_ROOT/lib/flutter/bin:$PATH"
 
 
 ###################################################
@@ -19,10 +20,6 @@ export PATH="$TREE_ROOT/third_party/flutter/bin:$PATH"
 
 function croot() {
   cd $TREE_ROOT
-}
-
-function sync_flutter() {
-  (cd $TREE_ROOT/tools/sync_flutter && pub run bin/main.dart "$@")
 }
 
 function analyze() {
@@ -92,10 +89,10 @@ function sysui_help() {
   echo ""
   echo " >>> Commands <<<"
   echo "croot           - cd to the root of the Git tree"
-  echo "sync_flutter    - inspect and sync new commits in Flutter"
   echo "sfind           - find files in the tree"
   echo "analyze         - analyze Dart code"
   echo "push_to_gerrit  - push current HEAD to Gerrit for review"
+  echo "jiro            - extension to the jiri tool"
   echo ""
   echo " >>> Search commands"
   echo "sgrep           - search through all files"

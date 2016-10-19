@@ -1,9 +1,0 @@
-# Copyright 2016 The Fuchsia Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
-name: interfaces
-version: 0.0.1
-description: A collection of system services that the system UI relies upon.
-dependencies:
-  mojo_sdk: 0.2.31

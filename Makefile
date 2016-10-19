@@ -25,8 +25,9 @@ endif
 ################################################################################
 ## Local variables.
 root := $(shell pwd)
-dart_bin := $(root)/third_party/flutter/bin/cache/dart-sdk/bin
-pub := $(dart_bin)/pub
+flutter_bin := $(root)/../lib/flutter/bin
+pub := $(flutter_bin)/cache/dart-sdk/bin/pub
+flutter := $(flutter_bin)/flutter
 
 ################################################################################
 ## Build flags.
@@ -57,9 +58,8 @@ endif
 
 sync: check
 ifeq ($(flag_sync), yes)
-	tools/install_flutter.sh
 	# Force an update of Flutter's dependencies.
-	third_party/flutter/bin/flutter precache
+	$(flutter) precache
 	cd tools/get_dependencies && $(pub) upgrade && $(pub) run bin/main.dart upgrade
 	(cd ../magenta; ./scripts/build-magenta-x86-64)
 	../scripts/build-sysroot.sh -c -t x86_64
