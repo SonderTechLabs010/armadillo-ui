@@ -10,6 +10,8 @@ import 'armadillo_drag_target.dart';
 import 'optional_wrapper.dart';
 import 'panel.dart';
 import 'panel_drag_targets.dart';
+import 'simulated_positioned.dart';
+import 'simulated_sized_box.dart';
 import 'story.dart';
 import 'story_bar.dart';
 import 'story_cluster.dart';
@@ -130,10 +132,8 @@ class StoryPanels extends StatelessWidget {
 
     return story.isPlaceHolder
         ? new Offstage()
-        : new AnimatedPositioned(
+        : new SimulatedPositioned(
             key: new GlobalObjectKey(story.positionedId),
-            curve: Curves.fastOutSlowIn,
-            duration: const Duration(milliseconds: 300),
             top: currentSize.height * panel.top + topMargin,
             left: currentSize.width * panel.left + leftMargin,
             width: currentSize.width * panel.width - leftMargin - rightMargin,
@@ -221,7 +221,8 @@ class StoryPanels extends StatelessWidget {
       new FittedBox(
         fit: ImageFit.cover,
         alignment: FractionalOffset.topCenter,
-        child: new SizedBox(
+        child: new SimulatedSizedBox(
+          key: new GlobalObjectKey(story.containerId),
           width: size.width,
           height: size.height - _kStoryBarMaximizedHeight,
           child: story.builder(context),

@@ -4,9 +4,10 @@
 
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
+import 'package:sysui_widgets/rk4_spring_simulation.dart';
+import 'package:sysui_widgets/ticking_state.dart';
 
 import 'armadillo_drag_target.dart';
 import 'panel.dart';
@@ -37,6 +38,9 @@ const bool _kDrawTargetLines = false;
 /// Once a drag target is chosen, this is the distance a draggable must travel
 /// before new drag targets are considered.
 const double _kStickyDistance = 32.0;
+
+const RK4SpringDescription _kScaleSimulationDesc =
+    const RK4SpringDescription(tension: 450.0, friction: 50.0);
 
 typedef void _OnPanelEvent(BuildContext context, StoryCluster data);
 
@@ -180,12 +184,16 @@ class PanelDragTargets extends StatefulWidget {
   PanelDragTargetsState createState() => new PanelDragTargetsState();
 }
 
-class PanelDragTargetsState extends State<PanelDragTargets> {
+class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   final Set<LineSegment> _targetLines = new Set<LineSegment>();
   final Map<StoryCluster, Point> _closestTargetLockPoints =
       new Map<StoryCluster, Point>();
   final Map<StoryCluster, LineSegment> _closestTargets =
       new Map<StoryCluster, LineSegment>();
+  final RK4SpringSimulation _scaleSimulation = new RK4SpringSimulation(
+    initValue: 1.0,
+    desc: _kScaleSimulationDesc,
+  );
 
   @override
   void initState() {
@@ -221,9 +229,11 @@ class PanelDragTargetsState extends State<PanelDragTargets> {
       ) {
         _updateClosestTargets(candidateData);
 
+        _scaleSimulation.target = candidateData.isEmpty ? 1.0 : config.scale;
+        startTicking();
+
         // Scale the child.
-        double childScale = lerpDouble(1.0,
-            candidateData.isEmpty ? 1.0 : config.scale, config.focusProgress);
+        double childScale = _scaleSimulation.value;
 
         List<Widget> stackChildren = [
           new Positioned(
@@ -259,6 +269,12 @@ class PanelDragTargetsState extends State<PanelDragTargets> {
         }
         return new Stack(children: stackChildren);
       });
+
+  @override
+  bool handleTick(double elapsedSeconds) {
+    _scaleSimulation.elapseTime(elapsedSeconds);
+    return !_scaleSimulation.isDone;
+  }
 
   void _updateClosestTargets(Map<StoryCluster, Point> candidateData) {
     // Remove any candidates that no longer exist.
