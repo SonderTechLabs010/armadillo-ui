@@ -942,6 +942,11 @@ class PanelDragTargetsState extends State<PanelDragTargets> {
     _normalizeSizes();
 
     // 2) Remove dropped cluster from story manager.
+    // NOTE: We do this in a microtask because of the following:
+    //   a) Messing with the [StoryManager] could cause a setState call.
+    //   b) This function could be called while we're building (due to an
+    //      onHover callback).
+    //   c) Causing a setState while building is a big Flutter no-no.
     scheduleMicrotask(() {
       if (!preview) {
         InheritedStoryManager.of(context).remove(storyCluster: storyCluster);

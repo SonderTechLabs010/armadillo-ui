@@ -130,7 +130,10 @@ class StoryPanels extends StatelessWidget {
 
     return story.isPlaceHolder
         ? new Offstage()
-        : new Positioned(
+        : new AnimatedPositioned(
+            key: new GlobalObjectKey(story.positionedId),
+            curve: Curves.fastOutSlowIn,
+            duration: const Duration(milliseconds: 300),
             top: currentSize.height * panel.top + topMargin,
             left: currentSize.width * panel.left + leftMargin,
             width: currentSize.width * panel.width - leftMargin - rightMargin,

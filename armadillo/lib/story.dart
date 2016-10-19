@@ -22,6 +22,7 @@ class Story {
   final Object storyBarKeyObject;
   final Object clusterId;
   final Object clusterDraggableId;
+  final Object positionedId;
   final Panel panel;
 
   Story({
@@ -37,11 +38,13 @@ class Story {
     Object storyBarKeyObject,
     Object clusterId,
     Object clusterDraggableId,
+    Object positionedId,
     Panel panel,
   })
       : this.storyBarKeyObject = storyBarKeyObject ?? new Object(),
         this.clusterId = clusterId ?? new Object(),
         this.clusterDraggableId = clusterDraggableId ?? new Object(),
+        this.positionedId = positionedId ?? new Object(),
         this.panel = panel ?? new Panel();
 
   Story copyWith({
@@ -65,6 +68,7 @@ class Story {
         storyBarKeyObject: this.storyBarKeyObject,
         clusterId: this.clusterId,
         clusterDraggableId: this.clusterDraggableId,
+        positionedId: this.positionedId,
         panel: panel ?? this.panel,
       );
 
