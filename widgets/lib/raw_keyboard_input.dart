@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sky_services/sky/input_event.mojom.dart' as mojom;
 
 import 'key_mappings.dart';
 import 'scrollable_input_text.dart';
@@ -59,28 +59,29 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
   void append(String text) => textState?.append(text);
   bool backspace() => textState?.backspace();
 
-  void _handleKey(mojom.InputEvent event) {
-    if (event.type == mojom.EventType.keyPressed) {
-      if (event.keyData.keyCode == keyCodeEnter) {
+  void _handleKey(RawKeyEvent event) {
+    if (event is RawKeyUpEvent) {
+      RawKeyEventDataAndroid data = event.data;
+      if (data.keyCode == keyCodeEnter) {
         String text = textState?.text;
         if (config.onTextCommitted != null && text.isNotEmpty) {
           config.onTextCommitted(text);
         }
         clear();
-      } else if (event.keyData.keyCode == keyCodeBackspace) {
+      } else if (data.keyCode == keyCodeBackspace) {
         if (textState?.backspace() ?? false) {
           _notifyTextChanged();
         }
       } else {
-        if (event.keyData.metaState == metaStateNormal) {
-          if (keyCodeMap.containsKey(event.keyData.keyCode)) {
-            textState?.append(keyCodeMap[event.keyData.keyCode]);
+        if (data.metaState == metaStateNormal) {
+          if (keyCodeMap.containsKey(data.keyCode)) {
+            textState?.append(keyCodeMap[data.keyCode]);
             _notifyTextChanged();
           }
-        } else if (event.keyData.metaState == metaStateLeftShiftDown ||
-            event.keyData.metaState == metaStateRightShiftDown) {
-          if (shiftedKeyCodeMap.containsKey(event.keyData.keyCode)) {
-            textState?.append(shiftedKeyCodeMap[event.keyData.keyCode]);
+        } else if (data.metaState == metaStateLeftShiftDown ||
+            data.metaState == metaStateRightShiftDown) {
+          if (shiftedKeyCodeMap.containsKey(data.keyCode)) {
+            textState?.append(shiftedKeyCodeMap[data.keyCode]);
             _notifyTextChanged();
           }
         }

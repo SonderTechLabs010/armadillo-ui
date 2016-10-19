@@ -135,6 +135,8 @@ class DummyStoryManager extends StoryManager {
 }
 
 Widget _wrapWithWidgetsApp({Widget child}) => new WidgetsApp(
+      title: '',
+      color: const Color(0xFFFFFFFF),
       onGenerateRoute: (RouteSettings settings) => new DelegatingPageRoute(
             (_) => child,
             settings: settings,
