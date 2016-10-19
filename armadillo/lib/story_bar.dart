@@ -52,7 +52,7 @@ class StoryBarState extends TickingState<StoryBar> {
   @override
   Widget build(BuildContext context) => new Container(
         height: _height,
-        padding: new EdgeInsets.symmetric(horizontal: 8.0),
+        padding: new EdgeInsets.symmetric(horizontal: 12.0),
         decoration: new BoxDecoration(backgroundColor: config.story.themeColor),
         child: new OverflowBox(
           minHeight: config.maximizedHeight,
@@ -62,7 +62,7 @@ class StoryBarState extends TickingState<StoryBar> {
             opacity: _opacity,
             child: new Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                  const EdgeInsets.symmetric(horizontal: 0.0, vertical: 12.0),
               child: new CustomMultiChildLayout(
                 delegate: new ThreeColumnAlignedLayoutDelegate(
                   partMargin: _kPartMargin,

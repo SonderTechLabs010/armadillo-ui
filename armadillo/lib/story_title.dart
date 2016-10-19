@@ -17,8 +17,8 @@ class StoryTitle extends StatelessWidget {
         style: new TextStyle(
           fontSize: 11.0,
           color: new Color.fromARGB(160, 255, 255, 255),
-          fontWeight: FontWeight.w700,
-          letterSpacing: 2.0,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 1.2,
         ),
         softWrap: false,
         overflow: TextOverflow.ellipsis,

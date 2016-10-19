@@ -36,8 +36,10 @@ class StoryListLayout {
   /// In multicolumn mode, all stories are laid out into a grid.  The grid
   /// spacing is [_baseHorizontalGrid] in the horizontal direction and
   /// [_baseVerticalGrid] in the vertical direction.
+  /// [_horizontalGap] is the horizontal spacing between stories, which is defined as integral multiple of _baseHorizontalGrid
   double _baseHorizontalGrid;
   double _baseVerticalGrid;
+  double _horizontalGap;
 
   /// The factor to scale stories within a row by based on their respective
   /// interaction minutes.
@@ -55,6 +57,7 @@ class StoryListLayout {
             _kMultiColumnWidthThreshold);
     _baseHorizontalGrid = 16.0 + (screenSizeAdjustment * 2.0).floor() * 4.0;
     _baseVerticalGrid = 16.0 + (screenSizeAdjustment * 2.0).floor() * 4.0;
+    _horizontalGap = _baseHorizontalGrid * 2.0;
     _intraStoryInteractionScaling = 0.12 * screenSizeAdjustment;
     _multiColumn = _kMultiColumnWidthThreshold <= size.width;
   }
@@ -110,7 +113,7 @@ class StoryListLayout {
             possibleJugglingMinutes);
 
         if (storyJugglingMinutes > 0) {
-          jugglingStoryCount ++;
+          jugglingStoryCount++;
           // Constrain the number of juggling stories within _kMaxJugglingStoryCount
           if (jugglingStoryCount > _kMaxJugglingStoryCount) {
             storyJugglingMinutes = 0;
@@ -143,7 +146,7 @@ class StoryListLayout {
       );
       double jugglingScaling =
           1.0 + baseJugglingScaling * listIndexJugglingDecay;
-      double width = _multiColumn ? (minW - _baseHorizontalGrid) / 2.0 : minW;
+      double width = _multiColumn ? (minW - _horizontalGap) / 2.0 : minW;
       double height = width *
           math.min(0.75, size.height / size.width) *
           jugglingScaling *
@@ -187,12 +190,12 @@ class StoryListLayout {
             (i < stories.length - 1) ? stories[i + 1] : null;
         double maxWidth = _getMaxWidthForTop(-rowTop, jugglingStoryCount);
         story.offset = new Offset(
-            (row.length == 0) ? 0.0 : previousStory.right + _baseHorizontalGrid,
+            (row.length == 0) ? 0.0 : previousStory.right + _horizontalGap,
             rowTop);
         rowWidth += story.size.width;
         row.add(story);
         if (nextStory == null ||
-            (rowWidth + nextStory.size.width + _baseHorizontalGrid > maxWidth &&
+            (rowWidth + nextStory.size.width + _horizontalGap > maxWidth &&
                 row.length >= 2)) {
           rows.add(row);
           row = <_StoryMetadata>[];
@@ -240,13 +243,12 @@ class StoryListLayout {
         // becomes or comes closer to our target width.
         // Apply only if the row contain more than 1 story
         if (row.length > 1) {
-          double maxRowWidth = _getMaxWidthForTop(
-              -previousRowLastStoryTop,
-              jugglingStoryCount);
+          double maxRowWidth =
+              _getMaxWidthForTop(-previousRowLastStoryTop, jugglingStoryCount);
           // If row width is larger than max, fit the width to max. If smaller, adjust to make it closer to the max
-          double targetRowWidth = (maxRowWidth < originalRowWidth) ?
-              maxRowWidth :
-              originalRowWidth + (maxRowWidth - originalRowWidth) * 0.5;
+          double targetRowWidth = (maxRowWidth < originalRowWidth)
+              ? maxRowWidth
+              : originalRowWidth + (maxRowWidth - originalRowWidth) * 0.5;
           double scale = (targetRowWidth / originalRowWidth).clamp(0.7, 1.3);
 
           row.forEach((_StoryMetadata story) {
@@ -261,7 +263,7 @@ class StoryListLayout {
         row.forEach((_StoryMetadata story) {
           story.dx = (previousStory == null)
               ? 0.0
-              : previousStory.right + _baseHorizontalGrid;
+              : previousStory.right + _horizontalGap;
           rowWidth += story.size.width;
           previousStory = story;
         });
@@ -270,7 +272,7 @@ class StoryListLayout {
         // margins between the stories.
         double storyLeftShift = (row.length > 1)
             ? (rowWidth + (row.length - 1) * _baseHorizontalGrid) * 0.5
-            : rowWidth + _baseHorizontalGrid * 0.5;
+            : rowWidth + _horizontalGap * 0.5;
 
         previousStory = null;
         row.forEach((_StoryMetadata story) {
@@ -280,7 +282,7 @@ class StoryListLayout {
             // TODO(apwilson): Should be vertical grid not horizontal.
             Rect expandedStoryRect = new Rect.fromLTWH(
               story.offset.dx,
-              story.offset.dy - _baseHorizontalGrid * 0.5,
+              story.offset.dy - _horizontalGap * 0.5,
               story.size.width,
               story.size.height + _baseHorizontalGrid * 2.0,
             );
