@@ -7,6 +7,10 @@ import("//flutter/build/flutter_app.gni")
 flutter_app("user_shell") {
   main_dart = "lib/main.dart"
 
+  package_name = "armadillo"
+
+  source_dir = "lib"
+
   deps = [
     "//lib/flutter/packages/flutter",
     "//modules/gallery",
