@@ -76,19 +76,21 @@ class StoryClusterWidget extends StatelessWidget {
         // Don't accept data if we're focused or focusing.
         useWrapper: _isUnfocused,
         builder: (BuildContext context, Widget child) =>
-            new ArmadilloDragTarget<StoryCluster>(
-              onWillAccept: (StoryCluster data, Point point) {
+            new ArmadilloDragTarget<Object>(
+              onWillAccept: (Object data, Point point) {
+                StoryCluster storyCluster =
+                    InheritedStoryManager.of(context).getStoryCluster(data);
                 // Don't accept empty data.
-                if (data == null || data.stories.isEmpty) {
+                if (storyCluster == null || storyCluster.stories.isEmpty) {
                   return false;
                 }
 
-                // Don't accept data that has a story that matches any of our current
-                // stories.
+                // Don't accept data that has a story that matches any of our
+                // current stories.
                 bool result = true;
-                data.stories.forEach((Story s1) {
+                storyCluster.stories.forEach((Story s1) {
                   if (result) {
-                    storyCluster.stories.forEach((Story s2) {
+                    this.storyCluster.stories.forEach((Story s2) {
                       if (result && s1.id == s2.id) {
                         result = false;
                       }
@@ -98,17 +100,20 @@ class StoryClusterWidget extends StatelessWidget {
 
                 return result;
               },
-              onAccept: (StoryCluster data, Point point) {
+              onAccept: (Object data, Point point) {
+                StoryCluster storyCluster =
+                    InheritedStoryManager.of(context).getStoryCluster(data);
+
                 InheritedStoryManager.of(context).combine(
-                      source: data,
-                      target: storyCluster,
+                      source: storyCluster,
+                      target: this.storyCluster,
                       size: fullSize,
                     );
                 onGainFocus();
               },
               builder: (
                 BuildContext context,
-                Map<StoryCluster, Point> candidateData,
+                Map<Object, Point> candidateData,
                 Map<dynamic, Point> rejectedData,
               ) =>
                   _getUnfocusedDragTargetChild(context,
@@ -129,13 +134,20 @@ class StoryClusterWidget extends StatelessWidget {
           builder: (BuildContext context, Widget child) =>
               new ArmadilloLongPressDraggable(
                 key: new GlobalObjectKey(storyCluster.clusterDraggableId),
-                data: storyCluster,
-                childWhenDragging: new Container(),
-                feedback: new StoryClusterDragFeedback(
-                  storyCluster: storyCluster,
-                  fullSize: fullSize,
-                  multiColumn: multiColumn,
-                ),
+                data: storyCluster.id,
+                childWhenDragging: new Offstage(),
+                feedback: new Builder(builder: (BuildContext context) {
+                  RenderBox box =
+                      new GlobalObjectKey(storyCluster.clusterDragTargetsId)
+                          .currentContext
+                          .findRenderObject();
+                  return new StoryClusterDragFeedback(
+                    key: new GlobalObjectKey(storyCluster.dragFeedbackId),
+                    storyCluster: storyCluster,
+                    fullSize: fullSize,
+                    initialSize: box.size,
+                  );
+                }),
                 child: child,
               ),
           child: _getStoryClusterWithInlineStoryTitle(

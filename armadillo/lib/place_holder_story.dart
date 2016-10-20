@@ -12,7 +12,9 @@ import 'story.dart';
 /// [PanelDragTargets] has a hovering cluster (ie. we're previewing the
 /// combining of two clusters).
 class PlaceHolderStory extends Story {
-  PlaceHolderStory({Object id, Panel panel})
+  final Object associatedStoryId;
+
+  PlaceHolderStory({Object id, this.associatedStoryId, Panel panel})
       : super(
             id: id ?? new Object(),
             panel: panel,
@@ -29,5 +31,9 @@ class PlaceHolderStory extends Story {
     Panel panel,
     Object clusterDraggableId,
   }) =>
-      new PlaceHolderStory(id: this.id, panel: panel ?? this.panel);
+      new PlaceHolderStory(
+        id: this.id,
+        panel: panel ?? this.panel,
+        associatedStoryId: this.associatedStoryId,
+      );
 }

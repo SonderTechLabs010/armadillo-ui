@@ -141,6 +141,12 @@ class StoryManager extends ConfigManager {
     // TODO(apwilson): implement this!
   }
 
+  /// Finds and returns the [StoryCluster] with the id equal to
+  /// [storyClusterId].
+  StoryCluster getStoryCluster(Object storyClusterId) => _storyClusters
+      .where((StoryCluster storyCluster) => storyCluster.id == storyClusterId)
+      .single;
+
   Story _getLargestStory(List<Story> stories) {
     double largestSize = -0.0;
     Story largestStory;

@@ -14,6 +14,7 @@ import 'panel.dart';
 import 'place_holder_story.dart';
 import 'story.dart';
 import 'story_cluster.dart';
+import 'story_cluster_drag_feedback.dart';
 import 'story_keys.dart';
 import 'story_manager.dart';
 
@@ -219,14 +220,27 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
   @override
   Widget build(BuildContext context) => new ArmadilloDragTarget(
-      onWillAccept: (StoryCluster data, Point point) => true,
-      onAccept: (StoryCluster data, Point point) =>
-          _getClosestLine(point, data).onDrop?.call(context, data),
+      onWillAccept: (Object data, Point point) => true,
+      onAccept: (Object data, Point point) {
+        StoryCluster storyCluster =
+            InheritedStoryManager.of(context).getStoryCluster(data);
+        return _getClosestLine(point, storyCluster)
+            .onDrop
+            ?.call(context, storyCluster);
+      },
       builder: (
         BuildContext context,
-        Map<StoryCluster, Point> candidateData,
+        Map<Object, Point> storyClusterIdCandidateData,
         Map<dynamic, Point> rejectedData,
       ) {
+        Map<StoryCluster, Point> candidateData = {};
+        storyClusterIdCandidateData.keys.forEach((Object storyClusterId) {
+          StoryCluster storyCluster =
+              InheritedStoryManager.of(context).getStoryCluster(storyClusterId);
+          candidateData[storyCluster] =
+              storyClusterIdCandidateData[storyClusterId];
+        });
+
         _updateClosestTargets(candidateData);
 
         _scaleSimulation.target = candidateData.isEmpty ? 1.0 : config.scale;
@@ -455,6 +469,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         onHover: (BuildContext context, StoryCluster data) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
+          _updateDragFeedback(data.dragFeedbackId);
 
           // TODO(apwilson): Switch all the stories involved into tabs.
         },
@@ -478,6 +493,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         onHover: (BuildContext context, StoryCluster data) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
+          _updateDragFeedback(data.dragFeedbackId);
         },
         onDrop: (BuildContext context, StoryCluster data) {
           config.storyCluster.removePreviews();
@@ -501,6 +517,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         onHover: (BuildContext context, StoryCluster data) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
+          _updateDragFeedback(data.dragFeedbackId);
         },
         onDrop: (BuildContext context, StoryCluster data) {
           config.storyCluster.removePreviews();
@@ -656,7 +673,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (_) => new PlaceHolderStory(),
+            (int index) => new PlaceHolderStory(
+                  associatedStoryId: storyCluster.stories[index].id,
+                ),
           )
         : _getHorizontallySortedStories(storyCluster);
 
@@ -679,6 +698,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 3) Clean up.
     _cleanup(context: context, storyCluster: storyCluster, preview: preview);
+
+    // 4) If previewing, update the drag feedback.
+    if (preview) {
+      _updateDragFeedback(storyCluster.dragFeedbackId);
+    }
   }
 
   /// Adds the stories of [storyCluster] to the right, spanning the full height.
@@ -693,7 +717,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (_) => new PlaceHolderStory(),
+            (int index) => new PlaceHolderStory(
+                  associatedStoryId: storyCluster.stories[index].id,
+                ),
           )
         : _getHorizontallySortedStories(storyCluster);
 
@@ -715,6 +741,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 3) Clean up.
     _cleanup(context: context, storyCluster: storyCluster, preview: preview);
+
+    // 4) If previewing, update the drag feedback.
+    if (preview) {
+      _updateDragFeedback(storyCluster.dragFeedbackId);
+    }
   }
 
   /// Adds the stories of [storyCluster] to the top, spanning the full width.
@@ -729,7 +760,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (_) => new PlaceHolderStory(),
+            (int index) => new PlaceHolderStory(
+                  associatedStoryId: storyCluster.stories[index].id,
+                ),
           )
         : _getVerticallySortedStories(storyCluster);
 
@@ -752,6 +785,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 3) Clean up.
     _cleanup(context: context, storyCluster: storyCluster, preview: preview);
+
+    // 4) If previewing, update the drag feedback.
+    if (preview) {
+      _updateDragFeedback(storyCluster.dragFeedbackId);
+    }
   }
 
   /// Adds the stories of [storyCluster] to the bottom, spanning the full width.
@@ -766,7 +804,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (_) => new PlaceHolderStory(),
+            (int index) => new PlaceHolderStory(
+                  associatedStoryId: storyCluster.stories[index].id,
+                ),
           )
         : _getVerticallySortedStories(storyCluster);
 
@@ -788,6 +828,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 3) Clean up.
     _cleanup(context: context, storyCluster: storyCluster, preview: preview);
+
+    // 4) If previewing, update the drag feedback.
+    if (preview) {
+      _updateDragFeedback(storyCluster.dragFeedbackId);
+    }
   }
 
   Panel _getPanelFromStoryId(Object storyId) => config.storyCluster.stories
@@ -809,7 +854,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (_) => new PlaceHolderStory(),
+            (int index) => new PlaceHolderStory(
+                  associatedStoryId: storyCluster.stories[index].id,
+                ),
           )
         : _getHorizontallySortedStories(storyCluster);
 
@@ -832,6 +879,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 3) Clean up.
     _cleanup(context: context, storyCluster: storyCluster, preview: preview);
+
+    // 4) If previewing, update the drag feedback.
+    if (preview) {
+      _updateDragFeedback(storyCluster.dragFeedbackId);
+    }
   }
 
   /// Adds the stories of [storyCluster] to the right of [panel], spanning
@@ -848,7 +900,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (_) => new PlaceHolderStory(),
+            (int index) => new PlaceHolderStory(
+                  associatedStoryId: storyCluster.stories[index].id,
+                ),
           )
         : _getHorizontallySortedStories(storyCluster);
 
@@ -870,6 +924,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 3) Clean up.
     _cleanup(context: context, storyCluster: storyCluster, preview: preview);
+
+    // 4) If previewing, update the drag feedback.
+    if (preview) {
+      _updateDragFeedback(storyCluster.dragFeedbackId);
+    }
   }
 
   /// Adds the stories of [storyCluster] to the top of [panel], spanning
@@ -886,7 +945,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (_) => new PlaceHolderStory(),
+            (int index) => new PlaceHolderStory(
+                  associatedStoryId: storyCluster.stories[index].id,
+                ),
           )
         : _getVerticallySortedStories(storyCluster);
 
@@ -909,6 +970,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 3) Clean up.
     _cleanup(context: context, storyCluster: storyCluster, preview: preview);
+
+    // 4) If previewing, update the drag feedback.
+    if (preview) {
+      _updateDragFeedback(storyCluster.dragFeedbackId);
+    }
   }
 
   /// Adds the stories of [storyCluster] to the bottom of [panel], spanning
@@ -925,7 +991,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (_) => new PlaceHolderStory(),
+            (int index) => new PlaceHolderStory(
+                  associatedStoryId: storyCluster.stories[index].id,
+                ),
           )
         : _getVerticallySortedStories(storyCluster);
 
@@ -947,6 +1015,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 3) Clean up.
     _cleanup(context: context, storyCluster: storyCluster, preview: preview);
+
+    // 4) If previewing, update the drag feedback.
+    if (preview) {
+      _updateDragFeedback(storyCluster.dragFeedbackId);
+    }
   }
 
   void _cleanup({
@@ -969,6 +1042,29 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       } else {
         InheritedStoryManager.of(context).notifyListeners();
       }
+    });
+  }
+
+  void _updateDragFeedback(Object dragFeedbackId) {
+    Map<Object, Panel> panelMap = <Object, Panel>{};
+
+    config.storyCluster.stories
+        .where((Story story) => story.isPlaceHolder)
+        .forEach((PlaceHolderStory story) {
+      panelMap[story.associatedStoryId] = story.panel;
+    });
+
+    StoryClusterDragFeedbackState state =
+        new GlobalObjectKey(dragFeedbackId)?.currentState;
+
+    // NOTE: We do this in a microtask because of the following:
+    //   a) Messing with the [StoryClusterDragFeedbackState] could cause a
+    //      setState call.
+    //   b) This function could be called while we're building (due to an
+    //      onHover callback).
+    //   c) Causing a setState while building is a big Flutter no-no.
+    scheduleMicrotask(() {
+      state?.storyPanels = panelMap;
     });
   }
 

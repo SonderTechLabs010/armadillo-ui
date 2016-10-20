@@ -163,11 +163,7 @@ class StoryPanels extends StatelessWidget {
         builder: (BuildContext context, Widget child) =>
             new ArmadilloLongPressDraggable(
               key: new GlobalObjectKey(story.clusterDraggableId),
-              data: new StoryCluster.fromStory(
-                story.copyWith(
-                  panel: new Panel(),
-                ),
-              ),
+              data: story.clusterId,
               onDragStarted: () {
                 InheritedStoryManager.of(context).split(
                       storyToSplit: story,
@@ -176,10 +172,18 @@ class StoryPanels extends StatelessWidget {
                 StoryKeys.storyBarKey(story).currentState?.minimize();
               },
               childWhenDragging: new Offstage(),
-              feedback: new StoryClusterDragFeedback(
-                storyCluster: new StoryCluster.fromStory(story),
-                fullSize: fullSize,
-                multiColumn: true,
+              feedback: new Builder(
+                builder: (BuildContext context) {
+                  StoryCluster storyCluster = InheritedStoryManager
+                      .of(context)
+                      .getStoryCluster(story.clusterId);
+                  return new StoryClusterDragFeedback(
+                    key: new GlobalObjectKey(storyCluster.dragFeedbackId),
+                    storyCluster: storyCluster,
+                    fullSize: fullSize,
+                    initialSize: new Size(400.0, 300.0),
+                  );
+                },
               ),
               child: child,
             ),

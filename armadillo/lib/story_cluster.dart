@@ -17,6 +17,7 @@ class StoryCluster {
   final Object carouselId;
   final Object clusterDraggableId;
   final Object clusterDragTargetsId;
+  final Object dragFeedbackId;
   final Set<VoidCallback> _storyListListeners;
 
   StoryCluster({
@@ -24,6 +25,7 @@ class StoryCluster {
     Object carouselId,
     Object clusterDraggableId,
     Object clusterDragTargetsId,
+    Object dragFeedbackId,
     List<Story> stories,
     Set<VoidCallback> storyListListeners,
   })
@@ -36,16 +38,17 @@ class StoryCluster {
         this.carouselId = carouselId ?? new Object(),
         this.clusterDraggableId = clusterDraggableId ?? new Object(),
         this.clusterDragTargetsId = clusterDragTargetsId ?? new Object(),
+        this.dragFeedbackId = dragFeedbackId ?? new Object(),
         this._storyListListeners =
             storyListListeners ?? new Set<VoidCallback>();
 
-  factory StoryCluster.fromStory(Story story) {
-    return new StoryCluster(
-      id: story.clusterId,
-      clusterDraggableId: story.clusterDraggableId,
-      stories: [story.copyWith(panel: new Panel())],
-    );
-  }
+  factory StoryCluster.fromStory(Story story) => new StoryCluster(
+        id: story.clusterId,
+        clusterDraggableId: story.clusterDraggableId,
+        stories: [
+          story.copyWith(panel: new Panel()),
+        ],
+      );
 
   List<Story> get stories => new List.unmodifiable(_stories);
 
@@ -72,6 +75,7 @@ class StoryCluster {
         carouselId: this.carouselId,
         clusterDraggableId: clusterDraggableId ?? this.clusterDraggableId,
         clusterDragTargetsId: this.clusterDragTargetsId,
+        dragFeedbackId: this.dragFeedbackId,
         stories: new List<Story>.generate(
           _stories.length,
           (int index) => _stories[index].copyWith(

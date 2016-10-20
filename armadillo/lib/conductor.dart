@@ -295,10 +295,6 @@ class Conductor extends StatelessWidget {
     StoryManager storyManager,
     StoryCluster storyCluster,
   ) {
-    storyManager.storyClusters
-        .where((StoryCluster s) => s.id != storyCluster.id)
-        .forEach(_unfocusStoryCluster);
-
     // Tell the [StoryManager] the story is now in focus.  This will move the
     // [Story] to the front of the [StoryList].
     storyManager.interactionStarted(storyCluster);
