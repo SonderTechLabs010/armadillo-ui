@@ -243,8 +243,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
         _updateClosestTargets(candidateData);
 
-        _scaleSimulation.target = candidateData.isEmpty ? 1.0 : config.scale;
-        startTicking();
+        double newScale = candidateData.isEmpty ? 1.0 : config.scale;
+        if (_scaleSimulation.target != newScale) {
+          _scaleSimulation.target = newScale;
+          startTicking();
+        }
 
         // Scale the child.
         double childScale = _scaleSimulation.value;
