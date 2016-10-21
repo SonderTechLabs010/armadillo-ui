@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -12,6 +14,7 @@ import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_widget.dart';
 import 'story_keys.dart';
+import 'story_list_layout.dart';
 import 'story_list_render_block.dart';
 import 'story_list_render_block_parent_data.dart';
 import 'story_manager.dart';
@@ -70,6 +73,17 @@ class StoryList extends StatelessWidget {
         b.lastInteraction.millisecondsSinceEpoch -
         a.lastInteraction.millisecondsSinceEpoch);
 
+    List<StoryLayout> storyLayout =
+        new StoryListLayout(size: parentSize).layout(
+      storyClustersToLayout: storyClusters,
+      currentTime: new DateTime.now(),
+    );
+
+    double listHeight = 0.0;
+    storyLayout.forEach((StoryLayout storyLayout) {
+      listHeight = math.max(listHeight, -storyLayout.offset.dy);
+    });
+
     // IMPORTANT:  In order for activation of inactive stories from suggestions
     // to work we must have them in the widget tree.
     List<Widget> stackChildren = new List.from(
@@ -91,10 +105,15 @@ class StoryList extends StatelessWidget {
         bottomPadding: bottomPadding,
         onScroll: onScroll,
         parentSize: parentSize,
-        children: storyClusters
-            .map((StoryCluster storyCluster) =>
-                _createFocusableStoryCluster(storyClusters, storyCluster))
-            .toList(),
+        listHeight: listHeight,
+        children: new List<Widget>.generate(
+          storyClusters.length,
+          (int index) => _createFocusableStoryCluster(
+                storyClusters,
+                storyClusters[index],
+                storyLayout[index],
+              ),
+        ),
       ),
     );
 
@@ -102,7 +121,10 @@ class StoryList extends StatelessWidget {
   }
 
   Widget _createFocusableStoryCluster(
-          List<StoryCluster> storyClusters, StoryCluster storyCluster) =>
+    List<StoryCluster> storyClusters,
+    StoryCluster storyCluster,
+    StoryLayout storyLayout,
+  ) =>
       new SimulationBuilder(
         key: StoryKeys.storyClusterFocusSimulationKey(storyCluster),
         onSimulationChanged: (double progress, bool isDone) {
@@ -111,7 +133,7 @@ class StoryList extends StatelessWidget {
           }
         },
         builder: (BuildContext context, double progress) => new StoryListChild(
-              storyCluster: storyCluster,
+              storyLayout: storyLayout,
               focusProgress: progress,
               child: _createStoryCluster(storyClusters, storyCluster, progress),
             ),
@@ -158,6 +180,7 @@ class StoryList extends StatelessWidget {
 class StoryListBlock extends Block {
   final Size parentSize;
   final double bottomPadding;
+  final double listHeight;
   StoryListBlock({
     Key key,
     List<Widget> children,
@@ -165,6 +188,7 @@ class StoryListBlock extends Block {
     ScrollListener onScroll,
     Key scrollableKey,
     this.parentSize,
+    this.listHeight,
   })
       : super(
           key: key,
@@ -190,6 +214,7 @@ class StoryListBlock extends Block {
         child: new StoryListBlockBody(
           children: children,
           parentSize: parentSize,
+          listHeight: listHeight,
           scrollOffset: (scrollableKey as GlobalKey<ScrollableState>)
                   .currentState
                   ?.scrollOffset ??
@@ -203,12 +228,14 @@ class StoryListBlockBody extends BlockBody {
   final Size parentSize;
   final double scrollOffset;
   final double bottomPadding;
+  final double listHeight;
   StoryListBlockBody({
     Key key,
     List<Widget> children,
     this.parentSize,
     this.scrollOffset,
     this.bottomPadding,
+    this.listHeight,
   })
       : super(key: key, mainAxis: Axis.vertical, children: children);
 
@@ -218,6 +245,7 @@ class StoryListBlockBody extends BlockBody {
         parentSize: parentSize,
         scrollOffset: scrollOffset,
         bottomPadding: bottomPadding,
+        listHeight: listHeight,
       );
 
   @override
@@ -227,30 +255,31 @@ class StoryListBlockBody extends BlockBody {
     renderObject.parentSize = parentSize;
     renderObject.scrollOffset = scrollOffset;
     renderObject.bottomPadding = bottomPadding;
+    renderObject.listHeight = listHeight;
   }
 }
 
 class StoryListChild extends ParentDataWidget<StoryListBlockBody> {
-  final StoryCluster storyCluster;
+  final StoryLayout storyLayout;
   final double focusProgress;
   StoryListChild({
     Widget child,
-    this.storyCluster,
+    this.storyLayout,
     this.focusProgress,
   })
       : super(child: child);
+
   @override
   void applyParentData(RenderObject renderObject) {
     assert(renderObject.parentData is StoryListRenderBlockParentData);
     final StoryListRenderBlockParentData parentData = renderObject.parentData;
-    parentData.storyCluster = storyCluster;
+    parentData.storyLayout = storyLayout;
     parentData.focusProgress = focusProgress;
   }
 
   @override
   void debugFillDescription(List<String> description) {
     super.debugFillDescription(description);
-    description
-        .add('storyCluster: $storyCluster, focusProgress: $focusProgress');
+    description.add('storyLayout: $storyLayout, focusProgress: $focusProgress');
   }
 }

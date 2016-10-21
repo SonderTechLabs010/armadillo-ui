@@ -7,7 +7,6 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/rendering.dart';
 
-import 'story_cluster.dart';
 import 'story_list_layout.dart';
 import 'story_list_render_block_parent_data.dart';
 
@@ -25,10 +24,12 @@ class StoryListRenderBlock extends RenderBlock {
     Size parentSize,
     double scrollOffset,
     double bottomPadding,
+    double listHeight,
   })
       : _parentSize = parentSize,
         _scrollOffset = scrollOffset ?? 0.0,
         _bottomPadding = bottomPadding ?? 0.0,
+        _listHeight = listHeight ?? 0.0,
         super(children: children, mainAxis: Axis.vertical);
 
   Size get parentSize => _parentSize;
@@ -54,6 +55,15 @@ class StoryListRenderBlock extends RenderBlock {
   set bottomPadding(double value) {
     if (_bottomPadding != value) {
       _bottomPadding = value;
+      markNeedsLayout();
+    }
+  }
+
+  double get listHeight => _listHeight;
+  double _listHeight;
+  set listHeight(double value) {
+    if (_listHeight != value) {
+      _listHeight = value;
       markNeedsLayout();
     }
   }
@@ -94,26 +104,15 @@ class StoryListRenderBlock extends RenderBlock {
     assert(!constraints.hasBoundedHeight);
     assert(constraints.hasBoundedWidth);
 
-    StoryListLayout layout = new StoryListLayout(size: parentSize);
-
-    List<StoryLayout> storyLayout = layout.layout(
-      storyClustersToLayout: _storyClusters,
-      currentTime: new DateTime.now(),
-    );
-
-    double listHeight = 0.0;
-    storyLayout.forEach((StoryLayout storyLayout) {
-      listHeight = math.max(listHeight, -storyLayout.offset.dy);
-    });
-
     double maxFocusProgress = 0.0;
     {
       RenderBox child = firstChild;
-      storyLayout.forEach((StoryLayout storyLayout) {
+      while (child != null) {
         final StoryListRenderBlockParentData childParentData = child.parentData;
+
         // Layout the child.
         double childHeight = lerpDouble(
-          storyLayout.size.height +
+          childParentData.storyLayout.size.height +
               lerpDouble(
                 _kStoryInlineTitleHeight,
                 0.0,
@@ -125,7 +124,7 @@ class StoryListRenderBlock extends RenderBlock {
         child.layout(
           new BoxConstraints.tightFor(
             width: lerpDouble(
-              storyLayout.size.width,
+              childParentData.storyLayout.size.width,
               parentSize.width,
               childParentData.focusProgress,
             ),
@@ -136,12 +135,12 @@ class StoryListRenderBlock extends RenderBlock {
         // Position the child.
         childParentData.offset = new Offset(
           lerpDouble(
-            storyLayout.offset.dx + constraints.maxWidth / 2.0,
+            childParentData.storyLayout.offset.dx + constraints.maxWidth / 2.0,
             0.0,
             childParentData.focusProgress,
           ),
           lerpDouble(
-            storyLayout.offset.dy + listHeight,
+            childParentData.storyLayout.offset.dy + listHeight,
             listHeight - parentSize.height - _scrollOffset + _bottomPadding,
             childParentData.focusProgress,
           ),
@@ -153,7 +152,7 @@ class StoryListRenderBlock extends RenderBlock {
         );
 
         child = childParentData.nextSibling;
-      });
+      }
     }
 
     // If any of the children are focused or focusing, shift all
@@ -199,19 +198,5 @@ class StoryListRenderBlock extends RenderBlock {
               : 0;
     });
     return children;
-  }
-
-  List<StoryCluster> get _storyClusters {
-    final List<StoryCluster> storyClusters = <StoryCluster>[];
-    {
-      RenderBox child = firstChild;
-      while (child != null) {
-        final StoryListRenderBlockParentData childParentData = child.parentData;
-        assert(childParentData.storyCluster != null);
-        storyClusters.add(childParentData.storyCluster);
-        child = childParentData.nextSibling;
-      }
-    }
-    return storyClusters;
   }
 }
