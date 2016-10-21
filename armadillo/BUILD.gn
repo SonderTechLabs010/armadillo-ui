@@ -4,7 +4,7 @@
 
 import("//flutter/build/flutter_app.gni")
 
-flutter_app("user_shell") {
+flutter_app("armadillo_user_shell") {
   main_dart = "lib/main.dart"
 
   package_name = "armadillo"

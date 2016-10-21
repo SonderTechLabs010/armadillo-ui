@@ -70,7 +70,7 @@ endif
 
 build: sync
 	rm -rf interfaces/lib
-	cd .. && packages/gn/gen.py $(gen_flags) -m sysui && buildtools/ninja $(ninja_flags) -C out/debug-x86-64
+	(cd .. && packages/gn/gen.py $(gen_flags) -m default,sysui && buildtools/ninja $(ninja_flags) -C out/debug-x86-64)
 	$(eval files := $(shell find ../out/debug-x86-64/gen/sysui/interfaces/ -name *.mojom.dart))
 	mkdir interfaces/lib
 	$(foreach file,$(files),ln -s $(abspath $(file)) interfaces/lib/$(notdir $(file)))
