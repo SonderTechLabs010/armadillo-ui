@@ -15,15 +15,16 @@ import 'place_holder_story.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
+import 'story_cluster_id.dart';
 import 'story_manager.dart';
 
 const double _kLineWidth = 4.0;
-const double _kTopEdgeTargetYOffset = 16.0;
+const double _kTopEdgeTargetYOffset = 64.0;
 const double _kDiscardTargetTopEdgeYOffset = -48.0;
 const double _kBringToFrontTargetBottomEdgeYOffset = 48.0;
-const double _kStoryBarTargetYOffset = -16.0;
-const double _kStoryTopEdgeTargetYOffset = 48.0;
-const double _kStoryEdgeTargetInset = 16.0;
+const double _kStoryBarTargetYOffset = 16.0;
+const double _kStoryTopEdgeTargetYOffset = 112.0;
+const double _kStoryEdgeTargetInset = 48.0;
 const int _kMaxStoriesPerCluster = 100;
 const double _kAddedStorySpan = 0.01;
 const Color _kEdgeTargetColor = const Color(0xFFFFFF00);
@@ -296,27 +297,34 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // Remove any candidates that no longer exist.
     _closestTargetLockPoints.keys.toList().forEach((StoryCluster storyCluster) {
       if (!storyClusterCandidates.keys.contains(storyCluster)) {
-        _closestTargetLockPoints[storyCluster] = null;
-        _closestTargets[storyCluster] = null;
+        _closestTargetLockPoints.remove(storyCluster);
+        _closestTargets.remove(storyCluster);
       }
     });
 
     // For each candidate...
     storyClusterCandidates.keys.forEach((StoryCluster storyCluster) {
-      LineSegment closestLine =
-          _getClosestLine(storyClusterCandidates[storyCluster], storyCluster);
+      Point storyClusterPoint = storyClusterCandidates[storyCluster];
+
+      if (_closestTargetLockPoints[storyCluster] == null) {
+        _closestTargetLockPoints[storyCluster] = storyClusterPoint;
+      }
+
       Point lockPoint = _closestTargetLockPoints[storyCluster];
 
-      // ... lock to its closest line if this is the first time we've seen the
-      // candidate or it's an existing candidate whose closest line has changed
-      // and we've moved past the sticky distance for its lock point.
-      if ((lockPoint == null) ||
-          _closestTargets[storyCluster] != closestLine &&
-              ((lockPoint - storyClusterCandidates[storyCluster]).distance >
-                  _kStickyDistance)) {
+      LineSegment closestLine = _getClosestLine(
+        storyClusterPoint,
+        storyCluster,
+      );
+
+      // ... lock to its closest line if it's an existing candidate whose
+      // closest line has changed and we've moved past the sticky distance for
+      // its lock point.
+      if (_closestTargets[storyCluster] != closestLine &&
+          ((lockPoint - storyClusterPoint).distance > _kStickyDistance)) {
         _lockClosestTarget(
           storyCluster: storyCluster,
-          point: storyClusterCandidates[storyCluster],
+          point: storyClusterPoint,
           closestLine: closestLine,
         );
       }
@@ -478,17 +486,27 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         maxStoriesCanAccept:
             _kMaxStoriesPerCluster - config.storyCluster.stories.length,
         onHover: (BuildContext context, StoryCluster storyCluster) {
-          config.storyCluster.removePreviews();
-          _cleanup(context: context, preview: true);
-          _updateDragFeedback(storyCluster.dragFeedbackKey);
-
-          // TODO(apwilson): Switch all the stories involved into tabs.
+          _addClusterToRightOfPanels(
+            context: context,
+            storyCluster: storyCluster,
+            preview: true,
+            displayMode: DisplayMode.tabs,
+          );
         },
         onDrop: (BuildContext context, StoryCluster storyCluster) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
 
-          // TODO(apwilson): Switch all the stories involved into tabs.
+          config.storyCluster.displayMode = DisplayMode.tabs;
+
+          InheritedStoryManager.of(context).combine(
+                source: storyCluster,
+                target: config.storyCluster,
+              );
+
+          storyCluster.stories.forEach((Story story) {
+            story.storyBarKey.currentState?.maximize(jumpToFinish: true);
+          });
         },
       ),
     );
@@ -505,10 +523,12 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
           _updateDragFeedback(storyCluster.dragFeedbackKey);
+          config.storyCluster.displayMode = DisplayMode.panels;
         },
         onDrop: (BuildContext context, StoryCluster storyCluster) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
+          config.storyCluster.displayMode = DisplayMode.panels;
 
           // TODO(apwilson): Animate storyCluster away.
         },
@@ -529,11 +549,12 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
           _updateDragFeedback(storyCluster.dragFeedbackKey);
+          config.storyCluster.displayMode = DisplayMode.panels;
         },
         onDrop: (BuildContext context, StoryCluster storyCluster) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
-
+          config.storyCluster.displayMode = DisplayMode.panels;
           // TODO(apwilson): Defocus this cluster away.
           // Bring storyCluster into focus.
         },
@@ -678,6 +699,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     StoryCluster storyCluster,
     bool preview: false,
   }) {
+    config.storyCluster.displayMode = DisplayMode.panels;
+
     // 0) Remove any existing preview stories.
     config.storyCluster.removePreviews();
 
@@ -722,7 +745,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     BuildContext context,
     StoryCluster storyCluster,
     bool preview: false,
+    DisplayMode displayMode: DisplayMode.panels,
   }) {
+    config.storyCluster.displayMode = displayMode;
+
     // 0) Remove any existing preview stories.
     config.storyCluster.removePreviews();
 
@@ -757,7 +783,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 4) If previewing, update the drag feedback.
     if (preview) {
-      _updateDragFeedback(storyCluster.dragFeedbackKey);
+      _updateDragFeedback(storyCluster.dragFeedbackKey, displayMode);
     }
   }
 
@@ -767,6 +793,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     StoryCluster storyCluster,
     bool preview: false,
   }) {
+    config.storyCluster.displayMode = DisplayMode.panels;
+
     // 0) Remove any existing preview stories.
     config.storyCluster.removePreviews();
 
@@ -812,6 +840,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     StoryCluster storyCluster,
     bool preview: false,
   }) {
+    config.storyCluster.displayMode = DisplayMode.panels;
+
     // 0) Remove any existing preview stories.
     config.storyCluster.removePreviews();
 
@@ -863,6 +893,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     StoryId storyId,
     bool preview: false,
   }) {
+    config.storyCluster.displayMode = DisplayMode.panels;
+
     // 0) Remove any existing preview stories.
     config.storyCluster.removePreviews();
 
@@ -910,6 +942,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     StoryId storyId,
     bool preview: false,
   }) {
+    config.storyCluster.displayMode = DisplayMode.panels;
+
     // 0) Remove any existing preview stories.
     config.storyCluster.removePreviews();
 
@@ -956,6 +990,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     StoryId storyId,
     bool preview: false,
   }) {
+    config.storyCluster.displayMode = DisplayMode.panels;
+
     // 0) Remove any existing preview stories.
     config.storyCluster.removePreviews();
 
@@ -1003,6 +1039,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     StoryId storyId,
     bool preview: false,
   }) {
+    config.storyCluster.displayMode = DisplayMode.panels;
+
     // 0) Remove any existing preview stories.
     config.storyCluster.removePreviews();
 
@@ -1065,8 +1103,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   }
 
   void _updateDragFeedback(
-    GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey,
-  ) {
+    GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey, [
+    DisplayMode displayMode = DisplayMode.panels,
+  ]) {
     Map<Object, Panel> panelMap = <Object, Panel>{};
 
     config.storyCluster.stories
@@ -1083,6 +1122,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     //   c) Causing a setState while building is a big Flutter no-no.
     scheduleMicrotask(() {
       dragFeedbackKey.currentState?.storyPanels = panelMap;
+      dragFeedbackKey.currentState?.displayMode = displayMode;
+      dragFeedbackKey.currentState?.targetClusterStoryCount =
+          config.storyCluster.stories.length;
     });
   }
 

@@ -106,11 +106,11 @@ class Panel {
       );
 
   double get left => _origin.dx;
-  double get right => _origin.dx + _widthFactor;
+  double get right => toGridValue(_origin.dx + _widthFactor);
   double get top => _origin.dy;
-  double get bottom => _origin.dy + _heightFactor;
-  double get width => right - left;
-  double get height => bottom - top;
+  double get bottom => toGridValue(_origin.dy + _heightFactor);
+  double get width => toGridValue(right - left);
+  double get height => toGridValue(bottom - top);
 
   /// Returns true if the panel can be split vertically without violating
   /// [smallestWidthFactor].
@@ -154,6 +154,11 @@ class Panel {
           bottom == other.top ||
           other.right == left ||
           other.bottom == top);
+
+  bool canAbsorb(Panel other) =>
+      isAdjacentWithOriginAligned(other) &&
+      ((left == other.left && other.right >= right) ||
+          (top == other.top && other.bottom >= bottom));
 
   /// Absorbs as much of [other] as it can.  Calls [panelAbsorbedResultCallback]
   /// with its new size and the remaining unabsorbed area.

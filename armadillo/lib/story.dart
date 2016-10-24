@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 
 import 'panel.dart';
 import 'story_bar.dart';
-import 'story_cluster.dart';
+import 'story_cluster_id.dart';
 
 class StoryId<T> extends ValueKey<T> {
   StoryId(T value) : super(value);
@@ -27,9 +27,11 @@ class Story {
   final bool inactive;
   final StoryClusterId clusterId;
   final GlobalKey<StoryBarState> storyBarKey;
+  final GlobalKey storyBarPaddingKey;
   final GlobalKey clusterDraggableKey;
   final GlobalKey positionedKey;
   final GlobalKey containerKey;
+  final GlobalKey tabSizerKey;
   final Panel panel;
 
   Story({
@@ -44,16 +46,20 @@ class Story {
     this.inactive: false,
     StoryClusterId clusterId,
     GlobalKey<StoryBarState> storyBarKey,
+    GlobalKey storyBarPaddingKey,
     GlobalKey clusterDraggableKey,
     GlobalKey positionedKey,
     GlobalKey containerKey,
+    GlobalKey tabSizerKey,
     Panel panel,
   })
       : this.clusterId = clusterId ?? new StoryClusterId(),
         this.storyBarKey = storyBarKey ?? new GlobalKey<StoryBarState>(),
+        this.storyBarPaddingKey = storyBarPaddingKey ?? new GlobalKey(),
         this.clusterDraggableKey = clusterDraggableKey ?? new GlobalKey(),
         this.positionedKey = positionedKey ?? new GlobalKey(),
         this.containerKey = containerKey ?? new GlobalKey(),
+        this.tabSizerKey = tabSizerKey ?? new GlobalKey(),
         this.panel = panel ?? new Panel();
 
   Story copyWith({
@@ -76,9 +82,11 @@ class Story {
         inactive: inactive ?? this.inactive,
         clusterId: this.clusterId,
         storyBarKey: this.storyBarKey,
+        storyBarPaddingKey: this.storyBarPaddingKey,
         clusterDraggableKey: this.clusterDraggableKey,
         positionedKey: this.positionedKey,
         containerKey: this.containerKey,
+        tabSizerKey: this.tabSizerKey,
         panel: panel ?? this.panel,
       );
 

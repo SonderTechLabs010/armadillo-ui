@@ -14,6 +14,7 @@ import 'panel.dart';
 import 'story.dart';
 import 'story_builder.dart';
 import 'story_cluster.dart';
+import 'story_cluster_id.dart';
 import 'story_list_layout.dart';
 import 'suggestion_manager.dart';
 
@@ -53,7 +54,7 @@ class StoryManager extends ConfigManager {
   double get listHeight => _listHeight;
 
   void updateLayouts(Size size) {
-    if (size == Size.zero) {
+    if (size.width == 0.0 || size.height == 0.0) {
       return;
     }
     _lastLayoutSize = size;
@@ -142,13 +143,13 @@ class StoryManager extends ConfigManager {
 
   /// Adds [source]'s stories to [target]'s stories and removes [source] from
   /// the list of story clusters.
-  void combine({StoryCluster source, StoryCluster target, Size size}) {
+  void combine({StoryCluster source, StoryCluster target}) {
     // Update grid locations.
     for (int i = 0; i < source.stories.length; i++) {
       Story sourceStory = source.stories[i];
       Story largestStory = _getLargestStory(target.stories);
-      if (largestStory.panel.canBeSplitVertically(size.width) ||
-          largestStory.panel.canBeSplitHorizontally(size.height)) {
+      if (largestStory.panel.canBeSplitVertically(_lastLayoutSize.width) ||
+          largestStory.panel.canBeSplitHorizontally(_lastLayoutSize.height)) {
         largestStory.panel.split((Panel a, Panel b) {
           target.replace(panel: largestStory.panel, withPanel: a);
           target.add(story: sourceStory, withPanel: b);

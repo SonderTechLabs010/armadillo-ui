@@ -8,9 +8,10 @@ import 'panel.dart';
 import 'simulation_builder.dart';
 import 'story.dart';
 import 'story_cluster_drag_feedback.dart';
+import 'story_cluster_id.dart';
 import 'story_list_layout.dart';
 
-class StoryClusterId {}
+enum DisplayMode { tabs, panels }
 
 /// A data model representing a list of [Story]s.
 class StoryCluster {
@@ -24,9 +25,10 @@ class StoryCluster {
   final GlobalKey clusterDragTargetsKey;
   final GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey;
   final GlobalKey focusSimulationKey;
+  DisplayMode _displayMode;
   final Set<VoidCallback> _storyListListeners;
   final Set<VoidCallback> _panelListeners;
-  StoryId _focusedStoryId;
+  StoryId focusedStoryId;
   StoryLayout storyLayout;
 
   StoryCluster({
@@ -39,6 +41,7 @@ class StoryCluster {
     List<Story> stories,
     Set<VoidCallback> storyListListeners,
     Set<VoidCallback> panelListeners,
+    DisplayMode displayMode,
     StoryId focusedStoryId,
     this.storyLayout,
   })
@@ -55,10 +58,11 @@ class StoryCluster {
             dragFeedbackKey ?? new GlobalKey<StoryClusterDragFeedbackState>(),
         this.focusSimulationKey =
             focusSimulationKey ?? new GlobalKey<SimulationBuilderState>(),
+        this._displayMode = displayMode ?? DisplayMode.panels,
         this._storyListListeners =
             storyListListeners ?? new Set<VoidCallback>(),
         this._panelListeners = panelListeners ?? new Set<VoidCallback>(),
-        this._focusedStoryId = focusedStoryId ?? stories[0].id;
+        this.focusedStoryId = focusedStoryId ?? stories[0].id;
 
   factory StoryCluster.fromStory(Story story) => new StoryCluster(
         id: story.clusterId,
@@ -100,6 +104,7 @@ class StoryCluster {
     bool inactive,
     GlobalKey clusterDraggableId,
     StoryId focusedStoryId,
+    DisplayMode displayMode,
   }) =>
       new StoryCluster(
         id: this.id,
@@ -116,9 +121,10 @@ class StoryCluster {
                 inactive: inactive,
               ),
         ),
+        displayMode: displayMode ?? this._displayMode,
         storyListListeners: this._storyListListeners,
         panelListeners: this._panelListeners,
-        focusedStoryId: focusedStoryId ?? this._focusedStoryId,
+        focusedStoryId: focusedStoryId ?? this.focusedStoryId,
         storyLayout: this.storyLayout,
       );
 
@@ -136,6 +142,16 @@ class StoryCluster {
     });
     string += ' )';
     return string;
+  }
+
+  DisplayMode get displayMode => _displayMode;
+
+  /// Switches the [DisplayMode] to [displayMode].
+  set displayMode(DisplayMode displayMode) {
+    if (_displayMode != displayMode) {
+      _displayMode = displayMode;
+      _notifyPanelListeners();
+    }
   }
 
   /// Removes any preview stories from [stories]
@@ -203,12 +219,19 @@ class StoryCluster {
   /// Replaces the [Story.panel] of the story with [panel] with [withPanel]/
   void replace({Panel panel, Panel withPanel}) {
     Story story = _stories.where((Story story) => story.panel == panel).single;
+    _replaceStory(story: story, withPanel: withPanel);
+  }
+
+  void _replaceStory({Story story, Panel withPanel}) {
+    int storyIndex = _stories.indexOf(story);
     _stories.remove(story);
-    _stories.add(story.copyWith(panel: withPanel));
+    _stories.insert(
+      storyIndex,
+      story.copyWith(panel: withPanel),
+    );
   }
 
   void absorb(Story story) {
-    // Update grid locations.
     List<Story> stories = new List<Story>.from(_stories);
     stories.remove(story);
     stories.sort(
@@ -216,34 +239,35 @@ class StoryCluster {
           ? 1
           : a.panel.sizeFactor < b.panel.sizeFactor ? -1 : 0,
     );
+
     Panel remainingAreaToAbsorb = story.panel;
     double remainingSize;
+    Story absorbingStory;
     do {
       remainingSize = remainingAreaToAbsorb.sizeFactor;
-      stories
-          .where((Story story) =>
-              story.panel.isAdjacentWithOriginAligned(remainingAreaToAbsorb))
-          .forEach((Story story) {
-        story.panel.absorb(remainingAreaToAbsorb,
-            (Panel absorbed, Panel remainder) {
-          int storyIndex = _stories.indexOf(story);
-          _stories.remove(story);
-          _stories.insert(
-            storyIndex,
-            story.copyWith(panel: absorbed),
-          );
-          remainingAreaToAbsorb = remainder;
-        });
+      absorbingStory = _stories
+          .where((Story story) => story.panel.canAbsorb(remainingAreaToAbsorb))
+          .first;
+      absorbingStory.panel.absorb(remainingAreaToAbsorb,
+          (Panel absorbed, Panel remainder) {
+        _replaceStory(story: absorbingStory, withPanel: absorbed);
+        remainingAreaToAbsorb = remainder;
       });
-    } while (remainingAreaToAbsorb.sizeFactor < remainingSize);
+    } while (remainingAreaToAbsorb.sizeFactor < remainingSize &&
+        remainingAreaToAbsorb.sizeFactor > 0.0);
     assert(remainingAreaToAbsorb.sizeFactor == 0.0);
 
+    int absorbedStoryIndex = _stories.indexOf(story);
     _stories.remove(story);
     normalizeSizes();
 
-    // If we've just removed the focused story, switch focus.
-    if (_focusedStoryId == story.id) {
-      _focusedStoryId = stories[0].id;
+    // If we've just removed the focused story, switch focus to a tab adjacent
+    // story.
+    if (focusedStoryId == story.id) {
+      focusedStoryId = _stories[absorbedStoryIndex >= _stories.length
+              ? _stories.length - 1
+              : absorbedStoryIndex]
+          .id;
     }
 
     _notifyStoryListListeners();

@@ -15,6 +15,7 @@ import 'story.dart';
 import 'story_carousel.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
+import 'story_cluster_id.dart';
 import 'story_manager.dart';
 import 'story_panels.dart';
 import 'story_title.dart';
@@ -42,8 +43,6 @@ const double _kMultiColumnMinimumStoryMargin = 8.0;
 /// use.
 const double _kVerticalGestureDetectorHeight = 32.0;
 
-const double _kStoryBarMinimizedHeight = 4.0;
-const double _kStoryBarMaximizedHeight = 48.0;
 const double _kStoryInlineTitleHeight = 20.0;
 const double _kDraggedStoryRadius = 75.0;
 const int _kMaxStories = 4;
@@ -107,7 +106,6 @@ class StoryClusterWidget extends StatelessWidget {
                           .of(context)
                           .getStoryCluster(storyClusterId),
                       target: storyCluster,
-                      size: fullSize,
                     );
                 onGainFocus();
               },
@@ -136,17 +134,11 @@ class StoryClusterWidget extends StatelessWidget {
                 key: storyCluster.clusterDraggableKey,
                 data: storyCluster.id,
                 childWhenDragging: new Offstage(),
-                feedback: new Builder(builder: (BuildContext context) {
-                  RenderBox box = storyCluster
-                      .clusterDragTargetsKey.currentContext
-                      .findRenderObject();
-                  return new StoryClusterDragFeedback(
-                    key: storyCluster.dragFeedbackKey,
-                    storyCluster: storyCluster,
-                    fullSize: fullSize,
-                    initialSize: box.size,
-                  );
-                }),
+                feedback: new StoryClusterDragFeedback(
+                  key: storyCluster.dragFeedbackKey,
+                  storyCluster: storyCluster,
+                  fullSize: fullSize,
+                ),
                 child: child,
               ),
           child: _getStoryClusterWithInlineStoryTitle(

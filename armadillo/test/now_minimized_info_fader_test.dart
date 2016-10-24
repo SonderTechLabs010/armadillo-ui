@@ -11,7 +11,6 @@ const double _kRecentListWidthSingleColumn = 500.0;
 const double _kRecentListHorizontalMarginsSingleColumn = 16.0;
 const double _kRecentListWidthMultiColumn = 700.0;
 const double _kRecentListHeight = 600.0;
-const double _kStoryBarMaximizedHeight = 48.0;
 
 void main() {
   testWidgets('Initial opacity is 0.0.', (WidgetTester tester) async {

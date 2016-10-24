@@ -9,6 +9,7 @@ import 'package:sysui_widgets/delegating_page_route.dart';
 import '../lib/story.dart';
 import '../lib/story_cluster.dart';
 import '../lib/story_list.dart';
+import '../lib/story_list_layout.dart';
 import '../lib/story_manager.dart';
 
 const int _kStoryCount = 4;
@@ -130,8 +131,23 @@ class DummyStoryManager extends StoryManager {
                   themeColor: new Color(0xFFFFFFFF),
                 ),
               ],
+              storyLayout: new DummyStoryLayout(),
             ),
       );
+
+  @override
+  List<StoryCluster> get activeSortedStoryClusters => storyClusters;
+}
+
+class DummyStoryLayout extends StoryLayout {
+  @override
+  Size get size => new Size(200.0, 200.0);
+
+  @override
+  Offset get offset => Offset.zero;
+
+  @override
+  Rect get bounds => offset & size;
 }
 
 Widget _wrapWithWidgetsApp({Widget child}) => new WidgetsApp(

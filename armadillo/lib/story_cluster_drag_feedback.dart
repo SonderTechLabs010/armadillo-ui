@@ -13,17 +13,17 @@ import 'story.dart';
 import 'story_cluster.dart';
 import 'story_panels.dart';
 
+const double _kStoryBarMaximizedHeight = 48.0;
+
 /// Displays a representation of a StoryCluster while being dragged.
 class StoryClusterDragFeedback extends StatefulWidget {
   final StoryCluster storyCluster;
   final Size fullSize;
-  final Size initialSize;
 
   StoryClusterDragFeedback({
     Key key,
     this.storyCluster,
     this.fullSize,
-    this.initialSize,
   })
       : super(key: key);
 
@@ -38,6 +38,8 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
   Map<Object, Panel> _storyPanels = new Map<Object, Panel>();
   double _widthFactor;
   double _heightFactor;
+  DisplayMode _displayModeOverride;
+  int _targetClusterStoryCount;
 
   set storyPanels(Map<Object, Panel> storyPanels) {
     setState(() {
@@ -54,28 +56,61 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       });
       _widthFactor = maxRight - minLeft;
       _heightFactor = maxBottom - minTop;
-      if (_storyPanels.isEmpty) {
-        config.storyCluster.stories.forEach((Story story) {
-          story.storyBarKey.currentState.minimize();
-        });
-      } else {
-        config.storyCluster.stories.forEach((Story story) {
-          story.storyBarKey.currentState.maximize();
-        });
-      }
+      _updateStoryBars();
     });
+  }
+
+  set displayMode(DisplayMode displayMode) {
+    setState(() {
+      _displayModeOverride = displayMode;
+      config.storyCluster.displayMode = displayMode;
+      config.storyCluster.focusedStoryId = null;
+      _updateStoryBars();
+    });
+  }
+
+  set targetClusterStoryCount(int targetClusterStoryCount) {
+    setState(() {
+      _targetClusterStoryCount = targetClusterStoryCount;
+    });
+  }
+
+  void _updateStoryBars() {
+    if (_storyPanels.isEmpty && _displayModeOverride == DisplayMode.panels) {
+      config.storyCluster.stories.forEach((Story story) {
+        story.storyBarKey.currentState.minimize();
+      });
+    } else {
+      config.storyCluster.stories.forEach((Story story) {
+        story.storyBarKey.currentState.maximize();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     double width;
     double height;
-    if (_storyPanels.isNotEmpty) {
-      width = config.fullSize.width * _widthFactor * 0.7;
-      height = config.fullSize.height * _heightFactor * 0.7;
+    double childScale;
+    double opacity;
+    if (_displayModeOverride == DisplayMode.tabs) {
+      width = config.fullSize.width *
+          (config.storyCluster.stories.length + 1) /
+          (_targetClusterStoryCount + 1);
+      height = config.fullSize.height *
+          (_kStoryBarMaximizedHeight / config.fullSize.height);
+      childScale = 0.7;
+      opacity = 1.0;
+    } else if (_storyPanels.isNotEmpty) {
+      width = config.fullSize.width * _widthFactor;
+      height = config.fullSize.height * _heightFactor;
+      childScale = 0.7;
+      opacity = 1.0;
     } else {
-      width = config.initialSize.width;
-      height = config.initialSize.height;
+      width = config.storyCluster.storyLayout.size.width;
+      height = config.storyCluster.storyLayout.size.height;
+      childScale = 1.0;
+      opacity = 0.7;
     }
 
     return new SimulatedTranslationTransform(
@@ -83,18 +118,22 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       dx: -width / 2.0,
       dy: -height / 2.0,
       child: new Opacity(
-        opacity: _storyPanels.isNotEmpty ? 1.0 : 0.7,
-        child: new SimulatedSizedBox(
-          key: _boxKey,
-          width: width,
-          height: height,
-          child: new StoryPanels(
-            storyCluster: config.storyCluster,
-            focusProgress: 0.0,
-            fullSize: _storyPanels.isNotEmpty
-                ? new Size(width, height)
-                : config.fullSize,
-            highlight: false,
+        opacity: opacity,
+        child: new Transform(
+          transform: new Matrix4.identity().scaled(childScale, childScale),
+          alignment: FractionalOffset.center,
+          child: new SimulatedSizedBox(
+            key: _boxKey,
+            width: width,
+            height: height,
+            child: new StoryPanels(
+              storyCluster: config.storyCluster,
+              focusProgress: 0.0,
+              fullSize: _storyPanels.isNotEmpty
+                  ? new Size(width, height)
+                  : config.fullSize,
+              highlight: false,
+            ),
           ),
         ),
       ),
