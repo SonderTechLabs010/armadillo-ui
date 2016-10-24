@@ -77,9 +77,10 @@ class StoryClusterWidget extends StatelessWidget {
         useWrapper: _isUnfocused,
         builder: (BuildContext context, Widget child) =>
             new ArmadilloDragTarget<StoryClusterId>(
-              onWillAccept: (StoryClusterId data, Point point) {
-                StoryCluster storyCluster =
-                    InheritedStoryManager.of(context).getStoryCluster(data);
+              onWillAccept: (StoryClusterId storyClusterId, Point point) {
+                StoryCluster storyCluster = InheritedStoryManager
+                    .of(context)
+                    .getStoryCluster(storyClusterId);
                 // Don't accept empty data.
                 if (storyCluster == null || storyCluster.stories.isEmpty) {
                   return false;
@@ -100,13 +101,12 @@ class StoryClusterWidget extends StatelessWidget {
 
                 return result;
               },
-              onAccept: (StoryClusterId data, Point point) {
-                StoryCluster storyCluster =
-                    InheritedStoryManager.of(context).getStoryCluster(data);
-
+              onAccept: (StoryClusterId storyClusterId, Point point) {
                 InheritedStoryManager.of(context).combine(
-                      source: storyCluster,
-                      target: this.storyCluster,
+                      source: InheritedStoryManager
+                          .of(context)
+                          .getStoryCluster(storyClusterId),
+                      target: storyCluster,
                       size: fullSize,
                     );
                 onGainFocus();

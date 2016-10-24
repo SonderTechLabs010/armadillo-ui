@@ -111,14 +111,14 @@ class StoryManager extends ConfigManager {
 
     // We need to update the draggable id as in some cases this id could
     // be used by one of the cluster's stories.
-    remove(storyCluster: source);
-    remove(storyCluster: target);
-    add(storyCluster: target.copyWith(clusterDraggableId: new Object()));
+    remove(storyClusterId: source.id);
+    remove(storyClusterId: target.id);
+    add(storyCluster: target.copyWith(clusterDraggableId: new GlobalKey()));
   }
 
   /// Removes [storyCluster] from the list of story clusters.
-  void remove({StoryCluster storyCluster}) {
-    _storyClusters.removeWhere((StoryCluster s) => (s.id == storyCluster.id));
+  void remove({StoryClusterId storyClusterId}) {
+    _storyClusters.removeWhere((StoryCluster s) => (s.id == storyClusterId));
     notifyListeners();
   }
 

@@ -42,7 +42,7 @@ const double _kStickyDistance = 32.0;
 const RK4SpringDescription _kScaleSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
 
-typedef void _OnPanelEvent(BuildContext context, StoryCluster data);
+typedef void _OnPanelEvent(BuildContext context, StoryCluster storyCluster);
 
 /// Details about a target used by [PanelDragTargets].
 ///
@@ -219,31 +219,30 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
   @override
   Widget build(BuildContext context) => new ArmadilloDragTarget<StoryClusterId>(
-      onWillAccept: (StoryClusterId data, Point point) => true,
-      onAccept: (StoryClusterId data, Point point) {
+      onWillAccept: (StoryClusterId storyClusterId, Point point) => true,
+      onAccept: (StoryClusterId storyClusterId, Point point) {
         StoryCluster storyCluster =
-            InheritedStoryManager.of(context).getStoryCluster(data);
+            InheritedStoryManager.of(context).getStoryCluster(storyClusterId);
         return _getClosestLine(point, storyCluster)
             .onDrop
             ?.call(context, storyCluster);
       },
       builder: (
         BuildContext context,
-        Map<StoryClusterId, Point> storyClusterIdCandidateData,
+        Map<StoryClusterId, Point> storyClusterIdCandidates,
         Map<dynamic, Point> rejectedData,
       ) {
-        Map<StoryCluster, Point> candidateData = {};
-        storyClusterIdCandidateData.keys
-            .forEach((StoryClusterId storyClusterId) {
+        Map<StoryCluster, Point> storyClusterCandidates = {};
+        storyClusterIdCandidates.keys.forEach((StoryClusterId storyClusterId) {
           StoryCluster storyCluster =
               InheritedStoryManager.of(context).getStoryCluster(storyClusterId);
-          candidateData[storyCluster] =
-              storyClusterIdCandidateData[storyClusterId];
+          storyClusterCandidates[storyCluster] =
+              storyClusterIdCandidates[storyClusterId];
         });
 
-        _updateClosestTargets(candidateData);
+        _updateClosestTargets(storyClusterCandidates);
 
-        double newScale = candidateData.isEmpty ? 1.0 : config.scale;
+        double newScale = storyClusterCandidates.isEmpty ? 1.0 : config.scale;
         if (_scaleSimulation.target != newScale) {
           _scaleSimulation.target = newScale;
           startTicking();
@@ -269,13 +268,13 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // When we have a candidate and we're fully focused, show the target
         // lines.
         if (_kDrawTargetLines &&
-            candidateData.isNotEmpty &&
+            storyClusterCandidates.isNotEmpty &&
             config.focusProgress == 1.0) {
           // Add all the lines.
           stackChildren.addAll(
             _targetLines
                 .where(
-                  (LineSegment line) => !candidateData.keys.every(
+                  (LineSegment line) => !storyClusterCandidates.keys.every(
                         (StoryCluster key) => !line.canAccept(key),
                       ),
                 )
@@ -293,19 +292,19 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     return !_scaleSimulation.isDone;
   }
 
-  void _updateClosestTargets(Map<StoryCluster, Point> candidateData) {
+  void _updateClosestTargets(Map<StoryCluster, Point> storyClusterCandidates) {
     // Remove any candidates that no longer exist.
     _closestTargetLockPoints.keys.toList().forEach((StoryCluster storyCluster) {
-      if (!candidateData.keys.contains(storyCluster)) {
+      if (!storyClusterCandidates.keys.contains(storyCluster)) {
         _closestTargetLockPoints[storyCluster] = null;
         _closestTargets[storyCluster] = null;
       }
     });
 
     // For each candidate...
-    candidateData.keys.forEach((StoryCluster storyCluster) {
+    storyClusterCandidates.keys.forEach((StoryCluster storyCluster) {
       LineSegment closestLine =
-          _getClosestLine(candidateData[storyCluster], storyCluster);
+          _getClosestLine(storyClusterCandidates[storyCluster], storyCluster);
       Point lockPoint = _closestTargetLockPoints[storyCluster];
 
       // ... lock to its closest line if this is the first time we've seen the
@@ -313,11 +312,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       // and we've moved past the sticky distance for its lock point.
       if ((lockPoint == null) ||
           _closestTargets[storyCluster] != closestLine &&
-              ((lockPoint - candidateData[storyCluster]).distance >
+              ((lockPoint - storyClusterCandidates[storyCluster]).distance >
                   _kStickyDistance)) {
         _lockClosestTarget(
           storyCluster: storyCluster,
-          point: candidateData[storyCluster],
+          point: storyClusterCandidates[storyCluster],
           closestLine: closestLine,
         );
       }
@@ -334,11 +333,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     closestLine.onHover?.call(context, storyCluster);
   }
 
-  LineSegment _getClosestLine(Point point, StoryCluster data) {
+  LineSegment _getClosestLine(Point point, StoryCluster storyCluster) {
     double minDistance = double.INFINITY;
     LineSegment closestLine;
     _targetLines
-        .where((LineSegment line) => line.canAccept(data))
+        .where((LineSegment line) => line.canAccept(storyCluster))
         .forEach((LineSegment line) {
       double targetLineDistance = line.distanceFrom(point);
       if (targetLineDistance < minDistance) {
@@ -381,14 +380,17 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               config.fullSize.width - horizontalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
-          onHover: (BuildContext context, StoryCluster data) =>
+          onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterAbovePanels(
                 context: context,
-                storyCluster: data,
+                storyCluster: storyCluster,
                 preview: true,
               ),
-          onDrop: (BuildContext context, StoryCluster data) =>
-              _addClusterAbovePanels(context: context, storyCluster: data),
+          onDrop: (BuildContext context, StoryCluster storyCluster) =>
+              _addClusterAbovePanels(
+                context: context,
+                storyCluster: storyCluster,
+              ),
         ),
       );
 
@@ -401,14 +403,17 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               config.fullSize.width - horizontalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
-          onHover: (BuildContext context, StoryCluster data) =>
+          onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterBelowPanels(
                 context: context,
-                storyCluster: data,
+                storyCluster: storyCluster,
                 preview: true,
               ),
-          onDrop: (BuildContext context, StoryCluster data) =>
-              _addClusterBelowPanels(context: context, storyCluster: data),
+          onDrop: (BuildContext context, StoryCluster storyCluster) =>
+              _addClusterBelowPanels(
+                context: context,
+                storyCluster: storyCluster,
+              ),
         ),
       );
     }
@@ -424,14 +429,17 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               config.fullSize.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
-          onHover: (BuildContext context, StoryCluster data) =>
+          onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToLeftOfPanels(
                 context: context,
-                storyCluster: data,
+                storyCluster: storyCluster,
                 preview: true,
               ),
-          onDrop: (BuildContext context, StoryCluster data) =>
-              _addClusterToLeftOfPanels(context: context, storyCluster: data),
+          onDrop: (BuildContext context, StoryCluster storyCluster) =>
+              _addClusterToLeftOfPanels(
+                context: context,
+                storyCluster: storyCluster,
+              ),
         ),
       );
 
@@ -444,16 +452,16 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               config.fullSize.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
-          onHover: (BuildContext context, StoryCluster data) =>
+          onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToRightOfPanels(
                 context: context,
-                storyCluster: data,
+                storyCluster: storyCluster,
                 preview: true,
               ),
-          onDrop: (BuildContext context, StoryCluster data) =>
+          onDrop: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToRightOfPanels(
                 context: context,
-                storyCluster: data,
+                storyCluster: storyCluster,
               ),
         ),
       );
@@ -469,14 +477,14 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         color: _kStoryBarTargetColor,
         maxStoriesCanAccept:
             _kMaxStoriesPerCluster - config.storyCluster.stories.length,
-        onHover: (BuildContext context, StoryCluster data) {
+        onHover: (BuildContext context, StoryCluster storyCluster) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
-          _updateDragFeedback(data.dragFeedbackKey);
+          _updateDragFeedback(storyCluster.dragFeedbackKey);
 
           // TODO(apwilson): Switch all the stories involved into tabs.
         },
-        onDrop: (BuildContext context, StoryCluster data) {
+        onDrop: (BuildContext context, StoryCluster storyCluster) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
 
@@ -493,16 +501,16 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         right: config.fullSize.width - 3.0 * horizontalMargin,
         color: _kDiscardTargetColor,
         maxStoriesCanAccept: _kMaxStoriesPerCluster,
-        onHover: (BuildContext context, StoryCluster data) {
+        onHover: (BuildContext context, StoryCluster storyCluster) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
-          _updateDragFeedback(data.dragFeedbackKey);
+          _updateDragFeedback(storyCluster.dragFeedbackKey);
         },
-        onDrop: (BuildContext context, StoryCluster data) {
+        onDrop: (BuildContext context, StoryCluster storyCluster) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
 
-          // TODO(apwilson): Animate data cluster away.
+          // TODO(apwilson): Animate storyCluster away.
         },
       ),
     );
@@ -517,17 +525,17 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         right: config.fullSize.width - 3.0 * horizontalMargin,
         color: _kBringToFrontTargetColor,
         maxStoriesCanAccept: _kMaxStoriesPerCluster,
-        onHover: (BuildContext context, StoryCluster data) {
+        onHover: (BuildContext context, StoryCluster storyCluster) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
-          _updateDragFeedback(data.dragFeedbackKey);
+          _updateDragFeedback(storyCluster.dragFeedbackKey);
         },
-        onDrop: (BuildContext context, StoryCluster data) {
+        onDrop: (BuildContext context, StoryCluster storyCluster) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
 
           // TODO(apwilson): Defocus this cluster away.
-          // Bring data cluster into focus.
+          // Bring storyCluster into focus.
         },
       ),
     );
@@ -559,17 +567,17 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             bottom: bottom,
             color: _kStoryEdgeTargetColor,
             maxStoriesCanAccept: verticalSplits,
-            onHover: (BuildContext context, StoryCluster data) =>
+            onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToLeftOfPanel(
                   context: context,
-                  storyCluster: data,
+                  storyCluster: storyCluster,
                   storyId: story.id,
                   preview: true,
                 ),
-            onDrop: (BuildContext context, StoryCluster data) =>
+            onDrop: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToLeftOfPanel(
                   context: context,
-                  storyCluster: data,
+                  storyCluster: storyCluster,
                   storyId: story.id,
                 ),
           ),
@@ -583,17 +591,17 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             bottom: bottom,
             color: _kStoryEdgeTargetColor,
             maxStoriesCanAccept: verticalSplits,
-            onHover: (BuildContext context, StoryCluster data) =>
+            onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToRightOfPanel(
                   context: context,
-                  storyCluster: data,
+                  storyCluster: storyCluster,
                   storyId: story.id,
                   preview: true,
                 ),
-            onDrop: (BuildContext context, StoryCluster data) =>
+            onDrop: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToRightOfPanel(
                   context: context,
-                  storyCluster: data,
+                  storyCluster: storyCluster,
                   storyId: story.id,
                 ),
           ),
@@ -621,17 +629,17 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             right: right,
             color: _kStoryEdgeTargetColor,
             maxStoriesCanAccept: horizontalSplits,
-            onHover: (BuildContext context, StoryCluster data) =>
+            onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterAbovePanel(
                   context: context,
-                  storyCluster: data,
+                  storyCluster: storyCluster,
                   storyId: story.id,
                   preview: true,
                 ),
-            onDrop: (BuildContext context, StoryCluster data) =>
+            onDrop: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterAbovePanel(
                   context: context,
-                  storyCluster: data,
+                  storyCluster: storyCluster,
                   storyId: story.id,
                 ),
           ),
@@ -645,17 +653,17 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             right: right,
             color: _kStoryEdgeTargetColor,
             maxStoriesCanAccept: horizontalSplits,
-            onHover: (BuildContext context, StoryCluster data) =>
+            onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterBelowPanel(
                   context: context,
-                  storyCluster: data,
+                  storyCluster: storyCluster,
                   storyId: story.id,
                   preview: true,
                 ),
-            onDrop: (BuildContext context, StoryCluster data) =>
+            onDrop: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterBelowPanel(
                   context: context,
-                  storyCluster: data,
+                  storyCluster: storyCluster,
                   storyId: story.id,
                 ),
           ),
@@ -1049,7 +1057,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     //   c) Causing a setState while building is a big Flutter no-no.
     scheduleMicrotask(() {
       if (!preview) {
-        InheritedStoryManager.of(context).remove(storyCluster: storyCluster);
+        InheritedStoryManager
+            .of(context)
+            .remove(storyClusterId: storyCluster.id);
       } else {
         InheritedStoryManager.of(context).notifyListeners();
       }
