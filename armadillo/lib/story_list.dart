@@ -13,7 +13,6 @@ import 'simulation_builder.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_widget.dart';
-import 'story_keys.dart';
 import 'story_list_layout.dart';
 import 'story_list_render_block.dart';
 import 'story_list_render_block_parent_data.dart';
@@ -91,7 +90,7 @@ class StoryList extends StatelessWidget {
         (StoryCluster storyCluster) => new Offstage(
               offstage: true,
               child: new SimulationBuilder(
-                key: StoryKeys.storyClusterFocusSimulationKey(storyCluster),
+                key: storyCluster.focusSimulationKey,
                 builder: (BuildContext context, double progress) =>
                     _createStoryCluster(storyClusters, storyCluster, 0.0),
               ),
@@ -126,7 +125,7 @@ class StoryList extends StatelessWidget {
     StoryLayout storyLayout,
   ) =>
       new SimulationBuilder(
-        key: StoryKeys.storyClusterFocusSimulationKey(storyCluster),
+        key: storyCluster.focusSimulationKey,
         onSimulationChanged: (double progress, bool isDone) {
           if (progress == 1.0 && isDone) {
             onStoryClusterFocusCompleted?.call(storyCluster);
@@ -159,12 +158,9 @@ class StoryList extends StatelessWidget {
 
             if (!storyClusterInFocus) {
               // Bring tapped story into focus.
-              StoryKeys
-                  .storyClusterFocusSimulationKey(storyCluster)
-                  .currentState
-                  ?.forward();
+              storyCluster.focusSimulationKey.currentState?.forward();
               storyCluster.stories.forEach((Story story) {
-                StoryKeys.storyBarKey(story).currentState?.maximize();
+                story.storyBarKey.currentState?.maximize();
               });
 
               onStoryClusterFocusStarted?.call();
@@ -172,9 +168,7 @@ class StoryList extends StatelessWidget {
           });
 
   bool _inFocus(StoryCluster s) =>
-      (StoryKeys.storyClusterFocusSimulationKey(s).currentState?.progress ??
-          0.0) >
-      0.0;
+      (s.focusSimulationKey.currentState?.progress ?? 0.0) > 0.0;
 }
 
 class StoryListBlock extends Block {

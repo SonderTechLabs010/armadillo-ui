@@ -5,7 +5,9 @@
 import 'package:flutter/widgets.dart';
 
 import 'panel.dart';
+import 'simulation_builder.dart';
 import 'story.dart';
+import 'story_cluster_drag_feedback.dart';
 
 class StoryClusterId {}
 
@@ -16,22 +18,24 @@ class StoryCluster {
   final Duration cumulativeInteractionDuration;
   final List<Story> _stories;
   final String title;
-  final Object carouselId;
-  final Object clusterDraggableId;
-  final Object clusterDragTargetsId;
-  final Object dragFeedbackId;
+  final GlobalKey carouselKey;
+  final GlobalKey clusterDraggableKey;
+  final GlobalKey clusterDragTargetsKey;
+  final GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey;
+  final GlobalKey focusSimulationKey;
   final Set<VoidCallback> _storyListListeners;
-  Object _focusedStoryId;
+  StoryId _focusedStoryId;
 
   StoryCluster({
     StoryClusterId id,
-    Object carouselId,
-    Object clusterDraggableId,
-    Object clusterDragTargetsId,
-    Object dragFeedbackId,
+    GlobalKey carouselKey,
+    GlobalKey clusterDraggableKey,
+    GlobalKey clusterDragTargetsKey,
+    GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey,
+    GlobalKey<SimulationBuilderState> focusSimulationKey,
     List<Story> stories,
     Set<VoidCallback> storyListListeners,
-    Object focusedStoryId,
+    StoryId focusedStoryId,
   })
       : this._stories = stories,
         this.title = _getClusterTitle(stories),
@@ -39,17 +43,20 @@ class StoryCluster {
         this.cumulativeInteractionDuration =
             _getClusterCumulativeInteractionDuration(stories),
         this.id = id ?? new StoryClusterId(),
-        this.carouselId = carouselId ?? new Object(),
-        this.clusterDraggableId = clusterDraggableId ?? new Object(),
-        this.clusterDragTargetsId = clusterDragTargetsId ?? new Object(),
-        this.dragFeedbackId = dragFeedbackId ?? new Object(),
+        this.carouselKey = carouselKey ?? new GlobalKey(),
+        this.clusterDraggableKey = clusterDraggableKey ?? new GlobalKey(),
+        this.clusterDragTargetsKey = clusterDragTargetsKey ?? new GlobalKey(),
+        this.dragFeedbackKey =
+            dragFeedbackKey ?? new GlobalKey<StoryClusterDragFeedbackState>(),
+        this.focusSimulationKey =
+            focusSimulationKey ?? new GlobalKey<SimulationBuilderState>(),
         this._storyListListeners =
             storyListListeners ?? new Set<VoidCallback>(),
         this._focusedStoryId = focusedStoryId ?? stories[0].id;
 
   factory StoryCluster.fromStory(Story story) => new StoryCluster(
         id: story.clusterId,
-        clusterDraggableId: story.clusterDraggableId,
+        clusterDraggableKey: story.clusterDraggableKey,
         stories: [
           story.copyWith(panel: new Panel()),
         ],
@@ -73,15 +80,16 @@ class StoryCluster {
     DateTime lastInteraction,
     Duration cumulativeInteractionDuration,
     bool inactive,
-    Object clusterDraggableId,
-    Object focusedStoryId,
+    GlobalKey clusterDraggableId,
+    StoryId focusedStoryId,
   }) =>
       new StoryCluster(
         id: this.id,
-        carouselId: this.carouselId,
-        clusterDraggableId: clusterDraggableId ?? this.clusterDraggableId,
-        clusterDragTargetsId: this.clusterDragTargetsId,
-        dragFeedbackId: this.dragFeedbackId,
+        carouselKey: this.carouselKey,
+        clusterDraggableKey: clusterDraggableId ?? this.clusterDraggableKey,
+        clusterDragTargetsKey: this.clusterDragTargetsKey,
+        dragFeedbackKey: this.dragFeedbackKey,
+        focusSimulationKey: this.focusSimulationKey,
         stories: new List<Story>.generate(
           _stories.length,
           (int index) => _stories[index].copyWith(

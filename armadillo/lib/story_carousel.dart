@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'carousel.dart';
 import 'story.dart';
 import 'story_bar.dart';
-import 'story_keys.dart';
 
 /// The height of the vertical gesture detector used to reveal the story bar in
 /// full screen mode.
@@ -69,7 +68,7 @@ class StoryCarousel extends StatelessWidget {
             children: [
               // The story bar that pushes down the story.
               new StoryBar(
-                key: StoryKeys.storyBarKey(story),
+                key: story.storyBarKey,
                 story: story,
                 minimizedHeight: _kStoryBarMinimizedHeight,
                 maximizedHeight: _kStoryBarMaximizedHeight,
@@ -115,8 +114,7 @@ class StoryCarousel extends StatelessWidget {
           offstage: _storyBarIsImmutable,
           child: new Listener(
             behavior: HitTestBehavior.translucent,
-            onPointerDown: (_) =>
-                StoryKeys.storyBarKey(story).currentState.hide(),
+            onPointerDown: (_) => story.storyBarKey.currentState.hide(),
           ),
         ),
       );
@@ -133,8 +131,7 @@ class StoryCarousel extends StatelessWidget {
           offstage: _storyBarIsImmutable,
           child: new GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onVerticalDragUpdate: (_) =>
-                StoryKeys.storyBarKey(story).currentState.show(),
+            onVerticalDragUpdate: (_) => story.storyBarKey.currentState.show(),
           ),
         ),
       );

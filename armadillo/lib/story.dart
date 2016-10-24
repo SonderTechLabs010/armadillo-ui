@@ -5,6 +5,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'panel.dart';
+import 'story_bar.dart';
 import 'story_cluster.dart';
 
 class StoryId<T> extends ValueKey<T> {
@@ -24,11 +25,11 @@ class Story {
   final Duration cumulativeInteractionDuration;
   final Color themeColor;
   final bool inactive;
-  final Object storyBarKeyObject;
   final StoryClusterId clusterId;
-  final Object clusterDraggableId;
-  final Object positionedId;
-  final Object containerId;
+  final GlobalKey<StoryBarState> storyBarKey;
+  final GlobalKey clusterDraggableKey;
+  final GlobalKey positionedKey;
+  final GlobalKey containerKey;
   final Panel panel;
 
   Story({
@@ -41,18 +42,18 @@ class Story {
     this.cumulativeInteractionDuration,
     this.themeColor,
     this.inactive: false,
-    Object storyBarKeyObject,
     StoryClusterId clusterId,
-    Object clusterDraggableId,
-    Object positionedId,
-    Object containerId,
+    GlobalKey<StoryBarState> storyBarKey,
+    GlobalKey clusterDraggableKey,
+    GlobalKey positionedKey,
+    GlobalKey containerKey,
     Panel panel,
   })
-      : this.storyBarKeyObject = storyBarKeyObject ?? new Object(),
-        this.clusterId = clusterId ?? new StoryClusterId(),
-        this.clusterDraggableId = clusterDraggableId ?? new Object(),
-        this.positionedId = positionedId ?? new Object(),
-        this.containerId = containerId ?? new Object(),
+      : this.clusterId = clusterId ?? new StoryClusterId(),
+        this.storyBarKey = storyBarKey ?? new GlobalKey<StoryBarState>(),
+        this.clusterDraggableKey = clusterDraggableKey ?? new GlobalKey(),
+        this.positionedKey = positionedKey ?? new GlobalKey(),
+        this.containerKey = containerKey ?? new GlobalKey(),
         this.panel = panel ?? new Panel();
 
   Story copyWith({
@@ -60,7 +61,7 @@ class Story {
     Duration cumulativeInteractionDuration,
     bool inactive,
     Panel panel,
-    Object clusterDraggableId,
+    GlobalKey clusterDraggableKey,
   }) =>
       new Story(
         id: this.id,
@@ -73,11 +74,11 @@ class Story {
         avatar: this.avatar,
         title: this.title,
         inactive: inactive ?? this.inactive,
-        storyBarKeyObject: this.storyBarKeyObject,
         clusterId: this.clusterId,
-        clusterDraggableId: this.clusterDraggableId,
-        positionedId: this.positionedId,
-        containerId: this.containerId,
+        storyBarKey: this.storyBarKey,
+        clusterDraggableKey: this.clusterDraggableKey,
+        positionedKey: this.positionedKey,
+        containerKey: this.containerKey,
         panel: panel ?? this.panel,
       );
 

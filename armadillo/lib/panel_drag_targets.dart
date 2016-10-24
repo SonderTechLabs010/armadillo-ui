@@ -15,7 +15,6 @@ import 'place_holder_story.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
-import 'story_keys.dart';
 import 'story_manager.dart';
 
 const double _kLineWidth = 4.0;
@@ -473,7 +472,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         onHover: (BuildContext context, StoryCluster data) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
-          _updateDragFeedback(data.dragFeedbackId);
+          _updateDragFeedback(data.dragFeedbackKey);
 
           // TODO(apwilson): Switch all the stories involved into tabs.
         },
@@ -497,7 +496,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         onHover: (BuildContext context, StoryCluster data) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
-          _updateDragFeedback(data.dragFeedbackId);
+          _updateDragFeedback(data.dragFeedbackKey);
         },
         onDrop: (BuildContext context, StoryCluster data) {
           config.storyCluster.removePreviews();
@@ -521,7 +520,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         onHover: (BuildContext context, StoryCluster data) {
           config.storyCluster.removePreviews();
           _cleanup(context: context, preview: true);
-          _updateDragFeedback(data.dragFeedbackId);
+          _updateDragFeedback(data.dragFeedbackKey);
         },
         onDrop: (BuildContext context, StoryCluster data) {
           config.storyCluster.removePreviews();
@@ -706,7 +705,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 4) If previewing, update the drag feedback.
     if (preview) {
-      _updateDragFeedback(storyCluster.dragFeedbackId);
+      _updateDragFeedback(storyCluster.dragFeedbackKey);
     }
   }
 
@@ -750,7 +749,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 4) If previewing, update the drag feedback.
     if (preview) {
-      _updateDragFeedback(storyCluster.dragFeedbackId);
+      _updateDragFeedback(storyCluster.dragFeedbackKey);
     }
   }
 
@@ -795,7 +794,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 4) If previewing, update the drag feedback.
     if (preview) {
-      _updateDragFeedback(storyCluster.dragFeedbackId);
+      _updateDragFeedback(storyCluster.dragFeedbackKey);
     }
   }
 
@@ -839,7 +838,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 4) If previewing, update the drag feedback.
     if (preview) {
-      _updateDragFeedback(storyCluster.dragFeedbackId);
+      _updateDragFeedback(storyCluster.dragFeedbackKey);
     }
   }
 
@@ -891,7 +890,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 4) If previewing, update the drag feedback.
     if (preview) {
-      _updateDragFeedback(storyCluster.dragFeedbackId);
+      _updateDragFeedback(storyCluster.dragFeedbackKey);
     }
   }
 
@@ -937,7 +936,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 4) If previewing, update the drag feedback.
     if (preview) {
-      _updateDragFeedback(storyCluster.dragFeedbackId);
+      _updateDragFeedback(storyCluster.dragFeedbackKey);
     }
   }
 
@@ -984,7 +983,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 4) If previewing, update the drag feedback.
     if (preview) {
-      _updateDragFeedback(storyCluster.dragFeedbackId);
+      _updateDragFeedback(storyCluster.dragFeedbackKey);
     }
   }
 
@@ -1030,7 +1029,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 4) If previewing, update the drag feedback.
     if (preview) {
-      _updateDragFeedback(storyCluster.dragFeedbackId);
+      _updateDragFeedback(storyCluster.dragFeedbackKey);
     }
   }
 
@@ -1057,7 +1056,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     });
   }
 
-  void _updateDragFeedback(Object dragFeedbackId) {
+  void _updateDragFeedback(
+    GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey,
+  ) {
     Map<Object, Panel> panelMap = <Object, Panel>{};
 
     config.storyCluster.stories
@@ -1066,9 +1067,6 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       panelMap[story.associatedStoryId] = story.panel;
     });
 
-    StoryClusterDragFeedbackState state =
-        new GlobalObjectKey(dragFeedbackId)?.currentState;
-
     // NOTE: We do this in a microtask because of the following:
     //   a) Messing with the [StoryClusterDragFeedbackState] could cause a
     //      setState call.
@@ -1076,7 +1074,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     //      onHover callback).
     //   c) Causing a setState while building is a big Flutter no-no.
     scheduleMicrotask(() {
-      state?.storyPanels = panelMap;
+      dragFeedbackKey.currentState?.storyPanels = panelMap;
     });
   }
 
@@ -1124,7 +1122,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ),
       );
       dx += _kAddedStorySpan;
-      StoryKeys.storyBarKey(story).currentState?.maximize(jumpToFinish: true);
+      story.storyBarKey.currentState?.maximize(jumpToFinish: true);
     });
   }
 
@@ -1147,7 +1145,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ),
       );
       dy += _kAddedStorySpan;
-      StoryKeys.storyBarKey(story).currentState?.maximize(jumpToFinish: true);
+      story.storyBarKey.currentState?.maximize(jumpToFinish: true);
     });
   }
 

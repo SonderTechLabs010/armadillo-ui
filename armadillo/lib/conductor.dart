@@ -18,7 +18,6 @@ import 'selected_suggestion_overlay.dart';
 import 'splash_suggestion.dart';
 import 'story.dart';
 import 'story_cluster.dart';
-import 'story_keys.dart';
 import 'story_list.dart';
 import 'story_manager.dart';
 import 'suggestion.dart';
@@ -300,23 +299,20 @@ class Conductor extends StatelessWidget {
     storyManager.interactionStarted(storyCluster);
 
     // Ensure the focused story is completely expanded.
-    StoryKeys
-        .storyClusterFocusSimulationKey(storyCluster)
-        .currentState
-        ?.forward(jumpToFinish: true);
+    storyCluster.focusSimulationKey.currentState?.forward(jumpToFinish: true);
 
     // Ensure the focused story's story bar is full open.
     storyCluster.stories.forEach((Story story) {
-      StoryKeys.storyBarKey(story).currentState?.maximize(jumpToFinish: true);
+      story.storyBarKey.currentState?.maximize(jumpToFinish: true);
     });
 
     _scrollLockerKey.currentState.lock();
   }
 
   void _unfocusStoryCluster(StoryCluster s) {
-    StoryKeys.storyClusterFocusSimulationKey(s).currentState?.reverse();
+    s.focusSimulationKey.currentState?.reverse();
     s.stories.forEach((Story story) {
-      StoryKeys.storyBarKey(story).currentState?.minimize();
+      story.storyBarKey.currentState?.minimize();
     });
   }
 

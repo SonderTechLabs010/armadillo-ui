@@ -133,16 +133,15 @@ class StoryClusterWidget extends StatelessWidget {
           useWrapper: _isUnfocused && !hasCandidates,
           builder: (BuildContext context, Widget child) =>
               new ArmadilloLongPressDraggable<StoryClusterId>(
-                key: new GlobalObjectKey(storyCluster.clusterDraggableId),
+                key: storyCluster.clusterDraggableKey,
                 data: storyCluster.id,
                 childWhenDragging: new Offstage(),
                 feedback: new Builder(builder: (BuildContext context) {
-                  RenderBox box =
-                      new GlobalObjectKey(storyCluster.clusterDragTargetsId)
-                          .currentContext
-                          .findRenderObject();
+                  RenderBox box = storyCluster
+                      .clusterDragTargetsKey.currentContext
+                      .findRenderObject();
                   return new StoryClusterDragFeedback(
-                    key: new GlobalObjectKey(storyCluster.dragFeedbackId),
+                    key: storyCluster.dragFeedbackKey,
                     storyCluster: storyCluster,
                     fullSize: fullSize,
                     initialSize: box.size,
@@ -189,7 +188,7 @@ class StoryClusterWidget extends StatelessWidget {
               highlight: highlight,
             )
           : new StoryCarousel(
-              key: new GlobalObjectKey(storyCluster.carouselId),
+              key: storyCluster.carouselKey,
               stories: storyCluster.stories,
               focusProgress: focusProgress,
               fullSize: fullSize,

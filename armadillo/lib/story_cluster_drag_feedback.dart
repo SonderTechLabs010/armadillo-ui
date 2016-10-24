@@ -11,7 +11,6 @@ import 'simulated_sized_box.dart';
 import 'simulated_translation_transform.dart';
 import 'story.dart';
 import 'story_cluster.dart';
-import 'story_keys.dart';
 import 'story_panels.dart';
 
 /// Displays a representation of a StoryCluster while being dragged.
@@ -57,11 +56,11 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       _heightFactor = maxBottom - minTop;
       if (_storyPanels.isEmpty) {
         config.storyCluster.stories.forEach((Story story) {
-          StoryKeys.storyBarKey(story).currentState.minimize();
+          story.storyBarKey.currentState.minimize();
         });
       } else {
         config.storyCluster.stories.forEach((Story story) {
-          StoryKeys.storyBarKey(story).currentState.maximize();
+          story.storyBarKey.currentState.maximize();
         });
       }
     });

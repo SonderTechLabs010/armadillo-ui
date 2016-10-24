@@ -16,7 +16,6 @@ import 'story.dart';
 import 'story_bar.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
-import 'story_keys.dart';
 import 'story_manager.dart';
 
 /// The height of the vertical gesture detector used to reveal the story bar in
@@ -69,7 +68,7 @@ class StoryPanels extends StatelessWidget {
 
   Widget _getDragTarget({BuildContext context, Widget child}) =>
       new PanelDragTargets(
-        key: new GlobalObjectKey(storyCluster.clusterDragTargetsId),
+        key: storyCluster.clusterDragTargetsKey,
         scale: _kDragScale,
         focusProgress: focusProgress,
         fullSize: fullSize,
@@ -133,7 +132,7 @@ class StoryPanels extends StatelessWidget {
     return story.isPlaceHolder
         ? new Offstage()
         : new SimulatedPositioned(
-            key: new GlobalObjectKey(story.positionedId),
+            key: story.positionedKey,
             top: currentSize.height * panel.top + topMargin,
             left: currentSize.width * panel.left + leftMargin,
             width: currentSize.width * panel.width - leftMargin - rightMargin,
@@ -162,14 +161,14 @@ class StoryPanels extends StatelessWidget {
         useWrapper: storyCluster.stories.length > 1,
         builder: (BuildContext context, Widget child) =>
             new ArmadilloLongPressDraggable<StoryClusterId>(
-              key: new GlobalObjectKey(story.clusterDraggableId),
+              key: story.clusterDraggableKey,
               data: story.clusterId,
               onDragStarted: () {
                 InheritedStoryManager.of(context).split(
                       storyToSplit: story,
                       from: storyCluster,
                     );
-                StoryKeys.storyBarKey(story).currentState?.minimize();
+                story.storyBarKey.currentState?.minimize();
               },
               childWhenDragging: new Offstage(),
               feedback: new Builder(
@@ -178,7 +177,7 @@ class StoryPanels extends StatelessWidget {
                       .of(context)
                       .getStoryCluster(story.clusterId);
                   return new StoryClusterDragFeedback(
-                    key: new GlobalObjectKey(storyCluster.dragFeedbackId),
+                    key: storyCluster.dragFeedbackKey,
                     storyCluster: storyCluster,
                     fullSize: fullSize,
                     initialSize: new Size(400.0, 300.0),
@@ -201,7 +200,7 @@ class StoryPanels extends StatelessWidget {
                   context: context,
                   story: story,
                   child: new StoryBar(
-                    key: StoryKeys.storyBarKey(story),
+                    key: story.storyBarKey,
                     story: story,
                     minimizedHeight: _kStoryBarMinimizedHeight,
                     maximizedHeight: _kStoryBarMaximizedHeight,
@@ -226,7 +225,7 @@ class StoryPanels extends StatelessWidget {
         fit: ImageFit.cover,
         alignment: FractionalOffset.topCenter,
         child: new SimulatedSizedBox(
-          key: new GlobalObjectKey(story.containerId),
+          key: story.containerKey,
           width: size.width,
           height: size.height - _kStoryBarMaximizedHeight,
           child: story.builder(context),

@@ -32,7 +32,7 @@ class PlaceHolderStory extends Story {
     Duration cumulativeInteractionDuration,
     bool inactive,
     Panel panel,
-    Object clusterDraggableId,
+    GlobalKey clusterDraggableKey,
   }) =>
       new PlaceHolderStory(
         index: this._index,
