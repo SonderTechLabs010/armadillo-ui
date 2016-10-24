@@ -104,7 +104,6 @@ class StoryManager extends ConfigManager {
           target.add(story: sourceStory, withPanel: b);
           target.normalizeSizes();
         });
-        break;
       } else {
         print('Cannot add story as a panel!  We must switch to tabs!');
       }
