@@ -161,7 +161,7 @@ class StoryPanels extends StatelessWidget {
         // Don't allow dragging if we're the only story.
         useWrapper: storyCluster.stories.length > 1,
         builder: (BuildContext context, Widget child) =>
-            new ArmadilloLongPressDraggable(
+            new ArmadilloLongPressDraggable<StoryClusterId>(
               key: new GlobalObjectKey(story.clusterDraggableId),
               data: story.clusterId,
               onDragStarted: () {

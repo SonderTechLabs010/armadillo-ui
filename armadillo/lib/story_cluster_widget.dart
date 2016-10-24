@@ -76,8 +76,8 @@ class StoryClusterWidget extends StatelessWidget {
         // Don't accept data if we're focused or focusing.
         useWrapper: _isUnfocused,
         builder: (BuildContext context, Widget child) =>
-            new ArmadilloDragTarget<Object>(
-              onWillAccept: (Object data, Point point) {
+            new ArmadilloDragTarget<StoryClusterId>(
+              onWillAccept: (StoryClusterId data, Point point) {
                 StoryCluster storyCluster =
                     InheritedStoryManager.of(context).getStoryCluster(data);
                 // Don't accept empty data.
@@ -100,7 +100,7 @@ class StoryClusterWidget extends StatelessWidget {
 
                 return result;
               },
-              onAccept: (Object data, Point point) {
+              onAccept: (StoryClusterId data, Point point) {
                 StoryCluster storyCluster =
                     InheritedStoryManager.of(context).getStoryCluster(data);
 
@@ -113,7 +113,7 @@ class StoryClusterWidget extends StatelessWidget {
               },
               builder: (
                 BuildContext context,
-                Map<Object, Point> candidateData,
+                Map<StoryClusterId, Point> candidateData,
                 Map<dynamic, Point> rejectedData,
               ) =>
                   _getUnfocusedDragTargetChild(context,
@@ -132,7 +132,7 @@ class StoryClusterWidget extends StatelessWidget {
         child: new OptionalWrapper(
           useWrapper: _isUnfocused && !hasCandidates,
           builder: (BuildContext context, Widget child) =>
-              new ArmadilloLongPressDraggable(
+              new ArmadilloLongPressDraggable<StoryClusterId>(
                 key: new GlobalObjectKey(storyCluster.clusterDraggableId),
                 data: storyCluster.id,
                 childWhenDragging: new Offstage(),

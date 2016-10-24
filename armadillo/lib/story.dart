@@ -5,12 +5,17 @@
 import 'package:flutter/widgets.dart';
 
 import 'panel.dart';
+import 'story_cluster.dart';
+
+class StoryId<T> extends ValueKey<T> {
+  StoryId(T value) : super(value);
+}
 
 /// The representation of a Story.  A Story's contents are display as a [Widget]
 /// provided by [builder] while the size of a story in the [RecentList] is
 /// determined by [lastInteraction] and [cumulativeInteractionDuration].
 class Story {
-  final Object id;
+  final StoryId id;
   final WidgetBuilder builder;
   final List<WidgetBuilder> icons;
   final WidgetBuilder avatar;
@@ -20,7 +25,7 @@ class Story {
   final Color themeColor;
   final bool inactive;
   final Object storyBarKeyObject;
-  final Object clusterId;
+  final StoryClusterId clusterId;
   final Object clusterDraggableId;
   final Object positionedId;
   final Object containerId;
@@ -37,14 +42,14 @@ class Story {
     this.themeColor,
     this.inactive: false,
     Object storyBarKeyObject,
-    Object clusterId,
+    StoryClusterId clusterId,
     Object clusterDraggableId,
     Object positionedId,
     Object containerId,
     Panel panel,
   })
       : this.storyBarKeyObject = storyBarKeyObject ?? new Object(),
-        this.clusterId = clusterId ?? new Object(),
+        this.clusterId = clusterId ?? new StoryClusterId(),
         this.clusterDraggableId = clusterDraggableId ?? new Object(),
         this.positionedId = positionedId ?? new Object(),
         this.containerId = containerId ?? new Object(),

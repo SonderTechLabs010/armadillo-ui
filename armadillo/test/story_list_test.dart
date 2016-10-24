@@ -121,7 +121,7 @@ class DummyStoryManager extends StoryManager {
         (int index) => new StoryCluster(
               stories: [
                 new Story(
-                  id: new ValueKey(storyKeys[index]),
+                  id: new StoryId(storyKeys[index]),
                   builder: (_) => new Container(key: storyKeys[index]),
                   title: '',
                   avatar: (_) => new Container(),

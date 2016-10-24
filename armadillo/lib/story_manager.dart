@@ -143,7 +143,7 @@ class StoryManager extends ConfigManager {
 
   /// Finds and returns the [StoryCluster] with the id equal to
   /// [storyClusterId].
-  StoryCluster getStoryCluster(Object storyClusterId) => _storyClusters
+  StoryCluster getStoryCluster(StoryClusterId storyClusterId) => _storyClusters
       .where((StoryCluster storyCluster) => storyCluster.id == storyClusterId)
       .single;
 

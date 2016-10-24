@@ -7,9 +7,11 @@ import 'package:flutter/widgets.dart';
 import 'panel.dart';
 import 'story.dart';
 
+class StoryClusterId {}
+
 /// A data model representing a list of [Story]s.
 class StoryCluster {
-  final Object id;
+  final StoryClusterId id;
   final DateTime lastInteraction;
   final Duration cumulativeInteractionDuration;
   final List<Story> _stories;
@@ -19,28 +21,31 @@ class StoryCluster {
   final Object clusterDragTargetsId;
   final Object dragFeedbackId;
   final Set<VoidCallback> _storyListListeners;
+  Object _focusedStoryId;
 
   StoryCluster({
-    Object id,
+    StoryClusterId id,
     Object carouselId,
     Object clusterDraggableId,
     Object clusterDragTargetsId,
     Object dragFeedbackId,
     List<Story> stories,
     Set<VoidCallback> storyListListeners,
+    Object focusedStoryId,
   })
       : this._stories = stories,
         this.title = _getClusterTitle(stories),
         this.lastInteraction = _getClusterLastInteraction(stories),
         this.cumulativeInteractionDuration =
             _getClusterCumulativeInteractionDuration(stories),
-        this.id = id ?? new Object(),
+        this.id = id ?? new StoryClusterId(),
         this.carouselId = carouselId ?? new Object(),
         this.clusterDraggableId = clusterDraggableId ?? new Object(),
         this.clusterDragTargetsId = clusterDragTargetsId ?? new Object(),
         this.dragFeedbackId = dragFeedbackId ?? new Object(),
         this._storyListListeners =
-            storyListListeners ?? new Set<VoidCallback>();
+            storyListListeners ?? new Set<VoidCallback>(),
+        this._focusedStoryId = focusedStoryId ?? stories[0].id;
 
   factory StoryCluster.fromStory(Story story) => new StoryCluster(
         id: story.clusterId,
@@ -69,6 +74,7 @@ class StoryCluster {
     Duration cumulativeInteractionDuration,
     bool inactive,
     Object clusterDraggableId,
+    Object focusedStoryId,
   }) =>
       new StoryCluster(
         id: this.id,
@@ -85,6 +91,7 @@ class StoryCluster {
               ),
         ),
         storyListListeners: this._storyListListeners,
+        focusedStoryId: focusedStoryId ?? this._focusedStoryId,
       );
 
   @override
@@ -204,6 +211,12 @@ class StoryCluster {
 
     _stories.remove(story);
     normalizeSizes();
+
+    // If we've just removed the focused story, switch focus.
+    if (_focusedStoryId == story.id) {
+      _focusedStoryId = stories[0].id;
+    }
+
     _notifyStoryListListeners();
   }
 

@@ -40,7 +40,7 @@ Widget _widgetBuilder(String module, Map<String, Object> state) {
 /// Construct a story object from a decoded json story config.
 Story storyBuilder(Map<String, Object> story) {
   return new Story(
-    id: new ValueKey(story['id']),
+    id: new StoryId(story['id']),
     builder: (_) => new ScrollConfiguration(
           child: _widgetBuilder(story['module'], story['state']),
         ),

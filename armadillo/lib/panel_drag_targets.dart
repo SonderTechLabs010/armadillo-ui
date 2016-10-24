@@ -219,9 +219,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   }
 
   @override
-  Widget build(BuildContext context) => new ArmadilloDragTarget(
-      onWillAccept: (Object data, Point point) => true,
-      onAccept: (Object data, Point point) {
+  Widget build(BuildContext context) => new ArmadilloDragTarget<StoryClusterId>(
+      onWillAccept: (StoryClusterId data, Point point) => true,
+      onAccept: (StoryClusterId data, Point point) {
         StoryCluster storyCluster =
             InheritedStoryManager.of(context).getStoryCluster(data);
         return _getClosestLine(point, storyCluster)
@@ -230,11 +230,12 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       },
       builder: (
         BuildContext context,
-        Map<Object, Point> storyClusterIdCandidateData,
+        Map<StoryClusterId, Point> storyClusterIdCandidateData,
         Map<dynamic, Point> rejectedData,
       ) {
         Map<StoryCluster, Point> candidateData = {};
-        storyClusterIdCandidateData.keys.forEach((Object storyClusterId) {
+        storyClusterIdCandidateData.keys
+            .forEach((StoryClusterId storyClusterId) {
           StoryCluster storyCluster =
               InheritedStoryManager.of(context).getStoryCluster(storyClusterId);
           candidateData[storyCluster] =
@@ -677,6 +678,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ? new List<Story>.generate(
             storyCluster.stories.length,
             (int index) => new PlaceHolderStory(
+                  index: index,
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -721,6 +723,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ? new List<Story>.generate(
             storyCluster.stories.length,
             (int index) => new PlaceHolderStory(
+                  index: index,
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -764,6 +767,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ? new List<Story>.generate(
             storyCluster.stories.length,
             (int index) => new PlaceHolderStory(
+                  index: index,
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -808,6 +812,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ? new List<Story>.generate(
             storyCluster.stories.length,
             (int index) => new PlaceHolderStory(
+                  index: index,
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -848,7 +853,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   void _addClusterToLeftOfPanel({
     BuildContext context,
     StoryCluster storyCluster,
-    Object storyId,
+    StoryId storyId,
     bool preview: false,
   }) {
     // 0) Remove any existing preview stories.
@@ -858,6 +863,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ? new List<Story>.generate(
             storyCluster.stories.length,
             (int index) => new PlaceHolderStory(
+                  index: index,
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -894,7 +900,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   void _addClusterToRightOfPanel({
     BuildContext context,
     StoryCluster storyCluster,
-    Object storyId,
+    StoryId storyId,
     bool preview: false,
   }) {
     // 0) Remove any existing preview stories.
@@ -904,6 +910,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ? new List<Story>.generate(
             storyCluster.stories.length,
             (int index) => new PlaceHolderStory(
+                  index: index,
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -939,7 +946,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   void _addClusterAbovePanel({
     BuildContext context,
     StoryCluster storyCluster,
-    Object storyId,
+    StoryId storyId,
     bool preview: false,
   }) {
     // 0) Remove any existing preview stories.
@@ -949,6 +956,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ? new List<Story>.generate(
             storyCluster.stories.length,
             (int index) => new PlaceHolderStory(
+                  index: index,
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -985,7 +993,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   void _addClusterBelowPanel({
     BuildContext context,
     StoryCluster storyCluster,
-    Object storyId,
+    StoryId storyId,
     bool preview: false,
   }) {
     // 0) Remove any existing preview stories.
@@ -995,6 +1003,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ? new List<Story>.generate(
             storyCluster.stories.length,
             (int index) => new PlaceHolderStory(
+                  index: index,
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
