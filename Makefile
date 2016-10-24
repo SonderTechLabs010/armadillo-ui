@@ -38,7 +38,14 @@ ifeq ($(wildcard ~/goma/.*),)
 else
 	goma_installed := yes
 	gen_flags := --goma
-	ninja_flags := -j1000
+	ifeq ($(shell uname -s),Darwin)
+		# Macs don't handle as many build jobs as well as Linux.
+		# Use 15 * cpu_count since that seems to work well in practice.
+		num_jobs := $(shell python -c 'import multiprocessing as mp; print(15 * mp.cpu_count())')
+		ninja_flags := -j$(num_jobs)
+	else
+		ninja_flags := -j1000
+	endif
 endif
 
 ################################################################################
