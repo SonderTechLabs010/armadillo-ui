@@ -1060,8 +1060,6 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         InheritedStoryManager
             .of(context)
             .remove(storyClusterId: storyCluster.id);
-      } else {
-        InheritedStoryManager.of(context).notifyListeners();
       }
     });
   }

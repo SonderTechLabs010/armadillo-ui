@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -50,49 +48,25 @@ class StoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<StoryCluster> storyClusters = new List<StoryCluster>.from(
-      InheritedStoryManager.of(context, rebuildOnChange: true).storyClusters,
+    StoryManager storyManager = InheritedStoryManager.of(
+      context,
+      rebuildOnChange: true,
     );
-
-    // Remove clusters with any inactive stories.
-    List<StoryCluster> inactiveStoryClusters = <StoryCluster>[];
-    storyClusters.removeWhere(
-      (StoryCluster storyCluster) {
-        bool clusterInactive =
-            !storyCluster.stories.every((Story story) => !story.inactive);
-        if (clusterInactive) {
-          inactiveStoryClusters.add(storyCluster);
-        }
-        return clusterInactive;
-      },
-    );
-
-    // Sort recently interacted with stories to the start of the list.
-    storyClusters.sort((StoryCluster a, StoryCluster b) =>
-        b.lastInteraction.millisecondsSinceEpoch -
-        a.lastInteraction.millisecondsSinceEpoch);
-
-    List<StoryLayout> storyLayout =
-        new StoryListLayout(size: parentSize).layout(
-      storyClustersToLayout: storyClusters,
-      currentTime: new DateTime.now(),
-    );
-
-    double listHeight = 0.0;
-    storyLayout.forEach((StoryLayout storyLayout) {
-      listHeight = math.max(listHeight, -storyLayout.offset.dy);
-    });
 
     // IMPORTANT:  In order for activation of inactive stories from suggestions
     // to work we must have them in the widget tree.
     List<Widget> stackChildren = new List.from(
-      inactiveStoryClusters.map(
+      storyManager.inactiveStoryClusters.map(
         (StoryCluster storyCluster) => new Offstage(
               offstage: true,
               child: new SimulationBuilder(
                 key: storyCluster.focusSimulationKey,
                 builder: (BuildContext context, double progress) =>
-                    _createStoryCluster(storyClusters, storyCluster, 0.0),
+                    _createStoryCluster(
+                      storyManager.activeSortedStoryClusters,
+                      storyCluster,
+                      0.0,
+                    ),
               ),
             ),
       ),
@@ -104,13 +78,12 @@ class StoryList extends StatelessWidget {
         bottomPadding: bottomPadding,
         onScroll: onScroll,
         parentSize: parentSize,
-        listHeight: listHeight,
+        listHeight: storyManager.listHeight,
         children: new List<Widget>.generate(
-          storyClusters.length,
+          storyManager.activeSortedStoryClusters.length,
           (int index) => _createFocusableStoryCluster(
-                storyClusters,
-                storyClusters[index],
-                storyLayout[index],
+                storyManager.activeSortedStoryClusters,
+                storyManager.activeSortedStoryClusters[index],
               ),
         ),
       ),
@@ -122,7 +95,6 @@ class StoryList extends StatelessWidget {
   Widget _createFocusableStoryCluster(
     List<StoryCluster> storyClusters,
     StoryCluster storyCluster,
-    StoryLayout storyLayout,
   ) =>
       new SimulationBuilder(
         key: storyCluster.focusSimulationKey,
@@ -132,7 +104,7 @@ class StoryList extends StatelessWidget {
           }
         },
         builder: (BuildContext context, double progress) => new StoryListChild(
-              storyLayout: storyLayout,
+              storyLayout: storyCluster.storyLayout,
               focusProgress: progress,
               child: _createStoryCluster(storyClusters, storyCluster, progress),
             ),

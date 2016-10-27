@@ -8,6 +8,7 @@ import 'panel.dart';
 import 'simulation_builder.dart';
 import 'story.dart';
 import 'story_cluster_drag_feedback.dart';
+import 'story_list_layout.dart';
 
 class StoryClusterId {}
 
@@ -24,7 +25,9 @@ class StoryCluster {
   final GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey;
   final GlobalKey focusSimulationKey;
   final Set<VoidCallback> _storyListListeners;
+  final Set<VoidCallback> _panelListeners;
   StoryId _focusedStoryId;
+  StoryLayout storyLayout;
 
   StoryCluster({
     StoryClusterId id,
@@ -35,7 +38,9 @@ class StoryCluster {
     GlobalKey<SimulationBuilderState> focusSimulationKey,
     List<Story> stories,
     Set<VoidCallback> storyListListeners,
+    Set<VoidCallback> panelListeners,
     StoryId focusedStoryId,
+    this.storyLayout,
   })
       : this._stories = stories,
         this.title = _getClusterTitle(stories),
@@ -52,6 +57,7 @@ class StoryCluster {
             focusSimulationKey ?? new GlobalKey<SimulationBuilderState>(),
         this._storyListListeners =
             storyListListeners ?? new Set<VoidCallback>(),
+        this._panelListeners = panelListeners ?? new Set<VoidCallback>(),
         this._focusedStoryId = focusedStoryId ?? stories[0].id;
 
   factory StoryCluster.fromStory(Story story) => new StoryCluster(
@@ -74,6 +80,18 @@ class StoryCluster {
 
   void _notifyStoryListListeners() {
     _storyListListeners.forEach((VoidCallback listener) => listener());
+  }
+
+  void addPanelListener(VoidCallback listener) {
+    _panelListeners.add(listener);
+  }
+
+  void removePanelListener(VoidCallback listener) {
+    _panelListeners.remove(listener);
+  }
+
+  void _notifyPanelListeners() {
+    _panelListeners.forEach((VoidCallback listener) => listener());
   }
 
   StoryCluster copyWith({
@@ -99,7 +117,9 @@ class StoryCluster {
               ),
         ),
         storyListListeners: this._storyListListeners,
+        panelListeners: this._panelListeners,
         focusedStoryId: focusedStoryId ?? this._focusedStoryId,
+        storyLayout: this.storyLayout,
       );
 
   @override
@@ -171,6 +191,7 @@ class StoryCluster {
                 ),
               ),
         );
+    _notifyPanelListeners();
   }
 
   /// Adds the [story] to [stories] with a [Panel] of [withPanel].

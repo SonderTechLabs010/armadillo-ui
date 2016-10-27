@@ -84,64 +84,72 @@ class Conductor extends StatelessWidget {
   /// a part of the story list and yet prevent the story list from painting
   /// behind it.
   @override
-  Widget build(BuildContext context) => new DeviceExtender(
-        deviceExtensions: [_getKeyboard()],
-        child: new LayoutBuilder(
+  Widget build(BuildContext context) => new LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-            if (constraints.maxWidth == 0.0 || constraints.maxHeight == 0.0) {
-              return new Offstage(offstage: true);
-            }
-            StoryManager storyManager = InheritedStoryManager.of(context);
-            Size fullSize = new Size(
-              constraints.maxWidth,
-              constraints.maxHeight - _kMinimizedNowHeight,
+        InheritedStoryManager.of(context).updateLayouts(
+              new Size(
+                constraints.maxWidth,
+                constraints.maxHeight,
+              ),
             );
-            storyManager.normalize(size: fullSize);
+        return new DeviceExtender(
+          deviceExtensions: [_getKeyboard()],
+          child: new LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              if (constraints.maxWidth == 0.0 || constraints.maxHeight == 0.0) {
+                return new Offstage(offstage: true);
+              }
+              StoryManager storyManager = InheritedStoryManager.of(context);
+              Size fullSize = new Size(
+                constraints.maxWidth,
+                constraints.maxHeight - _kMinimizedNowHeight,
+              );
+              storyManager.normalize(size: fullSize);
 
-            return new Stack(
-              children: [
-                new Positioned(
-                  left: 0.0,
-                  right: 0.0,
-                  top: 0.0,
-                  bottom: _kMinimizedNowHeight,
-                  // NOTE: The Overlay *must* be a child of the LayoutBuilder
-                  // due to https://github.com/flutter/flutter/issues/6119.
-                  // Story List.
-                  child: new Overlay(
-                    // We need a new key each time the max constraints change
-                    // to ensure initialEntries is reused.
-                    key: new GlobalObjectKey(
-                        constraints.maxWidth * constraints.maxHeight +
-                            constraints.maxWidth -
-                            constraints.maxHeight),
-                    initialEntries: [
-                      new OverlayEntry(
-                        builder: (BuildContext context) =>
-                            _getStoryList(storyManager, fullSize),
-                      ),
-                    ],
+              return new Stack(
+                children: [
+                  new Positioned(
+                    left: 0.0,
+                    right: 0.0,
+                    top: 0.0,
+                    bottom: _kMinimizedNowHeight,
+                    // NOTE: The Overlay *must* be a child of the LayoutBuilder
+                    // due to https://github.com/flutter/flutter/issues/6119.
+                    // Story List.
+                    child: new Overlay(
+                      // We need a new key each time the max constraints change
+                      // to ensure initialEntries is reused.
+                      key: new GlobalKey(),
+                      initialEntries: [
+                        new OverlayEntry(
+                          builder: (BuildContext context) => _getStoryList(
+                                storyManager,
+                                fullSize,
+                              ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                // Now.
-                _getNow(storyManager),
+                  // Now.
+                  _getNow(storyManager),
 
-                // Suggestions Overlay.
-                _getSuggestionOverlay(storyManager, fullSize),
+                  // Suggestions Overlay.
+                  _getSuggestionOverlay(storyManager, fullSize),
 
-                // Selected Suggestion Overlay.
-                _getSelectedSuggestionOverlay(),
+                  // Selected Suggestion Overlay.
+                  _getSelectedSuggestionOverlay(),
 
-                // Quick Settings Overlay.
-                new QuickSettingsOverlay(
-                    key: _quickSettingsOverlayKey,
-                    minimizedNowBarHeight: _kMinimizedNowHeight),
-              ],
-            );
-          },
-        ),
-      );
+                  // Quick Settings Overlay.
+                  new QuickSettingsOverlay(
+                      key: _quickSettingsOverlayKey,
+                      minimizedNowBarHeight: _kMinimizedNowHeight),
+                ],
+              );
+            },
+          ),
+        );
+      });
 
   Widget _getKeyboard() => new KeyboardDeviceExtension(
         key: _keyboardDeviceExtensionKey,
@@ -283,7 +291,7 @@ class Conductor extends StatelessWidget {
 
   void _defocus(StoryManager storyManager) {
     // Unfocus all story clusters.
-    storyManager.storyClusters.forEach(_unfocusStoryCluster);
+    storyManager.activeSortedStoryClusters.forEach(_unfocusStoryCluster);
 
     // Unlock scrolling.
     _scrollLockerKey.currentState.unlock();

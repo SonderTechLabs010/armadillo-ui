@@ -14,6 +14,7 @@ import 'panel.dart';
 import 'story.dart';
 import 'story_builder.dart';
 import 'story_cluster.dart';
+import 'story_list_layout.dart';
 import 'suggestion_manager.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/stories.json';
@@ -23,6 +24,10 @@ const String _kJsonUrl = 'packages/armadillo/res/stories.json';
 class StoryManager extends ConfigManager {
   final SuggestionManager suggestionManager;
   List<StoryCluster> _storyClusters = const <StoryCluster>[];
+  List<StoryCluster> _activeSortedStoryClusters = const <StoryCluster>[];
+  List<StoryCluster> _inactiveStoryClusters = const <StoryCluster>[];
+  Size _lastLayoutSize = Size.zero;
+  double _listHeight = 0.0;
 
   StoryManager({this.suggestionManager});
 
@@ -36,12 +41,54 @@ class StoryManager extends ConfigManager {
                 storyBuilder(story),
               ]))
           .toList();
-
+      updateLayouts(_lastLayoutSize);
       notifyListeners();
     });
   }
 
   List<StoryCluster> get storyClusters => _storyClusters;
+  List<StoryCluster> get activeSortedStoryClusters =>
+      _activeSortedStoryClusters;
+  List<StoryCluster> get inactiveStoryClusters => _inactiveStoryClusters;
+  double get listHeight => _listHeight;
+
+  void updateLayouts(Size size) {
+    if (size == Size.zero) {
+      return;
+    }
+    _lastLayoutSize = size;
+
+    _inactiveStoryClusters = new List<StoryCluster>.from(
+      _storyClusters,
+    );
+
+    _inactiveStoryClusters.retainWhere((StoryCluster storyCluster) =>
+        !storyCluster.stories.every((Story story) => !story.inactive));
+
+    _activeSortedStoryClusters = new List<StoryCluster>.from(
+      _storyClusters,
+    );
+
+    _activeSortedStoryClusters.removeWhere((StoryCluster storyCluster) =>
+        !storyCluster.stories.every((Story story) => !story.inactive));
+
+    // Sort recently interacted with stories to the start of the list.
+    _activeSortedStoryClusters.sort((StoryCluster a, StoryCluster b) =>
+        b.lastInteraction.millisecondsSinceEpoch -
+        a.lastInteraction.millisecondsSinceEpoch);
+
+    List<StoryLayout> storyLayout = new StoryListLayout(size: size).layout(
+      storyClustersToLayout: _activeSortedStoryClusters,
+      currentTime: new DateTime.now(),
+    );
+
+    double listHeight = 0.0;
+    for (int i = 0; i < storyLayout.length; i++) {
+      _activeSortedStoryClusters[i].storyLayout = storyLayout[i];
+      listHeight = math.max(listHeight, -storyLayout[i].offset.dy);
+    }
+    _listHeight = listHeight;
+  }
 
   /// Updates the [Story.lastInteraction] of [story] to be [DateTime.now].
   /// This method is to be called whenever a [Story]'s [Story.builder] [Widget]
@@ -54,6 +101,7 @@ class StoryManager extends ConfigManager {
         inactive: false,
       ),
     );
+    updateLayouts(_lastLayoutSize);
     notifyListeners();
     suggestionManager.storyClusterFocusChanged(storyCluster);
   }
@@ -80,6 +128,7 @@ class StoryManager extends ConfigManager {
       storyInteractionTime = storyInteractionTime.subtract(interaction);
       return storyCluster;
     });
+    updateLayouts(_lastLayoutSize);
     notifyListeners();
   }
 
@@ -87,6 +136,7 @@ class StoryManager extends ConfigManager {
   void add({StoryCluster storyCluster}) {
     _storyClusters.removeWhere((StoryCluster s) => s.id == storyCluster.id);
     _storyClusters.add(storyCluster);
+    updateLayouts(_lastLayoutSize);
     notifyListeners();
   }
 
@@ -119,6 +169,7 @@ class StoryManager extends ConfigManager {
   /// Removes [storyCluster] from the list of story clusters.
   void remove({StoryClusterId storyClusterId}) {
     _storyClusters.removeWhere((StoryCluster s) => (s.id == storyClusterId));
+    updateLayouts(_lastLayoutSize);
     notifyListeners();
   }
 

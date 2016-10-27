@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -36,7 +37,7 @@ const Color _kTargetOverlayColor = const Color.fromARGB(128, 153, 234, 216);
 const double _kDragScale = 0.8;
 
 /// Displays up to four stories in a grid-like layout.
-class StoryPanels extends StatelessWidget {
+class StoryPanels extends StatefulWidget {
   final StoryCluster storyCluster;
   final double focusProgress;
   final Size fullSize;
@@ -61,6 +62,34 @@ class StoryPanels extends StatelessWidget {
   }
 
   @override
+  StoryPanelsState createState() => new StoryPanelsState();
+}
+
+class StoryPanelsState extends State<StoryPanels> {
+  @override
+  void initState() {
+    super.initState();
+    config.storyCluster.addPanelListener(_onPanelsChanged);
+  }
+
+  @override
+  void didUpdateConfig(StoryPanels oldConfig) {
+    super.didUpdateConfig(oldConfig);
+    if (oldConfig.storyCluster.id != config.storyCluster.id) {
+      oldConfig.storyCluster.removePanelListener(_onPanelsChanged);
+      config.storyCluster.addPanelListener(_onPanelsChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    config.storyCluster.removePanelListener(_onPanelsChanged);
+    super.dispose();
+  }
+
+  void _onPanelsChanged() => scheduleMicrotask(() => setState(() {}));
+
+  @override
   Widget build(BuildContext context) => _getDragTarget(
         context: context,
         child: _getPanels(context),
@@ -68,16 +97,16 @@ class StoryPanels extends StatelessWidget {
 
   Widget _getDragTarget({BuildContext context, Widget child}) =>
       new PanelDragTargets(
-        key: storyCluster.clusterDragTargetsKey,
+        key: config.storyCluster.clusterDragTargetsKey,
         scale: _kDragScale,
-        focusProgress: focusProgress,
-        fullSize: fullSize,
-        storyCluster: storyCluster,
+        focusProgress: config.focusProgress,
+        fullSize: config.fullSize,
+        storyCluster: config.storyCluster,
         child: child,
       );
 
   Widget _getPanels(BuildContext context) => new Container(
-        foregroundDecoration: highlight
+        foregroundDecoration: config.highlight
             ? new BoxDecoration(
                 backgroundColor: _kTargetOverlayColor,
               )
@@ -85,19 +114,19 @@ class StoryPanels extends StatelessWidget {
         child: new LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) =>
               new Stack(
-                children: storyCluster.stories
+                children: config.storyCluster.stories
                     .map(
                       (Story story) => _getPositioned(
                             story: story,
                             currentSize: new Size(
                                 constraints.maxWidth, constraints.maxHeight),
-                            fullSize: fullSize,
+                            fullSize: config.fullSize,
                             child: _getStory(
                               context,
                               story,
                               new Size(
-                                fullSize.width * story.panel.width,
-                                fullSize.height * story.panel.height,
+                                config.fullSize.width * story.panel.width,
+                                config.fullSize.height * story.panel.height,
                               ),
                             ),
                           ),
@@ -158,7 +187,7 @@ class StoryPanels extends StatelessWidget {
   }) =>
       new OptionalWrapper(
         // Don't allow dragging if we're the only story.
-        useWrapper: storyCluster.stories.length > 1,
+        useWrapper: config.storyCluster.stories.length > 1,
         builder: (BuildContext context, Widget child) =>
             new ArmadilloLongPressDraggable<StoryClusterId>(
               key: story.clusterDraggableKey,
@@ -166,7 +195,7 @@ class StoryPanels extends StatelessWidget {
               onDragStarted: () {
                 InheritedStoryManager.of(context).split(
                       storyToSplit: story,
-                      from: storyCluster,
+                      from: config.storyCluster,
                     );
                 story.storyBarKey.currentState?.minimize();
               },
@@ -179,7 +208,7 @@ class StoryPanels extends StatelessWidget {
                   return new StoryClusterDragFeedback(
                     key: storyCluster.dragFeedbackKey,
                     storyCluster: storyCluster,
-                    fullSize: fullSize,
+                    fullSize: config.fullSize,
                     initialSize: new Size(400.0, 300.0),
                   );
                 },

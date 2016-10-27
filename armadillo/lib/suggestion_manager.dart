@@ -107,20 +107,27 @@ class SuggestionManager extends ConfigManager {
   List<Suggestion> get suggestions => _currentSuggestions;
 
   set askText(String text) {
-    _askText = text?.toLowerCase();
-    _updateSuggestions();
+    String newAskText = text?.toLowerCase();
+    if (_askText != newAskText) {
+      _askText = newAskText;
+      _updateSuggestions();
+    }
   }
 
   set asking(bool asking) {
-    _asking = asking;
-    _updateSuggestions();
+    if (_asking != asking) {
+      _asking = asking;
+      _updateSuggestions();
+    }
   }
 
   /// Updates the [suggestions] based on the currently focused storyCluster].  If no
   /// story is in focus, [storyCluster] should be null.
   void storyClusterFocusChanged(StoryCluster storyCluster) {
-    _activeStoryCluster = storyCluster;
-    _updateSuggestions();
+    if (_activeStoryCluster != storyCluster) {
+      _activeStoryCluster = storyCluster;
+      _updateSuggestions();
+    }
   }
 
   void _updateSuggestions() {
