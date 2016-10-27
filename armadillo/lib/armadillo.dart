@@ -18,33 +18,12 @@ const _kBackgroundImage = 'packages/armadillo/res/Background.jpg';
 const double _kDeviceScreenInnerBezelRadius = 12.0;
 
 /// The main app which controls the Fuchsia UI.
-class Armadillo extends StatefulWidget {
+class Armadillo extends StatelessWidget {
   final StoryManager storyManager;
   final SuggestionManager suggestionManager;
   final NowManager nowManager;
 
   Armadillo({this.storyManager, this.suggestionManager, this.nowManager});
-
-  @override
-  ArmadilloState createState() => new ArmadilloState();
-}
-
-class ArmadilloState extends State<Armadillo> {
-  @override
-  void initState() {
-    super.initState();
-    config.storyManager.addListener(_onChange);
-    config.suggestionManager.addListener(_onChange);
-    config.nowManager.addListener(_onChange);
-  }
-
-  @override
-  void dispose() {
-    config.nowManager.removeListener(_onChange);
-    config.suggestionManager.removeListener(_onChange);
-    config.storyManager.removeListener(_onChange);
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) => new Container(
@@ -66,11 +45,11 @@ class ArmadilloState extends State<Armadillo> {
               ),
             ),
             child: new InheritedSuggestionManager(
-              suggestionManager: config.suggestionManager,
+              suggestionManager: suggestionManager,
               child: new InheritedStoryManager(
-                storyManager: config.storyManager,
+                storyManager: storyManager,
                 child: new InheritedNowManager(
-                  nowManager: config.nowManager,
+                  nowManager: nowManager,
                   child: new Conductor(),
                 ),
               ),
@@ -78,8 +57,4 @@ class ArmadilloState extends State<Armadillo> {
           ),
         ),
       );
-
-  void _onChange() {
-    setState(() {});
-  }
 }

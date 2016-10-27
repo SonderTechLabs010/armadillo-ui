@@ -35,11 +35,53 @@ abstract class ConfigManager {
   }
 }
 
+class InheritedConfigManagerWidget extends StatefulWidget {
+  final ConfigManager configManager;
+  final WidgetBuilder builder;
+
+  InheritedConfigManagerWidget({this.configManager, this.builder});
+
+  @override
+  InheritedConfigManagerWidgetState createState() =>
+      new InheritedConfigManagerWidgetState();
+}
+
+class InheritedConfigManagerWidgetState
+    extends State<InheritedConfigManagerWidget> {
+  @override
+  void initState() {
+    super.initState();
+    config.configManager.addListener(_onChange);
+  }
+
+  @override
+  void didUpdateConfig(InheritedConfigManagerWidget oldConfig) {
+    super.didUpdateConfig(oldConfig);
+    if (config.configManager != oldConfig.configManager) {
+      oldConfig.configManager.removeListener(_onChange);
+      config.configManager.addListener(_onChange);
+    }
+  }
+
+  @override
+  void dispose() {
+    config.configManager.removeListener(_onChange);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => config.builder(context);
+
+  void _onChange() {
+    setState(() {});
+  }
+}
+
 /// Base class for [InheritedWidget]s that provide a [ConfigManager].
-class InheritedConfigManager<T extends ConfigManager> extends InheritedWidget {
-  final T configManager;
+class InheritedConfigManager extends InheritedWidget {
+  final ConfigManager configManager;
   final int version;
-  InheritedConfigManager({Key key, Widget child, T configManager})
+  InheritedConfigManager({Key key, Widget child, ConfigManager configManager})
       : this.configManager = configManager,
         this.version = configManager.version,
         super(key: key, child: child);

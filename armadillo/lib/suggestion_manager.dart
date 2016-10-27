@@ -179,29 +179,39 @@ class SuggestionManager extends ConfigManager {
   }
 }
 
-class InheritedSuggestionManager
-    extends InheritedConfigManager<SuggestionManager> {
-  InheritedSuggestionManager({
-    Key key,
-    Widget child,
-    SuggestionManager suggestionManager,
-  })
-      : super(
-          key: key,
-          child: child,
-          configManager: suggestionManager,
-        );
+class InheritedSuggestionManager extends StatelessWidget {
+  final SuggestionManager suggestionManager;
+  final Widget child;
+
+  InheritedSuggestionManager({this.suggestionManager, this.child});
+
+  @override
+  Widget build(BuildContext context) => new InheritedConfigManagerWidget(
+        configManager: suggestionManager,
+        builder: (BuildContext context) => new _InheritedSuggestionManager(
+              suggestionManager: suggestionManager,
+              child: child,
+            ),
+      );
 
   /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
-  /// returns true for the [InheritedSuggestionManager] returned by
+  /// returns true for the [_InheritedSuggestionManager] returned by
   /// [BuildContext.inheritFromWidgetOfExactType].
   /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
   /// to [SuggestionManager].
   static SuggestionManager of(BuildContext context,
       {bool rebuildOnChange: false}) {
-    InheritedSuggestionManager inheritedSuggestionManager = rebuildOnChange
-        ? context.inheritFromWidgetOfExactType(InheritedSuggestionManager)
-        : context.ancestorWidgetOfExactType(InheritedSuggestionManager);
+    _InheritedSuggestionManager inheritedSuggestionManager = rebuildOnChange
+        ? context.inheritFromWidgetOfExactType(_InheritedSuggestionManager)
+        : context.ancestorWidgetOfExactType(_InheritedSuggestionManager);
     return inheritedSuggestionManager?.configManager;
   }
+}
+
+class _InheritedSuggestionManager extends InheritedConfigManager {
+  _InheritedSuggestionManager({
+    Widget child,
+    SuggestionManager suggestionManager,
+  })
+      : super(child: child, configManager: suggestionManager);
 }

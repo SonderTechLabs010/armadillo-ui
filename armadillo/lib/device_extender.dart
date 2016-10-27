@@ -21,6 +21,9 @@ class DeviceExtender extends StatelessWidget {
     final columnChildren = new List<Widget>();
     columnChildren.add(new Flexible(child: child));
     columnChildren.addAll(deviceExtensions);
-    return new Column(children: columnChildren);
+    return new Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: columnChildren,
+    );
   }
 }

@@ -224,19 +224,35 @@ class NowManager extends ConfigManager {
       );
 }
 
-class InheritedNowManager extends InheritedConfigManager<NowManager> {
-  InheritedNowManager({Key key, Widget child, NowManager nowManager})
-      : super(key: key, child: child, configManager: nowManager);
+class InheritedNowManager extends StatelessWidget {
+  final NowManager nowManager;
+  final Widget child;
+
+  InheritedNowManager({this.nowManager, this.child});
+
+  @override
+  Widget build(BuildContext context) => new InheritedConfigManagerWidget(
+        configManager: nowManager,
+        builder: (BuildContext context) => new _InheritedNowManager(
+              nowManager: nowManager,
+              child: child,
+            ),
+      );
 
   /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
-  /// returns true for the [InheritedNowManager] returned by
+  /// returns true for the [_InheritedNowManager] returned by
   /// [BuildContext.inheritFromWidgetOfExactType].
   /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
   /// to [NowManager].
   static NowManager of(BuildContext context, {bool rebuildOnChange: false}) {
-    InheritedNowManager inheritedNowManager = rebuildOnChange
-        ? context.inheritFromWidgetOfExactType(InheritedNowManager)
-        : context.ancestorWidgetOfExactType(InheritedNowManager);
+    _InheritedNowManager inheritedNowManager = rebuildOnChange
+        ? context.inheritFromWidgetOfExactType(_InheritedNowManager)
+        : context.ancestorWidgetOfExactType(_InheritedNowManager);
     return inheritedNowManager?.configManager;
   }
+}
+
+class _InheritedNowManager extends InheritedConfigManager {
+  _InheritedNowManager({Widget child, NowManager nowManager})
+      : super(child: child, configManager: nowManager);
 }

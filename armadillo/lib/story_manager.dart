@@ -160,27 +160,35 @@ class StoryManager extends ConfigManager {
   }
 }
 
-class InheritedStoryManager extends InheritedConfigManager<StoryManager> {
-  InheritedStoryManager({
-    Key key,
-    Widget child,
-    StoryManager storyManager,
-  })
-      : super(
-          key: key,
-          child: child,
-          configManager: storyManager,
-        );
+class InheritedStoryManager extends StatelessWidget {
+  final StoryManager storyManager;
+  final Widget child;
+
+  InheritedStoryManager({this.storyManager, this.child});
+
+  @override
+  Widget build(BuildContext context) => new InheritedConfigManagerWidget(
+        configManager: storyManager,
+        builder: (BuildContext context) => new _InheritedStoryManager(
+              storyManager: storyManager,
+              child: child,
+            ),
+      );
 
   /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
-  /// returns true for the [InheritedStoryManager] returned by
+  /// returns true for the [_InheritedStoryManager] returned by
   /// [BuildContext.inheritFromWidgetOfExactType].
   /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
   /// to [StoryManager].
   static StoryManager of(BuildContext context, {bool rebuildOnChange: false}) {
-    InheritedStoryManager inheritedStoryManager = rebuildOnChange
-        ? context.inheritFromWidgetOfExactType(InheritedStoryManager)
-        : context.ancestorWidgetOfExactType(InheritedStoryManager);
+    _InheritedStoryManager inheritedStoryManager = rebuildOnChange
+        ? context.inheritFromWidgetOfExactType(_InheritedStoryManager)
+        : context.ancestorWidgetOfExactType(_InheritedStoryManager);
     return inheritedStoryManager?.configManager;
   }
+}
+
+class _InheritedStoryManager extends InheritedConfigManager {
+  _InheritedStoryManager({Widget child, StoryManager storyManager})
+      : super(child: child, configManager: storyManager);
 }
