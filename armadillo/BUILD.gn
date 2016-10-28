@@ -12,14 +12,14 @@ flutter_app("armadillo_user_shell") {
   source_dir = "lib"
 
   deps = [
+    "//apps/modules/gallery",
+    "//apps/modules/packages/clients",
+    "//apps/modules/packages/util",
+    "//apps/modules/packages/widgets",
+    "//apps/sysui/interfaces:interfaces_dart",
+    "//apps/sysui/keyboard",
+    "//apps/sysui/widgets",
     "//lib/flutter/packages/flutter",
-    "//modules/gallery",
-    "//modules/packages/clients",
-    "//modules/packages/util",
-    "//modules/packages/widgets",
-    "//sysui/interfaces:interfaces_dart",
-    "//sysui/keyboard",
-    "//sysui/widgets",
     "//third_party/dart-pkg/pub/intl",
   ]
 }

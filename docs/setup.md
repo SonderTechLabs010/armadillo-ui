@@ -23,7 +23,7 @@ export PATH=/path/to/workspace/root/.jiri_root/scripts:$PATH
 cd /path/to/workspace/root
 jiri import experience https://fuchsia.googlesource.com/manifest
 jiri update
-cd sysui
+cd apps/sysui
 ```
 
 

@@ -4,7 +4,7 @@
 
 group("sysui") {
   deps = [
-    "//sysui/armadillo:armadillo_user_shell",
-    "//sysui/interfaces:interfaces_dart",
+    "//apps/sysui/armadillo:armadillo_user_shell",
+    "//apps/sysui/interfaces:interfaces_dart",
   ]
 }

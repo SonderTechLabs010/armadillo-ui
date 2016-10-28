@@ -25,7 +25,8 @@ endif
 ################################################################################
 ## Local variables.
 root := $(shell pwd)
-flutter_bin := $(root)/../lib/flutter/bin
+fuchsia_root := $(realpath $(root)/../..)
+flutter_bin := $(fuchsia_root)/lib/flutter/bin
 pub := $(flutter_bin)/cache/dart-sdk/bin/pub
 flutter := $(flutter_bin)/flutter
 
@@ -68,7 +69,7 @@ ifeq ($(flag_sync), yes)
 	# Force an update of Flutter's dependencies.
 	$(flutter) precache
 	cd tools/get_dependencies && $(pub) upgrade && $(pub) run bin/main.dart upgrade
-	../scripts/build-sysroot.sh
+	$(fuchsia_root)/scripts/build-sysroot.sh
 
 else
 	@:
@@ -76,8 +77,8 @@ endif
 
 build: sync
 	rm -rf interfaces/lib
-	(cd .. && packages/gn/gen.py $(gen_flags) -m default,sysui && buildtools/ninja $(ninja_flags) -C out/debug-x86-64)
-	$(eval files := $(shell find ../out/debug-x86-64/gen/sysui/interfaces/ -name *.mojom.dart))
+	(cd $(fuchsia_root) && packages/gn/gen.py $(gen_flags) -m default,sysui && buildtools/ninja $(ninja_flags) -C out/debug-x86-64)
+	$(eval files := $(shell find $(fuchsia_root)/out/debug-x86-64/gen/apps/sysui/interfaces/ -name *.mojom.dart))
 	mkdir interfaces/lib
 	$(foreach file,$(files),ln -s $(abspath $(file)) interfaces/lib/$(notdir $(file)))
 
@@ -98,7 +99,7 @@ format:
 	git ls-files | grep '\.dart$$' | xargs dartfmt -w
 
 clean:
-	rm -rf ../out/
+	rm -rf $(fuchsia_root)/out/
 
 ## Example invocations
 help:

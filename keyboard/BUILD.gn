@@ -10,7 +10,7 @@ dart_package("keyboard") {
   source_dir = "lib"
 
   deps = [
+    "//apps/sysui/widgets",
     "//lib/flutter/packages/flutter",
-    "//sysui/widgets",
   ]
 }

@@ -23,8 +23,8 @@ to definition).
 
 * Open the settings panel with `Ctrl-,`.
 * Use the Dart and Flutter SDK versions in our tree, respectively at
-`$TREE_ROOT/third_party/flutter/bin/cache/dart-sdk` and
-`$TREE_ROOT/third_party/flutter`. This ensures you are running the correct
+`$FUCHSIA_ROOT/lib/flutter/flutter/bin/cache/dart-sdk` and
+`$FUCHSIA_ROOT/lib/flutter`. This ensures you are running the correct
 versions.
 * Atom and the various packages are having trouble with symlinks, so make sure
 you start Atom from a path containing no symlink and don't include any

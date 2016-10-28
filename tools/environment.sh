@@ -7,7 +7,7 @@
 # Environment setup
 
 export TREE_ROOT=`git rev-parse --show-toplevel`
-export FUCHSIA_ROOT="$TREE_ROOT/.."
+export FUCHSIA_ROOT="$TREE_ROOT/../.."
 
 export DART_SDK="$FUCHSIA_ROOT/lib/flutter/bin/cache/dart-sdk"
 export PATH="$DART_SDK/bin:$PATH"
