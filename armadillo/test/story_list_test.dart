@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/delegating_page_route.dart';
 
+import '../lib/size_manager.dart';
 import '../lib/story.dart';
 import '../lib/story_cluster.dart';
 import '../lib/story_list.dart';
@@ -30,13 +31,10 @@ void main() {
 
     StoryList storyList = new StoryList(
       key: storyListKey,
+      sizeManager: new SizeManager(new Size(_kWidthSingleColumn, _kHeight)),
       scrollableKey: scrollableKey,
       multiColumn: false,
       quickSettingsHeightBump: 200.0,
-      parentSize: new Size(
-        _kWidthSingleColumn,
-        _kHeight,
-      ),
     );
     StoryManager storyManager = new DummyStoryManager(storyKeys: storyKeys);
     await tester.pumpWidget(
@@ -44,7 +42,11 @@ void main() {
         child: new InheritedStoryManager(
           storyManager: storyManager,
           child: new Center(
-            child: new Container(width: _kWidthSingleColumn, child: storyList),
+            child: new SizedBox(
+              width: _kWidthSingleColumn,
+              height: _kHeight,
+              child: storyList,
+            ),
           ),
         ),
       ),
@@ -73,13 +75,10 @@ void main() {
 
     StoryList storyList = new StoryList(
       key: storyListKey,
+      sizeManager: new SizeManager(new Size(_kWidthMultiColumn, _kHeight)),
       scrollableKey: scrollableKey,
       multiColumn: true,
       quickSettingsHeightBump: 200.0,
-      parentSize: new Size(
-        _kWidthMultiColumn,
-        _kHeight,
-      ),
     );
     StoryManager storyManager = new DummyStoryManager(storyKeys: storyKeys);
 
@@ -88,8 +87,9 @@ void main() {
         child: new InheritedStoryManager(
           storyManager: storyManager,
           child: new Center(
-            child: new Container(
+            child: new SizedBox(
               width: _kWidthMultiColumn,
+              height: _kHeight,
               child: storyList,
             ),
           ),

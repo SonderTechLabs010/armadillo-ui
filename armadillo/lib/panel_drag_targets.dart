@@ -12,6 +12,7 @@ import 'package:sysui_widgets/ticking_state.dart';
 import 'armadillo_drag_target.dart';
 import 'panel.dart';
 import 'place_holder_story.dart';
+import 'size_manager.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
@@ -165,7 +166,6 @@ class LineSegment {
 /// slightly depending on [focusProgress].
 class PanelDragTargets extends StatefulWidget {
   final StoryCluster storyCluster;
-  final Size fullSize;
   final Widget child;
   final double scale;
   final double focusProgress;
@@ -174,7 +174,6 @@ class PanelDragTargets extends StatefulWidget {
   PanelDragTargets({
     Key key,
     this.storyCluster,
-    this.fullSize,
     this.child,
     this.scale,
     this.focusProgress,
@@ -372,20 +371,24 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       return;
     }
 
-    _targetLines.clear();
-    double verticalMargin = (1.0 - config.scale) / 2.0 * config.fullSize.height;
-    double horizontalMargin =
-        (1.0 - config.scale) / 2.0 * config.fullSize.width;
+    SizeManager sizeManager = InheritedSizeManager.of(context);
 
-    int availableRows = maxRows(config.fullSize) - _currentRows;
+    _targetLines.clear();
+    double verticalMargin =
+        (1.0 - config.scale) / 2.0 * sizeManager.size.height;
+    double horizontalMargin =
+        (1.0 - config.scale) / 2.0 * sizeManager.size.width;
+
+    int availableRows = maxRows(sizeManager.size) - _currentRows;
     if (availableRows > 0) {
       // Top edge target.
       _targetLines.add(
         new LineSegment.horizontal(
           y: verticalMargin + _kTopEdgeTargetYOffset,
           left: horizontalMargin + _kStoryEdgeTargetInset,
-          right:
-              config.fullSize.width - horizontalMargin - _kStoryEdgeTargetInset,
+          right: sizeManager.size.width -
+              horizontalMargin -
+              _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
@@ -405,10 +408,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       // Bottom edge target.
       _targetLines.add(
         new LineSegment.horizontal(
-          y: config.fullSize.height - verticalMargin,
+          y: sizeManager.size.height - verticalMargin,
           left: horizontalMargin + _kStoryEdgeTargetInset,
-          right:
-              config.fullSize.width - horizontalMargin - _kStoryEdgeTargetInset,
+          right: sizeManager.size.width -
+              horizontalMargin -
+              _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
@@ -427,14 +431,14 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
 
     // Left edge target.
-    int availableColumns = maxColumns(config.fullSize) - _currentColumns;
+    int availableColumns = maxColumns(sizeManager.size) - _currentColumns;
     if (availableColumns > 0) {
       _targetLines.add(
         new LineSegment.vertical(
           x: horizontalMargin,
           top: verticalMargin,
           bottom:
-              config.fullSize.height - verticalMargin - _kStoryEdgeTargetInset,
+              sizeManager.size.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
@@ -454,10 +458,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       // Right edge target.
       _targetLines.add(
         new LineSegment.vertical(
-          x: config.fullSize.width - horizontalMargin,
+          x: sizeManager.size.width - horizontalMargin,
           top: verticalMargin,
           bottom:
-              config.fullSize.height - verticalMargin - _kStoryEdgeTargetInset,
+              sizeManager.size.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
@@ -481,7 +485,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         y: verticalMargin + _kStoryBarTargetYOffset,
         left: horizontalMargin + _kStoryEdgeTargetInset,
         right:
-            config.fullSize.width - horizontalMargin - _kStoryEdgeTargetInset,
+            sizeManager.size.width - horizontalMargin - _kStoryEdgeTargetInset,
         color: _kStoryBarTargetColor,
         maxStoriesCanAccept:
             _kMaxStoriesPerCluster - config.storyCluster.stories.length,
@@ -516,7 +520,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       new LineSegment.horizontal(
         y: verticalMargin + _kDiscardTargetTopEdgeYOffset,
         left: horizontalMargin * 3.0,
-        right: config.fullSize.width - 3.0 * horizontalMargin,
+        right: sizeManager.size.width - 3.0 * horizontalMargin,
         color: _kDiscardTargetColor,
         maxStoriesCanAccept: _kMaxStoriesPerCluster,
         onHover: (BuildContext context, StoryCluster storyCluster) {
@@ -538,11 +542,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // Bottom bring-to-front target.
     _targetLines.add(
       new LineSegment.horizontal(
-        y: config.fullSize.height -
+        y: sizeManager.size.height -
             verticalMargin +
             _kBringToFrontTargetBottomEdgeYOffset,
         left: horizontalMargin * 3.0,
-        right: config.fullSize.width - 3.0 * horizontalMargin,
+        right: sizeManager.size.width - 3.0 * horizontalMargin,
         color: _kBringToFrontTargetColor,
         maxStoriesCanAccept: _kMaxStoriesPerCluster,
         onHover: (BuildContext context, StoryCluster storyCluster) {
@@ -562,13 +566,16 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     );
 
     // Story edge targets.
-    Point center =
-        new Point(config.fullSize.width / 2.0, config.fullSize.height / 2.0);
+    Point center = new Point(
+      sizeManager.size.width / 2.0,
+      sizeManager.size.height / 2.0,
+    );
     config.storyCluster.stories.forEach((Story story) {
-      Rect bounds = _transform(story.panel, center, config.fullSize);
+      Rect bounds = _transform(story.panel, center, sizeManager.size);
 
       // If we can split vertically add vertical targets on left and right.
-      int verticalSplits = _getVerticalSplitCount(story.panel);
+      int verticalSplits =
+          _getVerticalSplitCount(story.panel, sizeManager.size);
       if (verticalSplits > 0) {
         double left = bounds.left + _kStoryEdgeTargetInset;
         double right = bounds.right - _kStoryEdgeTargetInset;
@@ -630,7 +637,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       }
 
       // If we can split horizontally add horizontal targets on top and bottom.
-      int horizontalSplits = _getHorizontalSplitCount(story.panel);
+      int horizontalSplits = _getHorizontalSplitCount(
+        story.panel,
+        sizeManager.size,
+      );
       if (horizontalSplits > 0) {
         double top = bounds.top +
             (story.panel.top == 0.0
@@ -1227,12 +1237,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     return lefts.length;
   }
 
-  int _getHorizontalSplitCount(Panel panel) =>
-      maxRows(config.fullSize) - _getRows(left: panel.left, right: panel.right);
+  int _getHorizontalSplitCount(Panel panel, Size fullSize) =>
+      maxRows(fullSize) - _getRows(left: panel.left, right: panel.right);
 
-  int _getVerticalSplitCount(Panel panel) =>
-      maxColumns(config.fullSize) -
-      _getColumns(top: panel.top, bottom: panel.bottom);
+  int _getVerticalSplitCount(Panel panel, Size fullSize) =>
+      maxColumns(fullSize) - _getColumns(top: panel.top, bottom: panel.bottom);
 
   Rect _bounds(Panel panel, Size size) => new Rect.fromLTRB(
         panel.left * size.width,

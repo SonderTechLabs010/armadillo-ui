@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 
 /// Base class for classes that provide configuration data via
@@ -30,8 +32,16 @@ abstract class ConfigManager {
 
   /// Should be called only by [ConfigManager] when [config] has changed.
   void notifyListeners() {
-    version++;
-    _listeners.toList().forEach((VoidCallback listener) => listener());
+    // We schedule a microtask as it's not uncommon for changes that trigger
+    // listener notifications to occur in a build step and for listeners to
+    // call setState.  Its a big no-no to setState during build so we schedule
+    // for them to happen later.
+    // TODO(apwilson): This is a bad-flutter-code-smell. Eliminate the need for
+    // this scheduleMicrotask.
+    scheduleMicrotask(() {
+      version++;
+      _listeners.toList().forEach((VoidCallback listener) => listener());
+    });
   }
 }
 

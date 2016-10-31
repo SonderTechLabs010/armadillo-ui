@@ -7,7 +7,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
+import 'armadillo_overlay.dart';
+import 'nothing.dart';
 import 'simulation_builder.dart';
+import 'size_manager.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_widget.dart';
@@ -28,20 +31,22 @@ class StoryList extends StatelessWidget {
   final VoidCallback onStoryClusterFocusStarted;
   final OnStoryClusterFocusCompleted onStoryClusterFocusCompleted;
   final double bottomPadding;
-  final Size parentSize;
   final double quickSettingsHeightBump;
   final bool multiColumn;
   final Key scrollableKey;
+  final GlobalKey<ArmadilloOverlayState> overlayKey;
+  final SizeManager sizeManager;
 
   StoryList({
     Key key,
     this.scrollableKey,
+    this.overlayKey,
     this.bottomPadding,
     this.onScroll,
     this.onStoryClusterFocusStarted,
     this.onStoryClusterFocusCompleted,
-    this.parentSize,
     this.quickSettingsHeightBump,
+    this.sizeManager,
     this.multiColumn: false,
   })
       : super(key: key);
@@ -57,8 +62,9 @@ class StoryList extends StatelessWidget {
     // to work we must have them in the widget tree.
     List<Widget> stackChildren = new List.from(
       storyManager.inactiveStoryClusters.map(
-        (StoryCluster storyCluster) => new Offstage(
-              offstage: true,
+        (StoryCluster storyCluster) => new Positioned(
+              width: 0.0,
+              height: 0.0,
               child: new SimulationBuilder(
                 key: storyCluster.focusSimulationKey,
                 builder: (BuildContext context, double progress) =>
@@ -66,9 +72,28 @@ class StoryList extends StatelessWidget {
                       storyManager.activeSortedStoryClusters,
                       storyCluster,
                       0.0,
+                      storyCluster.buildStoryWidgets(context),
                     ),
               ),
             ),
+      ),
+    );
+
+    stackChildren.add(
+      new Positioned(
+        top: 0.0,
+        left: 0.0,
+        bottom: 0.0,
+        right: 0.0,
+        child: new LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            sizeManager.size = new Size(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            );
+            return Nothing.widget;
+          },
+        ),
       ),
     );
 
@@ -77,24 +102,32 @@ class StoryList extends StatelessWidget {
         scrollableKey: scrollableKey,
         bottomPadding: bottomPadding,
         onScroll: onScroll,
-        parentSize: parentSize,
         listHeight: storyManager.listHeight,
         children: new List<Widget>.generate(
           storyManager.activeSortedStoryClusters.length,
           (int index) => _createFocusableStoryCluster(
                 storyManager.activeSortedStoryClusters,
                 storyManager.activeSortedStoryClusters[index],
+                storyManager.activeSortedStoryClusters[index].buildStoryWidgets(
+                  context,
+                ),
               ),
         ),
       ),
     );
 
-    return new Stack(children: stackChildren);
+    stackChildren.add(new ArmadilloOverlay(key: overlayKey));
+
+    return new InheritedSizeManager(
+      sizeManager: sizeManager,
+      child: new Stack(children: stackChildren),
+    );
   }
 
   Widget _createFocusableStoryCluster(
     List<StoryCluster> storyClusters,
     StoryCluster storyCluster,
+    Map<StoryId, Widget> storyWidgets,
   ) =>
       new SimulationBuilder(
         key: storyCluster.focusSimulationKey,
@@ -106,7 +139,12 @@ class StoryList extends StatelessWidget {
         builder: (BuildContext context, double progress) => new StoryListChild(
               storyLayout: storyCluster.storyLayout,
               focusProgress: progress,
-              child: _createStoryCluster(storyClusters, storyCluster, progress),
+              child: _createStoryCluster(
+                storyClusters,
+                storyCluster,
+                progress,
+                storyWidgets,
+              ),
             ),
       );
 
@@ -114,10 +152,12 @@ class StoryList extends StatelessWidget {
     List<StoryCluster> storyClusters,
     StoryCluster storyCluster,
     double progress,
+    Map<StoryId, Widget> storyWidgets,
   ) =>
-      new StoryClusterWidget(
+      new RepaintBoundary(
+        child: new StoryClusterWidget(
+          overlayKey: overlayKey,
           focusProgress: progress,
-          fullSize: parentSize,
           storyCluster: storyCluster,
           multiColumn: multiColumn,
           onGainFocus: () {
@@ -137,14 +177,16 @@ class StoryList extends StatelessWidget {
 
               onStoryClusterFocusStarted?.call();
             }
-          });
+          },
+          storyWidgets: storyWidgets,
+        ),
+      );
 
   bool _inFocus(StoryCluster s) =>
       (s.focusSimulationKey.currentState?.progress ?? 0.0) > 0.0;
 }
 
 class StoryListBlock extends Block {
-  final Size parentSize;
   final double bottomPadding;
   final double listHeight;
   StoryListBlock({
@@ -153,7 +195,6 @@ class StoryListBlock extends Block {
     this.bottomPadding,
     ScrollListener onScroll,
     Key scrollableKey,
-    this.parentSize,
     this.listHeight,
   })
       : super(
@@ -179,7 +220,6 @@ class StoryListBlock extends Block {
         onScrollEnd: onScrollEnd,
         child: new StoryListBlockBody(
           children: children,
-          parentSize: parentSize,
           listHeight: listHeight,
           scrollOffset: (scrollableKey as GlobalKey<ScrollableState>)
                   .currentState
@@ -191,14 +231,12 @@ class StoryListBlock extends Block {
 }
 
 class StoryListBlockBody extends BlockBody {
-  final Size parentSize;
   final double scrollOffset;
   final double bottomPadding;
   final double listHeight;
   StoryListBlockBody({
     Key key,
     List<Widget> children,
-    this.parentSize,
     this.scrollOffset,
     this.bottomPadding,
     this.listHeight,
@@ -208,7 +246,8 @@ class StoryListBlockBody extends BlockBody {
   @override
   StoryListRenderBlock createRenderObject(BuildContext context) =>
       new StoryListRenderBlock(
-        parentSize: parentSize,
+        parentSize:
+            InheritedSizeManager.of(context, rebuildOnChange: true).size,
         scrollOffset: scrollOffset,
         bottomPadding: bottomPadding,
         listHeight: listHeight,
@@ -218,7 +257,8 @@ class StoryListBlockBody extends BlockBody {
   void updateRenderObject(
       BuildContext context, StoryListRenderBlock renderObject) {
     renderObject.mainAxis = mainAxis;
-    renderObject.parentSize = parentSize;
+    renderObject.parentSize =
+        InheritedSizeManager.of(context, rebuildOnChange: true).size;
     renderObject.scrollOffset = scrollOffset;
     renderObject.bottomPadding = bottomPadding;
     renderObject.listHeight = listHeight;

@@ -74,6 +74,14 @@ class StoryCluster {
 
   List<Story> get stories => new List.unmodifiable(_stories);
 
+  Map<StoryId, Widget> buildStoryWidgets(BuildContext context) {
+    Map<StoryId, Widget> storyWidgets = <StoryId, Widget>{};
+    stories.forEach((Story story) {
+      storyWidgets[story.id] = story.builder(context);
+    });
+    return storyWidgets;
+  }
+
   void addStoryListListener(VoidCallback listener) {
     _storyListListeners.add(listener);
   }

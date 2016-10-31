@@ -8,12 +8,17 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 
+import 'armadillo_overlay.dart';
+
 /// Much of this code is borrowed from the Flutter framework's inplementation
 /// of [Draggable] and [DragTarget].  What is different about this
 /// implementation is the addition of each piece of data having an associated
 /// [Point] which indicates where it is when hovering
 /// (passed in via [ArmadilloDragTargetWillAccept]) and when dropped (passed in
-/// via [ArmadilloDragTargetAccept]).
+/// via [ArmadilloDragTargetAccept]).  We also use [ArmadilloOverlay] instead of
+/// [Overlay] to display draggable drag feedback so the drag feedback can be
+/// displayed in any part of the widget tree (and not just in an ancestor of the
+/// draggable).
 ///
 /// Other than keeping track of points for all candidates, the bulk of Flutter's
 /// code remains intact.
@@ -53,6 +58,7 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
   /// [maxSimultaneousDrags] is non-null, it must be positive.
   ArmadilloLongPressDraggable({
     Key key,
+    this.overlayKey,
     this.child,
     this.feedback,
     this.data,
@@ -81,6 +87,8 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
   final Widget feedback;
 
   final VoidCallback onDragStarted;
+
+  final GlobalKey<ArmadilloOverlayState> overlayKey;
 
   /// Creates a gesture recognizer that recognizes the start of the drag.
   ///
@@ -134,7 +142,7 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
       _activeCount += 1;
     });
     return new _DragAvatar<T>(
-        overlayState: Overlay.of(context, debugRequiredFor: config),
+        overlayKey: config.overlayKey,
         data: config.data,
         initialPosition: position,
         dragStartPoint: Point.origin,
@@ -151,7 +159,6 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
 
   @override
   Widget build(BuildContext context) {
-    assert(Overlay.of(context, debugRequiredFor: config) != null);
     final bool showChild =
         _activeCount == 0 || config.childWhenDragging == null;
     return new Listener(
@@ -289,16 +296,15 @@ typedef void _OnDragEnd(Velocity velocity, Offset offset, bool wasAccepted);
 // this widget.
 class _DragAvatar<T> extends Drag {
   _DragAvatar(
-      {this.overlayState,
+      {this.overlayKey,
       this.data,
       Point initialPosition,
       this.dragStartPoint: Point.origin,
       this.feedback,
       this.onDragEnd}) {
-    assert(overlayState != null);
+    assert(overlayKey.currentState != null);
     assert(dragStartPoint != null);
-    _entry = new OverlayEntry(builder: _build);
-    overlayState.insert(_entry);
+    overlayKey.currentState.addBuilder(_build);
     _position = initialPosition;
     updateDrag(initialPosition);
   }
@@ -307,13 +313,12 @@ class _DragAvatar<T> extends Drag {
   final Point dragStartPoint;
   final Widget feedback;
   final _OnDragEnd onDragEnd;
-  final OverlayState overlayState;
+  final GlobalKey<ArmadilloOverlayState> overlayKey;
 
   _DragTargetState<T> _activeTarget;
   List<_DragTargetState<T>> _enteredTargets = <_DragTargetState<T>>[];
   Point _position;
   Offset _lastOffset;
-  OverlayEntry _entry;
 
   // Drag API
   @override
@@ -334,7 +339,7 @@ class _DragAvatar<T> extends Drag {
 
   void updateDrag(Point globalPosition) {
     _lastOffset = globalPosition - dragStartPoint;
-    _entry.markNeedsBuild();
+    overlayKey.currentState.update();
 
     HitTestResult result = new HitTestResult();
     WidgetsBinding.instance.hitTest(result, globalPosition);
@@ -407,8 +412,7 @@ class _DragAvatar<T> extends Drag {
     }
     _leaveAllEntered();
     _activeTarget = null;
-    _entry.remove();
-    _entry = null;
+    overlayKey.currentState.removeBuilder(_build);
     // TODO(ianh): consider passing _entry as well so the client can perform an animation.
     if (onDragEnd != null) {
       onDragEnd(velocity ?? Velocity.zero, _lastOffset, wasAccepted);
@@ -416,7 +420,7 @@ class _DragAvatar<T> extends Drag {
   }
 
   Widget _build(BuildContext context) {
-    RenderBox box = overlayState.context.findRenderObject();
+    RenderBox box = overlayKey.currentContext.findRenderObject();
     Point overlayTopLeft = box.localToGlobal(Point.origin);
     return new Positioned(
       left: _lastOffset.dx - overlayTopLeft.x,

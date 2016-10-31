@@ -7,14 +7,17 @@ import 'package:flutter/widgets.dart';
 import 'package:keyboard/keyboard.dart';
 import 'package:sysui_widgets/device_extension_state.dart';
 
+import 'armadillo_overlay.dart';
 import 'device_extender.dart';
 import 'expand_suggestion.dart';
 import 'keyboard_device_extension.dart';
 import 'quick_settings.dart';
+import 'nothing.dart';
 import 'now.dart';
 import 'peeking_overlay.dart';
 import 'scroll_locker.dart';
 import 'selected_suggestion_overlay.dart';
+import 'size_manager.dart';
 import 'splash_suggestion.dart';
 import 'story.dart';
 import 'story_cluster.dart';
@@ -73,6 +76,9 @@ final GlobalKey<ScrollLockerState> _scrollLockerKey =
 final GlobalKey<SelectedSuggestionOverlayState> _selectedSuggestionOverlayKey =
     new GlobalKey<SelectedSuggestionOverlayState>();
 
+final GlobalKey<ArmadilloOverlayState> _overlayKey =
+    new GlobalKey<ArmadilloOverlayState>();
+
 /// Manages the position, size, and state of the story list, user context,
 /// suggestion overlay, device extensions. interruption overlay, and quick
 /// settings overlay.
@@ -85,71 +91,72 @@ class Conductor extends StatelessWidget {
   /// behind it.
   @override
   Widget build(BuildContext context) => new LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-        InheritedStoryManager.of(context).updateLayouts(
-              new Size(
-                constraints.maxWidth,
-                constraints.maxHeight,
-              ),
-            );
-        return new DeviceExtender(
-          deviceExtensions: [_getKeyboard()],
-          child: new LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              if (constraints.maxWidth == 0.0 || constraints.maxHeight == 0.0) {
-                return new Offstage(offstage: true);
-              }
-              StoryManager storyManager = InheritedStoryManager.of(context);
-              Size fullSize = new Size(
-                constraints.maxWidth,
-                constraints.maxHeight - _kMinimizedNowHeight,
-              );
-              storyManager.normalize(size: fullSize);
+        builder: (BuildContext context, BoxConstraints constraints) {
+          if (constraints.maxWidth == 0.0 || constraints.maxHeight == 0.0) {
+            return new Offstage(offstage: true);
+          }
+          Size fullSize = new Size(
+            constraints.maxWidth,
+            constraints.maxHeight,
+          );
 
-              return new Stack(
-                children: [
-                  new Positioned(
-                    left: 0.0,
-                    right: 0.0,
-                    top: 0.0,
-                    bottom: _kMinimizedNowHeight,
-                    // NOTE: The Overlay *must* be a child of the LayoutBuilder
-                    // due to https://github.com/flutter/flutter/issues/6119.
-                    // Story List.
-                    child: new Overlay(
-                      // We need a new key each time the max constraints change
-                      // to ensure initialEntries is reused.
-                      key: new GlobalKey(),
-                      initialEntries: [
-                        new OverlayEntry(
-                          builder: (BuildContext context) => _getStoryList(
-                                storyManager,
-                                fullSize,
-                              ),
-                        ),
-                      ],
-                    ),
+          StoryManager storyManager = InheritedStoryManager.of(context);
+
+          storyManager.updateLayouts(fullSize);
+
+          return new DeviceExtender(
+            deviceExtensions: [_getKeyboard()],
+            child: new Stack(
+              children: [
+                new Positioned(
+                  left: 0.0,
+                  right: 0.0,
+                  top: 0.0,
+                  bottom: _kMinimizedNowHeight,
+                  child: _getStoryList(
+                    storyManager,
+                    constraints.maxWidth,
+                    new SizeManager(fullSize),
                   ),
+                ),
 
-                  // Now.
-                  _getNow(storyManager),
+                // Now.
+                _getNow(storyManager, constraints.maxWidth),
 
-                  // Suggestions Overlay.
-                  _getSuggestionOverlay(storyManager, fullSize),
+                // Suggestions Overlay.
+                _getSuggestionOverlay(storyManager, constraints.maxWidth),
 
-                  // Selected Suggestion Overlay.
-                  _getSelectedSuggestionOverlay(),
+                // Selected Suggestion Overlay.
+                _getSelectedSuggestionOverlay(),
 
-                  // Quick Settings Overlay.
-                  new QuickSettingsOverlay(
-                      key: _quickSettingsOverlayKey,
-                      minimizedNowBarHeight: _kMinimizedNowHeight),
-                ],
-              );
-            },
-          ),
-        );
-      });
+                // Quick Settings Overlay.
+                new QuickSettingsOverlay(
+                  key: _quickSettingsOverlayKey,
+                  minimizedNowBarHeight: _kMinimizedNowHeight,
+                ),
+
+                // This layout builder tracks the size available for the
+                // suggestion overlay and sets its maxHeight appropriately.
+                // TODO(apwilson): refactor this to not be so weird.
+                new LayoutBuilder(builder:
+                    (BuildContext context, BoxConstraints constraints) {
+                  double targetMaxHeight = 0.8 * constraints.maxHeight;
+                  if (_suggestionOverlayKey.currentState.maxHeight !=
+                          targetMaxHeight &&
+                      targetMaxHeight != 0.0) {
+                    _suggestionOverlayKey.currentState.maxHeight =
+                        targetMaxHeight;
+                    if (!_suggestionOverlayKey.currentState.hiding) {
+                      _suggestionOverlayKey.currentState.show();
+                    }
+                  }
+                  return nothing;
+                }),
+              ],
+            ),
+          );
+        },
+      );
 
   Widget _getKeyboard() => new KeyboardDeviceExtension(
         key: _keyboardDeviceExtensionKey,
@@ -163,7 +170,11 @@ class Conductor extends StatelessWidget {
         },
       );
 
-  Widget _getStoryList(StoryManager storyManager, Size fullSize) =>
+  Widget _getStoryList(
+    StoryManager storyManager,
+    double maxWidth,
+    SizeManager sizeManager,
+  ) =>
       new VerticalShifter(
         key: _verticalShifterKey,
         verticalShift: _kQuickSettingsHeightBump,
@@ -171,8 +182,8 @@ class Conductor extends StatelessWidget {
           key: _scrollLockerKey,
           child: new StoryList(
             scrollableKey: _scrollableKey,
-            multiColumn: fullSize.width > _kStoryListMultiColumnWidthThreshold,
-            parentSize: fullSize,
+            overlayKey: _overlayKey,
+            multiColumn: maxWidth > _kStoryListMultiColumnWidthThreshold,
             quickSettingsHeightBump: _kQuickSettingsHeightBump,
             bottomPadding: _kMaximizedNowHeight - _kMinimizedNowHeight,
             onScroll: (double scrollOffset) =>
@@ -185,15 +196,18 @@ class Conductor extends StatelessWidget {
             onStoryClusterFocusCompleted: (StoryCluster storyCluster) {
               _focusStoryCluster(storyManager, storyCluster);
             },
+            sizeManager: sizeManager,
           ),
         ),
       );
 
   // We place Now in a RepaintBoundary as its animations
   // don't require its parent and siblings to redraw.
-  Widget _getNow(StoryManager storyManager) => new RepaintBoundary(
+  Widget _getNow(StoryManager storyManager, double parentWidth) =>
+      new RepaintBoundary(
         child: new Now(
           key: _nowKey,
+          parentWidth: parentWidth,
           minHeight: _kMinimizedNowHeight,
           maxHeight: _kMaximizedNowHeight,
           quickSettingsHeightBump: _kQuickSettingsHeightBump,
@@ -226,10 +240,11 @@ class Conductor extends StatelessWidget {
         ),
       );
 
-  Widget _getSuggestionOverlay(StoryManager storyManager, Size fullSize) =>
+  Widget _getSuggestionOverlay(StoryManager storyManager, double maxWidth) =>
       new PeekingOverlay(
         key: _suggestionOverlayKey,
         peekHeight: _kSuggestionOverlayPeekHeight,
+        parentWidth: maxWidth,
         onHide: () {
           _keyboardDeviceExtensionKey.currentState?.hide();
           _suggestionListScrollableKey.currentState?.scrollTo(
@@ -243,8 +258,7 @@ class Conductor extends StatelessWidget {
         child: new SuggestionList(
           key: _suggestionListKey,
           scrollableKey: _suggestionListScrollableKey,
-          multiColumn:
-              fullSize.width > _kSuggestionListMultiColumnWidthThreshold,
+          multiColumn: maxWidth > _kSuggestionListMultiColumnWidthThreshold,
           onAskingStarted: () {
             _suggestionOverlayKey.currentState.show();
             _keyboardDeviceExtensionKey.currentState.show();

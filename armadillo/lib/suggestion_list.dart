@@ -277,15 +277,17 @@ class SuggestionListState extends State<SuggestionList> {
     }
   }
 
-  Widget _createSuggestion(Suggestion suggestion) => new Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 6.0,
-        ),
-        child: new SuggestionWidget(
-          key: new GlobalObjectKey(suggestion),
-          visible: _selectedSuggestion?.id != suggestion.id,
-          suggestion: suggestion,
-          onSelected: () => _onSuggestionSelected(suggestion),
+  Widget _createSuggestion(Suggestion suggestion) => new RepaintBoundary(
+        child: new Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 6.0,
+          ),
+          child: new SuggestionWidget(
+            key: new GlobalObjectKey(suggestion),
+            visible: _selectedSuggestion?.id != suggestion.id,
+            suggestion: suggestion,
+            onSelected: () => _onSuggestionSelected(suggestion),
+          ),
         ),
       );
 }

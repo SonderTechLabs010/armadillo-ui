@@ -6,9 +6,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'armadillo_overlay.dart';
 import 'panel.dart';
 import 'simulated_sized_box.dart';
 import 'simulated_translation_transform.dart';
+import 'size_manager.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_panels.dart';
@@ -18,12 +20,14 @@ const double _kStoryBarMaximizedHeight = 48.0;
 /// Displays a representation of a StoryCluster while being dragged.
 class StoryClusterDragFeedback extends StatefulWidget {
   final StoryCluster storyCluster;
-  final Size fullSize;
+  final GlobalKey<ArmadilloOverlayState> overlayKey;
+  final Map<StoryId, Widget> storyWidgets;
 
   StoryClusterDragFeedback({
     Key key,
+    this.overlayKey,
     this.storyCluster,
-    this.fullSize,
+    this.storyWidgets,
   })
       : super(key: key);
 
@@ -35,6 +39,7 @@ class StoryClusterDragFeedback extends StatefulWidget {
 class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
   final GlobalKey _translationKey = new GlobalKey();
   final GlobalKey _boxKey = new GlobalKey();
+  final SizeManager childSizeManager = new SizeManager(Size.zero);
   Map<Object, Panel> _storyPanels = new Map<Object, Panel>();
   double _widthFactor;
   double _heightFactor;
@@ -89,21 +94,25 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
 
   @override
   Widget build(BuildContext context) {
+    SizeManager sizeManager = InheritedSizeManager.of(
+      context,
+      rebuildOnChange: true,
+    );
     double width;
     double height;
     double childScale;
     double opacity;
     if (_displayModeOverride == DisplayMode.tabs) {
-      width = config.fullSize.width *
+      width = sizeManager.size.width *
           (config.storyCluster.stories.length + 1) /
           (_targetClusterStoryCount + 1);
-      height = config.fullSize.height *
-          (_kStoryBarMaximizedHeight / config.fullSize.height);
+      height = sizeManager.size.height *
+          (_kStoryBarMaximizedHeight / sizeManager.size.height);
       childScale = 0.7;
       opacity = 1.0;
     } else if (_storyPanels.isNotEmpty) {
-      width = config.fullSize.width * _widthFactor;
-      height = config.fullSize.height * _heightFactor;
+      width = sizeManager.size.width * _widthFactor;
+      height = sizeManager.size.height * _heightFactor;
       childScale = 0.7;
       opacity = 1.0;
     } else {
@@ -112,6 +121,8 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       childScale = 1.0;
       opacity = 0.7;
     }
+    childSizeManager.size =
+        _storyPanels.isNotEmpty ? new Size(width, height) : sizeManager.size;
 
     return new SimulatedTranslationTransform(
       key: _translationKey,
@@ -126,13 +137,15 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
             key: _boxKey,
             width: width,
             height: height,
-            child: new StoryPanels(
-              storyCluster: config.storyCluster,
-              focusProgress: 0.0,
-              fullSize: _storyPanels.isNotEmpty
-                  ? new Size(width, height)
-                  : config.fullSize,
-              highlight: false,
+            child: new InheritedSizeManager(
+              sizeManager: childSizeManager,
+              child: new StoryPanels(
+                storyCluster: config.storyCluster,
+                focusProgress: 0.0,
+                highlight: false,
+                overlayKey: config.overlayKey,
+                storyWidgets: config.storyWidgets,
+              ),
             ),
           ),
         ),

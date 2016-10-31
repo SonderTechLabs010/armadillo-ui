@@ -39,6 +39,7 @@ const double _kMaxQuickSettingsBackgroundWidth = 600.0;
 class Now extends StatefulWidget {
   final double minHeight;
   final double maxHeight;
+  final double parentWidth;
 
   final double quickSettingsHeightBump;
   final OnQuickSettingsProgressChange onQuickSettingsProgressChange;
@@ -58,6 +59,7 @@ class Now extends StatefulWidget {
     Key key,
     this.minHeight,
     this.maxHeight,
+    this.parentWidth,
     this.quickSettingsHeightBump,
     this.onQuickSettingsProgressChange,
     this.onReturnToOriginButtonTap,
@@ -112,9 +114,6 @@ class NowState extends TickingState<Now> {
   double _userContextTextHeight = 0.0;
   double _userImageHeight = 0.0;
 
-  // The width of the quick settings when fully maximized. Initialized in build().
-  double _quickSettingsWidth;
-
   @override
   void initState() {
     super.initState();
@@ -154,84 +153,78 @@ class NowState extends TickingState<Now> {
   }
 
   @override
-  Widget build(BuildContext context) => new LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          _quickSettingsWidth =
-              math.min(_kMaxQuickSettingsBackgroundWidth, constraints.maxWidth);
-          Widget now = new Container(
-            margin: new EdgeInsets.only(
-              top: math.max(0.0, constraints.maxHeight - _nowHeight),
-            ),
-            child: new Stack(
-              children: [
-                // Quick Settings Background.
-                new Positioned(
-                  left: _kQuickSettingsHorizontalPadding,
-                  right: _kQuickSettingsHorizontalPadding,
-                  top: _quickSettingsBackgroundTopOffset,
-                  child: new Center(
-                    child: new Container(
-                      height: _quickSettingsBackgroundHeight,
-                      width: _quickSettingsBackgroundWidth,
-                      decoration: new BoxDecoration(
-                        backgroundColor: Colors.white,
-                        borderRadius: new BorderRadius.circular(
-                          _quickSettingsBackgroundBorderRadius,
-                        ),
+  Widget build(BuildContext context) => new Align(
+        alignment: FractionalOffset.bottomCenter,
+        child: new Container(
+          height: _nowHeight,
+          child: new Stack(
+            children: [
+              // Quick Settings Background.
+              new Positioned(
+                left: _kQuickSettingsHorizontalPadding,
+                right: _kQuickSettingsHorizontalPadding,
+                top: _quickSettingsBackgroundTopOffset,
+                child: new Center(
+                  child: new Container(
+                    height: _quickSettingsBackgroundHeight,
+                    width: _quickSettingsBackgroundWidth,
+                    decoration: new BoxDecoration(
+                      backgroundColor: Colors.white,
+                      borderRadius: new BorderRadius.circular(
+                        _quickSettingsBackgroundBorderRadius,
                       ),
                     ),
                   ),
                 ),
-                // User Image, User Context Text, and Important Information when maximized.
-                new Positioned(
-                  left: _kQuickSettingsHorizontalPadding,
-                  right: _kQuickSettingsHorizontalPadding,
-                  top: _userImageTopOffset,
-                  child: new Center(
-                    child: new Column(
-                      children: [
-                        // User Profile image
-                        _buildUserImage(),
-                        // User Context Text when maximized.
-                        new Padding(
-                          key: _userContextTextKey,
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: new Opacity(
-                            opacity: _fallAwayOpacity,
-                            child: _nowManager(context).userContextMaximized,
-                          ),
+              ),
+              // User Image, User Context Text, and Important Information when maximized.
+              new Positioned(
+                left: _kQuickSettingsHorizontalPadding,
+                right: _kQuickSettingsHorizontalPadding,
+                top: _userImageTopOffset,
+                child: new Center(
+                  child: new Column(
+                    children: [
+                      // User Profile image
+                      _buildUserImage(),
+                      // User Context Text when maximized.
+                      new Padding(
+                        key: _userContextTextKey,
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: new Opacity(
+                          opacity: _fallAwayOpacity,
+                          child: _nowManager(context).userContextMaximized,
                         ),
-                        // Important Information when maximized.
-                        new Container(
-                            key: _importantInfoMaximizedKey,
-                            width: _importantInfoMaximizedWidth,
-                            child: new Padding(
-                              padding: const EdgeInsets.only(top: 16.0),
-                              child: new Opacity(
-                                opacity: _fallAwayOpacity,
-                                child: _nowManager(context)
-                                    .importantInfoMaximized(
-                                        _quickSettingsBackgroundMaximizedWidth),
-                              ),
-                            )),
-                        // Quick Settings
-                        _buildQuickSettings(),
-                      ],
-                    ),
+                      ),
+                      // Important Information when maximized.
+                      new Container(
+                          key: _importantInfoMaximizedKey,
+                          width: _importantInfoMaximizedWidth,
+                          child: new Padding(
+                            padding: const EdgeInsets.only(top: 16.0),
+                            child: new Opacity(
+                              opacity: _fallAwayOpacity,
+                              child: _nowManager(context)
+                                  .importantInfoMaximized(
+                                      _quickSettingsBackgroundMaximizedWidth),
+                            ),
+                          )),
+                      // Quick Settings
+                      _buildQuickSettings(),
+                    ],
                   ),
                 ),
+              ),
 
-                // User Context Text and Important Information when minimized.
-                _buildMinimizedUserContextTextAndImportantInformation(),
+              // User Context Text and Important Information when minimized.
+              _buildMinimizedUserContextTextAndImportantInformation(),
 
-                // Minimized button bar gesture detector. Only enabled when
-                // we're nearly fully minimized.
-                _buildMinimizedButtonBarGestureDetector(),
-              ],
-            ),
-          );
-          return now;
-        },
+              // Minimized button bar gesture detector. Only enabled when
+              // we're nearly fully minimized.
+              _buildMinimizedButtonBarGestureDetector(),
+            ],
+          ),
+        ),
       );
 
   Widget _buildUserImage() => new Stack(key: _userImageKey, children: [
@@ -479,7 +472,8 @@ class NowState extends TickingState<Now> {
       lerpDouble(50.0, 4.0, _quickSettingsProgress);
 
   double get _quickSettingsBackgroundMaximizedWidth =>
-      _quickSettingsWidth - 2 * _kQuickSettingsHorizontalPadding;
+      math.min(_kMaxQuickSettingsBackgroundWidth, config.parentWidth) -
+      2 * _kQuickSettingsHorizontalPadding;
 
   double get _quickSettingsBackgroundWidth =>
       _quickSettingsBackgroundMaximizedWidth *
