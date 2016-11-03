@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../lib/now_minimized_info_fader.dart';
+import '../lib/fading_spring_simulation.dart';
 
 const int _kStoryCount = 4;
 const double _kRecentListWidthSingleColumn = 500.0;
@@ -14,17 +16,18 @@ const double _kRecentListHeight = 600.0;
 
 void main() {
   testWidgets('Initial opacity is 0.0.', (WidgetTester tester) async {
-    NowMinimizedInfoFader fader = new NowMinimizedInfoFader();
+    FadingSpringSimulation fader = new FadingSpringSimulation();
     expect(fader.opacity, 0.0);
   });
 
   testWidgets('Forcing fade in turns opacity to 1.0 instantly.',
       (WidgetTester tester) async {
     bool changed = false;
-    NowMinimizedInfoFader fader = new NowMinimizedInfoFader(
+    FadingSpringSimulation fader = new FadingSpringSimulation(
       onChange: () {
         changed = true;
       },
+      tickerProvider: new DummyTickerProvider(),
     );
     expect(fader.opacity, 0.0);
     fader.fadeIn(force: true);
@@ -39,10 +42,11 @@ void main() {
       'Not forcing fade in starts opacity as 0.0 and gradually goes to 1.0.',
       (WidgetTester tester) async {
     bool changed = false;
-    NowMinimizedInfoFader fader = new NowMinimizedInfoFader(
+    FadingSpringSimulation fader = new FadingSpringSimulation(
       onChange: () {
         changed = true;
       },
+      tickerProvider: new DummyTickerProvider(),
     );
     expect(fader.opacity, 0.0);
     fader.fadeIn();
@@ -63,10 +67,11 @@ void main() {
   testWidgets('We start fading out a short time after fading in.',
       (WidgetTester tester) async {
     bool changed = false;
-    NowMinimizedInfoFader fader = new NowMinimizedInfoFader(
+    FadingSpringSimulation fader = new FadingSpringSimulation(
       onChange: () {
         changed = true;
       },
+      tickerProvider: new DummyTickerProvider(),
     );
     expect(fader.opacity, 0.0);
     fader.fadeIn();
@@ -92,4 +97,9 @@ void main() {
     expect(fader.opacity, 0.0);
     fader.reset();
   });
+}
+
+class DummyTickerProvider extends TickerProvider {
+  @override
+  Ticker createTicker(TickerCallback onTick) => new Ticker(onTick);
 }

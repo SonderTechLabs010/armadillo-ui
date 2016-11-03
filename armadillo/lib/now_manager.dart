@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'dart:math' as math;
 
 import 'config_manager.dart';
+import 'opacity_manager.dart';
 import 'quick_settings.dart';
 import 'time_stringer.dart';
 
@@ -67,21 +68,32 @@ class NowManager extends ConfigManager {
 
   Widget get user => new Image.asset(_kUserImage, fit: ImageFit.cover);
 
-  Widget get userContextMaximized => new Text(
-        '${_timeStringer.longString} Mountain View'.toUpperCase(),
-        style: _textStyle,
+  Widget userContextMaximized({double opacity: 1.0}) => new Opacity(
+        opacity: opacity,
+        child: new Text(
+          '${_timeStringer.longString} Mountain View'.toUpperCase(),
+          style: _textStyle,
+        ),
       );
 
   Widget get userContextMinimized => new Padding(
         padding: const EdgeInsets.only(left: 8.0),
-        child: new Text('${_timeStringer.shortString}'),
+        child: new RepaintBoundary(
+          child: new InheritedOpacityWidget(
+            builder: (_, Widget child, double opacity) => new Opacity(
+                  opacity: opacity,
+                  child: child,
+                ),
+            child: new Text('${_timeStringer.shortString}'),
+          ),
+        ),
       );
 
   double get importantInfoMinWidth =>
       _kImportantInfoMinWidth +
       2 * 8.0; // TODO(mikejurka): pull this into constant
 
-  Widget importantInfoMaximized(double maxWidth) {
+  Widget importantInfoMaximized({double maxWidth, double opacity: 1.0}) {
     return new Container(
       // TODO(mikejurka): don't hardcode height after OverflowBox is fixed
       height: 32.0,
@@ -91,23 +103,12 @@ class NowManager extends ConfigManager {
           // battery icon
           new Container(
             width: _kImportantInfoMinWidth,
-            child: new Stack(
-              children: [
-                new Opacity(
-                  opacity: 1.0 - _quickSettingsProgress,
-                  child: new Image.asset(
-                    _kBatteryImageWhite,
-                    fit: ImageFit.cover,
-                  ),
-                ),
-                new Opacity(
-                  opacity: _quickSettingsProgress,
-                  child: new Image.asset(
-                    _kBatteryImageGrey600,
-                    fit: ImageFit.cover,
-                  ),
-                ),
-              ],
+            child: new Image.asset(
+              _kBatteryImageWhite,
+              color: Color
+                  .lerp(Colors.white, Colors.grey[600], _quickSettingsProgress)
+                  .withOpacity(opacity),
+              fit: ImageFit.cover,
             ),
           ),
           new Flexible(
@@ -128,7 +129,7 @@ class NowManager extends ConfigManager {
                       // battery text
                       new Flexible(
                         child: new Opacity(
-                          opacity: _quickSettingsSlideUpProgress,
+                          opacity: _quickSettingsSlideUpProgress * opacity,
                           child: new Text(
                             '84% 2H 54MIN',
                             softWrap: false,
@@ -139,21 +140,21 @@ class NowManager extends ConfigManager {
                         ),
                       ),
                       // wifi icon
-                      new Opacity(
-                        opacity: _quickSettingsSlideUpProgress,
-                        child: new Image.asset(
-                          _kWifiImageGrey600,
-                          width: _kImportantInfoIconSize,
-                          height: _kImportantInfoIconSize,
-                          fit: ImageFit.cover,
+                      new Image.asset(
+                        _kWifiImageGrey600,
+                        color: Colors.grey[600].withOpacity(
+                          _quickSettingsSlideUpProgress * opacity,
                         ),
+                        width: _kImportantInfoIconSize,
+                        height: _kImportantInfoIconSize,
+                        fit: ImageFit.cover,
                       ),
                       // spacer
                       new Container(width: _kIconLabelPadding, height: 1.0),
                       // wifi text
                       new Flexible(
                         child: new Opacity(
-                          opacity: _quickSettingsSlideUpProgress,
+                          opacity: _quickSettingsSlideUpProgress * opacity,
                           child: new Text(
                             '0024b10000021ecd',
                             softWrap: false,
@@ -165,21 +166,21 @@ class NowManager extends ConfigManager {
                       ),
 
                       // network icon
-                      new Opacity(
-                        opacity: _quickSettingsSlideUpProgress,
-                        child: new Image.asset(
-                          _kNetworkSignalImageGrey600,
-                          width: _kImportantInfoIconSize,
-                          height: _kImportantInfoIconSize,
-                          fit: ImageFit.cover,
+                      new Image.asset(
+                        _kNetworkSignalImageGrey600,
+                        color: Colors.grey[600].withOpacity(
+                          _quickSettingsSlideUpProgress * opacity,
                         ),
+                        width: _kImportantInfoIconSize,
+                        height: _kImportantInfoIconSize,
+                        fit: ImageFit.cover,
                       ),
                       // spacer
                       new Container(width: _kIconLabelPadding, height: 1.0),
                       // network text
                       new Flexible(
                         child: new Opacity(
-                          opacity: _quickSettingsSlideUpProgress,
+                          opacity: _quickSettingsSlideUpProgress * opacity,
                           child: new Text(
                             'T-MOBILE',
                             softWrap: false,
@@ -205,13 +206,30 @@ class NowManager extends ConfigManager {
         children: [
           new Padding(
             padding: const EdgeInsets.only(top: 4.0, right: 4.0),
-            child: new Text('89%'),
+            child: new RepaintBoundary(
+              child: new InheritedOpacityWidget(
+                builder: (_, Widget child, double opacity) => new Opacity(
+                      opacity: opacity,
+                      child: child,
+                    ),
+                child: new Text('89%'),
+              ),
+            ),
           ),
-          new Image.asset(_kBatteryImageWhite, fit: ImageFit.cover),
+          new RepaintBoundary(
+            child: new InheritedOpacityWidget(
+              builder: (_, __, double opacity) => new Image.asset(
+                    _kBatteryImageWhite,
+                    color: Colors.white.withOpacity(opacity),
+                    fit: ImageFit.cover,
+                  ),
+            ),
+          ),
         ],
       );
 
-  Widget get quickSettings => new QuickSettings();
+  Widget quickSettings({double opacity: 1.0}) =>
+      new QuickSettings(opacity: opacity);
 
   TextStyle get _textStyle => TextStyle.lerp(
         new TextStyle(

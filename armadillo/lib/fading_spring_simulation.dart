@@ -16,14 +16,15 @@ const RK4SpringDescription _kFadeOutSimulationDesc =
 const RK4SpringDescription _kFadeInSimulationDesc =
     const RK4SpringDescription(tension: 900.0, friction: 50.0);
 
-class NowMinimizedInfoFader {
+class FadingSpringSimulation {
   final VoidCallback onChange;
+  final TickerProvider tickerProvider;
   RK4SpringSimulation _fadeSimulation;
   Timer _fadeTimer;
   Ticker _ticker;
   Duration _lastTick;
 
-  NowMinimizedInfoFader({this.onChange});
+  FadingSpringSimulation({this.onChange, this.tickerProvider});
 
   void fadeIn({bool force: false}) {
     _fadeSimulation = new RK4SpringSimulation(
@@ -67,7 +68,7 @@ class NowMinimizedInfoFader {
     if (_ticker?.isTicking ?? false) {
       return;
     }
-    _ticker = new Ticker(_onTick);
+    _ticker = tickerProvider.createTicker(_onTick);
     _lastTick = Duration.ZERO;
     _ticker.start();
   }
@@ -84,45 +85,4 @@ class NowMinimizedInfoFader {
     }
     onChange?.call();
   }
-}
-
-class Fader extends StatefulWidget {
-  final Widget child;
-
-  Fader({Key key, this.child}) : super(key: key);
-
-  @override
-  FaderState createState() => new FaderState();
-}
-
-class FaderState extends State<Fader> {
-  NowMinimizedInfoFader _nowMinimizedInfoFader;
-
-  @override
-  void initState() {
-    super.initState();
-    _nowMinimizedInfoFader = new NowMinimizedInfoFader(
-      onChange: () {
-        if (mounted) {
-          setState(() {});
-        }
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _nowMinimizedInfoFader.reset();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => new Opacity(
-        opacity: _nowMinimizedInfoFader.opacity,
-        child: config.child,
-      );
-
-  void fadeIn({bool force: false}) => _nowMinimizedInfoFader.fadeIn(
-        force: force,
-      );
 }

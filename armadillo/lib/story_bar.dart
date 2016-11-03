@@ -58,48 +58,55 @@ class StoryBarState extends TickingState<StoryBar> {
           minHeight: config.maximizedHeight,
           maxHeight: config.maximizedHeight,
           alignment: FractionalOffset.topCenter,
-          child: new Opacity(
-            opacity: _opacity,
-            child: new Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 0.0, vertical: 12.0),
-              child: new CustomMultiChildLayout(
-                delegate: new ThreeColumnAlignedLayoutDelegate(
-                  partMargin: _kPartMargin,
-                ),
-                children: [
-                  new LayoutId(
-                    id: ThreeColumnAlignedLayoutDelegateParts.left,
-                    child: new Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: config.story.icons
-                          .map((WidgetBuilder builder) => builder(context))
-                          .toList(),
-                    ),
-                  ),
-                  new LayoutId(
-                    id: ThreeColumnAlignedLayoutDelegateParts.center,
-                    child: new StoryTitle(title: config.story.title),
-                  ),
-                  new LayoutId(
-                    id: ThreeColumnAlignedLayoutDelegateParts.right,
-                    child: new ClipOval(
-                      child: new Container(
-                        foregroundDecoration: new BoxDecoration(
-                          border: new Border.all(
-                            color: Colors.white,
-                            width: 1.0,
-                          ),
-                          shape: BoxShape.circle,
-                        ),
-                        child: config.story.avatar(context),
-                      ),
-                    ),
-                  ),
-                ],
+          child: new Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 0.0,
+              vertical: 12.0,
+            ),
+            child: new CustomMultiChildLayout(
+              delegate: new ThreeColumnAlignedLayoutDelegate(
+                partMargin: _kPartMargin,
               ),
+              children: [
+                new LayoutId(
+                  id: ThreeColumnAlignedLayoutDelegateParts.left,
+                  child: new Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: config.story.icons
+                        .map(
+                          (OpacityBuilder builder) => builder(
+                                context,
+                                _opacity,
+                              ),
+                        )
+                        .toList(),
+                  ),
+                ),
+                new LayoutId(
+                  id: ThreeColumnAlignedLayoutDelegateParts.center,
+                  child: new StoryTitle(
+                    title: config.story.title,
+                    opacity: _opacity,
+                  ),
+                ),
+                new LayoutId(
+                  id: ThreeColumnAlignedLayoutDelegateParts.right,
+                  child: new ClipOval(
+                    child: new Container(
+                      foregroundDecoration: new BoxDecoration(
+                        border: new Border.all(
+                          color: Colors.white.withOpacity(_opacity),
+                          width: 1.0,
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: config.story.avatar(context, _opacity),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

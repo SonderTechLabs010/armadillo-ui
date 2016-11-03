@@ -125,7 +125,7 @@ class DummyStoryManager extends StoryManager {
                   id: new StoryId(storyKeys[index]),
                   builder: (_) => new Container(key: storyKeys[index]),
                   title: '',
-                  avatar: (_) => new Container(),
+                  avatar: (_, __) => new Container(),
                   lastInteraction: new DateTime.now(),
                   cumulativeInteractionDuration: const Duration(minutes: 5),
                   themeColor: new Color(0xFFFFFFFF),

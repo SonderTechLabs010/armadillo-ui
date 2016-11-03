@@ -10,8 +10,9 @@ import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
+import 'fading_spring_simulation.dart';
 import 'now_manager.dart';
-import 'now_minimized_info_fader.dart';
+import 'opacity_manager.dart';
 
 typedef void OnQuickSettingsProgressChange(double quickSettingsProgress);
 
@@ -101,7 +102,8 @@ class NowState extends TickingState<Now> {
   final GlobalKey _importantInfoMaximizedKey = new GlobalKey();
   final GlobalKey _userContextTextKey = new GlobalKey();
   final GlobalKey _userImageKey = new GlobalKey();
-  final GlobalKey<FaderState> _faderKey = new GlobalKey<FaderState>();
+  final OpacityManager _minimizedInfoOpacityManager = new OpacityManager(0.0);
+  FadingSpringSimulation _fadingSpringSimulation;
 
   /// [scrolloffset] affects the bottom padding of the user and text elements
   /// as well as the overall height of [Now] while maximized.
@@ -131,6 +133,21 @@ class NowState extends TickingState<Now> {
     setState(() {
       _lastScrollOffset = scrollOffset;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fadingSpringSimulation = new FadingSpringSimulation(
+      onChange: _updateMinimizedInfoOpacity,
+      tickerProvider: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    _fadingSpringSimulation.reset();
+    super.dispose();
   }
 
   @override
@@ -172,9 +189,8 @@ class NowState extends TickingState<Now> {
                       new Padding(
                         key: _userContextTextKey,
                         padding: const EdgeInsets.only(top: 24.0),
-                        child: new Opacity(
+                        child: _nowManager(context).userContextMaximized(
                           opacity: _fallAwayOpacity,
-                          child: _nowManager(context).userContextMaximized,
                         ),
                       ),
                       // Important Information when maximized.
@@ -183,11 +199,9 @@ class NowState extends TickingState<Now> {
                           width: _importantInfoMaximizedWidth,
                           child: new Padding(
                             padding: const EdgeInsets.only(top: 16.0),
-                            child: new Opacity(
+                            child: _nowManager(context).importantInfoMaximized(
+                              maxWidth: _quickSettingsBackgroundMaximizedWidth,
                               opacity: _fallAwayOpacity,
-                              child: _nowManager(context)
-                                  .importantInfoMaximized(
-                                      _quickSettingsBackgroundMaximizedWidth),
                             ),
                           )),
                       // Quick Settings
@@ -260,13 +274,21 @@ class NowState extends TickingState<Now> {
               minHeight: 0.0,
               maxWidth: _quickSettingsBackgroundMaximizedWidth,
               minWidth: 0.0,
-              child: new Opacity(
+              child: new Column(
                 key: _quickSettingsKey,
-                opacity: _quickSettingsSlideUpProgress,
-                child: new Column(children: [
-                  new Divider(height: 4.0, color: Colors.grey[300]),
-                  new Container(child: _nowManager(context).quickSettings),
-                ]),
+                children: [
+                  new Divider(
+                    height: 4.0,
+                    color: Colors.grey[300].withOpacity(
+                      _quickSettingsSlideUpProgress,
+                    ),
+                  ),
+                  new Container(
+                    child: _nowManager(context).quickSettings(
+                      opacity: _quickSettingsSlideUpProgress,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -278,24 +300,26 @@ class NowState extends TickingState<Now> {
         child: new Container(
           height: config.minHeight,
           padding: new EdgeInsets.symmetric(horizontal: 8.0 + _slideInDistance),
-          child: new Opacity(
-            opacity: 0.6 * _slideInProgress,
-            child: new RepaintBoundary(
-              child: new Fader(
-                key: _faderKey,
-                child: new Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _nowManager(context).userContextMinimized,
-                    _nowManager(context).importantInfoMinimized,
-                  ],
-                ),
+          child: new RepaintBoundary(
+            child: new InheritedOpacityManager(
+              opacityManager: _minimizedInfoOpacityManager,
+              child: new Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _nowManager(context).userContextMinimized,
+                  _nowManager(context).importantInfoMinimized,
+                ],
               ),
             ),
           ),
         ),
       );
+
+  void _updateMinimizedInfoOpacity() {
+    _minimizedInfoOpacityManager.opacity =
+        _fadingSpringSimulation.opacity * 0.6 * _slideInProgress;
+  }
 
   Widget _buildMinimizedButtonBarGestureDetector() => new Offstage(
         offstage: _buttonTapDisabled,
@@ -307,12 +331,13 @@ class NowState extends TickingState<Now> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               new Flexible(
-                  child: new GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTapDown: (_) {
-                  _faderKey.currentState.fadeIn();
-                },
-              )),
+                child: new GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapDown: (_) {
+                    _fadingSpringSimulation.fadeIn();
+                  },
+                ),
+              ),
               new GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: config.onReturnToOriginButtonTap,
@@ -320,12 +345,13 @@ class NowState extends TickingState<Now> {
                 child: new Container(width: config.minHeight),
               ),
               new Flexible(
-                  child: new GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTapDown: (_) {
-                  _faderKey.currentState.fadeIn();
-                },
-              )),
+                child: new GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapDown: (_) {
+                    _fadingSpringSimulation.fadeIn();
+                  },
+                ),
+              ),
             ],
           ),
         ),
@@ -364,6 +390,7 @@ class NowState extends TickingState<Now> {
           .quickSettingsSlideUpProgress = _quickSettingsSlideUpProgress;
     }
 
+    _updateMinimizedInfoOpacity();
     return continueTicking;
   }
 
@@ -410,7 +437,7 @@ class NowState extends TickingState<Now> {
   }
 
   void _showMinimizedInfo() {
-    _faderKey.currentState.fadeIn(force: true);
+    _fadingSpringSimulation.fadeIn(force: true);
     _minimizedInfoSimulation.target = _kMinimizationSimulationTarget;
     startTicking();
   }

@@ -12,14 +12,16 @@ class StoryId<T> extends ValueKey<T> {
   StoryId(T value) : super(value);
 }
 
+typedef Widget OpacityBuilder(BuildContext context, double opacity);
+
 /// The representation of a Story.  A Story's contents are display as a [Widget]
 /// provided by [builder] while the size of a story in the [RecentList] is
 /// determined by [lastInteraction] and [cumulativeInteractionDuration].
 class Story {
   final StoryId id;
   final WidgetBuilder builder;
-  final List<WidgetBuilder> icons;
-  final WidgetBuilder avatar;
+  final List<OpacityBuilder> icons;
+  final OpacityBuilder avatar;
   final String title;
   final DateTime lastInteraction;
   final Duration cumulativeInteractionDuration;
@@ -38,7 +40,7 @@ class Story {
     this.id,
     this.builder,
     this.title: '',
-    this.icons: const <WidgetBuilder>[],
+    this.icons: const <OpacityBuilder>[],
     this.avatar,
     this.lastInteraction,
     this.cumulativeInteractionDuration,

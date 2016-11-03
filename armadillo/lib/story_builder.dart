@@ -47,13 +47,20 @@ Story storyBuilder(Map<String, Object> story) {
     title: story['title'],
     icons: (story['icons'] as List<String>)
         .map(
-          (String icon) => (BuildContext context) =>
-              new Image.asset(icon, fit: ImageFit.cover, color: Colors.white),
+          (String icon) =>
+              (BuildContext context, double opacity) => new Image.asset(
+                    icon,
+                    fit: ImageFit.cover,
+                    color: Colors.white.withOpacity(opacity),
+                  ),
         )
         .toList(),
-    avatar: (_) => new Image.asset(
-          story['avatar'],
-          fit: ImageFit.cover,
+    avatar: (_, double opacity) => new Opacity(
+          opacity: opacity,
+          child: new Image.asset(
+            story['avatar'],
+            fit: ImageFit.cover,
+          ),
         ),
     lastInteraction: new DateTime.now().subtract(
       new Duration(

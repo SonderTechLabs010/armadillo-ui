@@ -83,17 +83,22 @@ class QuickSettingsOverlayState extends State<QuickSettingsOverlay>
 
   Widget _buildQuickSettingsOverlayContent() => new Align(
         alignment: FractionalOffset.bottomCenter,
-        child: new Opacity(
-          opacity: lerpDouble(0.0, 1.0, _quickSettingsAnimControl.value),
-          child: new RepaintBoundary(
-            child: new Container(
-                decoration: new BoxDecoration(
-                    backgroundColor: Colors.white,
-                    borderRadius: new BorderRadius.circular(
-                      4.0,
-                    )),
-                child: new QuickSettings()),
-          ),
+        child: new RepaintBoundary(
+          child: new Container(
+              decoration: new BoxDecoration(
+                  backgroundColor: Colors.white.withOpacity(
+                    lerpDouble(0.0, 1.0, _quickSettingsAnimControl.value),
+                  ),
+                  borderRadius: new BorderRadius.circular(
+                    4.0,
+                  )),
+              child: new QuickSettings(
+                opacity: lerpDouble(
+                  0.0,
+                  1.0,
+                  _quickSettingsAnimControl.value,
+                ),
+              )),
         ),
       );
 
@@ -152,6 +157,10 @@ class QuickSettingsOverlayState extends State<QuickSettingsOverlay>
 }
 
 class QuickSettings extends StatefulWidget {
+  final double opacity;
+
+  QuickSettings({this.opacity});
+
   @override
   _QuickSettingsState createState() => new _QuickSettingsState();
 }
@@ -164,8 +173,11 @@ class _QuickSettingsState extends State<QuickSettings> {
   final GlobalKey _kDoNotDisturbModeToggle = new GlobalKey();
   final GlobalKey _kScreenRotationToggle = new GlobalKey();
 
-  Widget _divider() {
-    return new Divider(height: 4.0, color: Colors.grey[300]);
+  Widget _divider({double opacity: 1.0}) {
+    return new Divider(
+      height: 4.0,
+      color: Colors.grey[300].withOpacity(opacity),
+    );
   }
 
   Widget _volumeIconSlider() => new IconSlider(
@@ -295,12 +307,16 @@ class _QuickSettingsState extends State<QuickSettings> {
           new Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: new LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) =>
-                    (constraints.maxWidth > _kMultiColumnWidthThreshold)
+              builder: (BuildContext context, BoxConstraints constraints) =>
+                  new Opacity(
+                    opacity: config.opacity,
+                    child: (constraints.maxWidth > _kMultiColumnWidthThreshold)
                         ? _buildForWideScreen(context)
-                        : _buildForNarrowScreen(context)),
+                        : _buildForNarrowScreen(context),
+                  ),
+            ),
           ),
-          _divider(),
+          _divider(opacity: config.opacity),
           new GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
@@ -308,11 +324,16 @@ class _QuickSettingsState extends State<QuickSettings> {
             },
             child: new Container(
               padding: const EdgeInsets.all(16.0),
-              child: new Text(
-                'MORE',
-                textAlign: TextAlign.center,
-                style: new TextStyle(
-                    fontWeight: FontWeight.w700, color: Colors.grey[600]),
+              child: new Opacity(
+                opacity: config.opacity,
+                child: new Text(
+                  'MORE',
+                  textAlign: TextAlign.center,
+                  style: new TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.grey[600],
+                  ),
+                ),
               ),
             ),
           )

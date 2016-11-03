@@ -217,11 +217,11 @@ class StoryClusterWidget extends StatelessWidget {
               right: 8.0,
               top: 4.0,
             ),
-            child: new Opacity(
-              opacity: 1.0 - focusProgress,
-              child: new Align(
-                alignment: FractionalOffset.bottomLeft,
-                child: new StoryTitle(title: storyCluster.title),
+            child: new Align(
+              alignment: FractionalOffset.bottomLeft,
+              child: new StoryTitle(
+                title: storyCluster.title,
+                opacity: 1.0 - focusProgress,
               ),
             ),
           ),

@@ -128,17 +128,17 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       key: _translationKey,
       dx: -width / 2.0,
       dy: -height / 2.0,
-      child: new Opacity(
-        opacity: opacity,
-        child: new Transform(
-          transform: new Matrix4.identity().scaled(childScale, childScale),
-          alignment: FractionalOffset.center,
-          child: new SimulatedSizedBox(
-            key: _boxKey,
-            width: width,
-            height: height,
-            child: new InheritedSizeManager(
-              sizeManager: childSizeManager,
+      child: new Transform(
+        transform: new Matrix4.identity().scaled(childScale, childScale),
+        alignment: FractionalOffset.center,
+        child: new SimulatedSizedBox(
+          key: _boxKey,
+          width: width,
+          height: height,
+          child: new InheritedSizeManager(
+            sizeManager: childSizeManager,
+            child: new Opacity(
+              opacity: opacity,
               child: new StoryPanels(
                 storyCluster: config.storyCluster,
                 focusProgress: 0.0,

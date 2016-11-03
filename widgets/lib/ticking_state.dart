@@ -7,7 +7,8 @@ import 'package:flutter/widgets.dart';
 
 /// A [State] that manages the ticking part of a ticking simulation for its
 /// subclass.
-abstract class TickingState<T extends StatefulWidget> extends State<T> {
+abstract class TickingState<T extends StatefulWidget> extends State<T>
+    with TickerProviderStateMixin {
   Ticker _ticker;
   Duration _lastTick;
 
@@ -18,7 +19,7 @@ abstract class TickingState<T extends StatefulWidget> extends State<T> {
     if (_ticker?.isTicking ?? false) {
       return;
     }
-    _ticker = new Ticker(_onTick);
+    _ticker = createTicker(_onTick);
     _lastTick = Duration.ZERO;
     _ticker.start();
   }
