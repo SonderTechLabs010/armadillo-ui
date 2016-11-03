@@ -150,7 +150,7 @@ class Conductor extends StatelessWidget {
                       _suggestionOverlayKey.currentState.show();
                     }
                   }
-                  return nothing;
+                  return Nothing.widget;
                 }),
               ],
             ),

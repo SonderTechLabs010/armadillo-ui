@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 
 import 'conductor.dart';
 import 'now_manager.dart';
+import 'rounded_corner_decoration.dart';
 import 'story_manager.dart';
 import 'suggestion_manager.dart';
 
@@ -27,32 +28,29 @@ class Armadillo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => new Container(
-        decoration: new BoxDecoration(backgroundColor: Colors.black),
-        child: new ClipRRect(
-          borderRadius: new BorderRadius.circular(
-            _kDeviceScreenInnerBezelRadius,
-          ),
-          child: new Container(
-            decoration: new BoxDecoration(
-              backgroundImage: new BackgroundImage(
-                image: new AssetImage(_kBackgroundImage),
-                alignment: const FractionalOffset(0.4, 0.5),
-                fit: ImageFit.cover,
-                colorFilter: new ui.ColorFilter.mode(
-                  _kBackgroundOverlayColor,
-                  ui.TransferMode.srcATop,
-                ),
-              ),
+        decoration: new BoxDecoration(
+          backgroundColor: Colors.black,
+          backgroundImage: new BackgroundImage(
+            image: new AssetImage(_kBackgroundImage),
+            alignment: const FractionalOffset(0.4, 0.5),
+            fit: ImageFit.cover,
+            colorFilter: new ui.ColorFilter.mode(
+              _kBackgroundOverlayColor,
+              ui.TransferMode.srcATop,
             ),
-            child: new InheritedSuggestionManager(
-              suggestionManager: suggestionManager,
-              child: new InheritedStoryManager(
-                storyManager: storyManager,
-                child: new InheritedNowManager(
-                  nowManager: nowManager,
-                  child: new Conductor(),
-                ),
-              ),
+          ),
+        ),
+        foregroundDecoration: new RoundedCornerDecoration(
+          radius: _kDeviceScreenInnerBezelRadius,
+          color: Colors.black,
+        ),
+        child: new InheritedSuggestionManager(
+          suggestionManager: suggestionManager,
+          child: new InheritedStoryManager(
+            storyManager: storyManager,
+            child: new InheritedNowManager(
+              nowManager: nowManager,
+              child: new Conductor(),
             ),
           ),
         ),

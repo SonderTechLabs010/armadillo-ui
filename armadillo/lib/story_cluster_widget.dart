@@ -145,7 +145,7 @@ class StoryClusterWidget extends StatelessWidget {
                 key: storyCluster.clusterDraggableKey,
                 overlayKey: overlayKey,
                 data: storyCluster.id,
-                childWhenDragging: nothing,
+                childWhenDragging: Nothing.widget,
                 feedback: new StoryClusterDragFeedback(
                   key: storyCluster.dragFeedbackKey,
                   storyCluster: storyCluster,

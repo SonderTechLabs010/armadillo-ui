@@ -85,3 +85,44 @@ class NowMinimizedInfoFader {
     onChange?.call();
   }
 }
+
+class Fader extends StatefulWidget {
+  final Widget child;
+
+  Fader({Key key, this.child}) : super(key: key);
+
+  @override
+  FaderState createState() => new FaderState();
+}
+
+class FaderState extends State<Fader> {
+  NowMinimizedInfoFader _nowMinimizedInfoFader;
+
+  @override
+  void initState() {
+    super.initState();
+    _nowMinimizedInfoFader = new NowMinimizedInfoFader(
+      onChange: () {
+        if (mounted) {
+          setState(() {});
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _nowMinimizedInfoFader.reset();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => new Opacity(
+        opacity: _nowMinimizedInfoFader.opacity,
+        child: config.child,
+      );
+
+  void fadeIn({bool force: false}) => _nowMinimizedInfoFader.fadeIn(
+        force: force,
+      );
+}

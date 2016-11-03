@@ -101,8 +101,7 @@ class NowState extends TickingState<Now> {
   final GlobalKey _importantInfoMaximizedKey = new GlobalKey();
   final GlobalKey _userContextTextKey = new GlobalKey();
   final GlobalKey _userImageKey = new GlobalKey();
-
-  NowMinimizedInfoFader _nowMinimizedInfoFader;
+  final GlobalKey<FaderState> _faderKey = new GlobalKey<FaderState>();
 
   /// [scrolloffset] affects the bottom padding of the user and text elements
   /// as well as the overall height of [Now] while maximized.
@@ -113,24 +112,6 @@ class NowState extends TickingState<Now> {
   double _importantInfoMaximizedHeight = 0.0;
   double _userContextTextHeight = 0.0;
   double _userImageHeight = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _nowMinimizedInfoFader = new NowMinimizedInfoFader(
-      onChange: () {
-        if (mounted) {
-          setState(() {});
-        }
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _nowMinimizedInfoFader.reset();
-    super.dispose();
-  }
 
   set scrollOffset(double scrollOffset) {
     if (scrollOffset > _kNowMinimizationScrollOffsetThreshold &&
@@ -298,14 +279,19 @@ class NowState extends TickingState<Now> {
           height: config.minHeight,
           padding: new EdgeInsets.symmetric(horizontal: 8.0 + _slideInDistance),
           child: new Opacity(
-            opacity: 0.6 * _slideInProgress * _nowMinimizedInfoFader.opacity,
-            child: new Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _nowManager(context).userContextMinimized,
-                _nowManager(context).importantInfoMinimized,
-              ],
+            opacity: 0.6 * _slideInProgress,
+            child: new RepaintBoundary(
+              child: new Fader(
+                key: _faderKey,
+                child: new Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _nowManager(context).userContextMinimized,
+                    _nowManager(context).importantInfoMinimized,
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -324,7 +310,7 @@ class NowState extends TickingState<Now> {
                   child: new GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTapDown: (_) {
-                  _nowMinimizedInfoFader.fadeIn();
+                  _faderKey.currentState.fadeIn();
                 },
               )),
               new GestureDetector(
@@ -337,7 +323,7 @@ class NowState extends TickingState<Now> {
                   child: new GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTapDown: (_) {
-                  _nowMinimizedInfoFader.fadeIn();
+                  _faderKey.currentState.fadeIn();
                 },
               )),
             ],
@@ -424,7 +410,7 @@ class NowState extends TickingState<Now> {
   }
 
   void _showMinimizedInfo() {
-    _nowMinimizedInfoFader.fadeIn(force: true);
+    _faderKey.currentState.fadeIn(force: true);
     _minimizedInfoSimulation.target = _kMinimizationSimulationTarget;
     startTicking();
   }
