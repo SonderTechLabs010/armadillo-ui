@@ -1,0 +1,50 @@
+From 2d56899c1c8d8353c28be20df2d902e42986961d Mon Sep 17 00:00:00 2001
+From: Andrew Wilson <apwilson@google.com>
+Date: Wed, 2 Nov 2016 10:13:40 -0700
+Subject: [PATCH] Add profiling for building and painting.
+
+Signed-off-by: Andrew Wilson <apwilson@google.com>
+---
+ packages/flutter/lib/src/rendering/object.dart  | 2 ++
+ packages/flutter/lib/src/widgets/framework.dart | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/packages/flutter/lib/src/rendering/object.dart b/packages/flutter/lib/src/rendering/object.dart
+index 91b169a..4523961 100644
+--- a/packages/flutter/lib/src/rendering/object.dart
++++ b/packages/flutter/lib/src/rendering/object.dart
+@@ -93,12 +93,14 @@ class PaintingContext {
+   /// into the layer subtree associated with this painting context. Otherwise,
+   /// the child will be painted into the current PictureLayer for this context.
+   void paintChild(RenderObject child, Offset offset) {
++    Timeline.startSync('${child.runtimeType}');
+     if (child.isRepaintBoundary) {
+       _stopRecordingIfNeeded();
+       _compositeChild(child, offset);
+     } else {
+       child._paintWithContext(this, offset);
+     }
++    Timeline.finishSync();
+   }
+ 
+   void _compositeChild(RenderObject child, Offset offset) {
+diff --git a/packages/flutter/lib/src/widgets/framework.dart b/packages/flutter/lib/src/widgets/framework.dart
+index e2b6fa2..354fc37 100644
+--- a/packages/flutter/lib/src/widgets/framework.dart
++++ b/packages/flutter/lib/src/widgets/framework.dart
+@@ -2808,6 +2808,7 @@ abstract class ComponentElement extends BuildableElement {
+   /// [rebuild] when the element needs updating.
+   @override
+   void performRebuild() {
++    Timeline.startSync('${widget.runtimeType}');
+     assert(_debugSetAllowIgnoredCallsToMarkNeedsBuild(true));
+     Widget built;
+     try {
+@@ -2830,6 +2831,7 @@ abstract class ComponentElement extends BuildableElement {
+       built = new ErrorWidget(e);
+       _child = updateChild(null, built, slot);
+     }
++    Timeline.finishSync();
+   }
+ 
+   @override

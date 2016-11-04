@@ -16,3 +16,4 @@ Welcome to the System UI project! Here are some useful links for development.
 
 *  [Flutter's Layered Design (YouTube video)](https://www.youtube.com/watch?v=dkyY9WCGMi0)
 *  [Flutter's Rendering Pipeline (YouTube video)](https://www.youtube.com/watch?v=UUfXWzp0-DU)
+*  [Improving Performance](docs/performance.md)

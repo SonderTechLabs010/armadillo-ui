@@ -7,8 +7,10 @@ Want to see beautiful graphs like this that show what your app is building and
 painting on every frame in the Dart Observatory like this?
 ![](profiling.png)
 
-1. Apply this patch to the flutter code you're using: https://github.com/flutter/flutter/pull/6652.
-
+1. Apply [this patch](profiling.patch) to the flutter code you're using by running:
+```
+git am --signoff < profiling.patch
+```
 
 1. Launch your app via:
 ```
