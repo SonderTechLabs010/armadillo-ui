@@ -71,3 +71,19 @@ background is a solid corner is using [RoundedCornerDecoration](../armadillo/lib
 
 ## Try not to draw Paths
 Just a curiousity I discovered in trying to implement [RoundedCornerDecoration](../armadillo/lib/rounded_corner_decoration.dart):  [Canvas.drawPath](https://docs.flutter.io/flutter/widgets/Canvas/drawPath.html) is much slower than [Canvas.drawDRRect](https://docs.flutter.io/flutter/widgets/Canvas/drawDRRect.html).
+
+## Use [RepaintBoundary](https://docs.flutter.io/flutter/widgets/RepaintBoundary-class.html)
+[RepaintBoundary](https://docs.flutter.io/flutter/widgets/RepaintBoundary-class.html) is useful to isolate
+a parent from its animating children.  If you find more in your tree is being rebuilt and repainted than you expect try wrapping the changing child in a [RepaintBoundary](https://docs.flutter.io/flutter/widgets/RepaintBoundary-class.html).
+
+## Be careful with [LayoutBuilder](https://docs.flutter.io/flutter/widgets/LayoutBuilder-class.html)
+[LayoutBuilders](https://docs.flutter.io/flutter/widgets/LayoutBuilder-class.html) rebuild their
+children in the following situations:
+
+1. Their parent is rebuilt.
+
+1. The constraints given to the [LayoutBuilder](https://docs.flutter.io/flutter/widgets/LayoutBuilder-class.html) change.
+
+1. Their descendant rebuilds and the [LayoutBuilder](https://docs.flutter.io/flutter/widgets/LayoutBuilder-class.html) doesn't have tight constraints.
+
+Of those three, the fact a descendant of the [LayoutBuilder](https://docs.flutter.io/flutter/widgets/LayoutBuilder-class.html) can cause the entire [LayoutBuilder](https://docs.flutter.io/flutter/widgets/LayoutBuilder-class.html) tree to be rebuilt is the most surprising.  To avoid this, ensure you are giving your [LayoutBuilder](https://docs.flutter.io/flutter/widgets/LayoutBuilder-class.html) tight constraints.
