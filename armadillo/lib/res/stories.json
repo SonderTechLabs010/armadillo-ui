@@ -56,19 +56,6 @@
       "state": {}
     },
     {
-      "id": "story_05",
-      "title": "Story Epsilon",
-      "color": "0xFFCDDC39",
-      "avatar": "packages/armadillo/res/User.png",
-      "icons": [
-        "packages/armadillo/res/flutter-mark-square-100.png"
-      ],
-      "lastInteraction": "40",
-      "culmulativeInteraction": "40",
-      "module": "email/editor",
-      "state": {}
-    },
-    {
       "id": "story_07",
       "title": "Story Eta",
       "color": "0xFF4CAF50",
