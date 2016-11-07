@@ -105,6 +105,8 @@ class StoryPanelsState extends State<StoryPanels> {
                             (config.storyCluster.focusedStoryId == story.id),
                         story: story,
                         currentSize: currentSize,
+                        focusSimulationKey:
+                            config.storyCluster.focusSimulationKey,
                         child: _getStory(
                           context,
                           story,
@@ -217,6 +219,7 @@ class StoryPanelsState extends State<StoryPanels> {
           displayMode: config.storyCluster.displayMode,
           panel: story.panel,
           containerKey: story.containerKey,
+          focusSimulationKey: config.storyCluster.focusSimulationKey,
           child: config.storyWidgets[story.id],
         ),
       );

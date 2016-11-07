@@ -24,7 +24,7 @@ class StoryCluster {
   final GlobalKey clusterDraggableKey;
   final GlobalKey clusterDragTargetsKey;
   final GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey;
-  final GlobalKey focusSimulationKey;
+  final GlobalKey<SimulationBuilderState> focusSimulationKey;
   DisplayMode _displayMode;
   final Set<VoidCallback> _storyListListeners;
   final Set<VoidCallback> _panelListeners;

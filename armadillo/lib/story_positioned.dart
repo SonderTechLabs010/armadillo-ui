@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'nothing.dart';
 import 'panel.dart';
+import 'simulation_builder.dart';
 import 'simulated_positioned.dart';
 import 'story.dart';
 import 'story_cluster.dart';
@@ -27,6 +28,7 @@ class StoryPositioned extends StatelessWidget {
   final Size currentSize;
   final double focusProgress;
   final Widget child;
+  final GlobalKey<SimulationBuilderState> focusSimulationKey;
 
   StoryPositioned({
     this.displayMode,
@@ -34,6 +36,7 @@ class StoryPositioned extends StatelessWidget {
     this.story,
     this.currentSize,
     this.focusProgress,
+    this.focusSimulationKey,
     this.child,
   });
 
@@ -54,10 +57,19 @@ class StoryPositioned extends StatelessWidget {
       new Radius.circular(scale * _kCornerRadius),
     );
 
+    // Because focusing and defocusing is using a spring simulation to change
+    // the size of the story doing an additional simulation here causes a weird
+    // delayed resizing effect.  To fix that, don't use a simulation here if
+    // we're in the progress of focusing or defocusing.
+    bool useSimulation =
+        ((focusSimulationKey.currentState?.progress ?? 0.5) == 1.0) ||
+            ((focusSimulationKey.currentState?.progress ?? 0.5) == 0.0);
+
     return story.isPlaceHolder
         ? Nothing.widget
         : displayMode == DisplayMode.panels
-            ? new SimulatedPositioned(
+            ? _buildPositioned(
+                useSimulation: useSimulation,
                 key: story.positionedKey,
                 top: currentSize.height * panel.top + topMargin,
                 left: currentSize.width * panel.left + leftMargin,
@@ -77,7 +89,8 @@ class StoryPositioned extends StatelessWidget {
                   ),
                 ),
               )
-            : new SimulatedPositioned(
+            : _buildPositioned(
+                useSimulation: useSimulation,
                 key: story.positionedKey,
                 top: 0.0,
                 left: 0.0,
@@ -88,4 +101,31 @@ class StoryPositioned extends StatelessWidget {
                 child: child,
               );
   }
+
+  Widget _buildPositioned({
+    Key key,
+    double top,
+    double left,
+    double width,
+    double height,
+    Widget child,
+    bool useSimulation: false,
+  }) =>
+      useSimulation
+          ? new SimulatedPositioned(
+              key: key,
+              top: top,
+              left: left,
+              width: width,
+              height: height,
+              child: child,
+            )
+          : new Positioned(
+              key: key,
+              top: top,
+              left: left,
+              width: width,
+              height: height,
+              child: child,
+            );
 }
