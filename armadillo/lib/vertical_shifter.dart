@@ -21,7 +21,9 @@ class VerticalShifterState extends State<VerticalShifter> {
 
   /// The distance to shift up.
   set shiftProgress(double shiftProgress) {
-    _shiftProgress = shiftProgress;
+    setState(() {
+      _shiftProgress = shiftProgress;
+    });
   }
 
   @override

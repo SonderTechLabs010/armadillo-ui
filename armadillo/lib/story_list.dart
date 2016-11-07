@@ -221,23 +221,20 @@ class StoryListBlock extends Block {
         child: new StoryListBlockBody(
           children: children,
           listHeight: listHeight,
-          scrollOffset: (scrollableKey as GlobalKey<ScrollableState>)
-                  .currentState
-                  ?.scrollOffset ??
-              0.0,
+          scrollableKey: scrollableKey,
           bottomPadding: bottomPadding,
         ),
       );
 }
 
 class StoryListBlockBody extends BlockBody {
-  final double scrollOffset;
+  final GlobalKey<ScrollableState> scrollableKey;
   final double bottomPadding;
   final double listHeight;
   StoryListBlockBody({
     Key key,
     List<Widget> children,
-    this.scrollOffset,
+    this.scrollableKey,
     this.bottomPadding,
     this.listHeight,
   })
@@ -248,7 +245,7 @@ class StoryListBlockBody extends BlockBody {
       new StoryListRenderBlock(
         parentSize:
             InheritedSizeManager.of(context, rebuildOnChange: true).size,
-        scrollOffset: scrollOffset,
+        scrollableKey: scrollableKey,
         bottomPadding: bottomPadding,
         listHeight: listHeight,
       );
@@ -259,7 +256,7 @@ class StoryListBlockBody extends BlockBody {
     renderObject.mainAxis = mainAxis;
     renderObject.parentSize =
         InheritedSizeManager.of(context, rebuildOnChange: true).size;
-    renderObject.scrollOffset = scrollOffset;
+    renderObject.scrollableKey = scrollableKey;
     renderObject.bottomPadding = bottomPadding;
     renderObject.listHeight = listHeight;
   }

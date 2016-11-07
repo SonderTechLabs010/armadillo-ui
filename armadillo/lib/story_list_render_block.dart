@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 
 import 'story_list_layout.dart';
 import 'story_list_render_block_parent_data.dart';
@@ -22,12 +23,12 @@ class StoryListRenderBlock extends RenderBlock {
   StoryListRenderBlock({
     List<RenderBox> children,
     Size parentSize,
-    double scrollOffset,
+    GlobalKey<ScrollableState> scrollableKey,
     double bottomPadding,
     double listHeight,
   })
       : _parentSize = parentSize,
-        _scrollOffset = scrollOffset ?? 0.0,
+        _scrollableKey = scrollableKey,
         _bottomPadding = bottomPadding ?? 0.0,
         _listHeight = listHeight ?? 0.0,
         super(children: children, mainAxis: Axis.vertical);
@@ -41,11 +42,11 @@ class StoryListRenderBlock extends RenderBlock {
     }
   }
 
-  double get scrollOffset => _scrollOffset;
-  double _scrollOffset;
-  set scrollOffset(double value) {
-    if (_scrollOffset != value) {
-      _scrollOffset = value;
+  GlobalKey<ScrollableState> get scrollableKey => _scrollableKey;
+  GlobalKey<ScrollableState> _scrollableKey;
+  set scrollableKey(GlobalKey<ScrollableState> value) {
+    if (_scrollableKey != value) {
+      _scrollableKey = value;
       markNeedsLayout();
     }
   }
@@ -103,7 +104,7 @@ class StoryListRenderBlock extends RenderBlock {
   void performLayout() {
     assert(!constraints.hasBoundedHeight);
     assert(constraints.hasBoundedWidth);
-
+    double scrollOffset = _scrollableKey.currentState?.scrollOffset ?? 0.0;
     double maxFocusProgress = 0.0;
     {
       RenderBox child = firstChild;
@@ -141,7 +142,7 @@ class StoryListRenderBlock extends RenderBlock {
           ),
           lerpDouble(
             childParentData.storyLayout.offset.dy + listHeight,
-            listHeight - parentSize.height - _scrollOffset + _bottomPadding,
+            listHeight - parentSize.height - scrollOffset + _bottomPadding,
             childParentData.focusProgress,
           ),
         );

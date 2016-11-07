@@ -138,20 +138,21 @@ class Conductor extends StatelessWidget {
                 // This layout builder tracks the size available for the
                 // suggestion overlay and sets its maxHeight appropriately.
                 // TODO(apwilson): refactor this to not be so weird.
-                new LayoutBuilder(builder:
-                    (BuildContext context, BoxConstraints constraints) {
-                  double targetMaxHeight = 0.8 * constraints.maxHeight;
-                  if (_suggestionOverlayKey.currentState.maxHeight !=
-                          targetMaxHeight &&
-                      targetMaxHeight != 0.0) {
-                    _suggestionOverlayKey.currentState.maxHeight =
-                        targetMaxHeight;
-                    if (!_suggestionOverlayKey.currentState.hiding) {
-                      _suggestionOverlayKey.currentState.show();
+                new LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    double targetMaxHeight = 0.8 * constraints.maxHeight;
+                    if (_suggestionOverlayKey.currentState.maxHeight !=
+                            targetMaxHeight &&
+                        targetMaxHeight != 0.0) {
+                      _suggestionOverlayKey.currentState.maxHeight =
+                          targetMaxHeight;
+                      if (!_suggestionOverlayKey.currentState.hiding) {
+                        _suggestionOverlayKey.currentState.show();
+                      }
                     }
-                  }
-                  return Nothing.widget;
-                }),
+                    return Nothing.widget;
+                  },
+                ),
               ],
             ),
           );
@@ -185,7 +186,7 @@ class Conductor extends StatelessWidget {
             overlayKey: _overlayKey,
             multiColumn: maxWidth > _kStoryListMultiColumnWidthThreshold,
             quickSettingsHeightBump: _kQuickSettingsHeightBump,
-            bottomPadding: _kMaximizedNowHeight - _kMinimizedNowHeight,
+            bottomPadding: _kMaximizedNowHeight,
             onScroll: (double scrollOffset) =>
                 _nowKey.currentState.scrollOffset = scrollOffset,
             onStoryClusterFocusStarted: () {
