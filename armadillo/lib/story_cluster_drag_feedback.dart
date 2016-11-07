@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'armadillo_overlay.dart';
 import 'panel.dart';
 import 'simulated_sized_box.dart';
-import 'simulated_translation_transform.dart';
+import 'simulated_transform.dart';
 import 'size_manager.dart';
 import 'story.dart';
 import 'story_cluster.dart';
@@ -123,30 +123,24 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     }
     childSizeManager.size =
         _storyPanels.isNotEmpty ? new Size(width, height) : sizeManager.size;
-
-    return new SimulatedTranslationTransform(
+    return new SimulatedTransform(
       key: _translationKey,
       dx: -width / 2.0,
       dy: -height / 2.0,
-      child: new Transform(
-        transform: new Matrix4.identity().scaled(childScale, childScale),
-        alignment: FractionalOffset.center,
-        child: new SimulatedSizedBox(
-          key: _boxKey,
-          width: width,
-          height: height,
-          child: new InheritedSizeManager(
-            sizeManager: childSizeManager,
-            child: new Opacity(
-              opacity: opacity,
-              child: new StoryPanels(
-                storyCluster: config.storyCluster,
-                focusProgress: 0.0,
-                highlight: false,
-                overlayKey: config.overlayKey,
-                storyWidgets: config.storyWidgets,
-              ),
-            ),
+      scale: childScale,
+      targetOpacity: opacity,
+      child: new SimulatedSizedBox(
+        key: _boxKey,
+        width: width,
+        height: height,
+        child: new InheritedSizeManager(
+          sizeManager: childSizeManager,
+          child: new StoryPanels(
+            storyCluster: config.storyCluster,
+            focusProgress: 0.0,
+            highlight: false,
+            overlayKey: config.overlayKey,
+            storyWidgets: config.storyWidgets,
           ),
         ),
       ),

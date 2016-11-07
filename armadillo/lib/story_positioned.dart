@@ -78,15 +78,9 @@ class StoryPositioned extends StatelessWidget {
                 height: currentSize.height * panel.height -
                     topMargin -
                     bottomMargin,
-                child: new Container(
-                  decoration: new BoxDecoration(
-                    boxShadow: kElevationToShadow[3],
-                    borderRadius: borderRadius,
-                  ),
-                  child: new ClipRRect(
-                    borderRadius: borderRadius,
-                    child: child,
-                  ),
+                child: new ClipRRect(
+                  borderRadius: borderRadius,
+                  child: child,
                 ),
               )
             : _buildPositioned(
