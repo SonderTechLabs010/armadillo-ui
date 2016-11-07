@@ -488,14 +488,14 @@ class NowState extends TickingState<Now> {
       math.min(_kMaxQuickSettingsBackgroundWidth, config.parentWidth) -
       2 * _kQuickSettingsHorizontalPadding;
 
-  double get _quickSettingsBackgroundWidth =>
-      _quickSettingsBackgroundMaximizedWidth *
-      _quickSettingsProgress *
-      (1.0 - _minimizationProgress);
+  double get _quickSettingsBackgroundWidth => lerpDouble(
+      _userImageSize,
+      _quickSettingsBackgroundMaximizedWidth,
+      _quickSettingsProgress * (1.0 - _minimizationProgress));
 
   double get _quickSettingsBackgroundHeight {
     return lerpDouble(
-        0.0,
+        _userImageSize,
         -_userImageTopOffset +
             _userImageHeight +
             _userContextTextHeight +
