@@ -130,11 +130,13 @@ class _IconSliderState extends State<IconSlider> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
     return new _IconSliderRenderObjectWidget(
         value: (config.value - config.min) / (config.max - config.min),
         divisions: config.divisions,
         label: config.label,
-        activeColor: config.activeColor ?? Theme.of(context).accentColor,
+        activeColor: config.activeColor ?? theme.accentColor,
+        textTheme: theme.primaryTextTheme,
         thumbImage: config.thumbImage,
         configuration: createLocalImageConfiguration(context),
         onChanged: config.onChanged != null ? _handleChanged : null,
@@ -149,6 +151,7 @@ class _IconSliderRenderObjectWidget extends LeafRenderObjectWidget {
       this.divisions,
       this.label,
       this.activeColor,
+      this.textTheme,
       this.thumbImage,
       this.configuration,
       this.onChanged,
@@ -159,6 +162,7 @@ class _IconSliderRenderObjectWidget extends LeafRenderObjectWidget {
   final int divisions;
   final String label;
   final Color activeColor;
+  final TextTheme textTheme;
   final ImageProvider thumbImage;
   final ImageConfiguration configuration;
   final ValueChanged<double> onChanged;
@@ -171,6 +175,7 @@ class _IconSliderRenderObjectWidget extends LeafRenderObjectWidget {
         divisions: divisions,
         label: label,
         activeColor: activeColor,
+        textTheme: textTheme,
         thumbImage: thumbImage,
         configuration: configuration,
         onChanged: onChanged,
@@ -185,6 +190,7 @@ class _IconSliderRenderObjectWidget extends LeafRenderObjectWidget {
       ..divisions = divisions
       ..label = label
       ..activeColor = activeColor
+      ..textTheme = textTheme
       ..thumbImage = thumbImage
       ..configuration = configuration
       ..onChanged = onChanged;
@@ -239,6 +245,7 @@ class _RenderIconSlider extends RenderConstrainedBox
     int divisions,
     String label,
     Color activeColor,
+    TextTheme textTheme,
     ImageProvider thumbImage,
     ImageConfiguration configuration,
     this.onChanged,
@@ -247,6 +254,7 @@ class _RenderIconSlider extends RenderConstrainedBox
       : _value = value,
         _divisions = divisions,
         _activeColor = activeColor,
+        _textTheme = textTheme,
         _thumbImage = thumbImage,
         _configuration = configuration,
         super(additionalConstraints: _getAdditionalConstraints(label)) {
@@ -298,12 +306,21 @@ class _RenderIconSlider extends RenderConstrainedBox
     if (newLabel != null) {
       _labelPainter
         ..text = new TextSpan(
-            style: Typography.white.body1.copyWith(fontSize: 10.0),
-            text: newLabel)
+          style: _textTheme.body1.copyWith(fontSize: 10.0),
+          text: newLabel,
+        )
         ..layout();
     } else {
       _labelPainter.text = null;
     }
+    markNeedsPaint();
+  }
+
+  TextTheme get textTheme => _textTheme;
+  TextTheme _textTheme;
+  set textTheme(TextTheme value) {
+    if (value == _textTheme) return;
+    _textTheme = value;
     markNeedsPaint();
   }
 
