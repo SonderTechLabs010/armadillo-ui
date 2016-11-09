@@ -10,6 +10,7 @@ import 'package:sysui_widgets/ticking_state.dart';
 const RK4SpringDescription _kSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
 const double _kSimulationTarget = 200.0;
+const double _kJumpAlmostToFinishDelta = 1.0;
 
 typedef void ProgressListener(double progress, bool isDone);
 typedef Widget ProgressBuilder(BuildContext context, double progress);
@@ -46,10 +47,14 @@ class SimulationBuilderState extends TickingState<SimulationBuilder> {
     _simulation.target = _kSimulationTarget;
   }
 
-  void forward({bool jumpToFinish: false}) {
-    if (jumpToFinish) {
+  /// If [jumpAlmostToFinish] is true we jump almost to the end of the
+  /// simulation. We jump *almost* to finish so the secondary size simulations
+  /// jump almost to finish as well (otherwise they would animate from unfocused
+  /// size).
+  void forward({bool jumpAlmostToFinish: false}) {
+    if (jumpAlmostToFinish) {
       _simulation = new RK4SpringSimulation(
-        initValue: _kSimulationTarget,
+        initValue: _kSimulationTarget - _kJumpAlmostToFinishDelta,
         desc: _kSimulationDesc,
       );
     }

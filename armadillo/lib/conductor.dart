@@ -321,14 +321,6 @@ class Conductor extends StatelessWidget {
     // [Story] to the front of the [StoryList].
     storyManager.interactionStarted(storyCluster);
 
-    // Ensure the focused story is completely expanded.
-    storyCluster.focusSimulationKey.currentState?.forward(jumpToFinish: true);
-
-    // Ensure the focused story's story bar is full open.
-    storyCluster.stories.forEach((Story story) {
-      story.storyBarKey.currentState?.maximize(jumpToFinish: true);
-    });
-
     _scrollLockerKey.currentState.lock();
   }
 
@@ -372,6 +364,22 @@ class Conductor extends StatelessWidget {
       _goToOrigin(storyManager);
       _nowKey.currentState.maximize();
     } else {
+      // Unfocus all story clusters.
+      storyManager.activeSortedStoryClusters.forEach(_unfocusStoryCluster);
+
+      // Ensure the focused story is completely expanded.
+      // We jump almost to finish so the secondary size simulations with jump
+      // almost to finish as well (otherwise they animate from unfocused size).
+      targetStoryClusters[0]
+          .focusSimulationKey
+          .currentState
+          ?.forward(jumpAlmostToFinish: true);
+
+      // Ensure the focused story's story bar is full open.
+      targetStoryClusters[0].stories.forEach((Story story) {
+        story.storyBarKey.currentState?.maximize(jumpToFinish: true);
+      });
+
       // Focus on the story cluster.
       _focusStoryCluster(storyManager, targetStoryClusters[0]);
     }

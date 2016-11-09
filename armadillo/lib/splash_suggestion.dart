@@ -15,10 +15,10 @@ import 'suggestion_widget.dart';
 typedef void OnSuggestionExpanded(Suggestion suggestion);
 
 const RK4SpringDescription _kSweepSimulationDesc =
-    const RK4SpringDescription(tension: 50.0, friction: 50.0);
+    const RK4SpringDescription(tension: 100.0, friction: 50.0);
 const double _kSweepSimulationTarget = 100.0;
 const RK4SpringDescription _kClearSimulationDesc =
-    const RK4SpringDescription(tension: 50.0, friction: 50.0);
+    const RK4SpringDescription(tension: 100.0, friction: 50.0);
 const double _kClearSimulationTarget = 100.0;
 
 /// Holds the [suggestion] in place while splashing the [suggestion]'s color
