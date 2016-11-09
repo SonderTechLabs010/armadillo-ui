@@ -151,75 +151,85 @@ class NowState extends TickingState<Now> {
   }
 
   @override
-  Widget build(BuildContext context) => new Align(
-        alignment: FractionalOffset.bottomCenter,
-        child: new Container(
-          height: _nowHeight,
-          child: new Stack(
-            children: [
-              // Quick Settings Background.
-              new Positioned(
-                left: _kQuickSettingsHorizontalPadding,
-                right: _kQuickSettingsHorizontalPadding,
-                top: _quickSettingsBackgroundTopOffset,
-                child: new Center(
-                  child: new Container(
-                    height: _quickSettingsBackgroundHeight,
-                    width: _quickSettingsBackgroundWidth,
-                    decoration: new BoxDecoration(
-                      backgroundColor: Colors.white,
-                      borderRadius: new BorderRadius.circular(
-                        _quickSettingsBackgroundBorderRadius,
+  Widget build(BuildContext context) => new Stack(
+        children: [
+          new Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerUp: (_) => hideQuickSettings(),
+          ),
+          new Align(
+            alignment: FractionalOffset.bottomCenter,
+            child: new Container(
+              height: _nowHeight,
+              child: new Stack(
+                children: [
+                  // Quick Settings Background.
+                  new Positioned(
+                    left: _kQuickSettingsHorizontalPadding,
+                    right: _kQuickSettingsHorizontalPadding,
+                    top: _quickSettingsBackgroundTopOffset,
+                    child: new Center(
+                      child: new Container(
+                        height: _quickSettingsBackgroundHeight,
+                        width: _quickSettingsBackgroundWidth,
+                        decoration: new BoxDecoration(
+                          backgroundColor: Colors.white,
+                          borderRadius: new BorderRadius.circular(
+                            _quickSettingsBackgroundBorderRadius,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-              // User Image, User Context Text, and Important Information when maximized.
-              new Positioned(
-                left: _kQuickSettingsHorizontalPadding,
-                right: _kQuickSettingsHorizontalPadding,
-                top: _userImageTopOffset,
-                child: new Center(
-                  child: new Column(
-                    children: [
-                      // User Profile image
-                      _buildUserImage(),
-                      // User Context Text when maximized.
-                      new Padding(
-                        key: _userContextTextKey,
-                        padding: const EdgeInsets.only(top: 24.0),
-                        child: _nowManager(context).userContextMaximized(
-                          opacity: _fallAwayOpacity,
-                        ),
-                      ),
-                      // Important Information when maximized.
-                      new Container(
-                          key: _importantInfoMaximizedKey,
-                          width: _importantInfoMaximizedWidth,
-                          child: new Padding(
-                            padding: const EdgeInsets.only(top: 16.0),
-                            child: _nowManager(context).importantInfoMaximized(
-                              maxWidth: _quickSettingsBackgroundMaximizedWidth,
+                  // User Image, User Context Text, and Important Information when maximized.
+                  new Positioned(
+                    left: _kQuickSettingsHorizontalPadding,
+                    right: _kQuickSettingsHorizontalPadding,
+                    top: _userImageTopOffset,
+                    child: new Center(
+                      child: new Column(
+                        children: [
+                          // User Profile image
+                          _buildUserImage(),
+                          // User Context Text when maximized.
+                          new Padding(
+                            key: _userContextTextKey,
+                            padding: const EdgeInsets.only(top: 24.0),
+                            child: _nowManager(context).userContextMaximized(
                               opacity: _fallAwayOpacity,
                             ),
-                          )),
-                      // Quick Settings
-                      _buildQuickSettings(),
-                    ],
+                          ),
+                          // Important Information when maximized.
+                          new Container(
+                              key: _importantInfoMaximizedKey,
+                              width: _importantInfoMaximizedWidth,
+                              child: new Padding(
+                                padding: const EdgeInsets.only(top: 16.0),
+                                child:
+                                    _nowManager(context).importantInfoMaximized(
+                                  maxWidth:
+                                      _quickSettingsBackgroundMaximizedWidth,
+                                  opacity: _fallAwayOpacity,
+                                ),
+                              )),
+                          // Quick Settings
+                          _buildQuickSettings(),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+
+                  // User Context Text and Important Information when minimized.
+                  _buildMinimizedUserContextTextAndImportantInformation(),
+
+                  // Minimized button bar gesture detector. Only enabled when
+                  // we're nearly fully minimized.
+                  _buildMinimizedButtonBarGestureDetector(),
+                ],
               ),
-
-              // User Context Text and Important Information when minimized.
-              _buildMinimizedUserContextTextAndImportantInformation(),
-
-              // Minimized button bar gesture detector. Only enabled when
-              // we're nearly fully minimized.
-              _buildMinimizedButtonBarGestureDetector(),
-            ],
+            ),
           ),
-        ),
+        ],
       );
 
   Widget _buildUserImage() => new Stack(key: _userImageKey, children: [

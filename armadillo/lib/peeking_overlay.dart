@@ -14,7 +14,7 @@ const double _kStartOverlayTransitionHeight = 28.0;
 /// The distance the top right corner is inset when peeking.  When hiding, the
 /// top left corner will inset the same distance as the overlay becomes
 /// fully hidden.
-const double _kAngleOffsetY = 16.0;
+const double _kAngleOffsetY = 0.0;
 
 /// A bottom aligned overlay which peeks up over the bottom.
 class PeekingOverlay extends StatefulWidget {
