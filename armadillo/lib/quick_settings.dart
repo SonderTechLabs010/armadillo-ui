@@ -7,6 +7,8 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/icon_slider.dart';
+import 'package:sysui_widgets/rk4_spring_simulation.dart';
+import 'package:sysui_widgets/ticking_state.dart';
 
 import 'toggle_icon.dart';
 
@@ -42,6 +44,10 @@ const Color _kActiveSliderColor = _kTurquoise;
 /// into multiple columns instead of a single column.
 const double _kMultiColumnWidthThreshold = 450.0;
 
+const RK4SpringDescription _kSimulationDesc =
+    const RK4SpringDescription(tension: 450.0, friction: 50.0);
+const double _kShowSimulationTarget = 100.0;
+
 class QuickSettingsOverlay extends StatefulWidget {
   final double minimizedNowBarHeight;
 
@@ -55,31 +61,25 @@ class QuickSettingsOverlay extends StatefulWidget {
   QuickSettingsOverlayState createState() => new QuickSettingsOverlayState();
 }
 
-class QuickSettingsOverlayState extends State<QuickSettingsOverlay>
-    with SingleTickerProviderStateMixin {
+class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
   double _volumeSliderValue = 0.0;
   double _brightnessSliderValue = 0.0;
-
-  AnimationController _quickSettingsAnimControl;
-
-  @override
-  void initState() {
-    super.initState();
-    _quickSettingsAnimControl = new AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 500));
-  }
+  final RK4SpringSimulation _showSimulation = new RK4SpringSimulation(
+    initValue: 0.0,
+    desc: _kSimulationDesc,
+  );
 
   void show() {
-    setState(() {
-      _quickSettingsAnimControl.forward();
-    });
+    _showSimulation.target = _kShowSimulationTarget;
+    startTicking();
   }
 
   void hide() {
-    setState(() {
-      _quickSettingsAnimControl.reverse();
-    });
+    _showSimulation.target = 0.0;
+    startTicking();
   }
+
+  double get _showProgress => _showSimulation.value / _kShowSimulationTarget;
 
   Widget _buildQuickSettingsOverlayContent() => new Align(
         alignment: FractionalOffset.bottomCenter,
@@ -87,7 +87,7 @@ class QuickSettingsOverlayState extends State<QuickSettingsOverlay>
           child: new Container(
               decoration: new BoxDecoration(
                   backgroundColor: Colors.white.withOpacity(
-                    lerpDouble(0.0, 1.0, _quickSettingsAnimControl.value),
+                    lerpDouble(0.0, 1.0, _showProgress),
                   ),
                   borderRadius: new BorderRadius.circular(
                     4.0,
@@ -96,64 +96,68 @@ class QuickSettingsOverlayState extends State<QuickSettingsOverlay>
                 opacity: lerpDouble(
                   0.0,
                   1.0,
-                  _quickSettingsAnimControl.value,
+                  _showProgress,
                 ),
               )),
         ),
       );
 
   @override
-  Widget build(BuildContext context) => new AnimatedBuilder(
-      animation: _quickSettingsAnimControl,
-      builder: (BuildContext c, Widget child) {
-        return new Offstage(
-          offstage:
-              _quickSettingsAnimControl.status == AnimationStatus.dismissed,
-          child: new Stack(
-            children: [
-              new Positioned(
-                left: 0.0,
-                top: 0.0,
-                right: 0.0,
-                bottom: 0.0,
-                child: new IgnorePointer(
-                  child: new Container(
-                    decoration: new BoxDecoration(
-                      backgroundColor: Color.lerp(Colors.transparent,
-                          Colors.black87, _quickSettingsAnimControl.value),
+  Widget build(BuildContext context) => new Offstage(
+        offstage: _showProgress == 0.0,
+        child: new Stack(
+          children: [
+            new Positioned(
+              left: 0.0,
+              top: 0.0,
+              right: 0.0,
+              bottom: config.minimizedNowBarHeight,
+              child: new IgnorePointer(
+                child: new Container(
+                  decoration: new BoxDecoration(
+                    backgroundColor: Color.lerp(
+                      Colors.transparent,
+                      Colors.black87,
+                      _showProgress,
                     ),
                   ),
                 ),
               ),
-              new Positioned(
-                left: 0.0,
-                top: 0.0,
-                right: 0.0,
-                bottom: 0.0,
-                child: new Offstage(
-                  offstage: !(_quickSettingsAnimControl.status ==
-                          AnimationStatus.completed ||
-                      _quickSettingsAnimControl.status ==
-                          AnimationStatus.forward),
-                  child: new GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      hide();
-                    },
-                  ),
+            ),
+            new Positioned(
+              left: 0.0,
+              top: 0.0,
+              right: 0.0,
+              bottom: 0.0,
+              child: new Offstage(
+                offstage: _showSimulation.target != _kShowSimulationTarget,
+                child: new Listener(
+                  behavior: HitTestBehavior.opaque,
+                  onPointerDown: (_) {
+                    hide();
+                  },
                 ),
               ),
-              new Positioned(
-                bottom: lerpDouble(8.0, 8.0 + config.minimizedNowBarHeight,
-                    _quickSettingsAnimControl.value),
-                left: 8.0,
-                right: 8.0,
-                child: _buildQuickSettingsOverlayContent(),
+            ),
+            new Positioned(
+              bottom: lerpDouble(
+                0.0,
+                8.0 + config.minimizedNowBarHeight,
+                _showProgress,
               ),
-            ],
-          ),
-        );
-      });
+              left: 8.0,
+              right: 8.0,
+              child: _buildQuickSettingsOverlayContent(),
+            ),
+          ],
+        ),
+      );
+
+  @override
+  bool handleTick(double elapsedSeconds) {
+    _showSimulation.elapseTime(elapsedSeconds);
+    return !_showSimulation.isDone;
+  }
 }
 
 class QuickSettings extends StatefulWidget {
