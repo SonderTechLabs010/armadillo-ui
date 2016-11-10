@@ -8,6 +8,8 @@ dependencies:
     path: ../../modules/packages/clients
   flutter:
     sdk: flutter
+  flux:
+    path: ../../modules/packages/flux
   gallery:
     path: ../../modules/gallery
   intl: ^0.14.0
