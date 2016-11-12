@@ -76,11 +76,7 @@ else
 endif
 
 build: sync
-	rm -rf interfaces/lib
 	(cd $(fuchsia_root) && packages/gn/gen.py $(gen_flags) && buildtools/ninja $(ninja_flags) -C out/debug-x86-64)
-	$(eval files := $(shell find $(fuchsia_root)/out/debug-x86-64/gen/apps/sysui/interfaces/ -name *.mojom.dart))
-	mkdir interfaces/lib
-	$(foreach file,$(files),ln -s $(abspath $(file)) interfaces/lib/$(notdir $(file)))
 
 # The Analyzer takes a while to run, so it was moved to be a separate target so
 # it won't hurt the development workflow.

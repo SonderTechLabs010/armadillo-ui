@@ -5,6 +5,5 @@
 group("sysui") {
   deps = [
     "//apps/sysui/armadillo:armadillo_user_shell",
-    "//apps/sysui/interfaces:interfaces_dart",
   ]
 }

@@ -18,7 +18,6 @@ flutter_app("armadillo_user_shell") {
     "//apps/modules/packages/models",
     "//apps/modules/packages/util",
     "//apps/modules/packages/widgets",
-    "//apps/sysui/interfaces:interfaces_dart",
     "//apps/sysui/keyboard",
     "//apps/sysui/widgets",
     "//lib/flutter/packages/flutter",
