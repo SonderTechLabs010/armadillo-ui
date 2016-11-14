@@ -2,46 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:convert' as convert;
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'config_manager.dart';
 import 'panel.dart';
 import 'story.dart';
-import 'story_builder.dart';
 import 'story_cluster.dart';
 import 'story_cluster_id.dart';
+import 'story_generator.dart';
 import 'story_list_layout.dart';
 import 'suggestion_manager.dart';
-
-const String _kJsonUrl = 'packages/armadillo/res/stories.json';
 
 /// A simple story manager that reads stories from json and reorders them with
 /// user interaction.
 class StoryManager extends ConfigManager {
   final SuggestionManager suggestionManager;
+  final StoryGenerator storyGenerator;
   List<StoryCluster> _storyClusters = const <StoryCluster>[];
   List<StoryCluster> _activeSortedStoryClusters = const <StoryCluster>[];
   List<StoryCluster> _inactiveStoryClusters = const <StoryCluster>[];
   Size _lastLayoutSize = Size.zero;
   double _listHeight = 0.0;
 
-  StoryManager({this.suggestionManager});
-
-  void load(AssetBundle assetBundle) {
-    assetBundle.loadString(_kJsonUrl).then((String json) {
-      final decodedJson = convert.JSON.decode(json);
-
-      // Load stories
-      _storyClusters = decodedJson["stories"]
-          .map((Map<String, Object> story) => new StoryCluster(stories: [
-                storyBuilder(story),
-              ]))
-          .toList();
+  StoryManager({this.suggestionManager, this.storyGenerator}) {
+    storyGenerator.addListener(() {
+      _storyClusters = storyGenerator.storyClusters;
       updateLayouts(_lastLayoutSize);
       notifyListeners();
     });

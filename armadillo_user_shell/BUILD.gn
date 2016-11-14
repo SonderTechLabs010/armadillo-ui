@@ -12,16 +12,23 @@ flutter_app("armadillo_user_shell") {
   source_dir = "lib"
 
   deps = [
+    "//apps/maxwell/services/context:context_dart",
+    "//apps/maxwell/services/suggestion:suggestion_dart",
     "//apps/modules/gallery",
+    "//apps/modular/lib/app/dart",
+    "//apps/modular/services/user:user_dart",
     "//apps/modules/packages/clients",
     "//apps/modules/packages/flux",
     "//apps/modules/packages/models",
     "//apps/modules/packages/util",
     "//apps/modules/packages/widgets",
+    "//apps/mozart/lib/flutter",
     "//apps/sysui/armadillo",
     "//apps/sysui/keyboard",
     "//apps/sysui/widgets",
+    "//lib/fidl/dart",
     "//lib/flutter/packages/flutter",
+    "//lib/flutter/packages/flutter_test",
     "//third_party/dart-pkg/pub/intl",
   ]
 }

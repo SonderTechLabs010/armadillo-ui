@@ -11,24 +11,28 @@ import 'package:sysui_widgets/default_bundle.dart';
 import 'armadillo.dart';
 import 'child_constraints_changer.dart';
 import 'constraints_manager.dart';
+import 'json_story_generator.dart';
+import 'json_suggestion_manager.dart';
 import 'now_manager.dart';
 import 'story_manager.dart';
 import 'story_time_randomizer.dart';
 import 'suggestion_manager.dart';
 
 /// Set to true to enable the performance overlay.
-const bool _kShowPerformanceOverlay = false;
+const bool _kShowPerformanceOverlay = true;
 
 Future main() async {
-  SuggestionManager suggestionManager = new SuggestionManager();
+  JsonSuggestionManager jsonSuggestionManager = new JsonSuggestionManager();
+  JsonStoryGenerator jsonStoryGenerator = new JsonStoryGenerator();
   StoryManager storyManager = new StoryManager(
-    suggestionManager: suggestionManager,
+    suggestionManager: jsonSuggestionManager,
+    storyGenerator: jsonStoryGenerator,
   );
   NowManager nowManager = new NowManager();
   ConstraintsManager constraintsManager = new ConstraintsManager();
 
   Widget app = _buildApp(
-    suggestionManager: suggestionManager,
+    suggestionManager: jsonSuggestionManager,
     storyManager: storyManager,
     nowManager: nowManager,
     constraintsManager: constraintsManager,
@@ -37,8 +41,8 @@ Future main() async {
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
 
   SystemChrome.setEnabledSystemUIOverlays([]);
-  storyManager.load(defaultBundle);
-  suggestionManager.load(defaultBundle);
+  jsonStoryGenerator.load(defaultBundle);
+  jsonSuggestionManager.load(defaultBundle);
   constraintsManager.load(defaultBundle);
 }
 

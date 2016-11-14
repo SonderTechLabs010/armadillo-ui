@@ -4,6 +4,12 @@
 
 import 'dart:async';
 
+import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart';
+import 'package:apps.modular.lib.app.dart/app.dart';
+import 'package:apps.modular.services.user/story_provider.fidl.dart';
+import 'package:apps.modular.services.user/user_runner.fidl.dart';
+import 'package:apps.modular.services.user/user_shell.fidl.dart';
+import 'package:apps.mozart.lib.flutter/child_view.dart';
 import 'package:armadillo/armadillo.dart';
 import 'package:armadillo/child_constraints_changer.dart';
 import 'package:armadillo/constraints_manager.dart';
@@ -13,21 +19,75 @@ import 'package:armadillo/story_time_randomizer.dart';
 import 'package:armadillo/suggestion_manager.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:lib.fidl.dart/bindings.dart';
 import 'package:sysui_widgets/default_bundle.dart';
+
+import 'debug.dart';
+import 'story_provider_story_generator.dart';
+import 'suggestion_provider_suggestion_manager.dart';
 
 /// Set to true to enable the performance overlay.
 const bool _kShowPerformanceOverlay = false;
 
+class UserShellImpl extends UserShell {
+  final UserShellBinding _binding = new UserShellBinding();
+  final StoryProviderStoryGenerator storyProviderStoryGenerator;
+  final SuggestionProviderSuggestionManager suggestionProviderSuggestionManager;
+  final StoryProviderProxy storyProvider = new StoryProviderProxy();
+  final SuggestionProviderProxy suggestionProvider =
+      new SuggestionProviderProxy();
+
+  UserShellImpl({
+    this.storyProviderStoryGenerator,
+    this.suggestionProviderSuggestionManager,
+  });
+
+  void bind(InterfaceRequest<UserShell> request) {
+    _binding.bind(this, request);
+  }
+
+  @override
+  void initialize(
+    InterfaceHandle<StoryProvider> storyProviderInterface,
+    InterfaceHandle<SuggestionProvider> suggestionProviderInterface,
+  ) {
+    storyProvider.ctrl.bind(storyProviderInterface);
+    suggestionProvider.ctrl.bind(suggestionProviderInterface);
+    storyProviderStoryGenerator.storyProvider = storyProvider;
+    suggestionProviderSuggestionManager.suggestionProvider = suggestionProvider;
+  }
+}
+
+/// This is global as we need it to be alive as long as we are.
+UserShellImpl userShell;
+
 Future main() async {
-  SuggestionManager suggestionManager = new SuggestionManager();
+  StoryProviderStoryGenerator storyProviderStoryGenerator =
+      new StoryProviderStoryGenerator();
+  SuggestionProviderSuggestionManager suggestionProviderSuggestionManager =
+      new SuggestionProviderSuggestionManager();
+
+  userShell = new UserShellImpl(
+    storyProviderStoryGenerator: storyProviderStoryGenerator,
+    suggestionProviderSuggestionManager: suggestionProviderSuggestionManager,
+  );
+
+  new ApplicationContext.fromStartupInfo().outgoingServices.addServiceForName(
+    (request) {
+      userShell.bind(request);
+    },
+    UserShell.serviceName,
+  );
+
   StoryManager storyManager = new StoryManager(
-    suggestionManager: suggestionManager,
+    suggestionManager: suggestionProviderSuggestionManager,
+    storyGenerator: storyProviderStoryGenerator,
   );
   NowManager nowManager = new NowManager();
   ConstraintsManager constraintsManager = new ConstraintsManager();
 
   Widget app = _buildApp(
-    suggestionManager: suggestionManager,
+    suggestionManager: suggestionProviderSuggestionManager,
     storyManager: storyManager,
     nowManager: nowManager,
     constraintsManager: constraintsManager,
@@ -36,8 +96,6 @@ Future main() async {
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
 
   SystemChrome.setEnabledSystemUIOverlays([]);
-  storyManager.load(defaultBundle);
-  suggestionManager.load(defaultBundle);
   constraintsManager.load(defaultBundle);
 }
 

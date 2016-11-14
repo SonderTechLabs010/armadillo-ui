@@ -142,7 +142,9 @@ class StoryListLayout {
               0.5;
       double listIndexJugglingDecay = math.max(
         0.0,
-        (jugglingStoryCount - storyIndex) / jugglingStoryCount,
+        jugglingStoryCount == 0
+            ? 0.0
+            : (jugglingStoryCount - storyIndex) / jugglingStoryCount,
       );
       double jugglingScaling =
           1.0 + baseJugglingScaling * listIndexJugglingDecay;
@@ -159,6 +161,7 @@ class StoryListLayout {
         width * (_multiColumn ? jugglingScaling : 1.0),
         height,
       );
+
       storyIndex++;
     });
 
