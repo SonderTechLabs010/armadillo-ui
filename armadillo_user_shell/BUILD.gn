@@ -1,0 +1,27 @@
+# Copyright 2016 The Fuchsia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//flutter/build/flutter_app.gni")
+
+flutter_app("armadillo_user_shell") {
+  main_dart = "lib/main.dart"
+
+  package_name = "armadillo_user_shell"
+
+  source_dir = "lib"
+
+  deps = [
+    "//apps/modules/gallery",
+    "//apps/modules/packages/clients",
+    "//apps/modules/packages/flux",
+    "//apps/modules/packages/models",
+    "//apps/modules/packages/util",
+    "//apps/modules/packages/widgets",
+    "//apps/sysui/armadillo",
+    "//apps/sysui/keyboard",
+    "//apps/sysui/widgets",
+    "//lib/flutter/packages/flutter",
+    "//third_party/dart-pkg/pub/intl",
+  ]
+}
