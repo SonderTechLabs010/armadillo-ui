@@ -51,7 +51,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
   bool _hiding = true;
   bool _peeking;
   Widget _dragTarget;
-  Widget _dragAndTapDetector;
+  Widget _tapDetector;
 
   @override
   void initState() {
@@ -68,12 +68,8 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
         onVerticalDragEnd: onVerticalDragEnd,
       ),
     );
-    _dragAndTapDetector = new GestureDetector(
-      onTap: hide,
-      onVerticalDragUpdate: (DragUpdateDetails details) =>
-          setHeight(height - details.primaryDelta, force: true),
-      onVerticalDragEnd: (DragEndDetails details) =>
-          _snap(details.velocity.pixelsPerSecond.dy),
+    _tapDetector = new Listener(
+      onPointerUp: (_) => hide(),
       behavior: HitTestBehavior.opaque,
     );
   }
@@ -114,9 +110,9 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
       setHeight(height - details.primaryDelta, force: true);
 
   void onVerticalDragEnd(DragEndDetails details) =>
-      _snap(details.velocity.pixelsPerSecond.dy);
+      snap(details.velocity.pixelsPerSecond.dy);
 
-  void _snap(double verticalVelocity) {
+  void snap(double verticalVelocity) {
     if (verticalVelocity < -kSnapVelocityThreshold) {
       show();
     } else if (verticalVelocity > kSnapVelocityThreshold) {
@@ -131,14 +127,16 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
   @override
   Widget build(BuildContext context) => new Stack(
         children: [
-          new Offstage(
-            offstage: _openingProgress <= 0.0,
+          new IgnorePointer(
             child: new Container(
               decoration: new BoxDecoration(
                 backgroundColor: _overlayBackgroundColor,
               ),
-              child: _dragAndTapDetector,
             ),
+          ),
+          new Offstage(
+            offstage: hiding,
+            child: _tapDetector,
           ),
           new Positioned(
             left: 0.0,
