@@ -47,6 +47,9 @@ const double _kStoryListMultiColumnWidthThreshold = 500.0;
 /// multicolumn mode for the [SuggestionList].
 const double _kSuggestionListMultiColumnWidthThreshold = 800.0;
 
+const double _kSuggestionOverlayPullScrollOffset = 100.0;
+const double _kSuggestionOverlayScrollFactor = 1.2;
+
 final GlobalKey<SuggestionListState> _suggestionListKey =
     new GlobalKey<SuggestionListState>();
 final GlobalKey<ScrollableState> _suggestionListScrollableKey =
@@ -187,8 +190,19 @@ class Conductor extends StatelessWidget {
             multiColumn: maxWidth > _kStoryListMultiColumnWidthThreshold,
             quickSettingsHeightBump: _kQuickSettingsHeightBump,
             bottomPadding: _kMaximizedNowHeight,
-            onScroll: (double scrollOffset) =>
-                _nowKey.currentState.scrollOffset = scrollOffset,
+            onScroll: (double scrollOffset) {
+              _nowKey.currentState.scrollOffset = scrollOffset;
+
+              // Peak suggestion overlay more when overscrolling.
+              if (scrollOffset < -_kSuggestionOverlayPullScrollOffset &&
+                  _suggestionOverlayKey.currentState.hiding) {
+                _suggestionOverlayKey.currentState.setHeight(
+                  _kSuggestionOverlayPeekHeight -
+                      (scrollOffset + _kSuggestionOverlayPullScrollOffset) *
+                          _kSuggestionOverlayScrollFactor,
+                );
+              }
+            },
             onStoryClusterFocusStarted: () {
               // Lock scrolling.
               _scrollLockerKey.currentState.lock();
@@ -238,6 +252,8 @@ class Conductor extends StatelessWidget {
               _suggestionOverlayKey.currentState.onVerticalDragUpdate(details),
           onBarVerticalDragEnd: (DragEndDetails details) =>
               _suggestionOverlayKey.currentState.onVerticalDragEnd(details),
+          onOverscrollThresholdRelease: () =>
+              _suggestionOverlayKey.currentState.show(),
         ),
       );
 

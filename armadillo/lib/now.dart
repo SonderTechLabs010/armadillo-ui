@@ -35,6 +35,24 @@ const double _kQuickSettingsHorizontalPadding = 16.0;
 
 const double _kMaxQuickSettingsBackgroundWidth = 600.0;
 
+/// The overscroll amount which must occur before now begins to grow in height.
+const double _kOverscrollDelayOffset = 0.0;
+
+/// The speed multiple at which now increases in height when overscrolling.
+const double _kScrollFactor = 0.8;
+
+/// If the user releases their finger when overscrolled more than this amount,
+/// we snap suggestions open.
+const double _kOverscrollAutoSnapThreshold = -250.0;
+
+/// If the user releases their finger when overscrolled more than this amount
+/// and  the user dragged their finger at least
+/// [_kOverscrollSnapDragDistanceThreshold], we snap suggestions open.
+const double _kOverscrollSnapDragThreshold = -50.0;
+
+/// See [_kOverscrollSnapDragThreshold].
+const double _kOverscrollSnapDragDistanceThreshold = 200.0;
+
 /// Shows the user, the user's context, and important settings.  When minimized
 /// also shows an affordance for seeing missed interruptions.
 class Now extends StatefulWidget {
@@ -49,6 +67,7 @@ class Now extends StatefulWidget {
   final VoidCallback onMinimize;
   final VoidCallback onMaximize;
   final VoidCallback onQuickSettingsMaximized;
+  final VoidCallback onOverscrollThresholdRelease;
 
   /// [onBarVerticalDragUpdate] and [onBarVerticalDragEnd] will be called only
   /// when a vertical drag occurs on [Now] when in its fully minimized bar
@@ -70,6 +89,7 @@ class Now extends StatefulWidget {
     this.onQuickSettingsMaximized,
     this.onBarVerticalDragUpdate,
     this.onBarVerticalDragEnd,
+    this.onOverscrollThresholdRelease,
   })
       : super(key: key);
 
@@ -114,6 +134,7 @@ class NowState extends TickingState<Now> {
   double _importantInfoMaximizedHeight = 0.0;
   double _userContextTextHeight = 0.0;
   double _userImageHeight = 0.0;
+  double _pointerDownY;
 
   set scrollOffset(double scrollOffset) {
     if (scrollOffset > _kNowMinimizationScrollOffsetThreshold &&
@@ -155,7 +176,22 @@ class NowState extends TickingState<Now> {
         children: [
           new Listener(
             behavior: HitTestBehavior.translucent,
-            onPointerUp: (_) => hideQuickSettings(),
+            onPointerDown: (PointerDownEvent event) {
+              _pointerDownY = event.position.y;
+            },
+            onPointerUp: (PointerUpEvent event) {
+              // When the user lifts their finger after overscrolling we may
+              // want to snap suggestions open.
+              // We will do so if the overscroll is significant or if the user
+              // lifted after dragging a certain distance.
+              if (_lastScrollOffset < _kOverscrollAutoSnapThreshold ||
+                  (_lastScrollOffset < _kOverscrollSnapDragThreshold &&
+                      _pointerDownY - event.position.y >
+                          _kOverscrollSnapDragDistanceThreshold)) {
+                config.onOverscrollThresholdRelease?.call();
+              }
+              hideQuickSettings();
+            },
           ),
           new Align(
             alignment: FractionalOffset.bottomCenter,
@@ -352,7 +388,7 @@ class NowState extends TickingState<Now> {
                 behavior: HitTestBehavior.opaque,
                 onTap: config.onReturnToOriginButtonTap,
                 onLongPress: config.onShowQuickSettingsOverlay,
-                child: new Container(width: config.minHeight),
+                child: new Container(width: config.minHeight * 4.0),
               ),
               new Flexible(
                 child: new GestureDetector(
@@ -476,7 +512,7 @@ class NowState extends TickingState<Now> {
           ((config.maxHeight - config.minHeight) *
               (1.0 - _minimizationProgress)) +
           _quickSettingsRaiseDistance +
-          _scrollOffsetDelta);
+          _scrollOffsetHeightDelta);
 
   double get _userImageSize => lerpDouble(56.0, 12.0, _minimizationProgress);
 
@@ -524,12 +560,19 @@ class NowState extends TickingState<Now> {
   double get _quickSettingsRaiseDistance =>
       config.quickSettingsHeightBump * _quickSettingsProgress;
 
-  double get _scrollOffsetDelta =>
+  double get _scrollOffsetHeightDelta =>
       (math.max(
                   -_kRestingDistanceAboveLowestPoint,
-                  (-1.0 * _lastScrollOffset / 3.0) *
-                      (1.0 - _minimizationProgress) *
-                      (1.0 - _quickSettingsProgress)) *
+                  (_lastScrollOffset > -_kOverscrollDelayOffset &&
+                          _lastScrollOffset < 0.0)
+                      ? 0.0
+                      : (-1.0 *
+                              (_lastScrollOffset < 0.0
+                                  ? _lastScrollOffset + _kOverscrollDelayOffset
+                                  : _lastScrollOffset) *
+                              _kScrollFactor) *
+                          (1.0 - _minimizationProgress) *
+                          (1.0 - _quickSettingsProgress)) *
               1000.0)
           .truncateToDouble() /
       1000.0;
