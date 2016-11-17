@@ -98,8 +98,12 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
   /// suggestions rather than the normal maxwell suggestion list.
   String _askText;
   bool _asking = false;
+
+  /// Set from an external source - typically the UserShell.
   maxwell.SuggestionProviderProxy _suggestionProviderProxy;
 
+  /// Setting [suggestionProvider] triggers the loading on suggestions.
+  /// This is typically set by the UserShell.
   set suggestionProvider(
       maxwell.SuggestionProviderProxy suggestionProviderProxy) {
     _suggestionProviderProxy = suggestionProviderProxy;
