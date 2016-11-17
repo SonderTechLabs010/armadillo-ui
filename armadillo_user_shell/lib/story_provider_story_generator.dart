@@ -110,7 +110,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
           _storyControllers[storyUrl] = controller;
 
           /// Resume it!
-          _storyProvider.resumeStoryById(
+          _storyProvider.resumeStory(
             storyId,
             controller.ctrl.request(),
           );
