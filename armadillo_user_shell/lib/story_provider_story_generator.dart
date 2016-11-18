@@ -14,8 +14,8 @@ import 'package:armadillo/story.dart';
 import 'package:armadillo/story_builder.dart';
 import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_generator.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:lib.fidl.dart/bindings.dart';
 
 import 'debug.dart';
@@ -30,8 +30,8 @@ class StoryProviderStoryGenerator extends StoryGenerator {
 
   List<StoryCluster> _storyClusters = <StoryCluster>[];
 
-  final Map<String, StoryControllerProxy> _storyControllers =
-      <String, StoryControllerProxy>{};
+  final List<StoryControllerProxy> _storyControllers =
+      <StoryControllerProxy>[];
 
   set storyProvider(StoryProviderProxy storyProvider) {
     _storyProvider = storyProvider;
@@ -65,10 +65,25 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         // listener for new stories.
         List<String> storyUrls = [
           'file:///system/apps/email_story',
+          'file:///system/apps/email_folder_list',
+          'file:///system/apps/noodles_view',
+          'file:///system/apps/noodles_view',
+          'file:///system/apps/noodles_view',
+          'file:///system/apps/noodles_view',
+          'file:///system/apps/noodles_view',
+          'file:///system/apps/noodles_view',
+          'file:///system/apps/noodles_view',
+          'file:///system/apps/spinning_square_view',
+          'file:///system/apps/spinning_square_view',
+          'file:///system/apps/spinning_square_view',
+          'file:///system/apps/shapes_view',
+          'file:///system/apps/paint_view',
+          'file:///system/apps/moterm',
         ];
         storyUrls.forEach((String storyUrl) {
+
           final StoryControllerProxy controller = new StoryControllerProxy();
-          _storyControllers[storyUrl] = controller;
+          _storyControllers.add(controller);
           armadilloPrint('creating story!');
           _storyProvider.createStory(
             storyUrl,
@@ -107,7 +122,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
 
         storyIds.forEach((String storyId) {
           final StoryControllerProxy controller = new StoryControllerProxy();
-          _storyControllers[storyUrl] = controller;
+          _storyControllers.add(controller);
 
           /// Resume it!
           _storyProvider.resumeStory(
@@ -164,7 +179,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         cumulativeInteractionDuration: new Duration(
           minutes: 0,
         ),
-        themeColor: new Color(0xFFFFFF00),
+        themeColor: Colors.grey[500],
         inactive: false,
       );
 }
