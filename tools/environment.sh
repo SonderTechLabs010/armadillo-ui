@@ -40,7 +40,7 @@ function jiro() {
   fi
 }
 
-PRUNE_ARGS="-name third_party -prune -o -name .git -prune -o -name out -prune -o -name .pub -prune -o -name packages -prune -o -name .packages -prune -o -name build -prune"
+PRUNE_ARGS="-name third_party -prune -o -name .git -prune -o -name out -prune -o -name .pub -prune -o -name .packages -prune -o -name build -prune"
 GREP_COMMAND="grep -I -nH --color"
 
 function sfind() {
