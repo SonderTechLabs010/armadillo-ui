@@ -50,6 +50,7 @@ class UserShellImpl extends UserShell {
   void initialize(
     InterfaceHandle<StoryProvider> storyProviderInterface,
     InterfaceHandle<SuggestionProvider> suggestionProviderInterface,
+    _,
   ) {
     storyProvider.ctrl.bind(storyProviderInterface);
     suggestionProvider.ctrl.bind(suggestionProviderInterface);
