@@ -61,27 +61,47 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
 
   void _handleKey(RawKeyEvent event) {
     if (event is RawKeyUpEvent) {
-      RawKeyEventDataAndroid data = event.data;
-      if (data.keyCode == keyCodeEnter) {
-        String text = textState?.text;
-        if (config.onTextCommitted != null && text.isNotEmpty) {
-          config.onTextCommitted(text);
-        }
-        clear();
-      } else if (data.keyCode == keyCodeBackspace) {
-        if (textState?.backspace() ?? false) {
-          _notifyTextChanged();
-        }
-      } else {
-        if (data.metaState == metaStateNormal) {
-          if (keyCodeMap.containsKey(data.keyCode)) {
-            textState?.append(keyCodeMap[data.keyCode]);
+      if (event.data is RawKeyEventDataAndroid) {
+        RawKeyEventDataAndroid data = event.data;
+        if (data.keyCode == keyCodeEnter) {
+          String text = textState?.text;
+          if (config.onTextCommitted != null && text.isNotEmpty) {
+            config.onTextCommitted(text);
+          }
+          clear();
+        } else if (data.keyCode == keyCodeBackspace) {
+          if (textState?.backspace() ?? false) {
             _notifyTextChanged();
           }
-        } else if (data.metaState == metaStateLeftShiftDown ||
-            data.metaState == metaStateRightShiftDown) {
-          if (shiftedKeyCodeMap.containsKey(data.keyCode)) {
-            textState?.append(shiftedKeyCodeMap[data.keyCode]);
+        } else {
+          if (data.metaState == metaStateNormal) {
+            if (keyCodeMap.containsKey(data.keyCode)) {
+              textState?.append(keyCodeMap[data.keyCode]);
+              _notifyTextChanged();
+            }
+          } else if (data.metaState == metaStateLeftShiftDown ||
+              data.metaState == metaStateRightShiftDown) {
+            if (shiftedKeyCodeMap.containsKey(data.keyCode)) {
+              textState?.append(shiftedKeyCodeMap[data.keyCode]);
+              _notifyTextChanged();
+            }
+          }
+        }
+      } else if (event.data is RawKeyEventDataFuchsia) {
+        RawKeyEventDataFuchsia data = event.data;
+        print(
+            'codePoint: ${data.codePoint} hidUsage: ${data.hidUsage} modifiers: ${data.modifiers}');
+        if (data.codePoint != 0) {
+          textState?.append(new String.fromCharCode(data.codePoint));
+          _notifyTextChanged();
+        } else if (data.hidUsage == 40) {
+          String text = textState?.text;
+          if (config.onTextCommitted != null && text.isNotEmpty) {
+            config.onTextCommitted(text);
+          }
+          clear();
+        } else if (data.hidUsage == 42) {
+          if (textState?.backspace() ?? false) {
             _notifyTextChanged();
           }
         }

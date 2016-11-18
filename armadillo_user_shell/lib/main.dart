@@ -105,21 +105,14 @@ Widget _buildApp({
   NowManager nowManager,
   ConstraintsManager constraintsManager,
 }) =>
-    new CheckedModeBanner(
-      child: new StoryTimeRandomizer(
-        storyManager: storyManager,
-        child: new ChildConstraintsChanger(
-          constraintsManager: constraintsManager,
-          child: new DefaultAssetBundle(
+    new DefaultAssetBundle(
             bundle: defaultBundle,
             child: new Armadillo(
               storyManager: storyManager,
               suggestionManager: suggestionManager,
               nowManager: nowManager,
+              useSoftKeyboard: false,
             ),
-          ),
-        ),
-      ),
     );
 
 Widget _buildPerformanceOverlay({Widget child}) => new Stack(

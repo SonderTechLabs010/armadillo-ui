@@ -23,8 +23,14 @@ class Armadillo extends StatelessWidget {
   final StoryManager storyManager;
   final SuggestionManager suggestionManager;
   final NowManager nowManager;
+  final bool useSoftKeyboard;
 
-  Armadillo({this.storyManager, this.suggestionManager, this.nowManager});
+  Armadillo({
+    this.storyManager,
+    this.suggestionManager,
+    this.nowManager,
+    this.useSoftKeyboard: true,
+  });
 
   @override
   Widget build(BuildContext context) => new Container(
@@ -50,7 +56,7 @@ class Armadillo extends StatelessWidget {
             storyManager: storyManager,
             child: new InheritedNowManager(
               nowManager: nowManager,
-              child: new Conductor(),
+              child: new Conductor(useSoftKeyboard: useSoftKeyboard),
             ),
           ),
         ),

@@ -86,6 +86,10 @@ final GlobalKey<ArmadilloOverlayState> _overlayKey =
 /// suggestion overlay, device extensions. interruption overlay, and quick
 /// settings overlay.
 class Conductor extends StatelessWidget {
+  final bool useSoftKeyboard;
+
+  Conductor({this.useSoftKeyboard: true});
+
   /// Note in particular the magic we're employing here to make the user
   /// state appear to be a part of the story list:
   /// By giving the story list bottom padding and clipping its bottom to the
@@ -107,58 +111,61 @@ class Conductor extends StatelessWidget {
 
           storyManager.updateLayouts(fullSize);
 
-          return new DeviceExtender(
-            deviceExtensions: [_getKeyboard()],
-            child: new Stack(
-              children: [
-                new Positioned(
-                  left: 0.0,
-                  right: 0.0,
-                  top: 0.0,
-                  bottom: _kMinimizedNowHeight,
-                  child: _getStoryList(
-                    storyManager,
-                    constraints.maxWidth,
-                    new SizeManager(fullSize),
-                  ),
+          Widget stack = new Stack(
+            children: [
+              new Positioned(
+                left: 0.0,
+                right: 0.0,
+                top: 0.0,
+                bottom: _kMinimizedNowHeight,
+                child: _getStoryList(
+                  storyManager,
+                  constraints.maxWidth,
+                  new SizeManager(fullSize),
                 ),
+              ),
 
-                // Now.
-                _getNow(storyManager, constraints.maxWidth),
+              // Now.
+              _getNow(storyManager, constraints.maxWidth),
 
-                // Suggestions Overlay.
-                _getSuggestionOverlay(storyManager, constraints.maxWidth),
+              // Suggestions Overlay.
+              _getSuggestionOverlay(storyManager, constraints.maxWidth),
 
-                // Selected Suggestion Overlay.
-                _getSelectedSuggestionOverlay(),
+              // Selected Suggestion Overlay.
+              _getSelectedSuggestionOverlay(),
 
-                // Quick Settings Overlay.
-                new QuickSettingsOverlay(
-                  key: _quickSettingsOverlayKey,
-                  minimizedNowBarHeight: _kMinimizedNowHeight,
-                ),
+              // Quick Settings Overlay.
+              new QuickSettingsOverlay(
+                key: _quickSettingsOverlayKey,
+                minimizedNowBarHeight: _kMinimizedNowHeight,
+              ),
 
-                // This layout builder tracks the size available for the
-                // suggestion overlay and sets its maxHeight appropriately.
-                // TODO(apwilson): refactor this to not be so weird.
-                new LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) {
-                    double targetMaxHeight = 0.8 * constraints.maxHeight;
-                    if (_suggestionOverlayKey.currentState.maxHeight !=
-                            targetMaxHeight &&
-                        targetMaxHeight != 0.0) {
-                      _suggestionOverlayKey.currentState.maxHeight =
-                          targetMaxHeight;
-                      if (!_suggestionOverlayKey.currentState.hiding) {
-                        _suggestionOverlayKey.currentState.show();
-                      }
+              // This layout builder tracks the size available for the
+              // suggestion overlay and sets its maxHeight appropriately.
+              // TODO(apwilson): refactor this to not be so weird.
+              new LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  double targetMaxHeight = 0.8 * constraints.maxHeight;
+                  if (_suggestionOverlayKey.currentState.maxHeight !=
+                          targetMaxHeight &&
+                      targetMaxHeight != 0.0) {
+                    _suggestionOverlayKey.currentState.maxHeight =
+                        targetMaxHeight;
+                    if (!_suggestionOverlayKey.currentState.hiding) {
+                      _suggestionOverlayKey.currentState.show();
                     }
-                    return Nothing.widget;
-                  },
-                ),
-              ],
-            ),
+                  }
+                  return Nothing.widget;
+                },
+              ),
+            ],
           );
+          return useSoftKeyboard
+              ? new DeviceExtender(
+                  deviceExtensions: [_getKeyboard()],
+                  child: stack,
+                )
+              : stack;
         },
       );
 
@@ -263,7 +270,9 @@ class Conductor extends StatelessWidget {
         peekHeight: _kSuggestionOverlayPeekHeight,
         parentWidth: maxWidth,
         onHide: () {
-          _keyboardDeviceExtensionKey.currentState?.hide();
+          if (useSoftKeyboard) {
+            _keyboardDeviceExtensionKey.currentState?.hide();
+          }
           _suggestionListScrollableKey.currentState?.scrollTo(
             0.0,
             duration: const Duration(milliseconds: 1000),
@@ -278,13 +287,22 @@ class Conductor extends StatelessWidget {
           multiColumn: maxWidth > _kSuggestionListMultiColumnWidthThreshold,
           onAskingStarted: () {
             _suggestionOverlayKey.currentState.show();
-            _keyboardDeviceExtensionKey.currentState.show();
+            if (useSoftKeyboard) {
+              _keyboardDeviceExtensionKey.currentState.show();
+            }
           },
-          onAskingEnded: () => _keyboardDeviceExtensionKey.currentState.hide(),
-          onAskTextChanged: (String text) =>
+          onAskingEnded: () {
+            if (useSoftKeyboard) {
+              _keyboardDeviceExtensionKey.currentState.hide();
+            }
+          },
+          onAskTextChanged: (String text) {
+            if (useSoftKeyboard) {
               _keyboardKey.currentState.updateSuggestions(
                 _suggestionListKey.currentState.text,
-              ),
+              );
+            }
+          },
           onSuggestionSelected: (Suggestion suggestion, Rect globalBounds) {
             _selectedSuggestionOverlayKey.currentState.suggestionSelected(
               expansionBehavior:

@@ -34,6 +34,7 @@ abstract class DeviceExtensionState<T extends StatefulWidget>
 
   @override
   Widget build(BuildContext context) {
+    /// TODO(apwilson): This is crapping out with new skia!
     return new ClipRect(
         child: new Align(
             alignment: FractionalOffset.topCenter,
