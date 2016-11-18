@@ -30,8 +30,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
 
   List<StoryCluster> _storyClusters = <StoryCluster>[];
 
-  final List<StoryControllerProxy> _storyControllers =
-      <StoryControllerProxy>[];
+  final List<StoryControllerProxy> _storyControllers = <StoryControllerProxy>[];
 
   set storyProvider(StoryProviderProxy storyProvider) {
     _storyProvider = storyProvider;
@@ -51,6 +50,21 @@ class StoryProviderStoryGenerator extends StoryGenerator {
   @override
   List<StoryCluster> get storyClusters => _storyClusters;
 
+  void removeStoryCluster(StoryClusterId storyClusterId) {
+    armadilloPrint('removing story cluster: $storyClusterId');
+    StoryCluster storyCluster = _storyClusters
+        .where((StoryCluster storyCluster) => storyCluster.id == storyClusterId)
+        .single;
+    storyCluster.stories.forEach((Story story) {
+      armadilloPrint('Deleting story ${story.id.value}...');
+      _storyProvider.deleteStory(story.id.value, () {
+        armadilloPrint('Story ${story.id.value} deleted!');
+      });
+    });
+    _storyClusters.remove(storyCluster);
+    _notifyListeners();
+  }
+
   /// Loads the list of previous stories from the [StoryProvider].
   /// If no stories exist, we create some.
   /// If stores do exist, we resume them.
@@ -65,7 +79,6 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         // listener for new stories.
         List<String> storyUrls = [
           'file:///system/apps/email_story',
-          'file:///system/apps/email_folder_list',
           'file:///system/apps/noodles_view',
           'file:///system/apps/noodles_view',
           'file:///system/apps/noodles_view',
@@ -81,7 +94,6 @@ class StoryProviderStoryGenerator extends StoryGenerator {
           'file:///system/apps/moterm',
         ];
         storyUrls.forEach((String storyUrl) {
-
           final StoryControllerProxy controller = new StoryControllerProxy();
           _storyControllers.add(controller);
           armadilloPrint('creating story!');
