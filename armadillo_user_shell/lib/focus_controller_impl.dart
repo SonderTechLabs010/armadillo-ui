@@ -8,11 +8,13 @@ import 'package:lib.fidl.dart/bindings.dart';
 import 'debug.dart';
 
 class FocusControllerImpl extends FocusController {
-  final FocusControllerBinding _binding = new FocusControllerBinding();
+  final List<FocusControllerBinding> _bindings = new List();
   final List<FocusListenerProxy> _listeners = <FocusListenerProxy>[];
 
   void bind(InterfaceRequest<FocusController> request) {
-    _binding.bind(this, request);
+    FocusControllerBinding binding = new FocusControllerBinding();
+    binding.bind(this, request);
+    _bindings.add(binding);
   }
 
   @override
@@ -26,5 +28,10 @@ class FocusControllerImpl extends FocusController {
     FocusListenerProxy focusListener = new FocusListenerProxy();
     focusListener.ctrl.bind(focusListenerHandle);
     _listeners.add(focusListener);
+  }
+
+  @override
+  void duplicate(InterfaceRequest<FocusController> request) {
+    bind(request);
   }
 }
