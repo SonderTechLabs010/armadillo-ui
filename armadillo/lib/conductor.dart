@@ -325,8 +325,8 @@ class Conductor extends StatelessWidget {
                             suggestion: suggestion,
                             suggestionInitialGlobalBounds: globalBounds,
                             onSuggestionExpanded: (Suggestion suggestion) =>
-                                _onSuggestionExpanded(
-                                  suggestion,
+                                _focusOnStory(
+                                  suggestion.selectionStoryId,
                                   storyManager,
                                 ),
                             minimizedNowBarHeight: _kMinimizedNowHeight,
@@ -335,8 +335,8 @@ class Conductor extends StatelessWidget {
                             suggestion: suggestion,
                             suggestionInitialGlobalBounds: globalBounds,
                             onSuggestionExpanded: (Suggestion suggestion) =>
-                                _onSuggestionExpanded(
-                                  suggestion,
+                                _focusOnStory(
+                                  suggestion.selectionStoryId,
                                   storyManager,
                                 ),
                           ),
@@ -393,12 +393,27 @@ class Conductor extends StatelessWidget {
     storyManager.interactionStopped();
   }
 
-  void _onSuggestionExpanded(Suggestion suggestion, StoryManager storyManager) {
+  /// Called to request the conductor focus on the cluster with [storyId].
+  void requestStoryFocus(
+    StoryId storyId,
+    StoryManager storyManager, {
+    bool jumpToFinish: true,
+  }) {
+    _scrollLockerKey.currentState.lock();
+    _minimizeNow();
+    _focusOnStory(storyId, storyManager, jumpToFinish: jumpToFinish);
+  }
+
+  void _focusOnStory(
+    StoryId storyId,
+    StoryManager storyManager, {
+    bool jumpToFinish: true,
+  }) {
     List<StoryCluster> targetStoryClusters =
         storyManager.storyClusters.where((StoryCluster storyCluster) {
       bool result = false;
       storyCluster.stories.forEach((Story story) {
-        if (story.id == suggestion.selectionStoryId) {
+        if (story.id == storyId) {
           result = true;
         }
       });
@@ -409,7 +424,7 @@ class Conductor extends StatelessWidget {
     // that's not true, bail out.
     if (targetStoryClusters.length != 1) {
       print(
-          'WARNING: Found ${targetStoryClusters.length} story clusters with a story with id ${suggestion.selectionStoryId}. Returning to origin.');
+          'WARNING: Found ${targetStoryClusters.length} story clusters with a story with id $storyId. Returning to origin.');
       _goToOrigin(storyManager);
       _nowKey.currentState.maximize();
     } else {
@@ -426,7 +441,7 @@ class Conductor extends StatelessWidget {
 
       // Ensure the focused story's story bar is full open.
       targetStoryClusters[0].stories.forEach((Story story) {
-        story.storyBarKey.currentState?.maximize(jumpToFinish: true);
+        story.storyBarKey.currentState?.maximize(jumpToFinish: jumpToFinish);
       });
 
       // Focus on the story cluster.

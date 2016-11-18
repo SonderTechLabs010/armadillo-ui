@@ -10,6 +10,7 @@ import 'package:sysui_widgets/default_bundle.dart';
 
 import 'armadillo.dart';
 import 'child_constraints_changer.dart';
+import 'conductor.dart';
 import 'constraints_manager.dart';
 import 'json_story_generator.dart';
 import 'json_suggestion_manager.dart';
@@ -63,6 +64,7 @@ Widget _buildApp({
               storyManager: storyManager,
               suggestionManager: suggestionManager,
               nowManager: nowManager,
+              conductor: new Conductor(),
             ),
           ),
         ),

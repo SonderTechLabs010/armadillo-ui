@@ -17,14 +17,15 @@ class UserShellImpl extends UserShell {
   final UserShellBinding _binding = new UserShellBinding();
   final StoryProviderStoryGenerator storyProviderStoryGenerator;
   final SuggestionProviderSuggestionManager suggestionProviderSuggestionManager;
+  final FocusControllerImpl focusController;
   final StoryProviderProxy storyProvider = new StoryProviderProxy();
   final SuggestionProviderProxy suggestionProvider =
       new SuggestionProviderProxy();
-  final FocusControllerImpl _focusControllerImpl = new FocusControllerImpl();
 
   UserShellImpl({
     this.storyProviderStoryGenerator,
     this.suggestionProviderSuggestionManager,
+    this.focusController,
   });
 
   void bind(InterfaceRequest<UserShell> request) {
@@ -39,9 +40,9 @@ class UserShellImpl extends UserShell {
   ) {
     storyProvider.ctrl.bind(storyProviderHandle);
     suggestionProvider.ctrl.bind(suggestionProviderHandle);
-    _focusControllerImpl.bind(focusControllerRequest);
+    focusController.bind(focusControllerRequest);
     storyProviderStoryGenerator.storyProvider = storyProvider;
     suggestionProviderSuggestionManager.suggestionProvider = suggestionProvider;
-    suggestionProviderSuggestionManager.focusController = _focusControllerImpl;
+    suggestionProviderSuggestionManager.focusController = focusController;
   }
 }

@@ -11,6 +11,7 @@ import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart'
 import 'package:armadillo/config_manager.dart';
 import 'package:armadillo/story.dart';
 import 'package:armadillo/story_cluster.dart';
+import 'package:armadillo/story_generator.dart';
 import 'package:armadillo/suggestion.dart';
 import 'package:armadillo/suggestion_manager.dart';
 import 'package:flutter/material.dart';
@@ -106,6 +107,10 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
   /// Set from an external source - typically the UserShell.
   FocusControllerImpl _focusController;
 
+  final StoryGenerator storyGenerator;
+
+  SuggestionProviderSuggestionManager({this.storyGenerator});
+
   /// Setting [suggestionProvider] triggers the loading on suggestions.
   /// This is typically set by the UserShell.
   set suggestionProvider(
@@ -152,6 +157,10 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
       suggestion.id.value,
       new maxwell.Interaction()..type = maxwell.InteractionType.selected,
     );
+    armadilloPrint(
+        'Focusing: ${storyGenerator.storyClusters[0].stories[0].id.value}');
+    _focusController
+        .focusStory(storyGenerator.storyClusters[0].stories[0].id.value);
   }
 
   @override

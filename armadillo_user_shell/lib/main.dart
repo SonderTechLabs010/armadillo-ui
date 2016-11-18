@@ -21,6 +21,7 @@ import 'package:armadillo/now_manager.dart';
 import 'package:armadillo/rounded_corner_decoration.dart';
 import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_cluster_id.dart';
+import 'package:armadillo/story.dart';
 import 'package:armadillo/story_manager.dart';
 import 'package:armadillo/story_time_randomizer.dart';
 import 'package:armadillo/suggestion_manager.dart';
@@ -45,11 +46,28 @@ Future main() async {
   StoryProviderStoryGenerator storyProviderStoryGenerator =
       new StoryProviderStoryGenerator();
   SuggestionProviderSuggestionManager suggestionProviderSuggestionManager =
-      new SuggestionProviderSuggestionManager();
+      new SuggestionProviderSuggestionManager(
+          storyGenerator: storyProviderStoryGenerator);
+
+  StoryManager storyManager = new StoryManager(
+    suggestionManager: suggestionProviderSuggestionManager,
+    storyGenerator: storyProviderStoryGenerator,
+  );
+
+  Conductor conductor = new Conductor(useSoftKeyboard: false);
+  FocusControllerImpl focusController =
+      new FocusControllerImpl(onFocusStory: (String storyId) {
+    conductor.requestStoryFocus(
+      new StoryId(storyId),
+      storyManager,
+      jumpToFinish: false,
+    );
+  });
 
   userShell = new UserShellImpl(
     storyProviderStoryGenerator: storyProviderStoryGenerator,
     suggestionProviderSuggestionManager: suggestionProviderSuggestionManager,
+    focusController: focusController,
   );
 
   new ApplicationContext.fromStartupInfo().outgoingServices.addServiceForName(
@@ -59,19 +77,18 @@ Future main() async {
     UserShell.serviceName,
   );
 
-  StoryManager storyManager = new StoryManager(
-    suggestionManager: suggestionProviderSuggestionManager,
-    storyGenerator: storyProviderStoryGenerator,
-  );
   NowManager nowManager = new NowManager();
   ConstraintsManager constraintsManager = new ConstraintsManager();
 
   Widget app = _buildApp(
-    suggestionManager: suggestionProviderSuggestionManager,
     storyManager: storyManager,
-    nowManager: nowManager,
-    constraintsManager: constraintsManager,
     storyProviderStoryGenerator: storyProviderStoryGenerator,
+    armadillo: new Armadillo(
+      storyManager: storyManager,
+      suggestionManager: suggestionProviderSuggestionManager,
+      nowManager: nowManager,
+      conductor: conductor,
+    ),
   );
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
@@ -81,21 +98,14 @@ Future main() async {
 }
 
 Widget _buildApp({
-  SuggestionManager suggestionManager,
   StoryManager storyManager,
-  NowManager nowManager,
-  ConstraintsManager constraintsManager,
   StoryProviderStoryGenerator storyProviderStoryGenerator,
+  Armadillo armadillo,
 }) =>
     new DefaultAssetBundle(
       bundle: defaultBundle,
       child: new Stack(children: [
-        new Armadillo(
-          storyManager: storyManager,
-          suggestionManager: suggestionManager,
-          nowManager: nowManager,
-          useSoftKeyboard: false,
-        ),
+        armadillo,
         new Positioned(
           left: 0.0,
           top: 0.0,

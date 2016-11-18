@@ -5,6 +5,7 @@
 import 'dart:convert' as convert;
 
 import 'package:apps.modular.lib.app.dart/app.dart';
+import 'package:apps.modular.services.user/story_info.fidl.dart';
 import 'package:apps.modular.services.user/story_provider.fidl.dart';
 import 'package:apps.modular.services.user/user_runner.fidl.dart';
 import 'package:apps.modular.services.user/user_shell.fidl.dart';
@@ -81,14 +82,14 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         List<String> storyUrls = [
           'file:///system/apps/email_story',
           'file:///system/apps/noodles_view',
-          'file:///system/apps/noodles_view',
-          'file:///system/apps/noodles_view',
-          'file:///system/apps/noodles_view',
-          'file:///system/apps/noodles_view',
-          'file:///system/apps/noodles_view',
-          'file:///system/apps/noodles_view',
-          'file:///system/apps/spinning_square_view',
-          'file:///system/apps/spinning_square_view',
+//          'file:///system/apps/noodles_view',
+//          'file:///system/apps/noodles_view',
+//          'file:///system/apps/noodles_view',
+//          'file:///system/apps/noodles_view',
+//          'file:///system/apps/noodles_view',
+//          'file:///system/apps/noodles_view',
+//          'file:///system/apps/spinning_square_view',
+//          'file:///system/apps/spinning_square_view',
           'file:///system/apps/spinning_square_view',
           'file:///system/apps/shapes_view',
           'file:///system/apps/paint_view',
@@ -109,7 +110,6 @@ class StoryProviderStoryGenerator extends StoryGenerator {
             armadilloPrint('   url: ${storyInfo.url}');
             armadilloPrint('   id: ${storyInfo.id}');
             armadilloPrint('   isRunning: ${storyInfo.isRunning}');
-            armadilloPrint('   storyPageId: ${storyInfo.storyPageId}');
 
             // Start it!
             ViewOwnerProxy viewOwner = new ViewOwnerProxy();
@@ -182,7 +182,9 @@ class StoryProviderStoryGenerator extends StoryGenerator {
       new Story(
         id: new StoryId(storyInfo.id),
         builder: (_) => new ChildView(connection: childViewConnection),
-        title: storyInfo.url,
+        // TODO(apwilson): Improve title.
+        title:
+            '[${Uri.parse(storyInfo.url).pathSegments[Uri.parse(storyInfo.url).pathSegments.length-1]} // ${storyInfo.id}]',
         icons: [],
         avatar: (_, double opacity) => new Opacity(
               opacity: opacity,

@@ -7,9 +7,14 @@ import 'package:lib.fidl.dart/bindings.dart';
 
 import 'debug.dart';
 
+typedef void OnFocusStory(String storyId);
+
 class FocusControllerImpl extends FocusController {
   final List<FocusControllerBinding> _bindings = new List();
   final List<FocusListenerProxy> _listeners = <FocusListenerProxy>[];
+  final OnFocusStory onFocusStory;
+
+  FocusControllerImpl({this.onFocusStory});
 
   void bind(InterfaceRequest<FocusController> request) {
     FocusControllerBinding binding = new FocusControllerBinding();
@@ -20,6 +25,7 @@ class FocusControllerImpl extends FocusController {
   @override
   void focusStory(String storyId) {
     armadilloPrint('focus story: $storyId');
+    onFocusStory(storyId);
   }
 
   @override
@@ -37,7 +43,7 @@ class FocusControllerImpl extends FocusController {
 
   void onFocusedStoriesChanged(List<String> focusedStories) {
     armadilloPrint('Notifying listeners of focused stories: $focusedStories');
-    _listeners.toList().forEach((FocusListenerProxy focusListener){
+    _listeners.toList().forEach((FocusListenerProxy focusListener) {
       focusListener.onFocusChanged(focusedStories);
     });
   }
