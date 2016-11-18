@@ -5,7 +5,11 @@
 import 'package:flutter/widgets.dart';
 
 /// See [ThreeColumnAlignedLayoutDelegate] for details.
-enum ThreeColumnAlignedLayoutDelegateParts { left, center, right, }
+enum ThreeColumnAlignedLayoutDelegateParts {
+  left,
+  center,
+  right,
+}
 
 /// Lays out [ThreeColumnAlignedLayoutDelegateParts] as follows:
 /// 1. All [ThreeColumnAlignedLayoutDelegateParts] are vertically centered.
