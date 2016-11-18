@@ -20,6 +20,7 @@ import 'package:keyboard/word_suggestion_service.dart';
 import 'package:lib.fidl.dart/bindings.dart';
 
 import 'debug.dart';
+import 'focus_controller_impl.dart';
 
 /// Listens to a maxwell suggestion list.  As suggestions change it
 /// notifies it's [suggestionListener].
@@ -102,6 +103,9 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
   /// Set from an external source - typically the UserShell.
   maxwell.SuggestionProviderProxy _suggestionProviderProxy;
 
+  /// Set from an external source - typically the UserShell.
+  FocusControllerImpl _focusController;
+
   /// Setting [suggestionProvider] triggers the loading on suggestions.
   /// This is typically set by the UserShell.
   set suggestionProvider(
@@ -116,6 +120,10 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
       suggestionListener: _onNextSuggestionsChanged,
     );
     _load();
+  }
+
+  set focusController(FocusControllerImpl focusController) {
+    _focusController = focusController;
   }
 
   void _load() {
@@ -170,7 +178,12 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
   }
 
   @override
-  void storyClusterFocusChanged(StoryCluster storyCluster) {}
+  void storyClusterFocusChanged(StoryCluster storyCluster) {
+    _focusController.onFocusedStoriesChanged(
+      storyCluster?.stories?.map((Story story) => story.id.value)?.toList() ??
+          <String>[],
+    );
+  }
 
   void _onAskSuggestionsChanged() {
     if (_asking) {

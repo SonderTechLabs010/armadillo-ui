@@ -42,5 +42,6 @@ class UserShellImpl extends UserShell {
     _focusControllerImpl.bind(focusControllerRequest);
     storyProviderStoryGenerator.storyProvider = storyProvider;
     suggestionProviderSuggestionManager.suggestionProvider = suggestionProvider;
+    suggestionProviderSuggestionManager.focusController = _focusControllerImpl;
   }
 }

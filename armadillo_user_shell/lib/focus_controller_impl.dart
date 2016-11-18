@@ -34,4 +34,11 @@ class FocusControllerImpl extends FocusController {
   void duplicate(InterfaceRequest<FocusController> request) {
     bind(request);
   }
+
+  void onFocusedStoriesChanged(List<String> focusedStories) {
+    armadilloPrint('Notifying listeners of focused stories: $focusedStories');
+    _listeners.toList().forEach((FocusListenerProxy focusListener){
+      focusListener.onFocusChanged(focusedStories);
+    });
+  }
 }
