@@ -257,6 +257,7 @@ class SuggestionListState extends State<SuggestionList> {
     switch (suggestion.selectionType) {
       case SelectionType.launchStory:
       case SelectionType.modifyStory:
+      case SelectionType.closeSuggestions:
         setState(() {
           _selectedSuggestion = suggestion;
         });

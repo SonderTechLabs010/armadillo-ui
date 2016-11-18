@@ -21,6 +21,9 @@ abstract class SuggestionManager extends ConfigManager {
   /// Updates the [suggestions] based on the currently focused storyCluster].  If no
   /// story is in focus, [storyCluster] should be null.
   void storyClusterFocusChanged(StoryCluster storyCluster);
+
+  /// Called when a suggestion is selected by the user.
+  void onSuggestionSelected(Suggestion suggestion);
 }
 
 class InheritedSuggestionManager extends StatelessWidget {

@@ -43,7 +43,7 @@ class MaxwellListenerImpl extends maxwell.Listener {
         id: new ValueKey(suggestion.uuid),
         title: suggestion.display.headline,
         themeColor: Colors.blueGrey[600],
-        selectionType: SelectionType.doNothing,
+        selectionType: SelectionType.closeSuggestions,
         icons: const <WidgetBuilder>[],
         image: suggestion.display.imageUrl != null &&
                 suggestion.display.imageUrl.isNotEmpty
@@ -134,7 +134,17 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
     _nextControllerProxy.setResultCount(20);
   }
 
+  @override
   List<Suggestion> get suggestions => _currentSuggestions;
+
+  @override
+  void onSuggestionSelected(Suggestion suggestion) {
+    armadilloPrint('suggestion selected: ${suggestion.id.value}');
+    _suggestionProviderProxy.notifyInteraction(
+      suggestion.id.value,
+      new maxwell.Interaction()..type = maxwell.InteractionType.selected,
+    );
+  }
 
   @override
   set askText(String text) {

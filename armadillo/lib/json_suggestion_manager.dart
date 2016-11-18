@@ -108,6 +108,11 @@ class JsonSuggestionManager extends SuggestionManager {
   List<Suggestion> get suggestions => _currentSuggestions;
 
   @override
+  void onSuggestionSelected(Suggestion suggestion) {
+    // Do nothing.
+  }
+
+  @override
   set askText(String text) {
     String newAskText = text?.toLowerCase();
     if (_askText != newAskText) {

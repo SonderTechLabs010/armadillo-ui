@@ -25,6 +25,7 @@ import 'story_list.dart';
 import 'story_manager.dart';
 import 'suggestion.dart';
 import 'suggestion_list.dart';
+import 'suggestion_manager.dart';
 import 'vertical_shifter.dart';
 
 /// The height of [Now]'s bar when minimized.
@@ -129,7 +130,11 @@ class Conductor extends StatelessWidget {
               _getNow(storyManager, constraints.maxWidth),
 
               // Suggestions Overlay.
-              _getSuggestionOverlay(storyManager, constraints.maxWidth),
+              _getSuggestionOverlay(
+                InheritedSuggestionManager.of(context),
+                storyManager,
+                constraints.maxWidth,
+              ),
 
               // Selected Suggestion Overlay.
               _getSelectedSuggestionOverlay(),
@@ -264,7 +269,11 @@ class Conductor extends StatelessWidget {
         ),
       );
 
-  Widget _getSuggestionOverlay(StoryManager storyManager, double maxWidth) =>
+  Widget _getSuggestionOverlay(
+    SuggestionManager suggestionManager,
+    StoryManager storyManager,
+    double maxWidth,
+  ) =>
       new PeekingOverlay(
         key: _suggestionOverlayKey,
         peekHeight: _kSuggestionOverlayPeekHeight,
@@ -304,30 +313,36 @@ class Conductor extends StatelessWidget {
             }
           },
           onSuggestionSelected: (Suggestion suggestion, Rect globalBounds) {
-            _selectedSuggestionOverlayKey.currentState.suggestionSelected(
-              expansionBehavior:
-                  suggestion.selectionType == SelectionType.launchStory
-                      ? new ExpandSuggestion(
-                          suggestion: suggestion,
-                          suggestionInitialGlobalBounds: globalBounds,
-                          onSuggestionExpanded: (Suggestion suggestion) =>
-                              _onSuggestionExpanded(
-                                suggestion,
-                                storyManager,
-                              ),
-                          minimizedNowBarHeight: _kMinimizedNowHeight,
-                        )
-                      : new SplashSuggestion(
-                          suggestion: suggestion,
-                          suggestionInitialGlobalBounds: globalBounds,
-                          onSuggestionExpanded: (Suggestion suggestion) =>
-                              _onSuggestionExpanded(
-                                suggestion,
-                                storyManager,
-                              ),
-                        ),
-            );
-            _minimizeNow();
+            suggestionManager.onSuggestionSelected(suggestion);
+
+            if (suggestion.selectionType == SelectionType.closeSuggestions) {
+              _suggestionOverlayKey.currentState.hide();
+            } else {
+              _selectedSuggestionOverlayKey.currentState.suggestionSelected(
+                expansionBehavior:
+                    suggestion.selectionType == SelectionType.launchStory
+                        ? new ExpandSuggestion(
+                            suggestion: suggestion,
+                            suggestionInitialGlobalBounds: globalBounds,
+                            onSuggestionExpanded: (Suggestion suggestion) =>
+                                _onSuggestionExpanded(
+                                  suggestion,
+                                  storyManager,
+                                ),
+                            minimizedNowBarHeight: _kMinimizedNowHeight,
+                          )
+                        : new SplashSuggestion(
+                            suggestion: suggestion,
+                            suggestionInitialGlobalBounds: globalBounds,
+                            onSuggestionExpanded: (Suggestion suggestion) =>
+                                _onSuggestionExpanded(
+                                  suggestion,
+                                  storyManager,
+                                ),
+                          ),
+              );
+              _minimizeNow();
+            }
           },
         ),
       );

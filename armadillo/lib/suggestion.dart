@@ -10,7 +10,8 @@ import 'package:flutter/widgets.dart';
 /// [modifyStory] will modify the [Story] specified by
 /// [Suggestion.selectionStoryId] in some way.
 /// [doNothing] does nothing and is only provided for testing purposes.
-enum SelectionType { launchStory, modifyStory, doNothing }
+/// [closeSuggestions] closes the suggestion overlay.
+enum SelectionType { launchStory, modifyStory, doNothing, closeSuggestions }
 
 /// Determines what the suggestion looks like with respect to
 /// [Suggestion.image].
