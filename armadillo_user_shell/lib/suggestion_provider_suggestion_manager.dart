@@ -2,22 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math' as math;
 
 import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart'
     as maxwell;
-import 'package:armadillo/config_manager.dart';
 import 'package:armadillo/story.dart';
 import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_generator.dart';
 import 'package:armadillo/suggestion.dart';
 import 'package:armadillo/suggestion_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:keyboard/word_suggestion_service.dart';
 import 'package:lib.fidl.dart/bindings.dart';
 
 import 'debug.dart';
@@ -152,9 +147,10 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
 
   @override
   void onSuggestionSelected(Suggestion suggestion) {
-    armadilloPrint('suggestion selected: ${suggestion.id.value}');
+    final ValueKey<String> id = suggestion.id;
+    armadilloPrint('suggestion selected: ${id.value}');
     _suggestionProviderProxy.notifyInteraction(
-      suggestion.id.value,
+      id.value,
       new maxwell.Interaction()..type = maxwell.InteractionType.selected,
     );
     armadilloPrint(

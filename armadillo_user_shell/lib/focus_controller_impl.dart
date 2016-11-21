@@ -30,7 +30,7 @@ class FocusControllerImpl extends FocusController {
 
   @override
   void watch(InterfaceHandle<FocusListener> focusListenerHandle) {
-    armadilloPrint('watch: $focusListener');
+    armadilloPrint('watch: $focusListenerHandle');
     FocusListenerProxy focusListener = new FocusListenerProxy();
     focusListener.ctrl.bind(focusListenerHandle);
     _listeners.add(focusListener);
