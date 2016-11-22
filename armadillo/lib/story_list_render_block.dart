@@ -12,6 +12,7 @@ import 'story_list_layout.dart';
 import 'story_list_render_block_parent_data.dart';
 
 const double _kStoryInlineTitleHeight = 20.0;
+const bool _kSlideUnfocusedAway = false;
 
 /// Overrides [RenderBlock]'s layout, paint, and hit-test behaviour to allow
 /// the following:
@@ -158,7 +159,7 @@ class StoryListRenderBlock extends RenderBlock {
 
     // If any of the children are focused or focusing, shift all
     // non-focused/non-focusing children off screen.
-    if (maxFocusProgress > 0.0) {
+    if (_kSlideUnfocusedAway && maxFocusProgress > 0.0) {
       RenderBox child = firstChild;
       while (child != null) {
         final StoryListRenderBlockParentData childParentData = child.parentData;
