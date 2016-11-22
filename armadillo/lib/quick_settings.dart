@@ -117,7 +117,7 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
                   decoration: new BoxDecoration(
                     backgroundColor: Color.lerp(
                       Colors.transparent,
-                      Colors.black87,
+                      Colors.black45,
                       _showProgress,
                     ),
                   ),
