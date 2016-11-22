@@ -359,7 +359,11 @@ class Conductor extends StatelessWidget {
 
     // Unlock scrolling.
     _scrollLockerKey.currentState.unlock();
-    _scrollableKey.currentState.scrollTo(0.0);
+    _scrollableKey.currentState.scrollTo(
+      0.0,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.fastOutSlowIn,
+    );
   }
 
   void _focusStoryCluster(
