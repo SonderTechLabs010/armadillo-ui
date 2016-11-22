@@ -74,18 +74,11 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         List<String> storyUrls = [
           'file:///system/apps/email_story',
           'file:///system/apps/noodles_view',
-//          'file:///system/apps/noodles_view',
-//          'file:///system/apps/noodles_view',
-//          'file:///system/apps/noodles_view',
-//          'file:///system/apps/noodles_view',
-//          'file:///system/apps/noodles_view',
-//          'file:///system/apps/noodles_view',
-//          'file:///system/apps/spinning_square_view',
-//          'file:///system/apps/spinning_square_view',
           'file:///system/apps/spinning_square_view',
           'file:///system/apps/shapes_view',
           'file:///system/apps/paint_view',
           'file:///system/apps/moterm',
+          'file:///system/apps/color',
         ];
         storyUrls.forEach((String storyUrl) {
           final StoryControllerProxy controller = new StoryControllerProxy();
