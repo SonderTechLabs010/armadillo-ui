@@ -176,14 +176,20 @@ class StoryPanelsState extends State<StoryPanels> {
                 new SimulatedPadding(
                   key: story.storyBarPaddingKey,
                   padding: storyBarPadding,
-                  child: _getStoryBarDraggableWrapper(
-                    context: context,
-                    story: story,
-                    child: new StoryBar(
-                      key: story.storyBarKey,
+                  child: new GestureDetector(
+                    onTap: () {
+                      config.storyCluster.focusedStoryId = story.id;
+                      _onPanelsChanged();
+                    },
+                    child: _getStoryBarDraggableWrapper(
+                      context: context,
                       story: story,
-                      minimizedHeight: _kStoryBarMinimizedHeight,
-                      maximizedHeight: _kStoryBarMaximizedHeight,
+                      child: new StoryBar(
+                        key: story.storyBarKey,
+                        story: story,
+                        minimizedHeight: _kStoryBarMinimizedHeight,
+                        maximizedHeight: _kStoryBarMaximizedHeight,
+                      ),
                     ),
                   ),
                 ),
