@@ -78,7 +78,9 @@ class ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
                   boxShadow: kElevationToShadow[12]),
               child: new ConstrainedBox(
                 constraints: _currentConstraint,
-                child: config.child,
+                child: new ClipRect(
+                  child: config.child,
+                ),
               ),
             ),
           ),

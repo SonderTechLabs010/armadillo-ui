@@ -8,6 +8,7 @@ import 'package:apps.modular.lib.app.dart/app.dart';
 import 'package:apps.modular.services.user/user_shell.fidl.dart';
 import 'package:armadillo/armadillo.dart';
 import 'package:armadillo/armadillo_drag_target.dart';
+import 'package:armadillo/child_constraints_changer.dart';
 import 'package:armadillo/conductor.dart';
 import 'package:armadillo/constraints_manager.dart';
 import 'package:armadillo/now_manager.dart';
@@ -15,6 +16,7 @@ import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_cluster_id.dart';
 import 'package:armadillo/story.dart';
 import 'package:armadillo/story_manager.dart';
+import 'package:armadillo/story_time_randomizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sysui_widgets/default_bundle.dart';
@@ -71,6 +73,7 @@ Future main() async {
   Widget app = _buildApp(
     storyManager: storyManager,
     storyProviderStoryGenerator: storyProviderStoryGenerator,
+    constraintsManager: constraintsManager,
     armadillo: new Armadillo(
       storyManager: storyManager,
       suggestionManager: suggestionProviderSuggestionManager,
@@ -81,40 +84,46 @@ Future main() async {
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
 
-  SystemChrome.setEnabledSystemUIOverlays([]);
   constraintsManager.load(defaultBundle);
 }
 
 Widget _buildApp({
   StoryManager storyManager,
   StoryProviderStoryGenerator storyProviderStoryGenerator,
+  ConstraintsManager constraintsManager,
   Armadillo armadillo,
 }) =>
-    new DefaultAssetBundle(
-      bundle: defaultBundle,
-      child: new Stack(children: [
-        armadillo,
-        new Positioned(
-          left: 0.0,
-          top: 0.0,
-          bottom: 0.0,
-          width: 100.0,
-          child: _buildDiscardDragTarget(
-            storyManager: storyManager,
-            storyProviderStoryGenerator: storyProviderStoryGenerator,
-          ),
+    new StoryTimeRandomizer(
+      storyManager: storyManager,
+      child: new ChildConstraintsChanger(
+        constraintsManager: constraintsManager,
+        child: new DefaultAssetBundle(
+          bundle: defaultBundle,
+          child: new Stack(children: [
+            armadillo,
+            new Positioned(
+              left: 0.0,
+              top: 0.0,
+              bottom: 0.0,
+              width: 100.0,
+              child: _buildDiscardDragTarget(
+                storyManager: storyManager,
+                storyProviderStoryGenerator: storyProviderStoryGenerator,
+              ),
+            ),
+            new Positioned(
+              right: 0.0,
+              top: 0.0,
+              bottom: 0.0,
+              width: 100.0,
+              child: _buildDiscardDragTarget(
+                storyManager: storyManager,
+                storyProviderStoryGenerator: storyProviderStoryGenerator,
+              ),
+            ),
+          ]),
         ),
-        new Positioned(
-          right: 0.0,
-          top: 0.0,
-          bottom: 0.0,
-          width: 100.0,
-          child: _buildDiscardDragTarget(
-            storyManager: storyManager,
-            storyProviderStoryGenerator: storyProviderStoryGenerator,
-          ),
-        ),
-      ]),
+      ),
     );
 
 Widget _buildPerformanceOverlay({Widget child}) => new Stack(
@@ -144,10 +153,12 @@ Widget _buildDiscardDragTarget({
         Map<StoryClusterId, Point> candidateData,
         Map<dynamic, Point> rejectedData,
       ) =>
-          new Container(
-            decoration: new BoxDecoration(
-              backgroundColor: new Color(
-                candidateData.isEmpty ? 0x10FF0000 : 0x80FF0000,
+          new IgnorePointer(
+            child: new Container(
+              decoration: new BoxDecoration(
+                backgroundColor: new Color(
+                  candidateData.isEmpty ? 0x00FF0000 : 0x40FF0000,
+                ),
               ),
             ),
           ),
