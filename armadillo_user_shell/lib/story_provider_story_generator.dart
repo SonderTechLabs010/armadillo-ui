@@ -13,6 +13,7 @@ import 'package:armadillo/story_generator.dart';
 import 'package:flutter/material.dart';
 
 import 'debug.dart';
+import 'story_provider_watcher_impl.dart';
 
 /// Creates a list of stories for the StoryList using
 /// modular's [StoryProvider].
@@ -24,10 +25,18 @@ class StoryProviderStoryGenerator extends StoryGenerator {
 
   List<StoryCluster> _storyClusters = <StoryCluster>[];
 
-  final List<StoryControllerProxy> _storyControllers = <StoryControllerProxy>[];
+  final Map<String, StoryControllerProxy> _storyControllerMap =
+      <String, StoryControllerProxy>{};
+  final Map<String, StoryCluster> _storyClusterMap = <String, StoryCluster>{};
+  StoryProviderWatcherImpl _storyProviderWatcher;
 
   set storyProvider(StoryProviderProxy storyProvider) {
     _storyProvider = storyProvider;
+    _storyProviderWatcher = new StoryProviderWatcherImpl(
+      onStoryChanged: _onStoryChanged,
+      onStoryDeleted: (String storyId) => _removeStory(storyId),
+    );
+    _storyProvider.watch(_storyProviderWatcher.getHandle());
     _load();
   }
 
@@ -54,106 +63,98 @@ class StoryProviderStoryGenerator extends StoryGenerator {
       _storyProvider.deleteStory(story.id.value, () {
         armadilloPrint('Story ${story.id.value} deleted!');
       });
+      _removeStory(story.id.value, notify: false);
     });
     _storyClusters.remove(storyCluster);
+
     _notifyListeners();
   }
 
   /// Loads the list of previous stories from the [StoryProvider].
   /// If no stories exist, we create some.
-  /// If stores do exist, we resume them.
-  /// TODO(apwilson): listen for changes int he previous story list.
+  /// If stories do exist, we resume them.
+  /// TODO(apwilson): listen for changes in the previous story list.
   void _load() {
     _storyProvider.previousStories((List<String> storyIds) {
       armadilloPrint('Got previousStories! $storyIds');
-
       if (storyIds.isEmpty) {
         // We have no previous stories, so create some!
         // TODO(apwilson): Remove when suggestions can create stories and we can
         // listener for new stories.
         List<String> storyUrls = [
-          'file:///system/apps/email_story',
+          //'file:///system/apps/email_story',
           'file:///system/apps/noodles_view',
           'file:///system/apps/spinning_square_view',
           'file:///system/apps/shapes_view',
           'file:///system/apps/paint_view',
           'file:///system/apps/moterm',
-          'file:///system/apps/color',
+          //'file:///system/apps/color',
         ];
         storyUrls.forEach((String storyUrl) {
           final StoryControllerProxy controller = new StoryControllerProxy();
-          _storyControllers.add(controller);
           armadilloPrint('creating story!');
           _storyProvider.createStory(
             storyUrl,
             controller.ctrl.request(),
           );
-
-          // Get its info!
-          controller.getInfo((StoryInfo storyInfo) {
-            armadilloPrint('story info: $storyInfo');
-            armadilloPrint('   url: ${storyInfo.url}');
-            armadilloPrint('   id: ${storyInfo.id}');
-            armadilloPrint('   isRunning: ${storyInfo.isRunning}');
-
-            // Start it!
-            ViewOwnerProxy viewOwner = new ViewOwnerProxy();
-            controller.start(viewOwner.ctrl.request());
-
-            // Create a flutter view from its view!
-            ChildViewConnection childViewConnection = new ChildViewConnection(
-              viewOwner.ctrl.unbind(),
-            );
-
-            StoryCluster storyCluster = new StoryCluster(stories: [
-              _createStory(
-                  storyInfo: storyInfo,
-                  childViewConnection: childViewConnection),
-            ]);
-            _storyClusters.add(storyCluster);
-            _notifyListeners();
-          });
+          controller.ctrl.close();
         });
       } else {
         /// We have previous stories so lets resume them so they can be
         /// displayed in a child view.
 
-        storyIds.forEach((String storyId) {
-          final StoryControllerProxy controller = new StoryControllerProxy();
-          _storyControllers.add(controller);
-
-          /// Resume it!
-          _storyProvider.resumeStory(
-            storyId,
-            controller.ctrl.request(),
-          );
-
-          // Get its info!
-          controller.getInfo((StoryInfo storyInfo) {
-            armadilloPrint('story info: $storyInfo');
-            armadilloPrint('   url: ${storyInfo.url}');
-            armadilloPrint('   id: ${storyInfo.id}');
-            armadilloPrint('   isRunning: ${storyInfo.isRunning}');
-
-            // Start it!
-            ViewOwnerProxy viewOwner = new ViewOwnerProxy();
-            controller.start(viewOwner.ctrl.request());
-
-            // Create a flutter view from its view!
-            ChildViewConnection childViewConnection = new ChildViewConnection(
-              viewOwner.ctrl.unbind(),
-            );
-
-            StoryCluster storyCluster = new StoryCluster(stories: [
-              _createStory(
-                  storyInfo: storyInfo,
-                  childViewConnection: childViewConnection),
-            ]);
-            _storyClusters.add(storyCluster);
-            _notifyListeners();
-          });
-        });
+        storyIds.forEach(_addStoryCluster);
       }
+    });
+  }
+
+  void _onStoryChanged(StoryInfo storyInfo) {
+    if (_storyControllerMap[storyInfo.id] == null) {
+      _addStoryCluster(storyInfo.id);
+    }
+  }
+
+  void _removeStory(String storyId, {bool notify: true}) {
+    if (_storyControllerMap[storyId] != null) {
+      _storyControllerMap[storyId].ctrl.close();
+      _storyControllerMap.remove(storyId);
+      _storyClusters.remove(_storyClusterMap[storyId]);
+      _storyClusterMap.remove(storyId);
+      if (notify) {
+        _notifyListeners();
+      }
+    }
+  }
+
+  StoryCluster _addStoryCluster(String storyId) {
+    final StoryControllerProxy controller = new StoryControllerProxy();
+    _storyControllerMap[storyId] = controller;
+    _storyProvider.resumeStory(
+      storyId,
+      controller.ctrl.request(),
+    );
+
+    // Get its info!
+    controller.getInfo((StoryInfo storyInfo) {
+      armadilloPrint('story info: $storyInfo');
+
+      // Start it!
+      ViewOwnerProxy viewOwner = new ViewOwnerProxy();
+      controller.start(viewOwner.ctrl.request());
+
+      // Create a flutter view from its view!
+      ChildViewConnection childViewConnection = new ChildViewConnection(
+        viewOwner.ctrl.unbind(),
+      );
+
+      StoryCluster storyCluster = new StoryCluster(stories: [
+        _createStory(
+            storyInfo: storyInfo, childViewConnection: childViewConnection),
+      ]);
+
+      _storyClusterMap[storyId] = storyCluster;
+      _storyClusters.add(storyCluster);
+      _notifyListeners();
     });
   }
 
