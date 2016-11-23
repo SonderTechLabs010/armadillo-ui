@@ -30,7 +30,10 @@ import 'user_shell_impl.dart';
 const bool _kShowPerformanceOverlay = false;
 
 /// This is global as we need it to be alive as long as we are.
-UserShellImpl userShell;
+UserShellImpl _userShell;
+
+/// This is global as we need it to be alive as long as we are.
+ApplicationContext _applicationContext;
 
 Future main() async {
   StoryProviderStoryGenerator storyProviderStoryGenerator =
@@ -54,15 +57,16 @@ Future main() async {
     );
   });
 
-  userShell = new UserShellImpl(
+  _userShell = new UserShellImpl(
     storyProviderStoryGenerator: storyProviderStoryGenerator,
     suggestionProviderSuggestionManager: suggestionProviderSuggestionManager,
     focusController: focusController,
   );
 
-  new ApplicationContext.fromStartupInfo().outgoingServices.addServiceForName(
+  _applicationContext = new ApplicationContext.fromStartupInfo();
+  _applicationContext.outgoingServices.addServiceForName(
     (request) {
-      userShell.bind(request);
+      _userShell.bind(request);
     },
     UserShell.serviceName,
   );
