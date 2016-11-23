@@ -9,6 +9,8 @@ flutter_app("armadillo_user_shell") {
 
   package_name = "armadillo_user_shell"
 
+  manifest = "flutter.yaml"
+
   source_dir = "lib"
 
   deps = [
