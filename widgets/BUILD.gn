@@ -12,4 +12,6 @@ dart_package("widgets") {
   deps = [
     "//lib/flutter/packages/flutter",
   ]
+
+  analysis_options = "//apps/sysui/.analysis_options"
 }

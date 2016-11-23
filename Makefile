@@ -81,7 +81,7 @@ build: sync
 # The Analyzer takes a while to run, so it was moved to be a separate target so
 # it won't hurt the development workflow.
 analyze: build
-	cd tools/analyze && $(pub) run bin/main.dart
+	(cd $(fuchsia_root) && scripts/run-dart-analysis.py --out out/debug-x86-64 --tree //apps/sysui/*)
 
 # Run all tests.
 test: build
