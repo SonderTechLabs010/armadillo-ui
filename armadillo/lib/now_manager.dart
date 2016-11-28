@@ -156,7 +156,7 @@ class NowManager extends ConfigManager {
                         child: new Opacity(
                           opacity: _quickSettingsSlideUpProgress * opacity,
                           child: new Text(
-                            '0024b10000021ecd',
+                            'GoogleGuest',
                             softWrap: false,
                             overflow: TextOverflow.fade,
                             textAlign: TextAlign.left,
