@@ -37,7 +37,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
       onStoryDeleted: (String storyId) => _removeStory(storyId),
     );
     _storyProvider.watch(_storyProviderWatcher.getHandle());
-    _load();
+    update();
   }
 
   @override
@@ -73,8 +73,9 @@ class StoryProviderStoryGenerator extends StoryGenerator {
   /// Loads the list of previous stories from the [StoryProvider].
   /// If no stories exist, we create some.
   /// If stories do exist, we resume them.
+  /// If set, [callback] will be called when the stories have been updated.
   /// TODO(apwilson): listen for changes in the previous story list.
-  void _load() {
+  void update([VoidCallback callback]) {
     _storyProvider.previousStories((List<String> storyIds) {
       armadilloPrint('Got previousStories! $storyIds');
       if (storyIds.isEmpty) {
@@ -82,13 +83,9 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         // TODO(apwilson): Remove when suggestions can create stories and we can
         // listener for new stories.
         List<String> storyUrls = [
-          //'file:///system/apps/email_story',
-          'file:///system/apps/noodles_view',
           'file:///system/apps/spinning_square_view',
-          'file:///system/apps/shapes_view',
-          'file:///system/apps/paint_view',
-          'file:///system/apps/moterm',
-          //'file:///system/apps/color',
+          'file:///system/apps/noodles_view',
+          'file:///system/apps/color',
         ];
         storyUrls.forEach((String storyUrl) {
           final StoryControllerProxy controller = new StoryControllerProxy();
@@ -102,8 +99,15 @@ class StoryProviderStoryGenerator extends StoryGenerator {
       } else {
         /// We have previous stories so lets resume them so they can be
         /// displayed in a child view.
-
-        storyIds.forEach(_addStoryCluster);
+        int added = 0;
+        storyIds.forEach((String storyId) {
+          _addStoryCluster(storyId, () {
+            added++;
+            if (added == storyIds.length) {
+              callback?.call();
+            }
+          });
+        });
       }
     });
   }
@@ -126,7 +130,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     }
   }
 
-  StoryCluster _addStoryCluster(String storyId) {
+  StoryCluster _addStoryCluster(String storyId, [VoidCallback callback]) {
     final StoryControllerProxy controller = new StoryControllerProxy();
     _storyControllerMap[storyId] = controller;
     _storyProvider.resumeStory(
@@ -155,6 +159,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
       _storyClusterMap[storyId] = storyCluster;
       _storyClusters.add(storyCluster);
       _notifyListeners();
+      callback?.call();
     });
   }
 

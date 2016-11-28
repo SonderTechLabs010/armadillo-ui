@@ -153,10 +153,6 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
       id.value,
       new maxwell.Interaction()..type = maxwell.InteractionType.selected,
     );
-    armadilloPrint(
-        'Focusing: ${storyGenerator.storyClusters[0].stories[0].id.value}');
-    _focusController
-        .focusStory(storyGenerator.storyClusters[0].stories[0].id.value);
   }
 
   @override

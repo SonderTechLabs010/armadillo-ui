@@ -89,8 +89,6 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
         }
       } else if (event.data is RawKeyEventDataFuchsia) {
         RawKeyEventDataFuchsia data = event.data;
-        print(
-            'codePoint: ${data.codePoint} hidUsage: ${data.hidUsage} modifiers: ${data.modifiers}');
         if (data.codePoint != 0) {
           textState?.append(new String.fromCharCode(data.codePoint));
           _notifyTextChanged();

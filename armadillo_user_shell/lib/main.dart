@@ -49,11 +49,21 @@ Future main() async {
   Conductor conductor = new Conductor(useSoftKeyboard: false);
   FocusControllerImpl focusController =
       new FocusControllerImpl(onFocusStory: (String storyId) {
-    conductor.requestStoryFocus(
-      new StoryId(storyId),
-      storyManager,
-      jumpToFinish: false,
-    );
+    // If we don't know about the story that we've been asked to focus, update
+    // the story list first.
+    VoidCallback focusOnStory = () {
+      conductor.requestStoryFocus(
+        new StoryId(storyId),
+        storyManager,
+        jumpToFinish: false,
+      );
+    };
+    if (storyProviderStoryGenerator.stories
+        .any((Story story) => story.id == new StoryId(storyId))) {
+      storyProviderStoryGenerator.update(focusOnStory);
+    } else {
+      focusOnStory();
+    }
   });
 
   _userShell = new UserShellImpl(
