@@ -33,6 +33,8 @@ const _kNowQuickSettingsHideScrollOffsetThreshold = 16.0;
 
 const double _kQuickSettingsHorizontalPadding = 16.0;
 
+const double _kQuickSettingsInnerHorizontalPadding = 16.0;
+
 const double _kMaxQuickSettingsBackgroundWidth = 600.0;
 
 /// The overscroll amount which must occur before now begins to grow in height.
@@ -243,8 +245,9 @@ class NowState extends TickingState<Now> {
                                 padding: const EdgeInsets.only(top: 16.0),
                                 child:
                                     _nowManager(context).importantInfoMaximized(
-                                  maxWidth:
-                                      _quickSettingsBackgroundMaximizedWidth,
+                                  maxWidth: _quickSettingsBackgroundMaximizedWidth -
+                                      2.0 *
+                                          _kQuickSettingsInnerHorizontalPadding,
                                   opacity: _fallAwayOpacity,
                                 ),
                               )),
@@ -318,7 +321,8 @@ class NowState extends TickingState<Now> {
               // don't use parent height as constraint
               maxHeight: double.INFINITY,
               minHeight: 0.0,
-              maxWidth: _quickSettingsBackgroundMaximizedWidth,
+              maxWidth: _quickSettingsBackgroundMaximizedWidth -
+                  2.0 * _kQuickSettingsInnerHorizontalPadding,
               minWidth: 0.0,
               child: new Column(
                 key: _quickSettingsKey,
@@ -604,7 +608,11 @@ class NowState extends TickingState<Now> {
   double get _importantInfoMaximizedWidth {
     double t = _quickSettingsProgress * (1.0 - _minimizationProgress);
     double minWidth = _nowManager(context).importantInfoMinWidth;
-    return lerpDouble(minWidth, _quickSettingsBackgroundMaximizedWidth, t);
+    return lerpDouble(
+        minWidth,
+        _quickSettingsBackgroundMaximizedWidth -
+            2.0 * _kQuickSettingsInnerHorizontalPadding,
+        t);
   }
 
   NowManager _nowManager(BuildContext context, {bool rebuildOnChange: true}) =>
