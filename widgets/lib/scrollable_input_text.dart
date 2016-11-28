@@ -34,7 +34,7 @@ class ScrollableInputTextState extends State<ScrollableInputText> {
       new Align(
           alignment: config.alignment ?? const FractionalOffset(0.0, 0.5),
           child: new Text(
-              (_text.isEmpty && !config.focused) ? 'ASK ANYTHING' : _text,
+              (_text.isEmpty && !config.focused) ? 'Ask for anything' : _text,
               style: new TextStyle(
                   fontSize: _kTextSize,
                   color: _text.isEmpty ? _kHintTextColor : _kTextColor)))

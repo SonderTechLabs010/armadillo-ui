@@ -68,7 +68,7 @@ class SuggestionWidget extends StatelessWidget {
           borderRadius: new BorderRadius.circular(_kSuggestionCornerRadius),
           child: new Container(
             decoration: new BoxDecoration(
-              backgroundColor: suggestion.themeColor,
+              backgroundColor: Colors.white,
             ),
             child: new GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -94,15 +94,16 @@ class SuggestionWidget extends StatelessWidget {
                                 height: (_kFontSize + _kVerticalSpacing) /
                                     _kFontSize,
                                 letterSpacing: _kFontSpacingEm,
-                                color: Colors.white,
+                                color: Colors.black,
                               ),
                             ),
                             new Offstage(
                               offstage: suggestion.icons.length == 0,
                               child: new Container(
                                 margin: const EdgeInsets.only(
-                                    top: _kVerticalSpacing,
-                                    bottom: _kIconBarBottomMargin),
+                                  top: _kVerticalSpacing,
+                                  bottom: _kIconBarBottomMargin,
+                                ),
                                 height: _kIconSize,
                                 child: new Row(
                                   children: suggestion.icons
@@ -130,10 +131,20 @@ class SuggestionWidget extends StatelessWidget {
                         ? new Padding(
                             padding: const EdgeInsets.all(_kPersonImageInset),
                             child: new ClipOval(
-                              child: suggestion.image?.call(context),
+                              child: new Container(
+                                decoration: new BoxDecoration(
+                                  backgroundColor: suggestion.themeColor,
+                                ),
+                                child: suggestion.image?.call(context),
+                              ),
                             ),
                           )
-                        : suggestion.image?.call(context),
+                        : new Container(
+                            decoration: new BoxDecoration(
+                              backgroundColor: suggestion.themeColor,
+                            ),
+                            child: suggestion.image?.call(context),
+                          ),
                   ),
                 ],
               ),

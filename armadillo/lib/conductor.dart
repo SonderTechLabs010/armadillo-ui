@@ -45,8 +45,12 @@ const _kSuggestionOverlayPeekHeight = 116.0;
 const double _kStoryListMultiColumnWidthThreshold = 500.0;
 
 /// If the width of the [Conductor] exceeds this value we will switch to
-/// multicolumn mode for the [SuggestionList].
-const double _kSuggestionListMultiColumnWidthThreshold = 800.0;
+/// two column mode for the [SuggestionList].
+const double _kSuggestionListTwoColumnWidthThreshold = 700.0;
+
+/// If the width of the [Conductor] exceeds this value we will switch to
+/// three column mode for the [SuggestionList].
+const double _kSuggestionListThreeColumnWidthThreshold = 1000.0;
 
 const double _kSuggestionOverlayPullScrollOffset = 100.0;
 const double _kSuggestionOverlayScrollFactor = 1.2;
@@ -293,7 +297,9 @@ class Conductor extends StatelessWidget {
         child: new SuggestionList(
           key: _suggestionListKey,
           scrollableKey: _suggestionListScrollableKey,
-          multiColumn: maxWidth > _kSuggestionListMultiColumnWidthThreshold,
+          columnCount: maxWidth > _kSuggestionListThreeColumnWidthThreshold
+              ? 3
+              : maxWidth > _kSuggestionListTwoColumnWidthThreshold ? 2 : 1,
           onAskingStarted: () {
             _suggestionOverlayKey.currentState.show();
             if (useSoftKeyboard) {

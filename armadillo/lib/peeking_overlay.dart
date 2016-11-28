@@ -161,7 +161,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
                         0.0,
                         _kAngleOffsetY * (1.0 - _peekProgress),
                       ),
-                      color: Colors.white,
+                      color: new Color(0xFFDBE2E5),
                     ),
                   ),
                   config.child,
