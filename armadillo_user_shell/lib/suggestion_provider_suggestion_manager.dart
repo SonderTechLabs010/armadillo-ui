@@ -6,6 +6,8 @@ import 'dart:io';
 
 import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart'
     as maxwell;
+import 'package:apps.maxwell.services.suggestion/user_input.fidl.dart'
+    as maxwell;
 import 'package:armadillo/story.dart';
 import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_generator.dart';
