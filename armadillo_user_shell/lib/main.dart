@@ -57,22 +57,15 @@ Future main() async {
   );
   FocusControllerImpl focusController =
       new FocusControllerImpl(onFocusStory: (String storyId) {
-    // If we don't know about the story that we've been asked to focus, update
-    // the story list first.
-    VoidCallback focusOnStory = () {
+    // Delay focusing on the story in case we don't know about it yet.
+    // TODO(apwilson): do something less error prone.
+    new Timer(new Duration(milliseconds: 500), () {
       conductor.requestStoryFocus(
         new StoryId(storyId),
         storyManager,
         jumpToFinish: false,
       );
-    };
-    if (storyProviderStoryGenerator.storyClusters
-        .expand((cluster) => cluster.stories)
-        .any((Story story) => story.id == new StoryId(storyId))) {
-      storyProviderStoryGenerator.update(focusOnStory);
-    } else {
-      focusOnStory();
-    }
+    });
   });
 
   _userShell = new UserShellImpl(
