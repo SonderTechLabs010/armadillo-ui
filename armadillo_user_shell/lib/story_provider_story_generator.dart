@@ -13,6 +13,7 @@ import 'package:armadillo/story_generator.dart';
 import 'package:flutter/material.dart';
 
 import 'debug.dart';
+import 'hit_test_manager.dart';
 import 'story_provider_watcher_impl.dart';
 
 /// Creates a list of stories for the StoryList using
@@ -153,7 +154,9 @@ class StoryProviderStoryGenerator extends StoryGenerator {
 
       StoryCluster storyCluster = new StoryCluster(stories: [
         _createStory(
-            storyInfo: storyInfo, childViewConnection: childViewConnection),
+          storyInfo: storyInfo,
+          childViewConnection: childViewConnection,
+        ),
       ]);
 
       _storyClusterMap[storyId] = storyCluster;
@@ -171,7 +174,17 @@ class StoryProviderStoryGenerator extends StoryGenerator {
           {StoryInfo storyInfo, ChildViewConnection childViewConnection}) =>
       new Story(
         id: new StoryId(storyInfo.id),
-        builder: (_) => new ChildView(connection: childViewConnection),
+        builder: (BuildContext context) {
+          bool hitTestable = InheritedHitTestManager
+              .of(context, rebuildOnChange: true)
+              .isStoryHitTestable(storyInfo.id);
+          armadilloPrint('Story ${storyInfo.id} is hitTestable? $hitTestable');
+
+          return new ChildView(
+            hitTestable: hitTestable,
+            connection: childViewConnection,
+          );
+        },
         // TODO(apwilson): Improve title.
         title:
             '[${Uri.parse(storyInfo.url).pathSegments[Uri.parse(storyInfo.url).pathSegments.length-1]} // ${storyInfo.id}]',

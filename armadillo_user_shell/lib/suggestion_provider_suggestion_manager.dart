@@ -19,6 +19,7 @@ import 'package:lib.fidl.dart/bindings.dart';
 
 import 'debug.dart';
 import 'focus_controller_impl.dart';
+import 'hit_test_manager.dart';
 
 /// Listens to a maxwell suggestion list.  As suggestions change it
 /// notifies it's [suggestionListener].
@@ -105,8 +106,12 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
   FocusControllerImpl _focusController;
 
   final StoryGenerator storyGenerator;
+  final HitTestManager hitTestManager;
 
-  SuggestionProviderSuggestionManager({this.storyGenerator});
+  SuggestionProviderSuggestionManager({
+    this.storyGenerator,
+    this.hitTestManager,
+  });
 
   /// Setting [suggestionProvider] triggers the loading on suggestions.
   /// This is typically set by the UserShell.
@@ -182,10 +187,11 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
 
   @override
   void storyClusterFocusChanged(StoryCluster storyCluster) {
-    _focusController.onFocusedStoriesChanged(
-      storyCluster?.stories?.map((Story story) => story.id.value)?.toList() ??
-          <String>[],
-    );
+    List<String> focusedStoryIds =
+        storyCluster?.stories?.map((Story story) => story.id.value)?.toList() ??
+            <String>[];
+    _focusController.onFocusedStoriesChanged(focusedStoryIds);
+    hitTestManager.onFocusedStoriesChanged(focusedStoryIds);
   }
 
   void _onAskSuggestionsChanged() {

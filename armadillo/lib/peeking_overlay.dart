@@ -22,12 +22,15 @@ class PeekingOverlay extends StatefulWidget {
   final double parentWidth;
   final Widget child;
   final VoidCallback onHide;
-  PeekingOverlay(
-      {Key key,
-      this.peekHeight: _kStartOverlayTransitionHeight,
-      this.parentWidth,
-      this.onHide,
-      this.child})
+  final VoidCallback onShow;
+  PeekingOverlay({
+    Key key,
+    this.peekHeight: _kStartOverlayTransitionHeight,
+    this.parentWidth,
+    this.onHide,
+    this.onShow,
+    this.child,
+  })
       : super(key: key);
 
   @override
@@ -83,6 +86,9 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
   }
 
   void show() {
+    if (config.onShow != null) {
+      config.onShow();
+    }
     _hiding = false;
     setHeight(maxHeight);
   }

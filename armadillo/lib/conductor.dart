@@ -87,13 +87,21 @@ final GlobalKey<SelectedSuggestionOverlayState> _selectedSuggestionOverlayKey =
 final GlobalKey<ArmadilloOverlayState> _overlayKey =
     new GlobalKey<ArmadilloOverlayState>();
 
+typedef OnOverlayChanged(bool active);
+
 /// Manages the position, size, and state of the story list, user context,
 /// suggestion overlay, device extensions. interruption overlay, and quick
 /// settings overlay.
 class Conductor extends StatelessWidget {
   final bool useSoftKeyboard;
+  final OnOverlayChanged onQuickSettingsOverlayChanged;
+  final OnOverlayChanged onSuggestionsOverlayChanged;
 
-  Conductor({this.useSoftKeyboard: true});
+  Conductor({
+    this.useSoftKeyboard: true,
+    this.onQuickSettingsOverlayChanged,
+    this.onSuggestionsOverlayChanged,
+  });
 
   /// Note in particular the magic we're employing here to make the user
   /// state appear to be a part of the story list:
@@ -145,9 +153,15 @@ class Conductor extends StatelessWidget {
 
               // Quick Settings Overlay.
               new QuickSettingsOverlay(
-                key: _quickSettingsOverlayKey,
-                minimizedNowBarHeight: _kMinimizedNowHeight,
-              ),
+                  key: _quickSettingsOverlayKey,
+                  minimizedNowBarHeight: _kMinimizedNowHeight,
+                  onProgressChanged: (double progress) {
+                    if (progress == 0.0) {
+                      onQuickSettingsOverlayChanged?.call(false);
+                    } else {
+                      onQuickSettingsOverlayChanged?.call(true);
+                    }
+                  }),
 
               // This layout builder tracks the size available for the
               // suggestion overlay and sets its maxHeight appropriately.
@@ -283,6 +297,7 @@ class Conductor extends StatelessWidget {
         peekHeight: _kSuggestionOverlayPeekHeight,
         parentWidth: maxWidth,
         onHide: () {
+          onSuggestionsOverlayChanged?.call(false);
           if (useSoftKeyboard) {
             _keyboardDeviceExtensionKey.currentState?.hide();
           }
@@ -293,6 +308,9 @@ class Conductor extends StatelessWidget {
           );
           _suggestionListKey.currentState?.clear();
           _suggestionListKey.currentState?.stopAsking();
+        },
+        onShow: () {
+          onSuggestionsOverlayChanged?.call(true);
         },
         child: new SuggestionList(
           key: _suggestionListKey,

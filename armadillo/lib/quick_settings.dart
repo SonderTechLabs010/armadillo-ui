@@ -48,12 +48,16 @@ const RK4SpringDescription _kSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
 const double _kShowSimulationTarget = 100.0;
 
+typedef void OnProgressChanged(double progress);
+
 class QuickSettingsOverlay extends StatefulWidget {
   final double minimizedNowBarHeight;
+  final OnProgressChanged onProgressChanged;
 
   QuickSettingsOverlay({
     Key key,
     this.minimizedNowBarHeight,
+    this.onProgressChanged,
   })
       : super(key: key);
 
@@ -156,6 +160,7 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
   @override
   bool handleTick(double elapsedSeconds) {
     _showSimulation.elapseTime(elapsedSeconds);
+    config.onProgressChanged?.call(_showProgress);
     return !_showSimulation.isDone;
   }
 }

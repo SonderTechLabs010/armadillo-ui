@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:sysui_widgets/default_bundle.dart';
 
 import 'focus_controller_impl.dart';
+import 'hit_test_manager.dart';
 import 'story_provider_story_generator.dart';
 import 'suggestion_provider_suggestion_manager.dart';
 import 'user_shell_impl.dart';
@@ -35,18 +36,25 @@ UserShellImpl _userShell;
 ApplicationContext _applicationContext;
 
 Future main() async {
+  HitTestManager hitTestManager = new HitTestManager();
   StoryProviderStoryGenerator storyProviderStoryGenerator =
       new StoryProviderStoryGenerator();
   SuggestionProviderSuggestionManager suggestionProviderSuggestionManager =
       new SuggestionProviderSuggestionManager(
-          storyGenerator: storyProviderStoryGenerator);
+    storyGenerator: storyProviderStoryGenerator,
+    hitTestManager: hitTestManager,
+  );
 
   StoryManager storyManager = new StoryManager(
     suggestionManager: suggestionProviderSuggestionManager,
     storyGenerator: storyProviderStoryGenerator,
   );
 
-  Conductor conductor = new Conductor(useSoftKeyboard: false);
+  Conductor conductor = new Conductor(
+    useSoftKeyboard: false,
+    onQuickSettingsOverlayChanged: hitTestManager.onQuickSettingsOverlayChanged,
+    onSuggestionsOverlayChanged: hitTestManager.onSuggestionsOverlayChanged,
+  );
   FocusControllerImpl focusController =
       new FocusControllerImpl(onFocusStory: (String storyId) {
     // If we don't know about the story that we've been asked to focus, update
@@ -93,6 +101,7 @@ Future main() async {
       nowManager: nowManager,
       conductor: conductor,
     ),
+    hitTestManager: hitTestManager,
   );
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
@@ -105,6 +114,7 @@ Widget _buildApp({
   StoryProviderStoryGenerator storyProviderStoryGenerator,
   ConstraintsManager constraintsManager,
   Armadillo armadillo,
+  HitTestManager hitTestManager,
 }) =>
     new StoryTimeRandomizer(
       storyManager: storyManager,
@@ -113,7 +123,10 @@ Widget _buildApp({
         child: new DefaultAssetBundle(
           bundle: defaultBundle,
           child: new Stack(children: [
-            armadillo,
+            new InheritedHitTestManager(
+              hitTestManager: hitTestManager,
+              child: armadillo,
+            ),
             new Positioned(
               left: 0.0,
               top: 0.0,
