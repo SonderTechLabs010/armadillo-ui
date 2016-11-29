@@ -211,16 +211,16 @@ class SuggestionListState extends State<SuggestionList> {
             leftSuggestions.length,
             (int index) => new Row(
                   children: [
-                    new Container(height: 0.0, width: 16.0),
+                    new Container(height: 0.0, width: 24.0),
                     new Flexible(
                         child: _createSuggestion(leftSuggestions[index])),
-                    new Container(height: 0.0, width: 16.0),
+                    new Container(height: 0.0, width: 24.0),
                     new Flexible(
                       child: index < rightSuggestions.length
                           ? _createSuggestion(rightSuggestions[index])
                           : new Offstage(offstage: true),
                     ),
-                    new Container(height: 0.0, width: 16.0),
+                    new Container(height: 0.0, width: 24.0),
                   ],
                 ),
           ),
@@ -259,23 +259,23 @@ class SuggestionListState extends State<SuggestionList> {
             leftSuggestions.length,
             (int index) => new Row(
                   children: [
-                    new Container(height: 0.0, width: 16.0),
+                    new Container(height: 0.0, width: 24.0),
                     new Flexible(
                       child: _createSuggestion(leftSuggestions[index]),
                     ),
-                    new Container(height: 0.0, width: 16.0),
+                    new Container(height: 0.0, width: 24.0),
                     new Flexible(
                       child: index < middleSuggestions.length
                           ? _createSuggestion(middleSuggestions[index])
                           : new Offstage(offstage: true),
                     ),
-                    new Container(height: 0.0, width: 16.0),
+                    new Container(height: 0.0, width: 24.0),
                     new Flexible(
                       child: index < rightSuggestions.length
                           ? _createSuggestion(rightSuggestions[index])
                           : new Offstage(offstage: true),
                     ),
-                    new Container(height: 0.0, width: 16.0),
+                    new Container(height: 0.0, width: 24.0),
                   ],
                 ),
           ),

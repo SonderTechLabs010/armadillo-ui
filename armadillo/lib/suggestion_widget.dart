@@ -36,13 +36,13 @@ const double _kHorizontalMargin = 24.0;
 /// Gives each suggestion a slight rounded edge.
 /// TODO(apwilson): We may want to animate this to zero when expanding the card
 /// to fill the screen.
-const double _kSuggestionCornerRadius = 4.0;
+const double _kSuggestionCornerRadius = 8.0;
 
 /// The height of the suggestion.
-const double _kSuggestionHeight = 112.0;
+const double _kSuggestionHeight = 80.0;
 
 /// The diameter of the person image.
-const double _kPersonImageDiameter = 72.0;
+const double _kPersonImageDiameter = 40.0;
 
 /// The margin around the person image such that it sits in the center of the
 /// space allocated for the suggestion image.
