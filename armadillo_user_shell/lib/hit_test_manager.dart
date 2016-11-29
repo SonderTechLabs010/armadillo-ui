@@ -57,7 +57,7 @@ class InheritedHitTestManager extends StatelessWidget {
   /// [BuildContext.inheritFromWidgetOfExactType].
   /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
   /// to [HitTestManager].
-  static StoryManager of(BuildContext context, {bool rebuildOnChange: false}) {
+  static HitTestManager of(BuildContext context, {bool rebuildOnChange: false}) {
     _InheritedHitTestManager inheritedHitTestManager = rebuildOnChange
         ? context.inheritFromWidgetOfExactType(_InheritedHitTestManager)
         : context.ancestorWidgetOfExactType(_InheritedHitTestManager);
