@@ -16,6 +16,8 @@ import 'debug.dart';
 import 'hit_test_manager.dart';
 import 'story_provider_watcher_impl.dart';
 
+const String _kUserImage = 'packages/armadillo/res/User.png';
+
 /// Creates a list of stories for the StoryList using
 /// modular's [StoryProvider].
 class StoryProviderStoryGenerator extends StoryGenerator {
@@ -191,7 +193,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         icons: [],
         avatar: (_, double opacity) => new Opacity(
               opacity: opacity,
-              child: new Container(width: 10.0, height: 10.0),
+              child: new Image.asset(_kUserImage, fit: ImageFit.cover),
             ),
         lastInteraction: new DateTime.now(),
         cumulativeInteractionDuration: new Duration(
