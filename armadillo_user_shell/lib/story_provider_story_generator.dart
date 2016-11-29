@@ -133,7 +133,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     }
   }
 
-  StoryCluster _addStoryCluster(String storyId, [VoidCallback callback]) {
+  _addStoryCluster(String storyId, [VoidCallback callback]) {
     final StoryControllerProxy controller = new StoryControllerProxy();
     _storyControllerMap[storyId] = controller;
     _storyProvider.resumeStory(

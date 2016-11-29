@@ -66,7 +66,8 @@ Future main() async {
         jumpToFinish: false,
       );
     };
-    if (storyProviderStoryGenerator.stories
+    if (storyProviderStoryGenerator.storyClusters
+        .expand((cluster) => cluster.stories)
         .any((Story story) => story.id == new StoryId(storyId))) {
       storyProviderStoryGenerator.update(focusOnStory);
     } else {
