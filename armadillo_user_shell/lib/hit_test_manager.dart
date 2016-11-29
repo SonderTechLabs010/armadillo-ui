@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:armadillo/config_manager.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 /// Determines which stories can be hit testable.
@@ -57,7 +56,8 @@ class InheritedHitTestManager extends StatelessWidget {
   /// [BuildContext.inheritFromWidgetOfExactType].
   /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
   /// to [HitTestManager].
-  static HitTestManager of(BuildContext context, {bool rebuildOnChange: false}) {
+  static HitTestManager of(BuildContext context,
+      {bool rebuildOnChange: false}) {
     _InheritedHitTestManager inheritedHitTestManager = rebuildOnChange
         ? context.inheritFromWidgetOfExactType(_InheritedHitTestManager)
         : context.ancestorWidgetOfExactType(_InheritedHitTestManager);

@@ -38,9 +38,9 @@ Widget _widgetBuilder(String module, Map<String, Object> state) {
       return new EmailEditorScreen();
     case 'email/inbox':
       _createMockEmailThreads();
-      return new EmailInboxScreen();
+      return new EmailListScreen();
     case 'email/menu':
-      return new EmailMenuScreen();
+      return new EmailNavScreen();
     case 'email/thread':
       _createMockEmailThreads();
       return new EmailThreadScreen(threadId: 'thread01');
