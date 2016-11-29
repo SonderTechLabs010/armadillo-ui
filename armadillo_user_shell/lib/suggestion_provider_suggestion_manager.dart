@@ -42,7 +42,7 @@ class MaxwellListenerImpl extends maxwell.Listener {
       _suggestions[suggestion.uuid] = new Suggestion(
         id: new ValueKey(suggestion.uuid),
         title: suggestion.display.headline,
-        themeColor: Colors.blueGrey[600],
+        themeColor: new Color(suggestion.display.color),
         selectionType: SelectionType.closeSuggestions,
         icons: const <WidgetBuilder>[],
         image: suggestion.display.imageUrl != null &&
@@ -52,7 +52,7 @@ class MaxwellListenerImpl extends maxwell.Listener {
                   fit: ImageFit.cover,
                 )
             : null,
-        imageType: ImageType.other,
+        imageType: ImageType.person,
       );
     });
     suggestionListener?.call();
