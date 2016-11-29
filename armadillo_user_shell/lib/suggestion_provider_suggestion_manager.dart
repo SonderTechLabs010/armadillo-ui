@@ -168,7 +168,7 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
     if (_askText != newAskText) {
       _askText = newAskText;
       _askControllerProxy
-          .setUserInput(new maxwell.UserInput()..text = newAskText);
+          .setUserInput(new maxwell.UserInput()..text = newAskText ?? '');
     }
   }
 
