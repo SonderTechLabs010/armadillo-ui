@@ -86,9 +86,10 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         // TODO(apwilson): Remove when suggestions can create stories and we can
         // listener for new stories.
         List<String> storyUrls = [
-          'file:///system/apps/spinning_square_view',
-          'file:///system/apps/noodles_view',
           'file:///system/apps/color',
+          'file:///system/apps/noodles_view',
+          'file:///system/apps/spinning_square_view',
+          'file:///system/apps/hello_material',
         ];
         storyUrls.forEach((String storyUrl) {
           final StoryControllerProxy controller = new StoryControllerProxy();
