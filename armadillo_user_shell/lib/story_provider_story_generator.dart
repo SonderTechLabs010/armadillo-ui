@@ -200,7 +200,22 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         cumulativeInteractionDuration: new Duration(
           minutes: 0,
         ),
-        themeColor: Colors.grey[500],
+        themeColor: _kStoryColors[storyInfo.url] == null
+            ? Colors.grey[500]
+            : _kStoryColors[storyInfo.url],
         inactive: false,
       );
 }
+
+final Map<String, Color> _kStoryColors = <String, Color>{
+  'file:///system/apps/paint_view': new Color(0xffad1457),
+  'file:///system/apps/hello_material': new Color(0xff4caf50),
+  'file:///system/apps/video_player': new Color(0xff9575cd),
+  'file:///system/apps/youtube_story': new Color(0xffe52d27),
+  'file:///system/apps/email_story': new Color(0xff4285f4),
+  'file:///system/apps/music_story': new Color(0xffff8c00),
+  'file:///system/apps/color': new Color(0xff5affd6),
+  'file:///system/apps/spinning_square_view': new Color(0xff512da8),
+  'file:///system/apps/moterm': new Color(0xff212121),
+  'file:///system/apps/noodles_view': new Color(0xff212121),
+};
