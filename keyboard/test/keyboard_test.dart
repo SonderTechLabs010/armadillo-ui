@@ -5,8 +5,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart' as services;
 import 'package:flutter/widgets.dart';
-
-import '../lib/keyboard.dart';
+import 'package:keyboard/keyboard.dart';
 
 final services.AssetBundle _defaultBundle =
     new services.NetworkAssetBundle(Uri.base);

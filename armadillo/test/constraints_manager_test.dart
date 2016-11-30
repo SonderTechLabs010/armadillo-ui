@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:armadillo/constraints_manager.dart';
 import 'package:flutter/widgets.dart';
 import 'package:test/test.dart';
-
-import '../lib/constraints_manager.dart';
 
 void main() {
   test('Before loading we have one unconstrained constraint.', () {

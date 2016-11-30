@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:armadillo/size_manager.dart';
+import 'package:armadillo/story.dart';
+import 'package:armadillo/story_cluster.dart';
+import 'package:armadillo/story_list.dart';
+import 'package:armadillo/story_list_layout.dart';
+import 'package:armadillo/story_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/delegating_page_route.dart';
-
-import '../lib/size_manager.dart';
-import '../lib/story.dart';
-import '../lib/story_cluster.dart';
-import '../lib/story_list.dart';
-import '../lib/story_list_layout.dart';
-import '../lib/story_manager.dart';
 
 const int _kStoryCount = 4;
 const double _kWidthSingleColumn = 500.0;

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:armadillo/fading_spring_simulation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import '../lib/fading_spring_simulation.dart';
 
 const int _kStoryCount = 4;
 const double _kRecentListWidthSingleColumn = 500.0;

@@ -4,10 +4,9 @@
 
 import 'dart:math' as math;
 
+import 'package:armadillo/panel.dart';
 import 'package:flutter/widgets.dart';
 import 'package:test/test.dart';
-
-import '../lib/panel.dart';
 
 void main() {
   test('split horizontally', () {

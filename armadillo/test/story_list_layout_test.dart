@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:armadillo/story.dart';
+import 'package:armadillo/story_cluster.dart';
+import 'package:armadillo/story_list_layout.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
-
-import '../lib/story.dart';
-import '../lib/story_cluster.dart';
-import '../lib/story_list_layout.dart';
 
 /// Set this to true to see what the actual bounds will be in the case you need
 /// to update the expected bounds.  The output should be copy-pastable into the
