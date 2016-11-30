@@ -45,14 +45,14 @@ class MaxwellListenerImpl extends maxwell.Listener {
         themeColor: new Color(suggestion.display.color),
         selectionType: SelectionType.closeSuggestions,
         icons: const <WidgetBuilder>[],
-        image: suggestion.display.imageUrl != null &&
-                suggestion.display.imageUrl.isNotEmpty
-            ? (_) => new Image.file(
-                  new File(suggestion.display.imageUrl),
+        image: suggestion.display.imageUrl?.isNotEmpty
+            ? (_) => new Image.network(
+                  suggestion.display.imageUrl,
                   fit: ImageFit.cover,
                 )
             : null,
-        imageType: ImageType.person,
+        imageType: suggestion.display.imageUrl?.isNotEmpty
+            ? ImageType.other : ImageType.person,
       );
     });
     suggestionListener?.call();
