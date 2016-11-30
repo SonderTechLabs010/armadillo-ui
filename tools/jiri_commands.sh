@@ -43,7 +43,7 @@ elif [[ "$command" == "master" ]]; then
     git checkout master
   fi
 elif [[ "$command" == "local" ]]; then
-  if [[ "$current_branch" != "master" ]]; then
+  if [[ "$current_branch" != "master" && "$current_branch" != "HEAD" ]]; then
     tput setaf 4
     $echo -n "$project"
     tput sgr0
