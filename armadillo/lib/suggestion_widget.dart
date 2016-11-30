@@ -143,6 +143,7 @@ class SuggestionWidget extends StatelessWidget {
                             decoration: new BoxDecoration(
                               backgroundColor: suggestion.themeColor,
                             ),
+                            constraints: new BoxConstraints.expand(),
                             child: suggestion.image?.call(context),
                           ),
                   ),

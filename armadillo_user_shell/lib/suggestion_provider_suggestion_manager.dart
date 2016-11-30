@@ -52,7 +52,7 @@ class MaxwellListenerImpl extends maxwell.Listener {
                 )
             : null,
         imageType: suggestion.display.imageUrl?.isNotEmpty
-            ? ImageType.other : ImageType.person,
+            ? suggestion.display.imageType : ImageType.person,
       );
     });
     suggestionListener?.call();
