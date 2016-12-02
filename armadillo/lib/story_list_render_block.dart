@@ -171,10 +171,33 @@ class StoryListRenderBlock extends RenderBlock {
       }
     }
 
+    // When we focus on a child there's a chance that the focused child will be
+    // taller than the unfocused list.  In that case, increase the height of the
+    // block to be that of the focusing child and shift all the children down to
+    // compensate.
+    double unfocusedHeight = listHeight + _bottomPadding;
+    double deltaTooSmall =
+        (parentSize.height * maxFocusProgress) - unfocusedHeight;
+    double finalHeight = unfocusedHeight;
+    if (deltaTooSmall > 0.0) {
+      // shift all children down by deltaTooSmall.
+      RenderBox child = firstChild;
+      while (child != null) {
+        final StoryListRenderBlockParentData childParentData = child.parentData;
+        childParentData.offset = new Offset(
+          childParentData.offset.dx,
+          childParentData.offset.dy + deltaTooSmall,
+        );
+        child = childParentData.nextSibling;
+      }
+
+      finalHeight = (parentSize.height * maxFocusProgress);
+    }
+
     size = constraints.constrain(
       new Size(
         constraints.maxWidth,
-        listHeight + _bottomPadding,
+        finalHeight,
       ),
     );
 
