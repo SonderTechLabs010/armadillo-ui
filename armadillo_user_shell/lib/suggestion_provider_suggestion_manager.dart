@@ -22,16 +22,16 @@ import 'focus_controller_impl.dart';
 import 'hit_test_manager.dart';
 
 /// Listens to a maxwell suggestion list.  As suggestions change it
-/// notifies it's [suggestionListener].
-class MaxwellListenerImpl extends maxwell.Listener {
+/// notifies its [suggestionListener].
+class MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
   final String prefix;
   final VoidCallback suggestionListener;
-  final maxwell.ListenerBinding _binding = new maxwell.ListenerBinding();
+  final maxwell.SuggestionListenerBinding _binding = new maxwell.SuggestionListenerBinding();
   final Map<String, Suggestion> _suggestions = <String, Suggestion>{};
 
-  MaxwellListenerImpl({this.prefix, this.suggestionListener});
+  MaxwellSuggestionListenerImpl({this.prefix, this.suggestionListener});
 
-  InterfaceHandle<maxwell.Listener> getHandle() => _binding.wrap(this);
+  InterfaceHandle<maxwell.SuggestionListener> getHandle() => _binding.wrap(this);
 
   List<Suggestion> get suggestions => _suggestions.values.toList();
 
@@ -82,7 +82,7 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
       new maxwell.AskControllerProxy();
 
   // Listens for changes to maxwell's ask suggestion list.
-  MaxwellListenerImpl _askListener;
+  MaxwellSuggestionListenerImpl _askListener;
 
   // Controls how many suggestions we receive from maxwell's Next suggestion
   // stream.
@@ -90,7 +90,7 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
       new maxwell.NextControllerProxy();
 
   // Listens for changes to maxwell's next suggestion list.
-  MaxwellListenerImpl _nextListener;
+  MaxwellSuggestionListenerImpl _nextListener;
 
   List<Suggestion> _currentSuggestions = const <Suggestion>[];
 
@@ -118,11 +118,11 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
   set suggestionProvider(
       maxwell.SuggestionProviderProxy suggestionProviderProxy) {
     _suggestionProviderProxy = suggestionProviderProxy;
-    _askListener = new MaxwellListenerImpl(
+    _askListener = new MaxwellSuggestionListenerImpl(
       prefix: 'ask',
       suggestionListener: _onAskSuggestionsChanged,
     );
-    _nextListener = new MaxwellListenerImpl(
+    _nextListener = new MaxwellSuggestionListenerImpl(
       prefix: 'next',
       suggestionListener: _onNextSuggestionsChanged,
     );
