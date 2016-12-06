@@ -6,8 +6,6 @@ import 'package:apps.modular.services.user/story_info.fidl.dart';
 import 'package:apps.modular.services.user/story_provider.fidl.dart';
 import 'package:lib.fidl.dart/bindings.dart';
 
-import 'debug.dart';
-
 typedef void OnStoryChanged(StoryInfo storyInfo);
 typedef void OnStoryDeleted(String storyId);
 
@@ -23,13 +21,11 @@ class StoryProviderWatcherImpl extends StoryProviderWatcher {
 
   @override
   void onChange(StoryInfo storyInfo) {
-    armadilloPrint('story changed! $storyInfo');
     onStoryChanged?.call(storyInfo);
   }
 
   @override
   void onDelete(String storyId) {
-    armadilloPrint('story deleted! $storyId');
     onStoryDeleted?.call(storyId);
   }
 }

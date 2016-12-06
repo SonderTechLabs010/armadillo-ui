@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:io';
-
 import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart'
     as maxwell;
 import 'package:apps.maxwell.services.suggestion/user_input.fidl.dart'
@@ -17,7 +15,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lib.fidl.dart/bindings.dart';
 
-import 'debug.dart';
 import 'focus_controller_impl.dart';
 import 'hit_test_manager.dart';
 
@@ -26,18 +23,19 @@ import 'hit_test_manager.dart';
 class MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
   final String prefix;
   final VoidCallback suggestionListener;
-  final maxwell.SuggestionListenerBinding _binding = new maxwell.SuggestionListenerBinding();
+  final maxwell.SuggestionListenerBinding _binding =
+      new maxwell.SuggestionListenerBinding();
   final Map<String, Suggestion> _suggestions = <String, Suggestion>{};
 
   MaxwellSuggestionListenerImpl({this.prefix, this.suggestionListener});
 
-  InterfaceHandle<maxwell.SuggestionListener> getHandle() => _binding.wrap(this);
+  InterfaceHandle<maxwell.SuggestionListener> getHandle() =>
+      _binding.wrap(this);
 
   List<Suggestion> get suggestions => _suggestions.values.toList();
 
   @override
   void onAdd(List<maxwell.Suggestion> suggestions) {
-    armadilloPrint('$prefix suggestions added! $suggestions');
     suggestions.forEach((maxwell.Suggestion suggestion) {
       _suggestions[suggestion.uuid] = new Suggestion(
         id: new ValueKey(suggestion.uuid),
@@ -45,14 +43,15 @@ class MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
         themeColor: new Color(suggestion.display.color),
         selectionType: SelectionType.closeSuggestions,
         icons: const <WidgetBuilder>[],
-        image: suggestion.display.imageUrl?.isNotEmpty
+        image: suggestion.display.imageUrl?.isNotEmpty ?? false
             ? (_) => new Image.network(
                   suggestion.display.imageUrl,
                   fit: ImageFit.cover,
                 )
             : null,
-        imageType: suggestion.display.imageUrl?.isNotEmpty
-            ? suggestion.display.imageType : ImageType.person,
+        imageType: suggestion.display.imageUrl?.isNotEmpty ?? false
+            ? suggestion.display.imageType
+            : ImageType.person,
       );
     });
     suggestionListener?.call();
@@ -60,14 +59,12 @@ class MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
 
   @override
   void onRemove(String uuid) {
-    armadilloPrint('$prefix suggestions removed! $uuid');
     _suggestions.remove(uuid);
     suggestionListener?.call();
   }
 
   @override
   void onRemoveAll() {
-    armadilloPrint('$prefix suggestions removed all!');
     _suggestions.clear();
     suggestionListener?.call();
   }
@@ -134,14 +131,12 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
   }
 
   void _load() {
-    armadilloPrint('initiating ask!');
     _suggestionProviderProxy.initiateAsk(
       _askListener.getHandle(),
       _askControllerProxy.ctrl.request(),
     );
     _askControllerProxy.setResultCount(20);
 
-    armadilloPrint('subscribing to nexts!');
     _suggestionProviderProxy.subscribeToNext(
       _nextListener.getHandle(),
       _nextControllerProxy.ctrl.request(),
@@ -155,7 +150,6 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
   @override
   void onSuggestionSelected(Suggestion suggestion) {
     final ValueKey<String> id = suggestion.id;
-    armadilloPrint('suggestion selected: ${id.value}');
     _suggestionProviderProxy.notifyInteraction(
       id.value,
       new maxwell.Interaction()..type = maxwell.InteractionType.selected,
@@ -167,8 +161,9 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
     String newAskText = text?.toLowerCase();
     if (_askText != newAskText) {
       _askText = newAskText;
-      _askControllerProxy
-          .setUserInput(new maxwell.UserInput()..text = newAskText ?? '');
+      _askControllerProxy.setUserInput(
+        new maxwell.UserInput()..text = newAskText ?? '',
+      );
     }
   }
 

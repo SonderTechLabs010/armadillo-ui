@@ -30,7 +30,6 @@ class FocusControllerImpl extends FocusController {
 
   @override
   void watch(InterfaceHandle<FocusListener> focusListenerHandle) {
-    armadilloPrint('watch: $focusListenerHandle');
     FocusListenerProxy focusListener = new FocusListenerProxy();
     focusListener.ctrl.bind(focusListenerHandle);
     _listeners.add(focusListener);
@@ -42,7 +41,6 @@ class FocusControllerImpl extends FocusController {
   }
 
   void onFocusedStoriesChanged(List<String> focusedStories) {
-    armadilloPrint('Notifying listeners of focused stories: $focusedStories');
     _listeners.toList().forEach((FocusListenerProxy focusListener) {
       focusListener.onFocusChanged(focusedStories);
     });

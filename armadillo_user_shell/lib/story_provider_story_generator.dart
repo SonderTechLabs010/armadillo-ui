@@ -57,15 +57,11 @@ class StoryProviderStoryGenerator extends StoryGenerator {
   List<StoryCluster> get storyClusters => _storyClusters;
 
   void removeStoryCluster(StoryClusterId storyClusterId) {
-    armadilloPrint('removing story cluster: $storyClusterId');
     StoryCluster storyCluster = _storyClusters
         .where((StoryCluster storyCluster) => storyCluster.id == storyClusterId)
         .single;
     storyCluster.stories.forEach((Story story) {
-      armadilloPrint('Deleting story ${story.id.value}...');
-      _storyProvider.deleteStory(story.id.value, () {
-        armadilloPrint('Story ${story.id.value} deleted!');
-      });
+      _storyProvider.deleteStory(story.id.value, () {});
       _removeStory(story.id.value, notify: false);
     });
     _storyClusters.remove(storyCluster);
@@ -80,20 +76,18 @@ class StoryProviderStoryGenerator extends StoryGenerator {
   /// TODO(apwilson): listen for changes in the previous story list.
   void update([VoidCallback callback]) {
     _storyProvider.previousStories((List<String> storyIds) {
-      armadilloPrint('Got previousStories! $storyIds');
       if (storyIds.isEmpty) {
         // We have no previous stories, so create some!
         // TODO(apwilson): Remove when suggestions can create stories and we can
         // listener for new stories.
         List<String> storyUrls = [
           'file:///system/apps/color',
-          'file:///system/apps/noodles_view',
+          'file:///system/apps/moterm',
           'file:///system/apps/spinning_square_view',
           'file:///system/apps/hello_material',
         ];
         storyUrls.forEach((String storyUrl) {
           final StoryControllerProxy controller = new StoryControllerProxy();
-          armadilloPrint('creating story!');
           _storyProvider.createStory(
             storyUrl,
             controller.ctrl.request(),
@@ -134,7 +128,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     }
   }
 
-  _addStoryCluster(String storyId, [VoidCallback callback]) {
+  void _addStoryCluster(String storyId, [VoidCallback callback]) {
     final StoryControllerProxy controller = new StoryControllerProxy();
     _storyControllerMap[storyId] = controller;
     _storyProvider.resumeStory(
@@ -144,7 +138,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
 
     // Get its info!
     controller.getInfo((StoryInfo storyInfo) {
-      armadilloPrint('story info: $storyInfo');
+      armadilloPrint('Adding story: $storyInfo');
 
       // Start it!
       ViewOwnerProxy viewOwner = new ViewOwnerProxy();
@@ -181,7 +175,6 @@ class StoryProviderStoryGenerator extends StoryGenerator {
           bool hitTestable = InheritedHitTestManager
               .of(context, rebuildOnChange: true)
               .isStoryHitTestable(storyInfo.id);
-          armadilloPrint('Story ${storyInfo.id} is hitTestable? $hitTestable');
 
           return new ChildView(
             hitTestable: hitTestable,
