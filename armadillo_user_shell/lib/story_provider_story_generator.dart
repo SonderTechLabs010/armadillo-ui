@@ -73,10 +73,9 @@ class StoryProviderStoryGenerator extends StoryGenerator {
   /// If no stories exist, we create some.
   /// If stories do exist, we resume them.
   /// If set, [callback] will be called when the stories have been updated.
-  /// TODO(apwilson): listen for changes in the previous story list.
   void update([VoidCallback callback]) {
     _storyProvider.previousStories((List<String> storyIds) {
-      if (storyIds.isEmpty) {
+      if (storyIds.isEmpty && storyClusters.isEmpty) {
         // We have no previous stories, so create some!
         // TODO(apwilson): Remove when suggestions can create stories and we can
         // listener for new stories.
@@ -95,13 +94,32 @@ class StoryProviderStoryGenerator extends StoryGenerator {
           controller.ctrl.close();
         });
       } else {
-        /// We have previous stories so lets resume them so they can be
-        /// displayed in a child view.
+        // Remove any stories that aren't in the previous story list.
+        _currentStories
+            .where((Story story) => !storyIds.contains(story.id.value))
+            .forEach((Story story) {
+          armadilloPrint('Story ${story.id.value} has been removed!');
+          // TODO: Remove the story.
+        });
+
+        // Add only those stories we don't already know about.
+        final List<String> storiesToAdd = storyIds
+            .where((String storyId) => !containsStory(storyId))
+            .toList();
+
+        if (storiesToAdd.isEmpty) {
+          callback?.call();
+        }
+
+        // We have previous stories so lets resume them so they can be
+        // displayed in a child view.
         int added = 0;
-        storyIds.forEach((String storyId) {
-          _addStoryCluster(storyId, () {
+        storiesToAdd.forEach((String storyId) {
+          _resumeStory(storyId);
+          _storyControllerMap[storyId].getInfo((StoryInfo storyInfo) {
+            _startStory(storyInfo);
             added++;
-            if (added == storyIds.length) {
+            if (added == storiesToAdd.length) {
               callback?.call();
             }
           });
@@ -110,9 +128,18 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     });
   }
 
+  List<Story> get _currentStories => storyClusters.expand(
+        (cluster) => cluster.stories,
+      );
+
+  bool containsStory(String storyId) => _currentStories.any(
+        (Story story) => story.id == new StoryId(storyId),
+      );
+
   void _onStoryChanged(StoryInfo storyInfo) {
     if (_storyControllerMap[storyInfo.id] == null) {
-      _addStoryCluster(storyInfo.id);
+      _resumeStory(storyInfo.id);
+      _startStory(storyInfo);
     }
   }
 
@@ -128,39 +155,37 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     }
   }
 
-  void _addStoryCluster(String storyId, [VoidCallback callback]) {
+  void _resumeStory(String storyId) {
     final StoryControllerProxy controller = new StoryControllerProxy();
     _storyControllerMap[storyId] = controller;
     _storyProvider.resumeStory(
       storyId,
       controller.ctrl.request(),
     );
+  }
 
-    // Get its info!
-    controller.getInfo((StoryInfo storyInfo) {
-      armadilloPrint('Adding story: $storyInfo');
+  void _startStory(StoryInfo storyInfo) {
+    armadilloPrint('Adding story: $storyInfo');
 
-      // Start it!
-      ViewOwnerProxy viewOwner = new ViewOwnerProxy();
-      controller.start(viewOwner.ctrl.request());
+    // Start it!
+    ViewOwnerProxy viewOwner = new ViewOwnerProxy();
+    _storyControllerMap[storyInfo.id].start(viewOwner.ctrl.request());
 
-      // Create a flutter view from its view!
-      ChildViewConnection childViewConnection = new ChildViewConnection(
-        viewOwner.ctrl.unbind(),
-      );
+    // Create a flutter view from its view!
+    ChildViewConnection childViewConnection = new ChildViewConnection(
+      viewOwner.ctrl.unbind(),
+    );
 
-      StoryCluster storyCluster = new StoryCluster(stories: [
-        _createStory(
-          storyInfo: storyInfo,
-          childViewConnection: childViewConnection,
-        ),
-      ]);
+    StoryCluster storyCluster = new StoryCluster(stories: [
+      _createStory(
+        storyInfo: storyInfo,
+        childViewConnection: childViewConnection,
+      ),
+    ]);
 
-      _storyClusterMap[storyId] = storyCluster;
-      _storyClusters.add(storyCluster);
-      _notifyListeners();
-      callback?.call();
-    });
+    _storyClusterMap[storyInfo.id] = storyCluster;
+    _storyClusters.add(storyCluster);
+    _notifyListeners();
   }
 
   void _notifyListeners() {

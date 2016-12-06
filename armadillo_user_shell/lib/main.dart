@@ -18,6 +18,7 @@ import 'package:armadillo/story.dart';
 import 'package:armadillo/story_manager.dart';
 import 'package:armadillo/story_time_randomizer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:sysui_widgets/default_bundle.dart';
 
 import 'focus_controller_impl.dart';
@@ -57,15 +58,23 @@ Future main() async {
   );
   FocusControllerImpl focusController =
       new FocusControllerImpl(onFocusStory: (String storyId) {
-    // Delay focusing on the story in case we don't know about it yet.
-    // TODO(apwilson): do something less error prone.
-    new Timer(new Duration(milliseconds: 500), () {
-      conductor.requestStoryFocus(
-        new StoryId(storyId),
-        storyManager,
-        jumpToFinish: false,
-      );
-    });
+    VoidCallback focusOnStory = () {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        conductor.requestStoryFocus(
+          new StoryId(storyId),
+          storyManager,
+          jumpToFinish: false,
+        );
+      });
+    };
+
+    // If we don't know about the story that we've been asked to focus, update
+    // the story list first.
+    if (!storyProviderStoryGenerator.containsStory(storyId)) {
+      storyProviderStoryGenerator.update(focusOnStory);
+    } else {
+      focusOnStory();
+    }
   });
 
   _userShell = new UserShellImpl(
