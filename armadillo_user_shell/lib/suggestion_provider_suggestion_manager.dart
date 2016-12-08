@@ -19,9 +19,10 @@ import 'package:lib.fidl.dart/bindings.dart';
 import 'focus_controller_impl.dart';
 import 'hit_test_manager.dart';
 
-final imageTypeMap = const {
-  maxwell.SuggestionImageType.person : ImageType.person,
-  maxwell.SuggestionImageType.other : ImageType.other
+final Map<maxwell.SuggestionImageType, ImageType> _kImageTypeMap =
+    <maxwell.SuggestionImageType, ImageType>{
+  maxwell.SuggestionImageType.person: ImageType.person,
+  maxwell.SuggestionImageType.other: ImageType.other
 };
 
 /// Listens to a maxwell suggestion list.  As suggestions change it
@@ -56,7 +57,7 @@ class MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
                 )
             : null,
         imageType: suggestion.display.imageUrl?.isNotEmpty ?? false
-            ? imageTypeMap[suggestion.display.imageType]
+            ? _kImageTypeMap[suggestion.display.imageType]
             : ImageType.person,
       );
     });
