@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
@@ -139,22 +140,24 @@ class NowState extends TickingState<Now> {
   double _pointerDownY;
 
   set scrollOffset(double scrollOffset) {
-    if (scrollOffset > _kNowMinimizationScrollOffsetThreshold &&
-        _lastScrollOffset < scrollOffset) {
-      minimize();
-      hideQuickSettings();
-    } else if (scrollOffset < _kNowMinimizationScrollOffsetThreshold &&
-        _lastScrollOffset > scrollOffset) {
-      maximize();
-    }
-    // When we're past the quick settings threshold and are
-    // scrolling further, hide quick settings.
-    if (scrollOffset > _kNowQuickSettingsHideScrollOffsetThreshold &&
-        _lastScrollOffset < scrollOffset) {
-      hideQuickSettings();
-    }
-    setState(() {
-      _lastScrollOffset = scrollOffset;
+    scheduleMicrotask(() {
+      if (scrollOffset > _kNowMinimizationScrollOffsetThreshold &&
+          _lastScrollOffset < scrollOffset) {
+        minimize();
+        hideQuickSettings();
+      } else if (scrollOffset < _kNowMinimizationScrollOffsetThreshold &&
+          _lastScrollOffset > scrollOffset) {
+        maximize();
+      }
+      // When we're past the quick settings threshold and are
+      // scrolling further, hide quick settings.
+      if (scrollOffset > _kNowQuickSettingsHideScrollOffsetThreshold &&
+          _lastScrollOffset < scrollOffset) {
+        hideQuickSettings();
+      }
+      setState(() {
+        _lastScrollOffset = scrollOffset;
+      });
     });
   }
 

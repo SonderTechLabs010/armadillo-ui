@@ -31,7 +31,6 @@ class StoryProviderStoryGenerator extends StoryGenerator {
 
   final Map<String, StoryControllerProxy> _storyControllerMap =
       <String, StoryControllerProxy>{};
-  final Map<String, StoryCluster> _storyClusterMap = <String, StoryCluster>{};
   StoryProviderWatcherImpl _storyProviderWatcher;
 
   set storyProvider(StoryProviderProxy storyProvider) {
@@ -100,7 +99,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
             .where((Story story) => !storyIds.contains(story.id.value))
             .forEach((Story story) {
           armadilloPrint('Story ${story.id.value} has been removed!');
-          // TODO: Remove the story.
+          _removeStoryFromClusters(story);
         });
 
         // Add only those stories we don't already know about.
@@ -139,8 +138,10 @@ class StoryProviderStoryGenerator extends StoryGenerator {
 
   void _onStoryChanged(StoryInfo storyInfo) {
     if (_storyControllerMap[storyInfo.id] == null) {
-      _resumeStory(storyInfo.id);
-      _startStory(storyInfo);
+      if (storyInfo.state == StoryState.initial) {
+        _resumeStory(storyInfo.id);
+        _startStory(storyInfo);
+      }
     }
   }
 
@@ -148,12 +149,32 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     if (_storyControllerMap[storyId] != null) {
       _storyControllerMap[storyId].ctrl.close();
       _storyControllerMap.remove(storyId);
-      _storyClusters.remove(_storyClusterMap[storyId]);
-      _storyClusterMap.remove(storyId);
+      Iterable<Story> stories = _currentStories.where(
+        (Story story) => story.id.value == storyId,
+      );
+      assert(stories.length == 0 || stories.length == 1);
+      if (stories.isNotEmpty) {
+        _removeStoryFromClusters(stories.first);
+      }
       if (notify) {
         _notifyListeners();
       }
     }
+  }
+
+  void _removeStoryFromClusters(Story story) {
+    storyClusters
+        .where(
+            (StoryCluster storyCluster) => storyCluster.stories.contains(story))
+        .toList()
+        .forEach((StoryCluster storyCluster) {
+      if (storyCluster.stories.length == 1) {
+        _storyClusters.remove(storyCluster);
+        _notifyListeners();
+      } else {
+        storyCluster.absorb(story);
+      }
+    });
   }
 
   void _resumeStory(String storyId) {
@@ -184,7 +205,6 @@ class StoryProviderStoryGenerator extends StoryGenerator {
       ),
     ]);
 
-    _storyClusterMap[storyInfo.id] = storyCluster;
     _storyClusters.add(storyCluster);
     _notifyListeners();
   }
