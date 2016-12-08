@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:apps.maxwell.services.suggestion/display.fidl.dart' as maxwell;
+import 'package:apps.maxwell.services.suggestion/suggestion_display.fidl.dart'
+    as maxwell;
 import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart'
     as maxwell;
 import 'package:apps.maxwell.services.suggestion/user_input.fidl.dart'
