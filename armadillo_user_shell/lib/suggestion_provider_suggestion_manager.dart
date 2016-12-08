@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:apps.maxwell.services.suggestion/display.fidl.dart' as maxwell;
 import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart'
     as maxwell;
 import 'package:apps.maxwell.services.suggestion/user_input.fidl.dart'
@@ -17,6 +18,11 @@ import 'package:lib.fidl.dart/bindings.dart';
 
 import 'focus_controller_impl.dart';
 import 'hit_test_manager.dart';
+
+final imageTypeMap = const {
+  maxwell.SuggestionImageType.person : ImageType.person,
+  maxwell.SuggestionImageType.other : ImageType.other
+};
 
 /// Listens to a maxwell suggestion list.  As suggestions change it
 /// notifies its [suggestionListener].
@@ -50,7 +56,7 @@ class MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
                 )
             : null,
         imageType: suggestion.display.imageUrl?.isNotEmpty ?? false
-            ? suggestion.display.imageType
+            ? imageTypeMap[suggestion.display.imageType]
             : ImageType.person,
       );
     });
