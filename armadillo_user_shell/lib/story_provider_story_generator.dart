@@ -128,7 +128,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     });
   }
 
-  List<Story> get _currentStories => storyClusters.expand(
+  Iterable<Story> get _currentStories => storyClusters.expand(
         (cluster) => cluster.stories,
       );
 
