@@ -40,6 +40,11 @@ Future main() async {
   HitTestManager hitTestManager = new HitTestManager();
   StoryProviderStoryGenerator storyProviderStoryGenerator =
       new StoryProviderStoryGenerator();
+  Conductor conductor = new Conductor(
+    useSoftKeyboard: false,
+    onQuickSettingsOverlayChanged: hitTestManager.onQuickSettingsOverlayChanged,
+    onSuggestionsOverlayChanged: hitTestManager.onSuggestionsOverlayChanged,
+  );
   SuggestionProviderSuggestionManager suggestionProviderSuggestionManager =
       new SuggestionProviderSuggestionManager(
     storyGenerator: storyProviderStoryGenerator,
@@ -50,12 +55,11 @@ Future main() async {
     suggestionManager: suggestionProviderSuggestionManager,
     storyGenerator: storyProviderStoryGenerator,
   );
+  suggestionProviderSuggestionManager.storyManager = storyManager;
+  suggestionProviderSuggestionManager.addOnFocusLossListener(() {
+    conductor.goToOrigin(storyManager);
+  });
 
-  Conductor conductor = new Conductor(
-    useSoftKeyboard: false,
-    onQuickSettingsOverlayChanged: hitTestManager.onQuickSettingsOverlayChanged,
-    onSuggestionsOverlayChanged: hitTestManager.onSuggestionsOverlayChanged,
-  );
   FocusControllerImpl focusController =
       new FocusControllerImpl(onFocusStory: (String storyId) {
     VoidCallback focusOnStory = () {

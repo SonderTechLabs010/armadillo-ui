@@ -259,7 +259,7 @@ class Conductor extends StatelessWidget {
           onQuickSettingsProgressChange: (double quickSettingsProgress) =>
               _verticalShifterKey.currentState.shiftProgress =
                   quickSettingsProgress,
-          onReturnToOriginButtonTap: () => _goToOrigin(storyManager),
+          onReturnToOriginButtonTap: () => goToOrigin(storyManager),
           onShowQuickSettingsOverlay: () =>
               _quickSettingsOverlayKey.currentState.show(),
           onQuickSettingsMaximized: () {
@@ -415,7 +415,7 @@ class Conductor extends StatelessWidget {
     _suggestionOverlayKey.currentState.hide();
   }
 
-  void _goToOrigin(StoryManager storyManager) {
+  void goToOrigin(StoryManager storyManager) {
     _defocus(storyManager);
     _nowKey.currentState.maximize();
     storyManager.interactionStopped();
@@ -453,8 +453,7 @@ class Conductor extends StatelessWidget {
     if (targetStoryClusters.length != 1) {
       print(
           'WARNING: Found ${targetStoryClusters.length} story clusters with a story with id $storyId. Returning to origin.');
-      _goToOrigin(storyManager);
-      _nowKey.currentState.maximize();
+      goToOrigin(storyManager);
     } else {
       // Unfocus all story clusters.
       storyManager.activeSortedStoryClusters.forEach(_unfocusStoryCluster);

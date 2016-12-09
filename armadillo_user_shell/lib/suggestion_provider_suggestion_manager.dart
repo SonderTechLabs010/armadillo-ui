@@ -10,7 +10,9 @@ import 'package:apps.maxwell.services.suggestion/user_input.fidl.dart'
     as maxwell;
 import 'package:armadillo/story.dart';
 import 'package:armadillo/story_cluster.dart';
+import 'package:armadillo/story_cluster_id.dart';
 import 'package:armadillo/story_generator.dart';
+import 'package:armadillo/story_manager.dart';
 import 'package:armadillo/suggestion.dart';
 import 'package:armadillo/suggestion_manager.dart';
 import 'package:flutter/material.dart';
@@ -110,8 +112,14 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
   /// Set from an external source - typically the UserShell.
   FocusControllerImpl _focusController;
 
+  // Set from an external source - typically the UserShell.
+  StoryManager _storyManager;
+
+  StoryClusterId _lastFocusedStoryClusterId;
+
   final StoryGenerator storyGenerator;
   final HitTestManager hitTestManager;
+  final Set<VoidCallback> _focusLossListeners = new Set<VoidCallback>();
 
   SuggestionProviderSuggestionManager({
     this.storyGenerator,
@@ -136,6 +144,15 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
 
   set focusController(FocusControllerImpl focusController) {
     _focusController = focusController;
+  }
+
+  set storyManager(StoryManager storyManager) {
+    _storyManager = storyManager;
+    storyManager.addListener(_onStoryClusterListChanged);
+  }
+
+  void addOnFocusLossListener(VoidCallback listener) {
+    _focusLossListeners.add(listener);
   }
 
   void _load() {
@@ -190,11 +207,44 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
 
   @override
   void storyClusterFocusChanged(StoryCluster storyCluster) {
-    List<String> focusedStoryIds =
-        storyCluster?.stories?.map((Story story) => story.id.value)?.toList() ??
-            <String>[];
+    _lastFocusedStoryCluster?.removeStoryListListener(_onStoryListChanged);
+    storyCluster?.addStoryListListener(_onStoryListChanged);
+    _lastFocusedStoryClusterId = storyCluster?.id;
+    _onStoryListChanged();
+  }
+
+  void _onStoryClusterListChanged() {
+    if (_lastFocusedStoryClusterId != null) {
+      if (_lastFocusedStoryCluster == null) {
+        _lastFocusedStoryClusterId = null;
+        _onStoryListChanged();
+        _focusLossListeners.forEach((VoidCallback listener) => listener());
+      }
+    }
+  }
+
+  void _onStoryListChanged() {
+    List<String> focusedStoryIds = _lastFocusedStoryCluster?.stories
+            ?.map((Story story) => story.id.value)
+            ?.toList() ??
+        <String>[];
     _focusController.onFocusedStoriesChanged(focusedStoryIds);
     hitTestManager.onFocusedStoriesChanged(focusedStoryIds);
+  }
+
+  StoryCluster get _lastFocusedStoryCluster {
+    if (_lastFocusedStoryClusterId == null) {
+      return null;
+    }
+    Iterable<StoryCluster> storyClusters = _storyManager.storyClusters.where(
+      (StoryCluster storyCluster) =>
+          storyCluster.id == _lastFocusedStoryClusterId,
+    );
+    if (storyClusters.isEmpty) {
+      return null;
+    }
+    assert(storyClusters.length == 1);
+    return storyClusters.first;
   }
 
   void _onAskSuggestionsChanged() {

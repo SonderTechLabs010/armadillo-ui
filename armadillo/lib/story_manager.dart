@@ -122,8 +122,8 @@ class StoryManager extends ConfigManager {
   }
 
   /// Adds [storyCluster] to the list of story clusters.
-  void add({StoryCluster storyCluster}) {
-    _storyClusters.removeWhere((StoryCluster s) => s.id == storyCluster.id);
+
+  void _add({StoryCluster storyCluster}) {
     _storyClusters.add(storyCluster);
     updateLayouts(_lastLayoutSize);
     notifyListeners();
@@ -152,7 +152,7 @@ class StoryManager extends ConfigManager {
     // be used by one of the cluster's stories.
     remove(storyClusterId: source.id);
     remove(storyClusterId: target.id);
-    add(storyCluster: target.copyWith(clusterDraggableId: new GlobalKey()));
+    _add(storyCluster: target.copyWith(clusterDraggableId: new GlobalKey()));
   }
 
   /// Removes [storyCluster] from the list of story clusters.
@@ -170,8 +170,9 @@ class StoryManager extends ConfigManager {
 
     from.absorb(storyToSplit);
 
-    add(storyCluster: new StoryCluster.fromStory(storyToSplit));
-    add(storyCluster: from.copyWith());
+    _add(storyCluster: new StoryCluster.fromStory(storyToSplit));
+    _storyClusters.removeWhere((StoryCluster s) => s.id == from.id);
+    _add(storyCluster: from.copyWith());
   }
 
   // Determines the max number of rows and columns based on [size] and either
@@ -182,6 +183,7 @@ class StoryManager extends ConfigManager {
 
   /// Finds and returns the [StoryCluster] with the id equal to
   /// [storyClusterId].
+  /// TODO(apwilson): have callers handle when the story cluster no longer exists.
   StoryCluster getStoryCluster(StoryClusterId storyClusterId) => _storyClusters
       .where((StoryCluster storyCluster) => storyCluster.id == storyClusterId)
       .single;
