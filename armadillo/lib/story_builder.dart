@@ -2,23 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:email_flutter/quarterback.dart';
+import 'package:email_session_store/email_session_store_mock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:flux/email.dart';
-import 'package:gallery/screens/email/editor.dart';
-import 'package:gallery/screens/email/inbox.dart';
-import 'package:gallery/screens/email/menu.dart';
-import 'package:gallery/screens/email/thread.dart';
-import 'package:models/email.dart';
 import 'story.dart';
 
-void _createMockEmailThreads() {
-  kEmailActions.updateThreads(<Thread>[
-    new MockThread(id: 'thread01'),
-    new MockThread(id: 'thread02'),
-    new MockThread(id: 'thread03'),
-  ]);
+void _createMockEmailSessionStore() {
+  kEmailSessionStoreToken ??= new StoreToken(new EmailSessionStoreMock());
 }
 
 Widget _widgetBuilder(String module, Map<String, Object> state) {
@@ -34,16 +26,9 @@ Widget _widgetBuilder(String module, Map<String, Object> state) {
               fit: ImageFit.cover,
             ),
       );
-    case 'email/editor':
-      return new EmailEditorScreen();
-    case 'email/inbox':
-      _createMockEmailThreads();
-      return new EmailListScreen();
-    case 'email/menu':
-      return new EmailNavScreen();
-    case 'email/thread':
-      _createMockEmailThreads();
-      return new EmailThreadScreen(threadId: 'thread01');
+    case 'email/quarterback':
+      _createMockEmailSessionStore();
+      return new EmailQuarterbackModule();
     default:
       return new Center(child: new Text('BAD MODULE!!!'));
   }

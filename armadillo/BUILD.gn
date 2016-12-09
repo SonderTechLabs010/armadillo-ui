@@ -10,8 +10,7 @@ dart_package("armadillo") {
   source_dir = "lib"
 
   deps = [
-    "//apps/modules/gallery",
-    "//apps/modules/packages/flux",
+    "//apps/modules/email/email_flutter",
     "//apps/modules/packages/models",
     "//apps/sysui/keyboard",
     "//apps/sysui/widgets",

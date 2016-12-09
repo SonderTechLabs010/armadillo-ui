@@ -4,14 +4,10 @@
 
 name: armadillo
 dependencies:
-  clients:
-    path: ../../modules/packages/clients
+  email_flutter:
+    path: ../../modules/email/email_flutter
   flutter:
     sdk: flutter
-  flux:
-    path: ../../modules/packages/flux
-  gallery:
-    path: ../../modules/gallery
   intl: ^0.14.0
   keyboard:
     path: ../keyboard

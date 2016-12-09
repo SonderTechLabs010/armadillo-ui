@@ -18,7 +18,7 @@
     },
     {
       "id": "story_01",
-      "title": "Inbox",
+      "title": "Email",
       "color": "0xFFFF9800",
       "avatar": "packages/armadillo/res/User.png",
       "icons": [
@@ -26,33 +26,7 @@
       ],
       "lastInteraction": "5",
       "culmulativeInteraction": "10",
-      "module": "email/inbox",
-      "state": {}
-    },
-    {
-      "id": "story_02",
-      "title": "Story Delta",
-      "color": "0xFFFFEB3B",
-      "avatar": "packages/armadillo/res/User.png",
-      "icons": [
-        "packages/armadillo/res/flutter-mark-square-100.png"
-      ],
-      "lastInteraction": "10",
-      "culmulativeInteraction": "20",
-      "module": "email/thread",
-      "state": {}
-    },
-    {
-      "id": "story_03",
-      "title": "Story Gamma",
-      "color": "0xFFFFC107",
-      "avatar": "packages/armadillo/res/User.png",
-      "icons": [
-        "packages/armadillo/res/flutter-mark-square-100.png"
-      ],
-      "lastInteraction": "20",
-      "culmulativeInteraction": "30",
-      "module": "email/menu",
+      "module": "email/quarterback",
       "state": {}
     },
     {
