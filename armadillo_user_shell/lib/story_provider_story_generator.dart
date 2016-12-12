@@ -12,9 +12,11 @@ import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_cluster_id.dart';
 import 'package:armadillo/story_generator.dart';
 import 'package:flutter/material.dart';
+import 'package:lib.fidl.dart/bindings.dart' as bindings;
 
 import 'debug.dart';
 import 'hit_test_manager.dart';
+import 'initial_story_generator.dart';
 import 'story_provider_watcher_impl.dart';
 
 const String _kUserImage = 'packages/armadillo/res/User.png';
@@ -77,17 +79,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     _storyProvider.previousStories((List<String> storyIds) {
       if (storyIds.isEmpty && storyClusters.isEmpty) {
         // We have no previous stories, so create some!
-        // TODO(apwilson): Remove when suggestions can create stories and we can
-        // listener for new stories.
-        List<String> storyUrls = [
-          'file:///system/apps/color',
-          'file:///system/apps/moterm',
-          'file:///system/apps/spinning_square_view',
-          'file:///system/apps/hello_material',
-        ];
-        storyUrls.forEach((String storyUrl) {
-          _storyProvider.createStory(storyUrl, (_) {});
-        });
+        InitialStoryGenerator.createStories(_storyProvider);
       } else {
         // Remove any stories that aren't in the previous story list.
         _currentStories
@@ -185,18 +177,17 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     armadilloPrint('Adding story: $storyInfo');
 
     // Start it!
-    ViewOwnerProxy viewOwner = new ViewOwnerProxy();
-    _storyControllerMap[storyInfo.id].start(viewOwner.ctrl.request());
+    bindings.InterfacePair<ViewOwner> viewOwner =
+        new bindings.InterfacePair<ViewOwner>();
+    _storyControllerMap[storyInfo.id].start(viewOwner.passRequest());
 
     // Create a flutter view from its view!
-    ChildViewConnection childViewConnection = new ChildViewConnection(
-      viewOwner.ctrl.unbind(),
-    );
-
     StoryCluster storyCluster = new StoryCluster(stories: [
       _createStory(
         storyInfo: storyInfo,
-        childViewConnection: childViewConnection,
+        childViewConnection: new ChildViewConnection(
+          viewOwner.passHandle(),
+        ),
       ),
     ]);
 
@@ -234,22 +225,9 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         cumulativeInteractionDuration: new Duration(
           minutes: 0,
         ),
-        themeColor: _kStoryColors[storyInfo.url] == null
+        themeColor: storyInfo.extra['color'] == null
             ? Colors.grey[500]
-            : _kStoryColors[storyInfo.url],
+            : new Color(int.parse(storyInfo.extra['color'])),
         inactive: false,
       );
 }
-
-final Map<String, Color> _kStoryColors = <String, Color>{
-  'file:///system/apps/paint_view': new Color(0xffad1457),
-  'file:///system/apps/hello_material': new Color(0xff4caf50),
-  'file:///system/apps/video_player': new Color(0xff9575cd),
-  'file:///system/apps/youtube_story': new Color(0xffe52d27),
-  'file:///system/apps/email_story': new Color(0xff4285f4),
-  'file:///system/apps/music_story': new Color(0xffff8c00),
-  'file:///system/apps/color': new Color(0xff5affd6),
-  'file:///system/apps/spinning_square_view': new Color(0xff512da8),
-  'file:///system/apps/moterm': new Color(0xff212121),
-  'file:///system/apps/noodles_view': new Color(0xff212121),
-};
