@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:apps.modular.services.user/story_controller.fidl.dart';
 import 'package:apps.modular.services.user/story_info.fidl.dart';
 import 'package:apps.modular.services.user/story_provider.fidl.dart';
 import 'package:apps.mozart.lib.flutter/child_view.dart';
