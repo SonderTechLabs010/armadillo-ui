@@ -115,7 +115,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         // displayed in a child view.
         int added = 0;
         storiesToAdd.forEach((String storyId) {
-          _resumeStory(storyId);
+          _getController(storyId);
           _storyControllerMap[storyId].getInfo((StoryInfo storyInfo) {
             _startStory(storyInfo);
             added++;
@@ -139,7 +139,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
   void _onStoryChanged(StoryInfo storyInfo) {
     if (_storyControllerMap[storyInfo.id] == null) {
       if (storyInfo.state == StoryState.initial) {
-        _resumeStory(storyInfo.id);
+        _getController(storyInfo.id);
         _startStory(storyInfo);
       }
     }
@@ -177,10 +177,10 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     });
   }
 
-  void _resumeStory(String storyId) {
+  void _getController(String storyId) {
     final StoryControllerProxy controller = new StoryControllerProxy();
     _storyControllerMap[storyId] = controller;
-    _storyProvider.resumeStory(
+    _storyProvider.getController(
       storyId,
       controller.ctrl.request(),
     );
