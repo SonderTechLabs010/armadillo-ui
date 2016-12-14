@@ -87,11 +87,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         ];
         storyUrls.forEach((String storyUrl) {
           final StoryControllerProxy controller = new StoryControllerProxy();
-          _storyProvider.createStory(
-            storyUrl,
-            controller.ctrl.request(),
-          );
-          controller.ctrl.close();
+          _storyProvider.createStory(storyUrl, (_) {});
         });
       } else {
         // Remove any stories that aren't in the previous story list.
