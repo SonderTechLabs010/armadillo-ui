@@ -89,6 +89,7 @@ class StoryBarState extends TickingState<StoryBar> {
                   child: new StoryTitle(
                     title: config.story.title,
                     opacity: _opacity,
+                    baseColor: _textColor,
                   ),
                 ),
                 new LayoutId(
@@ -97,7 +98,7 @@ class StoryBarState extends TickingState<StoryBar> {
                     child: new Container(
                       foregroundDecoration: new BoxDecoration(
                         border: new Border.all(
-                          color: Colors.white.withOpacity(_opacity),
+                          color: _textColor.withOpacity(_opacity),
                           width: 1.0,
                         ),
                         shape: BoxShape.circle,
@@ -111,6 +112,18 @@ class StoryBarState extends TickingState<StoryBar> {
           ),
         ),
       );
+
+  Color get _textColor {
+    // See http://www.w3.org/TR/AERT#color-contrast for the details of this
+    // algorithm.
+    int brightness = (((config.story.themeColor.red * 299) +
+                (config.story.themeColor.green * 587) +
+                (config.story.themeColor.blue * 114)) /
+            1000)
+        .round();
+
+    return (brightness > 125) ? Colors.black : Colors.white;
+  }
 
   @override
   bool handleTick(double elapsedSeconds) {

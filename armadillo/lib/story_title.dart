@@ -9,8 +9,9 @@ import 'package:flutter/widgets.dart';
 class StoryTitle extends StatelessWidget {
   final String title;
   final double opacity;
+  final Color baseColor;
 
-  StoryTitle({this.title, this.opacity: 1.0});
+  StoryTitle({this.title, this.opacity: 1.0, this.baseColor: Colors.white});
 
   @override
   Widget build(BuildContext context) => new Opacity(
@@ -19,7 +20,7 @@ class StoryTitle extends StatelessWidget {
           title.toUpperCase(),
           style: new TextStyle(
             fontSize: 11.0,
-            color: new Color.fromARGB(160, 255, 255, 255),
+            color: baseColor.withAlpha(160),
             fontWeight: FontWeight.w500,
             letterSpacing: 1.2,
           ),
