@@ -7,7 +7,7 @@ import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
 const RK4SpringDescription _kDefaultSimulationDesc =
-    const RK4SpringDescription(tension: 450.0, friction: 50.0);
+    const RK4SpringDescription(tension: 750.0, friction: 50.0);
 
 /// Animates a [SizedBox]'s [width] and [height] with a
 /// spring simulation.
@@ -66,6 +66,6 @@ class SimulatedSizedBoxState extends TickingState<SimulatedSizedBox> {
   bool handleTick(double elapsedSeconds) {
     _widthSimulation.elapseTime(elapsedSeconds);
     _heightSimulation.elapseTime(elapsedSeconds);
-    return !_widthSimulation.isDone || !_heightSimulation.isDone;
+    return !(_heightSimulation.isDone && _widthSimulation.isDone);
   }
 }

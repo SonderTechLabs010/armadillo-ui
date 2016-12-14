@@ -16,7 +16,8 @@ import 'story_cluster.dart';
 const double _kStoryBarMaximizedHeight = 48.0;
 const double _kUnfocusedStoryMargin = 1.0;
 const double _kStoryMargin = 4.0;
-const double _kCornerRadius = 8.0;
+const double _kUnfocusedCornerRadius = 4.0;
+const double _kFocusedCornerRadius = 8.0;
 
 /// Positions the [story] in a [StoryPanels] within the given [currentSize] with
 /// a [SimulatedPositioned] based on [story.panel], [displayMode], and
@@ -54,7 +55,13 @@ class StoryPositioned extends StatelessWidget {
     double rightMargin = panel.right == 1.0 ? 0.0 : scaledMargin;
 
     BorderRadius borderRadius = new BorderRadius.all(
-      new Radius.circular(scale * _kCornerRadius),
+      new Radius.circular(
+        lerpDouble(
+          _kUnfocusedCornerRadius,
+          _kFocusedCornerRadius,
+          focusProgress,
+        ),
+      ),
     );
 
     // Because focusing and defocusing is using a spring simulation to change

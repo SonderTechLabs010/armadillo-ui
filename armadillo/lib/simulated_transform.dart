@@ -7,7 +7,7 @@ import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
 const RK4SpringDescription _kDefaultSimulationDesc =
-    const RK4SpringDescription(tension: 450.0, friction: 50.0);
+    const RK4SpringDescription(tension: 750.0, friction: 50.0);
 
 /// Animates a [Transform]'s translation [dx] and [dy], [scale] and opacity
 /// with a spring simulation.  When first built this widget's opacity will start

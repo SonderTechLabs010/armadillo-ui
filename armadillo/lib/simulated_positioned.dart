@@ -9,7 +9,7 @@ import 'package:sysui_widgets/ticking_state.dart';
 import 'simulated_sized_box.dart';
 
 const RK4SpringDescription _kDefaultSimulationDesc =
-    const RK4SpringDescription(tension: 450.0, friction: 50.0);
+    const RK4SpringDescription(tension: 750.0, friction: 50.0);
 
 /// Animates a [Positioned]'s [left], [top], [width], and [height] with a
 /// spring simulation.
@@ -79,6 +79,6 @@ class SimulatedPositionedState extends TickingState<SimulatedPositioned> {
   bool handleTick(double elapsedSeconds) {
     _leftSimulation.elapseTime(elapsedSeconds);
     _topSimulation.elapseTime(elapsedSeconds);
-    return !_leftSimulation.isDone || !_topSimulation.isDone;
+    return !(_leftSimulation.isDone && _topSimulation.isDone);
   }
 }

@@ -20,7 +20,7 @@ import 'story_time_randomizer.dart';
 import 'suggestion_manager.dart';
 
 /// Set to true to enable the performance overlay.
-const bool _kShowPerformanceOverlay = true;
+const bool _kShowPerformanceOverlay = false;
 
 Future main() async {
   JsonSuggestionManager jsonSuggestionManager = new JsonSuggestionManager();

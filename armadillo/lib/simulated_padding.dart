@@ -7,7 +7,7 @@ import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
 const RK4SpringDescription _kDefaultSimulationDesc =
-    const RK4SpringDescription(tension: 450.0, friction: 50.0);
+    const RK4SpringDescription(tension: 750.0, friction: 50.0);
 
 /// Animates a [Padding]'s [padding] with a spring simulation.
 class SimulatedPadding extends StatefulWidget {
