@@ -6,6 +6,7 @@ import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart';
 import 'package:apps.modular.services.user/focus.fidl.dart';
 import 'package:apps.modular.services.user/story_provider.fidl.dart';
 import 'package:apps.modular.services.user/user_shell.fidl.dart';
+import 'package:apps.modular.services.user/user_context.fidl.dart';
 import 'package:lib.fidl.dart/bindings.dart';
 
 import 'focus_controller_impl.dart';
@@ -20,6 +21,7 @@ class UserShellImpl extends UserShell {
   final StoryProviderProxy storyProvider = new StoryProviderProxy();
   final SuggestionProviderProxy suggestionProvider =
       new SuggestionProviderProxy();
+  final UserContextProxy userContext = new UserContextProxy();
 
   UserShellImpl({
     this.storyProviderStoryGenerator,
@@ -33,15 +35,22 @@ class UserShellImpl extends UserShell {
 
   @override
   void initialize(
+    InterfaceHandle<UserContext> userContextHandle,
     InterfaceHandle<StoryProvider> storyProviderHandle,
     InterfaceHandle<SuggestionProvider> suggestionProviderHandle,
     InterfaceRequest<FocusController> focusControllerRequest,
   ) {
+    userContext.ctrl.bind(userContextHandle);
     storyProvider.ctrl.bind(storyProviderHandle);
     suggestionProvider.ctrl.bind(suggestionProviderHandle);
     focusController.bind(focusControllerRequest);
     storyProviderStoryGenerator.storyProvider = storyProvider;
     suggestionProviderSuggestionManager.suggestionProvider = suggestionProvider;
     suggestionProviderSuggestionManager.focusController = focusController;
+  }
+
+  @override
+  void terminate(void done()) {
+    done();
   }
 }
