@@ -15,7 +15,7 @@ const double _kMultiColumnWidthThreshold = 500.0;
 /// Stories that have been interacted with within this threshold from now are
 /// considered to be juggled.  Juggled stories have their sizes increased.
 const int _kJugglingThresholdMinutes = 120;
-const int _kMaxJugglingStoryCount = 8;
+const int _kMaxJugglingStoryCount = 4;
 const int _kMinSideMargin = 8;
 
 /// The [size] the story should be.
@@ -55,9 +55,9 @@ class StoryListLayout {
         0.0,
         (size.width - _kMultiColumnWidthThreshold) /
             _kMultiColumnWidthThreshold);
-    _baseHorizontalGrid = 16.0 + (screenSizeAdjustment * 2.0).floor() * 4.0;
-    _baseVerticalGrid = 16.0 + (screenSizeAdjustment * 2.0).floor() * 4.0;
-    _horizontalGap = _baseHorizontalGrid * 2.0;
+    _baseHorizontalGrid = 24.0 + (screenSizeAdjustment * 2.0).floor() * 8.0;
+    _baseVerticalGrid = 12.0 + (screenSizeAdjustment * 2.0).floor() * 4.0;
+    _horizontalGap = _baseHorizontalGrid * 1.0;
     _intraStoryInteractionScaling = 0.12 * screenSizeAdjustment;
     _multiColumn = _kMultiColumnWidthThreshold <= size.width;
   }
@@ -112,6 +112,7 @@ class StoryListLayout {
             storyClusterToLayout.cumulativeInteractionDuration.inMinutes,
             possibleJugglingMinutes);
 
+
         if (storyJugglingMinutes > 0) {
           jugglingStoryCount++;
           // Constrain the number of juggling stories within _kMaxJugglingStoryCount
@@ -120,6 +121,7 @@ class StoryListLayout {
             jugglingStoryCount = _kMaxJugglingStoryCount;
           }
         }
+
 
         return new _StoryMetadata(
           interactionMinutes:
@@ -139,7 +141,7 @@ class StoryListLayout {
                 _kJugglingThresholdMinutes.toDouble() * 0.7,
                 story.jugglingMinutes.toDouble(),
               ) *
-              0.5;
+              0.2;
       double listIndexJugglingDecay = math.max(
         0.0,
         jugglingStoryCount == 0
@@ -147,13 +149,11 @@ class StoryListLayout {
             : (jugglingStoryCount - storyIndex) / jugglingStoryCount,
       );
       double jugglingScaling =
-          1.0 + baseJugglingScaling * listIndexJugglingDecay;
+          0.9 + baseJugglingScaling * listIndexJugglingDecay;
       double width = _multiColumn ? (minW - _horizontalGap) / 2.0 : minW;
       double height = width *
-          math.min(0.75, size.height / size.width) *
-          jugglingScaling *
-          0.5 *
-          (_multiColumn ? 2.0 : 1.0);
+          math.min(10.0 / 16.0, size.height / size.width) *
+          (_multiColumn ? jugglingScaling : 0.5);
 
       // We only scale the width in multicolumn mode as we always stretch to fit
       // size.width in single column mode.
@@ -174,7 +174,7 @@ class StoryListLayout {
             -story.size.width / 2,
             ((previousStory == null) ? 0.0 : previousStory.offset.dy) -
                 story.size.height -
-                _baseVerticalGrid * 2,
+                _baseVerticalGrid * 4.0,
           );
           previousStory = story;
         },
@@ -251,7 +251,7 @@ class StoryListLayout {
           // If row width is larger than max, fit the width to max. If smaller, adjust to make it closer to the max
           double targetRowWidth = (maxRowWidth < originalRowWidth)
               ? maxRowWidth
-              : originalRowWidth + (maxRowWidth - originalRowWidth) * 0.5;
+              : originalRowWidth + (maxRowWidth - originalRowWidth) * 0.4;
           double scale = (targetRowWidth / originalRowWidth).clamp(0.7, 1.3);
 
           row.forEach((_StoryMetadata story) {
@@ -315,7 +315,7 @@ class StoryListLayout {
                   0.25 *
                   math.min(
                     1.0,
-                    storyIndex / jugglingStoryCount * 0.5,
+                    math.max(0.0, storyIndex / jugglingStoryCount - 1.0),
                   );
               if (story.offset.dy > previousStory.offset.dy - staggerAmount) {
                 story.dy = previousStory.offset.dy - staggerAmount;
@@ -364,7 +364,7 @@ class StoryListLayout {
               // TODO(apwilson): Should be vertical grid not horizontal.
               maxTop = math.max(
                 maxTop,
-                intersectingStoryAbove.bottom + _baseVerticalGrid * 2.0,
+                intersectingStoryAbove.bottom + _baseVerticalGrid * 4.0,
               );
             });
 
@@ -395,7 +395,7 @@ class StoryListLayout {
     if (_multiColumn) {
       double minWRatio = math.max(
         0.5,
-        1 - (size.width - _kMultiColumnWidthThreshold) / 1200.0,
+        1 - (size.width - _kMultiColumnWidthThreshold) / 1600.0,
       );
       minW = size.width * minWRatio - _kMinSideMargin * 2.0;
     } else {
@@ -415,7 +415,7 @@ class StoryListLayout {
       1 - (size.width - _kMultiColumnWidthThreshold) / 4200.0,
     );
     double maxW = size.width * maxWRatio - _kMinSideMargin * 2.0;
-    double l = size.height * (jugglingStoryCount / 3.0 + 0.5);
+    double l = size.height * (jugglingStoryCount / 2.0 + 0.5);
     double t = (l - top) / l - 0.25;
     double r = _smoothstep(0.0, 1.0, t);
     return maxW * r + minW * (1.0 - r);

@@ -5,6 +5,7 @@
 import 'package:armadillo/size_manager.dart';
 import 'package:armadillo/story.dart';
 import 'package:armadillo/story_cluster.dart';
+import 'package:armadillo/story_generator.dart';
 import 'package:armadillo/story_list.dart';
 import 'package:armadillo/story_list_layout.dart';
 import 'package:armadillo/story_manager.dart';
@@ -110,10 +111,24 @@ void main() {
   });
 }
 
+class DummyStoryGenerator extends StoryGenerator {
+  @override
+  void addListener(VoidCallback listener) => null;
+
+  @override
+  void removeListener(VoidCallback listener) => null;
+
+  @override
+  List<StoryCluster> get storyClusters => null;
+}
+
 class DummyStoryManager extends StoryManager {
   final List<GlobalKey> storyKeys;
 
-  DummyStoryManager({this.storyKeys}) : super();
+  DummyStoryManager({this.storyKeys})
+      : super(
+          storyGenerator: new DummyStoryGenerator(),
+        );
 
   @override
   List<StoryCluster> get storyClusters => new List<StoryCluster>.generate(

@@ -133,9 +133,9 @@ class SuggestionListState extends State<SuggestionList> {
                   new Padding(
                     padding: const EdgeInsets.only(
                       right: 16.0,
-                      left: 16.0,
-                      top: 30.0,
-                      bottom: 30.0,
+                      left: 32.0,
+                      top: 32.0,
+                      bottom: 32.0,
                     ),
                     child: new Image.asset(_kImage, fit: ImageFit.cover),
                   ),
@@ -312,7 +312,7 @@ class SuggestionListState extends State<SuggestionList> {
   Widget _createSuggestion(Suggestion suggestion) => new RepaintBoundary(
         child: new Padding(
           padding: const EdgeInsets.symmetric(
-            vertical: 6.0,
+            vertical: 12.0,
           ),
           child: new SuggestionWidget(
             key: new GlobalObjectKey(suggestion),
