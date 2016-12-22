@@ -5,8 +5,6 @@
 assets:
   - packages/armadillo/res/Armadillo.png
   - packages/armadillo/res/Background.jpg
-  - packages/armadillo/res/User.png
-  - packages/armadillo/res/screen_config.json
   - packages/armadillo/res/flutter-mark-square-100.png
   - packages/armadillo/res/ic_airplanemode_active_black.png
   - packages/armadillo/res/ic_airplanemode_inactive_grey600.png
@@ -22,7 +20,10 @@ assets:
   - packages/armadillo/res/ic_signal_wifi_3_bar_grey600_24dp.png
   - packages/armadillo/res/ic_volume_up_grey600.png
   - packages/armadillo/res/logo_googleg_24dpx4.png
+  - packages/armadillo/res/placeholder_grid.png
+  - packages/armadillo/res/screen_config.json
   - packages/armadillo/res/stories.json
+  - packages/armadillo/res/User.png
   - packages/keyboard/res/ArrowDown.png
   - packages/keyboard/res/ArrowUp.png
   - packages/keyboard/res/Delete.png

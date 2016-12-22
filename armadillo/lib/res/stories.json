@@ -9,11 +9,11 @@
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
       "lastInteraction": "0",
-      "culmulativeInteraction": "0",
+      "culmulativeInteraction": "25",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png",
-        "imageWide": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png",
+        "imageWide": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -25,7 +25,7 @@
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
       "lastInteraction": "5",
-      "culmulativeInteraction": "10",
+      "culmulativeInteraction": "50",
       "module": "email/quarterback",
       "state": {}
     },
@@ -43,10 +43,10 @@
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
       "lastInteraction": "80",
-      "culmulativeInteraction": "50",
+      "culmulativeInteraction": "5",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -64,10 +64,10 @@
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
       "lastInteraction": "160",
-      "culmulativeInteraction": "60",
+      "culmulativeInteraction": "20",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -86,10 +86,10 @@
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
       "lastInteraction": "320",
-      "culmulativeInteraction": "0",
+      "culmulativeInteraction": "5",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -104,7 +104,7 @@
       "culmulativeInteraction": "10",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -119,7 +119,7 @@
       "culmulativeInteraction": "20",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -134,7 +134,7 @@
       "culmulativeInteraction": "30",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -149,7 +149,7 @@
       "culmulativeInteraction": "40",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -164,7 +164,7 @@
       "culmulativeInteraction": "50",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -179,7 +179,7 @@
       "culmulativeInteraction": "60",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -194,7 +194,7 @@
       "culmulativeInteraction": "0",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -209,7 +209,52 @@
       "culmulativeInteraction": "10",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
+      }
+    },
+    {
+      "id": "story_17",
+      "title": "Story Xi",
+      "color": "0xFF9C27B0",
+      "avatar": "packages/armadillo/res/User.png",
+      "icons": [
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "lastInteraction": "10000",
+      "culmulativeInteraction": "60",
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/placeholder_grid.png"
+      }
+    },
+    {
+      "id": "story_18",
+      "title": "Story Omicron",
+      "color": "0xFFE91E63",
+      "avatar": "packages/armadillo/res/User.png",
+      "icons": [
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "lastInteraction": "10000",
+      "culmulativeInteraction": "0",
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/placeholder_grid.png"
+      }
+    },
+    {
+      "id": "story_19",
+      "title": "Story Pi Rho Sigma Tau Upsilon Phi Chi Psi Omega",
+      "color": "0xFFF44336",
+      "avatar": "packages/armadillo/res/User.png",
+      "icons": [
+        "packages/armadillo/res/flutter-mark-square-100.png"
+      ],
+      "lastInteraction": "10000",
+      "culmulativeInteraction": "10",
+      "module": "image",
+      "state": {
+        "image": "packages/armadillo/res/placeholder_grid.png"
       }
     },
     {
@@ -224,7 +269,7 @@
       "culmulativeInteraction": "10",
       "module": "image",
       "state": {
-        "image": "packages/armadillo/res/Armadillo.png"
+        "image": "packages/armadillo/res/placeholder_grid.png"
       },
       "inactive": "true"
     }
@@ -238,7 +283,7 @@
       "icons": [
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
-      "image": "packages/armadillo/res/Armadillo.png",
+      "image": "packages/armadillo/res/placeholder_grid.png",
       "image_type": "person",
       "story_id": "story_16"
     },
@@ -250,7 +295,7 @@
       "icons": [
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
-      "image": "packages/armadillo/res/Armadillo.png",
+      "image": "packages/armadillo/res/placeholder_grid.png",
       "image_type": "other",
       "story_id": "story_15"
     },
@@ -262,7 +307,7 @@
       "icons": [
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
-      "image": "packages/armadillo/res/Armadillo.png",
+      "image": "packages/armadillo/res/placeholder_grid.png",
       "image_type": "person",
       "story_id": "story_14"
     },
@@ -275,7 +320,7 @@
         "packages/armadillo/res/flutter-mark-square-100.png",
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
-      "image": "packages/armadillo/res/Armadillo.png",
+      "image": "packages/armadillo/res/placeholder_grid.png",
       "image_type": "other",
       "story_id": "story_13"
     },
@@ -289,7 +334,7 @@
         "packages/armadillo/res/flutter-mark-square-100.png",
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
-      "image": "packages/armadillo/res/Armadillo.png",
+      "image": "packages/armadillo/res/placeholder_grid.png",
       "image_type": "other",
       "story_id": "story_12"
     },
@@ -309,7 +354,7 @@
         "packages/armadillo/res/flutter-mark-square-100.png",
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
-      "image": "packages/armadillo/res/Armadillo.png",
+      "image": "packages/armadillo/res/placeholder_grid.png",
       "image_type": "person",
       "story_id": "story_11"
     },
@@ -345,7 +390,7 @@
       "icons": [
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
-      "image": "packages/armadillo/res/Armadillo.png",
+      "image": "packages/armadillo/res/placeholder_grid.png",
       "image_type": "other",
       "story_id": "story_07"
     },
@@ -356,7 +401,7 @@
       "icons": [
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
-      "image": "packages/armadillo/res/Armadillo.png",
+      "image": "packages/armadillo/res/placeholder_grid.png",
       "image_type": "person"
     },
     {
@@ -366,7 +411,7 @@
       "icons": [
         "packages/armadillo/res/flutter-mark-square-100.png"
       ],
-      "image": "packages/armadillo/res/Armadillo.png",
+      "image": "packages/armadillo/res/placeholder_grid.png",
       "image_type": "other",
       "story_id": "story_inactive"
     }
