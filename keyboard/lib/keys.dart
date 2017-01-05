@@ -63,7 +63,7 @@ class TextKeyState extends State<TextKey> {
 
   @override
   Widget build(BuildContext context) {
-    return new Flexible(
+    return new Expanded(
         flex: config.flex,
         child: new Listener(
             onPointerDown: (_) {
@@ -123,7 +123,7 @@ class ImageKeyState extends State<ImageKey> {
 
   @override
   Widget build(BuildContext context) {
-    return new Flexible(
+    return new Expanded(
         flex: config.flex,
         child: new Listener(
             onPointerDown: (_) {

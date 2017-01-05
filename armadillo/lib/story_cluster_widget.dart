@@ -170,7 +170,7 @@ class StoryClusterWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              new Flexible(
+              new Expanded(
                   child: _getStoryCluster(context, highlight: highlight)),
               _inlineStoryTitle,
             ],

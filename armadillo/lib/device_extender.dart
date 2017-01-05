@@ -19,7 +19,7 @@ class DeviceExtender extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final columnChildren = new List<Widget>();
-    columnChildren.add(new Flexible(child: child));
+    columnChildren.add(new Expanded(child: child));
     columnChildren.addAll(deviceExtensions);
     return new Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

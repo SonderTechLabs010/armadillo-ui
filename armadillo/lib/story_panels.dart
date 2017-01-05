@@ -195,7 +195,7 @@ class StoryPanelsState extends State<StoryPanels> {
                 ),
 
                 // The story itself.
-                new Flexible(
+                new Expanded(
                   child: new SimulatedFractionallySizedBox(
                     key: story.tabSizerKey,
                     alignment: FractionalOffset.topCenter,

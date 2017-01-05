@@ -264,15 +264,15 @@ class _QuickSettingsState extends State<QuickSettings> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: _divider()),
           new Row(children: [
-            new Flexible(
+            new Expanded(
               flex: 1,
               child: _airplaneModeToggleIcon(),
             ),
-            new Flexible(
+            new Expanded(
               flex: 1,
               child: _doNotDisturbToggleIcon(),
             ),
-            new Flexible(
+            new Expanded(
               flex: 1,
               child: _screenRotationToggleIcon(),
             ),
@@ -281,23 +281,23 @@ class _QuickSettingsState extends State<QuickSettings> {
   }
 
   Widget _buildForWideScreen(BuildContext context) => new Row(children: [
-        new Flexible(
+        new Expanded(
           flex: 3,
           child: _volumeIconSlider(),
         ),
-        new Flexible(
+        new Expanded(
           flex: 3,
           child: _brightnessIconSlider(),
         ),
-        new Flexible(
+        new Expanded(
           flex: 1,
           child: _airplaneModeToggleIcon(),
         ),
-        new Flexible(
+        new Expanded(
           flex: 1,
           child: _doNotDisturbToggleIcon(),
         ),
-        new Flexible(
+        new Expanded(
           flex: 1,
           child: _screenRotationToggleIcon(),
         ),

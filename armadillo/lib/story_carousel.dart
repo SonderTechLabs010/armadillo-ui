@@ -75,7 +75,7 @@ class StoryCarousel extends StatelessWidget {
               ),
 
               // The story itself.
-              new Flexible(
+              new Expanded(
                 child: new Stack(
                   children: [
                     _getStoryContents(context, story, size),

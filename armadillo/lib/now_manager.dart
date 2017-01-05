@@ -111,7 +111,7 @@ class NowManager extends ConfigManager {
               fit: ImageFit.cover,
             ),
           ),
-          new Flexible(
+          new Expanded(
             child: new ClipRect(
               child: new OverflowBox(
                 alignment: FractionalOffset.centerLeft,
@@ -127,7 +127,7 @@ class NowManager extends ConfigManager {
                       // spacer
                       new Container(width: _kIconLabelPadding, height: 1.0),
                       // battery text
-                      new Flexible(
+                      new Expanded(
                         child: new Opacity(
                           opacity: _quickSettingsSlideUpProgress * opacity,
                           child: new Text(
@@ -152,7 +152,7 @@ class NowManager extends ConfigManager {
                       // spacer
                       new Container(width: _kIconLabelPadding, height: 1.0),
                       // wifi text
-                      new Flexible(
+                      new Expanded(
                         child: new Opacity(
                           opacity: _quickSettingsSlideUpProgress * opacity,
                           child: new Text(
@@ -178,7 +178,7 @@ class NowManager extends ConfigManager {
                       // spacer
                       new Container(width: _kIconLabelPadding, height: 1.0),
                       // network text
-                      new Flexible(
+                      new Expanded(
                         child: new Opacity(
                           opacity: _quickSettingsSlideUpProgress * opacity,
                           child: new Text(

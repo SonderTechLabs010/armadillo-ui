@@ -75,7 +75,7 @@ class SuggestionWidget extends StatelessWidget {
               onTap: onSelected,
               child: new Row(
                 children: [
-                  new Flexible(
+                  new Expanded(
                     child: new Align(
                       alignment: FractionalOffset.centerLeft,
                       child: new Padding(

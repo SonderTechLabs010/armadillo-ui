@@ -140,7 +140,7 @@ class SuggestionListState extends State<SuggestionList> {
                     child: new Image.asset(_kImage, fit: ImageFit.cover),
                   ),
                   // Ask Anything text field.
-                  new Flexible(
+                  new Expanded(
                     child: new Align(
                       alignment: FractionalOffset.centerLeft,
                       child: new RawKeyboardInput(
@@ -212,10 +212,10 @@ class SuggestionListState extends State<SuggestionList> {
             (int index) => new Row(
                   children: [
                     new Container(height: 0.0, width: 24.0),
-                    new Flexible(
+                    new Expanded(
                         child: _createSuggestion(leftSuggestions[index])),
                     new Container(height: 0.0, width: 24.0),
-                    new Flexible(
+                    new Expanded(
                       child: index < rightSuggestions.length
                           ? _createSuggestion(rightSuggestions[index])
                           : new Offstage(offstage: true),
@@ -260,17 +260,17 @@ class SuggestionListState extends State<SuggestionList> {
             (int index) => new Row(
                   children: [
                     new Container(height: 0.0, width: 24.0),
-                    new Flexible(
+                    new Expanded(
                       child: _createSuggestion(leftSuggestions[index]),
                     ),
                     new Container(height: 0.0, width: 24.0),
-                    new Flexible(
+                    new Expanded(
                       child: index < middleSuggestions.length
                           ? _createSuggestion(middleSuggestions[index])
                           : new Offstage(offstage: true),
                     ),
                     new Container(height: 0.0, width: 24.0),
-                    new Flexible(
+                    new Expanded(
                       child: index < rightSuggestions.length
                           ? _createSuggestion(rightSuggestions[index])
                           : new Offstage(offstage: true),

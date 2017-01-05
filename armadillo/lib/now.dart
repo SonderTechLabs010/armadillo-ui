@@ -383,7 +383,7 @@ class NowState extends TickingState<Now> {
           child: new Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              new Flexible(
+              new Expanded(
                 child: new GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTapDown: (_) {
@@ -397,7 +397,7 @@ class NowState extends TickingState<Now> {
                 onLongPress: config.onShowQuickSettingsOverlay,
                 child: new Container(width: config.minHeight * 4.0),
               ),
-              new Flexible(
+              new Expanded(
                 child: new GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTapDown: (_) {
