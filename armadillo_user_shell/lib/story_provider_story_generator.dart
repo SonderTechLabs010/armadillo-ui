@@ -86,7 +86,6 @@ class StoryProviderStoryGenerator extends StoryGenerator {
           'file:///system/apps/hello_material',
         ];
         storyUrls.forEach((String storyUrl) {
-          final StoryControllerProxy controller = new StoryControllerProxy();
           _storyProvider.createStory(storyUrl, (_) {});
         });
       } else {

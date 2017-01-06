@@ -169,7 +169,7 @@ class JsonSuggestionManager extends SuggestionManager {
               .split(' ')
               .map((String word) =>
                   WordSuggestionService.levenshteinDistance(word, _askText))
-              .reduce(math.min),
+              .reduce((a, b) => math.min(a, b)),
           WordSuggestionService.levenshteinDistance(
               a.title.toLowerCase(), _askText),
         );
@@ -180,7 +180,7 @@ class JsonSuggestionManager extends SuggestionManager {
               .split(' ')
               .map((String word) =>
                   WordSuggestionService.levenshteinDistance(word, _askText))
-              .reduce(math.min),
+              .reduce((a, b) => math.min(a, b)),
           WordSuggestionService.levenshteinDistance(
               b.title.toLowerCase(), _askText),
         );
