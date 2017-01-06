@@ -4,6 +4,8 @@
 
 import 'package:flutter/widgets.dart';
 
+import 'story.dart';
+
 /// Specifies the type of action to perform when the suggestion is selected.
 /// [launchStory] will trigger the [Story] specified by
 /// [Suggestion.selectionStoryId] to come into focus.
@@ -22,7 +24,7 @@ class Suggestion {
   final String title;
   final Color themeColor;
   final SelectionType selectionType;
-  final Object selectionStoryId;
+  final StoryId selectionStoryId;
   final List<WidgetBuilder> icons;
   final WidgetBuilder image;
   final ImageType imageType;

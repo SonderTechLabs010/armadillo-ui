@@ -42,7 +42,7 @@ class JsonSuggestionManager extends SuggestionManager {
                     ? new Color(int.parse(suggestion['color']))
                     : Colors.blueGrey[600],
                 selectionType: _getSelectionType(suggestion['selection_type']),
-                selectionStoryId: new ValueKey(suggestion['story_id']),
+                selectionStoryId: new StoryId(suggestion['story_id']),
                 icons: suggestion['icons'] != null
                     ? (suggestion['icons'] as List<String>)
                         .map(
@@ -69,14 +69,14 @@ class JsonSuggestionManager extends SuggestionManager {
       _storySuggestionsMap = new Map<Object, List<Suggestion>>();
       decodedJson["story_suggestions_map"]
           .forEach((String storyId, List<String> suggestions) {
-        _storySuggestionsMap[new ValueKey(storyId)] = suggestions
+        _storySuggestionsMap[new StoryId(storyId)] = suggestions
             .map((String suggestionId) =>
                 suggestionMap[new ValueKey(suggestionId)])
             .toList();
       });
 
       // Start with no story focus suggestions.
-      _currentSuggestions = _storySuggestionsMap[new ValueKey('none')];
+      _currentSuggestions = _storySuggestionsMap[new StoryId('none')];
 
       notifyListeners();
     });
@@ -156,12 +156,12 @@ class JsonSuggestionManager extends SuggestionManager {
         }
         _currentSuggestions = suggestions.isNotEmpty
             ? suggestions
-            : _storySuggestionsMap[new ValueKey('none')];
+            : _storySuggestionsMap[new StoryId('none')];
       }
     } else {
       List<Suggestion> suggestions = new List<Suggestion>.from(
-          _storySuggestionsMap[new ValueKey('ask')] ??
-              _storySuggestionsMap[new ValueKey('none')]);
+          _storySuggestionsMap[new StoryId('ask')] ??
+              _storySuggestionsMap[new StoryId('none')]);
       suggestions.sort((Suggestion a, Suggestion b) {
         int minADistance = math.min(
           a.title
