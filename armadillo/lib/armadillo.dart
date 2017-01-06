@@ -42,7 +42,7 @@ class Armadillo extends StatelessWidget {
             fit: ImageFit.cover,
             colorFilter: new ui.ColorFilter.mode(
               _kBackgroundOverlayColor,
-              ui.TransferMode.srcATop,
+              ui.BlendMode.srcATop,
             ),
           ),
         ),
