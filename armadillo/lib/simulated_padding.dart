@@ -55,8 +55,8 @@ class SimulatedPaddingState extends TickingState<SimulatedPadding> {
   @override
   Widget build(BuildContext context) => new Padding(
         padding: new EdgeInsets.only(
-          left: _leftSimulation.value,
-          right: _rightSimulation.value,
+          left: _leftSimulation.value.clamp(0.0, double.INFINITY),
+          right: _rightSimulation.value.clamp(0.0, double.INFINITY),
         ),
         child: config.child,
       );

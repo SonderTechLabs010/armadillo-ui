@@ -57,8 +57,8 @@ class SimulatedSizedBoxState extends TickingState<SimulatedSizedBox> {
 
   @override
   Widget build(BuildContext context) => new SizedBox(
-        width: _widthSimulation.value,
-        height: _heightSimulation.value,
+        width: _widthSimulation.value.clamp(0.0, double.INFINITY),
+        height: _heightSimulation.value.clamp(0.0, double.INFINITY),
         child: config.child,
       );
 

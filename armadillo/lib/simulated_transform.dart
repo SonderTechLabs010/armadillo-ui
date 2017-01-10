@@ -94,7 +94,7 @@ class SimulatedTranslationTransformState
         ),
         alignment: FractionalOffset.center,
         child: new Opacity(
-          opacity: _opacitySimulation.value,
+          opacity: _opacitySimulation.value.clamp(0.0, 1.0),
           child: config.child,
         ),
       ));
