@@ -125,8 +125,8 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
         _storyPanels.isNotEmpty ? new Size(width, height) : sizeManager.size;
     return new SimulatedTransform(
       key: _translationKey,
-      dx: -width / 2.0,
-      dy: -height / 2.0,
+      dx: 0.0,
+      dy: 0.0,
       scale: childScale,
       targetOpacity: opacity,
       child: new SimulatedSizedBox(

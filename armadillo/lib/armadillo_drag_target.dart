@@ -141,11 +141,12 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
     setState(() {
       _activeCount += 1;
     });
+    final RenderBox renderObject = context.findRenderObject();
     return new _DragAvatar<T>(
         overlayKey: config.overlayKey,
         data: config.data,
         initialPosition: position,
-        dragStartPoint: Point.origin,
+        dragStartPoint: renderObject.globalToLocal(position),
         feedback: config.feedback,
         onDragEnd: (Velocity velocity, Offset offset, bool wasAccepted) {
           setState(() {
