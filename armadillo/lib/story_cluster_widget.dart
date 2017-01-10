@@ -135,28 +135,24 @@ class StoryClusterWidget extends StatelessWidget {
     BuildContext context, {
     bool hasCandidates,
   }) =>
-      new LongHoverDetector(
-        hovering: hasCandidates,
-        onLongHover: onGainFocus,
-        child: new OptionalWrapper(
-          useWrapper: _isUnfocused && !hasCandidates,
-          builder: (BuildContext context, Widget child) =>
-              new ArmadilloLongPressDraggable<StoryClusterId>(
-                key: storyCluster.clusterDraggableKey,
-                overlayKey: overlayKey,
-                data: storyCluster.id,
-                childWhenDragging: Nothing.widget,
-                feedback: new StoryClusterDragFeedback(
-                  key: storyCluster.dragFeedbackKey,
-                  storyCluster: storyCluster,
-                  storyWidgets: storyWidgets,
-                ),
-                child: child,
+      new OptionalWrapper(
+        useWrapper: _isUnfocused && !hasCandidates,
+        builder: (BuildContext context, Widget child) =>
+            new ArmadilloLongPressDraggable<StoryClusterId>(
+              key: storyCluster.clusterDraggableKey,
+              overlayKey: overlayKey,
+              data: storyCluster.id,
+              childWhenDragging: Nothing.widget,
+              feedback: new StoryClusterDragFeedback(
+                key: storyCluster.dragFeedbackKey,
+                storyCluster: storyCluster,
+                storyWidgets: storyWidgets,
               ),
-          child: _getStoryClusterWithInlineStoryTitle(
-            context,
-            highlight: hasCandidates,
-          ),
+              child: child,
+            ),
+        child: _getStoryClusterWithInlineStoryTitle(
+          context,
+          highlight: hasCandidates,
         ),
       );
 
