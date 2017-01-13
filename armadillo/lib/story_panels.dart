@@ -36,12 +36,14 @@ class StoryPanels extends StatefulWidget {
   final Map<StoryId, Widget> storyWidgets;
 
   StoryPanels({
+    Key key,
     this.storyCluster,
     this.focusProgress,
     this.highlight,
     this.overlayKey,
     this.storyWidgets,
-  }) {
+  })
+      : super(key: key) {
     assert(() {
       Panel.haveFullCoverage(
         storyCluster.stories
@@ -96,6 +98,7 @@ class StoryPanelsState extends State<StoryPanels> {
             constraints.maxHeight,
           );
           return new Stack(
+            overflow: Overflow.visible,
             children: config.storyCluster.stories
                 .map(
                   (Story story) => new StoryPositioned(

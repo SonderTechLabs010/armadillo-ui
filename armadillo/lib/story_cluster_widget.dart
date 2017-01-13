@@ -187,6 +187,7 @@ class StoryClusterWidget extends StatelessWidget {
               focusProgress: focusProgress,
               storyCluster: storyCluster,
               child: new StoryPanels(
+                key: storyCluster.panelsKey,
                 storyCluster: storyCluster,
                 focusProgress: focusProgress,
                 highlight: highlight,

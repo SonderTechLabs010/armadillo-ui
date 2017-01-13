@@ -12,6 +12,7 @@ import 'package:sysui_widgets/ticking_state.dart';
 import 'armadillo_drag_target.dart';
 import 'panel.dart';
 import 'place_holder_story.dart';
+import 'simulated_positioned.dart';
 import 'size_manager.dart';
 import 'story.dart';
 import 'story_cluster.dart';
@@ -220,12 +221,42 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   @override
   Widget build(BuildContext context) => new ArmadilloDragTarget<StoryClusterId>(
       onWillAccept: (StoryClusterId storyClusterId, Point point) => true,
-      onAccept: (StoryClusterId storyClusterId, Point point) {
+      onAccept: (StoryClusterId storyClusterId, _) {
         StoryCluster storyCluster =
             InheritedStoryManager.of(context).getStoryCluster(storyClusterId);
-        return _getClosestLine(point, storyCluster)
-            .onDrop
-            ?.call(context, storyCluster);
+
+        SizeManager sizeManager = InheritedSizeManager.of(context);
+        storyCluster.stories.forEach((Story story) {
+          if (story.positionedKey.currentState is SimulatedPositionedState) {
+            // Get the Story's current global bounds...
+            RenderBox storyBox =
+                story.positionedKey.currentContext.findRenderObject();
+            Point storyTopLeft = storyBox.localToGlobal(Point.origin);
+            Point storyBottomRight = storyBox.localToGlobal(
+              new Point(storyBox.size.width, storyBox.size.height),
+            );
+
+            // Convert the Story's global bounds into bounds local to the
+            // StoryPanels...
+            RenderBox panelsBox =
+                config.storyCluster.panelsKey.currentContext.findRenderObject();
+            Point storyInPanelsTopLeft = panelsBox.globalToLocal(storyTopLeft);
+            Point storyInPanelsBottomRight =
+                panelsBox.globalToLocal(storyBottomRight);
+
+            // Jump the Story's SimulatedPositioned to its new location to
+            // ensure a seamless animation into place.
+            SimulatedPositionedState state = story.positionedKey.currentState;
+            state.bounds = new Rect.fromLTRB(
+              storyInPanelsTopLeft.x,
+              storyInPanelsTopLeft.y,
+              storyInPanelsBottomRight.x,
+              storyInPanelsBottomRight.y,
+            );
+          }
+        });
+
+        _closestTargets[storyCluster]?.onDrop?.call(context, storyCluster);
       },
       builder: (
         BuildContext context,

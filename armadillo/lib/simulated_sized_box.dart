@@ -68,4 +68,15 @@ class SimulatedSizedBoxState extends TickingState<SimulatedSizedBox> {
     _heightSimulation.elapseTime(elapsedSeconds);
     return !(_heightSimulation.isDone && _widthSimulation.isDone);
   }
+
+  set size(Size size) {
+    _widthSimulation = new RK4SpringSimulation(
+      initValue: size.width,
+      desc: config.springDescription,
+    );
+    _heightSimulation = new RK4SpringSimulation(
+      initValue: size.height,
+      desc: config.springDescription,
+    );
+  }
 }

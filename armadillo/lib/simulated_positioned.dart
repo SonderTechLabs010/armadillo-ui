@@ -81,4 +81,16 @@ class SimulatedPositionedState extends TickingState<SimulatedPositioned> {
     _topSimulation.elapseTime(elapsedSeconds);
     return !(_leftSimulation.isDone && _topSimulation.isDone);
   }
+
+  set bounds(Rect bounds) {
+    _leftSimulation = new RK4SpringSimulation(
+      initValue: bounds.topLeft.x,
+      desc: config.springDescription,
+    );
+    _topSimulation = new RK4SpringSimulation(
+      initValue: bounds.topLeft.y,
+      desc: config.springDescription,
+    );
+    _sizedBoxKey.currentState.size = new Size(bounds.width, bounds.height);
+  }
 }
