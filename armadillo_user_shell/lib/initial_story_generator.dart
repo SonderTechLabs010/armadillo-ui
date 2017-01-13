@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:apps.modular.services.document_store/document.fidl.dart';
+import 'dart:convert';
+
 import 'package:apps.modular.services.user/story_provider.fidl.dart';
 
 const List<String> _kStoryUrls = const <String>[
@@ -19,14 +20,10 @@ const Map<String, String> _kStoryColors = const <String, String>{
   'file:///system/apps/paint_view': '0xFFAD1457',
 };
 
-final Map<String, Map<String, Document>> _kStoryRootDocs = {
+Map<String, dynamic> _kStoryRootDocs = {
   'file:///system/apps/color': {
-    'color': new Document()
-      ..docid = 'color'
-      ..properties = <String, Value>{
-        'color': new Value()..stringValue = '0xFF1DE9B6'
-      },
-  },
+    'color': '0xFF1DE9B6'
+  }
 };
 
 /// Creates the initial list of stories to be shown when no stories exist.
@@ -38,7 +35,7 @@ class InitialStoryGenerator {
       storyProvider.createStoryWithInfo(
         storyUrl,
         <String, String>{'color': _kStoryColors[storyUrl]},
-        _kStoryRootDocs[storyUrl] ?? <String, Document>{},
+        JSON.encode(_kStoryRootDocs[storyUrl] ?? null),
         (String storyId) => null,
       );
     });
