@@ -27,13 +27,11 @@ class StoryCarousel extends StatelessWidget {
   final List<Story> stories;
   final double focusProgress;
   final Size fullSize;
-  final bool highlight;
   StoryCarousel({
     Key key,
     this.stories,
     this.focusProgress,
     this.fullSize,
-    this.highlight,
   })
       : super(key: key);
 
@@ -55,11 +53,6 @@ class StoryCarousel extends StatelessWidget {
           borderRadius:
               new BorderRadius.circular(lerpDouble(4.0, 0.0, focusProgress)),
         ),
-        foregroundDecoration: highlight
-            ? new BoxDecoration(
-                backgroundColor: _kTargetOverlayColor,
-              )
-            : null,
         child: new ClipRRect(
           borderRadius:
               new BorderRadius.circular(lerpDouble(4.0, 0.0, focusProgress)),

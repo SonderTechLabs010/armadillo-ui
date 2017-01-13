@@ -178,10 +178,11 @@ class CarouselState extends ScrollableState<Carousel> {
     return scrollOffset.floor() % size;
   }
 
-  void _notifyItemChanged(_) {
+  Null _notifyItemChanged(_) {
     if (config.onItemChanged != null) {
       config.onItemChanged(_pageIndex);
     }
+    return Null;
   }
 
   void _notifyItemSelected(int index) {

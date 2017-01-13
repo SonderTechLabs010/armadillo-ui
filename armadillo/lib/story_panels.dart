@@ -25,13 +25,11 @@ import 'story_positioned.dart';
 
 const double _kStoryBarMinimizedHeight = 4.0;
 const double _kStoryBarMaximizedHeight = 48.0;
-const Color _kTargetOverlayColor = const Color.fromARGB(128, 153, 234, 216);
 
 /// Displays up to four stories in a grid-like layout.
 class StoryPanels extends StatefulWidget {
   final StoryCluster storyCluster;
   final double focusProgress;
-  final bool highlight;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
   final Map<StoryId, Widget> storyWidgets;
 
@@ -39,7 +37,6 @@ class StoryPanels extends StatefulWidget {
     Key key,
     this.storyCluster,
     this.focusProgress,
-    this.highlight,
     this.overlayKey,
     this.storyWidgets,
   })
@@ -91,37 +88,30 @@ class StoryPanelsState extends State<StoryPanels> {
           constraints.maxWidth,
           constraints.maxHeight,
         );
-        return new Container(
-          foregroundDecoration: config.highlight
-              ? new BoxDecoration(
-                  backgroundColor: _kTargetOverlayColor,
-                )
-              : null,
-          child: new Stack(
-            overflow: Overflow.visible,
-            children: config.storyCluster.stories
-                .map(
-                  (Story story) => new StoryPositioned(
-                        focusProgress: config.focusProgress,
-                        displayMode: config.storyCluster.displayMode,
-                        isFocused:
-                            (config.storyCluster.focusedStoryId == story.id),
-                        story: story,
-                        currentSize: currentSize,
-                        focusSimulationKey:
-                            config.storyCluster.focusSimulationKey,
-                        child: _getStory(
-                          context,
-                          story,
-                          _getStoryBarPadding(
-                            story: story,
-                            currentSize: currentSize,
-                          ),
+        return new Stack(
+          overflow: Overflow.visible,
+          children: config.storyCluster.stories
+              .map(
+                (Story story) => new StoryPositioned(
+                      focusProgress: config.focusProgress,
+                      displayMode: config.storyCluster.displayMode,
+                      isFocused:
+                          (config.storyCluster.focusedStoryId == story.id),
+                      story: story,
+                      currentSize: currentSize,
+                      focusSimulationKey:
+                          config.storyCluster.focusSimulationKey,
+                      child: _getStory(
+                        context,
+                        story,
+                        _getStoryBarPadding(
+                          story: story,
+                          currentSize: currentSize,
                         ),
                       ),
-                )
-                .toList(),
-          ),
+                    ),
+              )
+              .toList(),
         );
       });
 

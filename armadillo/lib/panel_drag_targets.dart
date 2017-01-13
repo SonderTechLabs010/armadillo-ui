@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 import 'package:sysui_widgets/rk4_spring_simulation.dart';
@@ -34,6 +35,7 @@ const Color _kStoryBarTargetColor = const Color(0xFF00FFFF);
 const Color _kDiscardTargetColor = const Color(0xFFFF0000);
 const Color _kBringToFrontTargetColor = const Color(0xFF00FF00);
 const Color _kStoryEdgeTargetColor = const Color(0xFF0000FF);
+const Color _kTargetBackgroundColor = const Color.fromARGB(128, 153, 234, 216);
 
 /// Set to true to draw target lines.
 const bool _kDrawTargetLines = false;
@@ -182,6 +184,8 @@ class PanelDragTargets extends StatefulWidget {
   final Widget child;
   final double scale;
   final double focusProgress;
+  final VoidCallback onGainFocus;
+  final Size currentSize;
   final Set<LineSegment> _targetLines = new Set<LineSegment>();
 
   PanelDragTargets({
@@ -190,6 +194,8 @@ class PanelDragTargets extends StatefulWidget {
     this.child,
     this.scale,
     this.focusProgress,
+    this.onGainFocus,
+    this.currentSize,
   })
       : super(key: key);
 
@@ -199,14 +205,26 @@ class PanelDragTargets extends StatefulWidget {
 
 class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   final Set<LineSegment> _targetLines = new Set<LineSegment>();
+
+  /// When a 'closest target' is chosen, the [Point] of the candidate becomes
+  /// the lock point for that target.  A new 'closest target' will not be chosen
+  /// until the candidate travels the [_kStickyDistance] away from that lock
+  /// point.
   final Map<StoryCluster, Point> _closestTargetLockPoints =
-      new Map<StoryCluster, Point>();
+      <StoryCluster, Point>{};
   final Map<StoryCluster, LineSegment> _closestTargets =
-      new Map<StoryCluster, LineSegment>();
+      <StoryCluster, LineSegment>{};
   final RK4SpringSimulation _scaleSimulation = new RK4SpringSimulation(
     initValue: 1.0,
     desc: _kScaleSimulationDesc,
   );
+
+  /// When candidates are dragged over this drag target we add
+  /// [PlaceHolderStory]s to the [StoryCluster] this target is representing.
+  /// To ensure we can return to the original layout of the stories if the
+  /// candidates leave without being dropped we store off the original story
+  /// list.
+  final List<Story> _originalStoryPlacement = <Story>[];
 
   @override
   void initState() {
@@ -222,6 +240,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       oldConfig.storyCluster.removeStoryListListener(_populateTargetLines);
       config.storyCluster.addStoryListListener(_populateTargetLines);
     }
+    if (oldConfig.focusProgress != config.focusProgress ||
+        oldConfig.currentSize != config.currentSize) {
+      _populateTargetLines();
+    }
   }
 
   @override
@@ -232,107 +254,170 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
   @override
   Widget build(BuildContext context) => new ArmadilloDragTarget<StoryClusterId>(
-      onWillAccept: (StoryClusterId storyClusterId, Point point) => true,
-      onAccept: (StoryClusterId storyClusterId, _) {
-        StoryCluster storyCluster =
-            StoryModel.of(context).getStoryCluster(storyClusterId);
-
-        storyCluster.stories.forEach((Story story) {
-          if (story.positionedKey.currentState is SimulatedPositionedState) {
-            // Get the Story's current global bounds...
-            RenderBox storyBox =
-                story.positionedKey.currentContext.findRenderObject();
-            Point storyTopLeft = storyBox.localToGlobal(Point.origin);
-            Point storyBottomRight = storyBox.localToGlobal(
-              new Point(storyBox.size.width, storyBox.size.height),
-            );
-
-            // Convert the Story's global bounds into bounds local to the
-            // StoryPanels...
-            RenderBox panelsBox =
-                config.storyCluster.panelsKey.currentContext.findRenderObject();
-            Point storyInPanelsTopLeft = panelsBox.globalToLocal(storyTopLeft);
-            Point storyInPanelsBottomRight =
-                panelsBox.globalToLocal(storyBottomRight);
-
-            // Jump the Story's SimulatedPositioned to its new location to
-            // ensure a seamless animation into place.
-            SimulatedPositionedState state = story.positionedKey.currentState;
-            state.bounds = new Rect.fromLTRB(
-              storyInPanelsTopLeft.x,
-              storyInPanelsTopLeft.y,
-              storyInPanelsBottomRight.x,
-              storyInPanelsBottomRight.y,
-            );
-          }
-        });
-
-        _closestTargets[storyCluster]?.onDrop?.call(context, storyCluster);
-      },
-      builder: (
-        BuildContext context,
-        Map<StoryClusterId, Point> storyClusterIdCandidates,
-        Map<dynamic, Point> rejectedData,
-      ) {
-        Map<StoryCluster, Point> storyClusterCandidates =
-            <StoryCluster, Point>{};
-        storyClusterIdCandidates.keys.forEach((StoryClusterId storyClusterId) {
+        onWillAccept: (_, __) => true,
+        onAccept: (StoryClusterId storyClusterId, _) {
           StoryCluster storyCluster =
               StoryModel.of(context).getStoryCluster(storyClusterId);
-          storyClusterCandidates[storyCluster] =
-              storyClusterIdCandidates[storyClusterId];
-        });
 
-        _updateClosestTargets(storyClusterCandidates);
+          storyCluster.stories.forEach((Story story) {
+            if (story.positionedKey.currentState is SimulatedPositionedState) {
+              // Get the Story's current global bounds...
+              RenderBox storyBox =
+                  story.positionedKey.currentContext.findRenderObject();
+              Point storyTopLeft = storyBox.localToGlobal(Point.origin);
+              Point storyBottomRight = storyBox.localToGlobal(
+                new Point(storyBox.size.width, storyBox.size.height),
+              );
 
-        double newScale = storyClusterCandidates.isEmpty ? 1.0 : config.scale;
-        if (_scaleSimulation.target != newScale) {
-          _scaleSimulation.target = newScale;
-          startTicking();
-        }
+              // Convert the Story's global bounds into bounds local to the
+              // StoryPanels...
+              RenderBox panelsBox = config.storyCluster.panelsKey.currentContext
+                  .findRenderObject();
+              Point storyInPanelsTopLeft =
+                  panelsBox.globalToLocal(storyTopLeft);
+              Point storyInPanelsBottomRight =
+                  panelsBox.globalToLocal(storyBottomRight);
 
-        // Scale the child.
-        double childScale = _scaleSimulation.value;
+              // Jump the Story's SimulatedPositioned to its new location to
+              // ensure a seamless animation into place.
+              SimulatedPositionedState state = story.positionedKey.currentState;
+              state.bounds = new Rect.fromLTRB(
+                storyInPanelsTopLeft.x,
+                storyInPanelsTopLeft.y,
+                storyInPanelsBottomRight.x,
+                storyInPanelsBottomRight.y,
+              );
+            }
+          });
 
-        List<Widget> stackChildren = <Widget>[
-          new Positioned(
-            top: 0.0,
-            left: 0.0,
-            right: 0.0,
-            bottom: 0.0,
-            child: new Transform(
-              transform: new Matrix4.identity().scaled(childScale, childScale),
-              alignment: FractionalOffset.center,
-              child: config.child,
-            ),
-          )
-        ];
+          if (config.focusProgress == 0.0) {
+            config.onGainFocus?.call();
+          }
 
-        // When we have a candidate and we're fully focused, show the target
-        // lines.
-        if (_kDrawTargetLines &&
-            storyClusterCandidates.isNotEmpty &&
-            config.focusProgress == 1.0) {
-          // Add all the lines.
-          stackChildren.addAll(
-            _targetLines
-                .where(
-                  (LineSegment line) => !storyClusterCandidates.keys.every(
-                        (StoryCluster key) => !line.canAccept(key),
-                      ),
-                )
-                .map(
-                  (LineSegment line) => line.buildStackChild(),
-                ),
+          _closestTargets[storyCluster]?.onDrop?.call(context, storyCluster);
+        },
+        builder: (
+          BuildContext context,
+          Map<StoryClusterId, Point> storyClusterIdCandidates,
+          Map<dynamic, Point> rejectedData,
+        ) {
+          _updateInlinePreviewScalingSimulation(
+            storyClusterIdCandidates.isNotEmpty,
           );
-        }
-        return new Stack(children: stackChildren);
-      });
+          Map<StoryCluster, Point> storyClusterCandidates =
+              <StoryCluster, Point>{};
+          storyClusterIdCandidates.keys
+              .forEach((StoryClusterId storyClusterId) {
+            Point storyClusterPoint = storyClusterIdCandidates[storyClusterId];
+            StoryCluster storyCluster =
+                StoryModel.of(context).getStoryCluster(storyClusterId);
+            storyClusterCandidates[storyCluster] = storyClusterPoint;
+          });
+
+          _updateClosestTargets(storyClusterCandidates);
+
+          // Scale child to config.scale if we aren't in the timeline
+          // and we have a candidate being dragged over us.
+          double newScale =
+              storyClusterCandidates.isEmpty || config.focusProgress == 0.0
+                  ? 1.0
+                  : config.scale;
+          if (_scaleSimulation.target != newScale) {
+            _scaleSimulation.target = newScale;
+            startTicking();
+          }
+
+          // Scale the child.
+          double childScale = _scaleSimulation.value;
+
+          List<Widget> stackChildren = <Widget>[
+            new Positioned(
+              top: 0.0,
+              left: 0.0,
+              right: 0.0,
+              bottom: 0.0,
+              child: new Transform(
+                transform:
+                    new Matrix4.identity().scaled(childScale, childScale),
+                alignment: FractionalOffset.center,
+                child: new Container(
+                  decoration: storyClusterCandidates.isNotEmpty
+                      ? new BoxDecoration(
+                          backgroundColor: _kTargetBackgroundColor,
+                        )
+                      : null,
+                  child: config.child,
+                ),
+              ),
+            )
+          ];
+
+          // When we have a candidate and we're fully focused, show the target
+          // lines.
+          if (_kDrawTargetLines && storyClusterCandidates.isNotEmpty) {
+            // Add all the lines.
+            stackChildren.addAll(
+              _targetLines
+                  .where(
+                    (LineSegment line) => !storyClusterCandidates.keys.every(
+                          (StoryCluster key) => !line.canAccept(key),
+                        ),
+                  )
+                  .map(
+                    (LineSegment line) => line.buildStackChild(),
+                  ),
+            );
+            // Add candidate points
+            stackChildren.addAll(
+              storyClusterCandidates.values.map(
+                (Point point) => new Positioned(
+                      left: point.x - 5.0,
+                      top: point.y - 5.0,
+                      width: 10.0,
+                      height: 10.0,
+                      child: new Container(
+                        decoration: new BoxDecoration(
+                          backgroundColor: new Color(0xFFFFFF00),
+                        ),
+                      ),
+                    ),
+              ),
+            );
+            // Add candidate lockpoints
+            stackChildren.addAll(
+              _closestTargetLockPoints.values.map(
+                (Point point) => new Positioned(
+                      left: point.x - 5.0,
+                      top: point.y - 5.0,
+                      width: 10.0,
+                      height: 10.0,
+                      child: new Container(
+                        decoration: new BoxDecoration(
+                          backgroundColor: new Color(0xFFFF00FF),
+                        ),
+                      ),
+                    ),
+              ),
+            );
+          }
+          return new Stack(children: stackChildren);
+        },
+      );
 
   @override
   bool handleTick(double elapsedSeconds) {
     _scaleSimulation.elapseTime(elapsedSeconds);
     return !_scaleSimulation.isDone;
+  }
+
+  /// If [hasCandidates] is true and we're currently in the timeline, start
+  /// the inline preview scale simulation.  If either is false, reverse the
+  /// simulation back to its beginning.
+  void _updateInlinePreviewScalingSimulation(bool hasCandidates) {
+    scheduleMicrotask(() {
+      config.storyCluster.inlinePreviewScaleSimulationKey.currentState?.target =
+          (hasCandidates && config.focusProgress == 0.0) ? 1.0 : 0.0;
+    });
   }
 
   void _updateClosestTargets(Map<StoryCluster, Point> storyClusterCandidates) {
@@ -341,6 +426,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       if (!storyClusterCandidates.keys.contains(storyCluster)) {
         _closestTargetLockPoints.remove(storyCluster);
         _closestTargets.remove(storyCluster);
+        config.storyCluster.removePreviews();
+        _cleanup(context: context, preview: true);
+        config.storyCluster.displayMode = DisplayMode.panels;
+        _updateDragFeedback(storyCluster.dragFeedbackKey);
       }
     });
 
@@ -364,7 +453,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       // closest line has changed and we've moved past the sticky distance for
       // its lock point.
       if (_closestTargets[storyCluster] == null ||
-          (_closestTargets[storyCluster] != closestLine &&
+          (_closestTargets[storyCluster].name != closestLine.name &&
               ((lockPoint - storyClusterPoint).distance > _kStickyDistance))) {
         _lockClosestTarget(
           storyCluster: storyCluster,
@@ -415,10 +504,13 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   ///   4) Edge targets on top, bottom, left, and right of the cluster.
   ///   5) Edge targets on top, bottom, left, and right of each panel.
   void _populateTargetLines() {
-    // Only update target lines if there are no placeholders.
-    if (!config.storyCluster.stories
+    // Only update original story layout if there are no placeholders.
+    if (config.storyCluster.stories
         .every((Story story) => !story.isPlaceHolder)) {
-      return;
+      _originalStoryPlacement.clear();
+      config.storyCluster.stories.forEach(
+        (Story story) => _originalStoryPlacement.add(story.copyWith()),
+      );
     }
 
     SizeModel sizeModel = SizeModel.of(context);
@@ -427,7 +519,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     double verticalMargin = (1.0 - config.scale) / 2.0 * sizeModel.size.height;
     double horizontalMargin = (1.0 - config.scale) / 2.0 * sizeModel.size.width;
 
-    int availableRows = maxRows(sizeModel.size) - _currentRows;
+    List<Panel> panels =
+        _originalStoryPlacement.map((Story story) => story.panel).toList();
+    int availableRows =
+        maxRows(sizeModel.size) - _getCurrentRows(panels: panels);
     if (availableRows > 0) {
       // Top edge target.
       _targetLines.add(
@@ -559,72 +654,74 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               );
 
           storyCluster.stories.forEach((Story story) {
-            story.storyBarKey.currentState?.maximize(jumpToFinish: true);
+            story.storyBarKey.currentState?.maximize();
           });
         },
       ),
     );
 
-    // Top discard target.
-    _targetLines.add(
-      new LineSegment.horizontal(
-        name: 'Top discard target',
-        initiallyTargetable: false,
-        y: verticalMargin + _kDiscardTargetTopEdgeYOffset,
-        left: horizontalMargin * 3.0,
-        right: sizeModel.size.width - 3.0 * horizontalMargin,
-        color: _kDiscardTargetColor,
-        maxStoriesCanAccept: _kMaxStoriesPerCluster,
-        onHover: (BuildContext context, StoryCluster storyCluster) {
-          config.storyCluster.removePreviews();
-          _cleanup(context: context, preview: true);
-          _updateDragFeedback(storyCluster.dragFeedbackKey);
-          config.storyCluster.displayMode = DisplayMode.panels;
-        },
-        onDrop: (BuildContext context, StoryCluster storyCluster) {
-          config.storyCluster.removePreviews();
-          _cleanup(context: context, preview: true);
-          config.storyCluster.displayMode = DisplayMode.panels;
+    if (config.focusProgress != 0.0) {
+      // Top discard target.
+      _targetLines.add(
+        new LineSegment.horizontal(
+          name: 'Top discard target',
+          initiallyTargetable: false,
+          y: verticalMargin + _kDiscardTargetTopEdgeYOffset,
+          left: horizontalMargin * 3.0,
+          right: sizeModel.size.width - 3.0 * horizontalMargin,
+          color: _kDiscardTargetColor,
+          maxStoriesCanAccept: _kMaxStoriesPerCluster,
+          onHover: (BuildContext context, StoryCluster storyCluster) {
+            config.storyCluster.removePreviews();
+            _cleanup(context: context, preview: true);
+            _updateDragFeedback(storyCluster.dragFeedbackKey);
+            config.storyCluster.displayMode = DisplayMode.panels;
+          },
+          onDrop: (BuildContext context, StoryCluster storyCluster) {
+            config.storyCluster.removePreviews();
+            _cleanup(context: context, preview: true);
+            config.storyCluster.displayMode = DisplayMode.panels;
 
-          // TODO(apwilson): Animate storyCluster away.
-        },
-      ),
-    );
+            // TODO(apwilson): Animate storyCluster away.
+          },
+        ),
+      );
 
-    // Bottom bring-to-front target.
-    _targetLines.add(
-      new LineSegment.horizontal(
-        name: 'Bottom bring-to-front target',
-        initiallyTargetable: false,
-        y: sizeModel.size.height -
-            verticalMargin +
-            _kBringToFrontTargetBottomEdgeYOffset,
-        left: horizontalMargin * 3.0,
-        right: sizeModel.size.width - 3.0 * horizontalMargin,
-        color: _kBringToFrontTargetColor,
-        maxStoriesCanAccept: _kMaxStoriesPerCluster,
-        onHover: (BuildContext context, StoryCluster storyCluster) {
-          config.storyCluster.removePreviews();
-          _cleanup(context: context, preview: true);
-          _updateDragFeedback(storyCluster.dragFeedbackKey);
-          config.storyCluster.displayMode = DisplayMode.panels;
-        },
-        onDrop: (BuildContext context, StoryCluster storyCluster) {
-          config.storyCluster.removePreviews();
-          _cleanup(context: context, preview: true);
-          config.storyCluster.displayMode = DisplayMode.panels;
-          // TODO(apwilson): Defocus this cluster away.
-          // Bring storyCluster into focus.
-        },
-      ),
-    );
+      // Bottom bring-to-front target.
+      _targetLines.add(
+        new LineSegment.horizontal(
+          name: 'Bottom bring-to-front target',
+          initiallyTargetable: false,
+          y: sizeModel.size.height -
+              verticalMargin +
+              _kBringToFrontTargetBottomEdgeYOffset,
+          left: horizontalMargin * 3.0,
+          right: sizeModel.size.width - 3.0 * horizontalMargin,
+          color: _kBringToFrontTargetColor,
+          maxStoriesCanAccept: _kMaxStoriesPerCluster,
+          onHover: (BuildContext context, StoryCluster storyCluster) {
+            config.storyCluster.removePreviews();
+            _cleanup(context: context, preview: true);
+            _updateDragFeedback(storyCluster.dragFeedbackKey);
+            config.storyCluster.displayMode = DisplayMode.panels;
+          },
+          onDrop: (BuildContext context, StoryCluster storyCluster) {
+            config.storyCluster.removePreviews();
+            _cleanup(context: context, preview: true);
+            config.storyCluster.displayMode = DisplayMode.panels;
+            // TODO(apwilson): Defocus this cluster away.
+            // Bring storyCluster into focus.
+          },
+        ),
+      );
+    }
 
     // Story edge targets.
     Point center = new Point(
       sizeModel.size.width / 2.0,
       sizeModel.size.height / 2.0,
     );
-    config.storyCluster.stories.forEach((Story story) {
+    _originalStoryPlacement.forEach((Story story) {
       Rect bounds = _transform(story.panel, center, sizeModel.size);
 
       // If we can split vertically add vertical targets on left and right.
@@ -643,7 +740,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add left target.
         _targetLines.add(
           new LineSegment.vertical(
-            name: 'Add left target',
+            name: 'Add left target ${story.id}',
             x: left,
             top: top,
             bottom: bottom,
@@ -668,7 +765,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add right target.
         _targetLines.add(
           new LineSegment.vertical(
-            name: 'Add right target',
+            name: 'Add right target ${story.id}',
             x: right,
             top: top,
             bottom: bottom,
@@ -695,6 +792,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       int horizontalSplits = _getHorizontalSplitCount(
         story.panel,
         sizeModel.size,
+        panels,
       );
       if (horizontalSplits > 0) {
         double top = bounds.top +
@@ -710,7 +808,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add top target.
         _targetLines.add(
           new LineSegment.horizontal(
-            name: 'Add top target',
+            name: 'Add top target ${story.id}',
             y: top,
             left: left,
             right: right,
@@ -735,7 +833,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add bottom target.
         _targetLines.add(
           new LineSegment.horizontal(
-            name: 'Add bottom target',
+            name: 'Add bottom target ${story.id}',
             y: bottom,
             left: left,
             right: right,
@@ -758,6 +856,36 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         );
       }
     });
+
+    // All of the above LineSegments have been created assuming the cluster
+    // as at the size specified by the sizeModel.  Since that's not always the
+    // case (particularly when we're doing an inline preview) we need to scale
+    // down all the lines when our current size doesn't match our expected size.
+    double horizontalScale = config.currentSize.width / sizeModel.size.width;
+    double verticalScale = config.currentSize.height / sizeModel.size.height;
+    if (horizontalScale != 1.0 || verticalScale != 1.0) {
+      List<LineSegment> scaledLines = _targetLines
+          .map(
+            (LineSegment lineSegment) => new LineSegment(
+                  new Point(
+                    lerpDouble(0.0, lineSegment.a.x, horizontalScale),
+                    lerpDouble(0.0, lineSegment.a.y, verticalScale),
+                  ),
+                  new Point(
+                    lerpDouble(0.0, lineSegment.b.x, horizontalScale),
+                    lerpDouble(0.0, lineSegment.b.y, verticalScale),
+                  ),
+                  name: lineSegment.name,
+                  color: lineSegment.color,
+                  onHover: lineSegment.onHover,
+                  onDrop: lineSegment.onDrop,
+                  maxStoriesCanAccept: lineSegment.maxStoriesCanAccept,
+                ),
+          )
+          .toList();
+      _targetLines.clear();
+      _targetLines.addAll(scaledLines);
+    }
   }
 
   /// Adds the stories of [storyCluster] to the left, spanning the full height.
@@ -1238,7 +1366,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ),
       );
       dx += _kAddedStorySpan;
-      story.storyBarKey.currentState?.maximize(jumpToFinish: true);
+      story.storyBarKey.currentState?.maximize();
     });
   }
 
@@ -1261,17 +1389,18 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ),
       );
       dy += _kAddedStorySpan;
-      story.storyBarKey.currentState?.maximize(jumpToFinish: true);
+      story.storyBarKey.currentState?.maximize();
     });
   }
 
-  int get _currentRows => _getRows(left: 0.0, right: 1.0);
+  int _getCurrentRows({List<Panel> panels}) =>
+      _getRows(left: 0.0, right: 1.0, panels: panels);
 
   int get _currentColumns => _getColumns(top: 0.0, bottom: 1.0);
 
-  int _getRows({double left, double right}) {
+  int _getRows({double left, double right, List<Panel> panels}) {
     Set<double> tops = new Set<double>();
-    config.storyCluster.panels
+    panels
         .where((Panel panel) =>
             (left <= panel.left && right > panel.left) ||
             (panel.left < left && panel.right > left))
@@ -1293,8 +1422,17 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     return lefts.length;
   }
 
-  int _getHorizontalSplitCount(Panel panel, Size fullSize) =>
-      maxRows(fullSize) - _getRows(left: panel.left, right: panel.right);
+  int _getHorizontalSplitCount(
+    Panel panel,
+    Size fullSize,
+    List<Panel> panels,
+  ) =>
+      maxRows(fullSize) -
+      _getRows(
+        left: panel.left,
+        right: panel.right,
+        panels: panels,
+      );
 
   int _getVerticalSplitCount(Panel panel, Size fullSize) =>
       maxColumns(fullSize) - _getColumns(top: panel.top, bottom: panel.bottom);

@@ -231,34 +231,34 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
   final Map<T, Point> _candidateData = new Map<T, Point>();
   final Map<dynamic, Point> _rejectedData = new Map<dynamic, Point>();
 
-  bool didEnter(dynamic data, Point globalPosition) {
+  bool didEnter(dynamic data, Point localPosition) {
     assert(_candidateData[data] == null);
     assert(_rejectedData[data] == null);
     if (data is T &&
         (config.onWillAccept == null ||
-            config.onWillAccept(data, globalPosition))) {
+            config.onWillAccept(data, localPosition))) {
       // If we're adding our first candidate call [config.onCandidates].
       if (_candidateData.isEmpty) {
         config.onCandidates?.call();
       }
       setState(() {
-        _candidateData[data] = globalPosition;
+        _candidateData[data] = localPosition;
       });
       return true;
     }
     setState(() {
-      _rejectedData[data] = globalPosition;
+      _rejectedData[data] = localPosition;
     });
     return false;
   }
 
-  void updatePosition(dynamic data, Point globalPosition) {
+  void updatePosition(dynamic data, Point localPosition) {
     setState(() {
       if (_candidateData[data] != null) {
-        _candidateData[data] = globalPosition;
+        _candidateData[data] = localPosition;
       }
       if (_rejectedData[data] != null) {
-        _rejectedData[data] = globalPosition;
+        _rejectedData[data] = localPosition;
       }
     });
   }
@@ -380,7 +380,9 @@ class _DragAvatar<T> extends Drag {
       _DragTargetState<T> newTarget =
           targets.firstWhere((_DragTargetState<T> target) {
         _enteredTargets.add(target);
-        return target.didEnter(data, globalPosition);
+        RenderBox box = target.context.findRenderObject();
+        Point localPosition = box.globalToLocal(globalPosition);
+        return target.didEnter(data, localPosition);
       }, orElse: () => null);
 
       _activeTarget = newTarget;
@@ -388,9 +390,11 @@ class _DragAvatar<T> extends Drag {
 
     // Update positions
     _enteredTargets.forEach((_DragTargetState<T> target) {
+      RenderBox box = target.context.findRenderObject();
+      Point localPosition = box.globalToLocal(globalPosition);
       target.updatePosition(
         data,
-        globalPosition,
+        localPosition,
       );
     });
   }

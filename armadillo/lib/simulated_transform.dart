@@ -35,7 +35,7 @@ class SimulatedTransform extends StatefulWidget {
     Key key,
     this.dx: 0.0,
     this.dy: 0.0,
-    this.initScale,
+    this.initScale: 1.0,
     this.targetScale: 1.0,
     this.initOpacity: 1.0,
     this.targetOpacity: 1.0,

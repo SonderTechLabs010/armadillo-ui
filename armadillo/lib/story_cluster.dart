@@ -24,11 +24,22 @@ class StoryCluster {
   final GlobalKey clusterDraggableKey;
   final GlobalKey clusterDragTargetsKey;
   final GlobalKey panelsKey;
-  final GlobalKey scaleTransformKey;
   final GlobalKey titleTransformKey;
   final GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey;
+
+  /// The focus simulation is the scaling that occurs when the
+  /// user has focused on the cluster to bring it to full screen size.
   final GlobalKey<SimulationBuilderState> focusSimulationKey;
+
+  /// The lift scale simulation is the scaling that occurs when the user
+  /// begins dragging a cluster around the timeline.
+  final GlobalKey<SimulationBuilderState> liftScaleSimulationKey;
+
+  /// The inline preview scale simulation is the scaling that occurs when the
+  /// user drags a cluster over this cluster while in the timeline.
+  final GlobalKey<SimulationBuilderState> inlinePreviewScaleSimulationKey;
   DisplayMode _displayMode;
+  DisplayMode _previewDisplayMode;
   final Set<VoidCallback> _storyListListeners;
   final Set<VoidCallback> _panelListeners;
   StoryId focusedStoryId;
@@ -44,10 +55,13 @@ class StoryCluster {
     GlobalKey titleTransformKey,
     GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey,
     GlobalKey<SimulationBuilderState> focusSimulationKey,
+    GlobalKey<SimulationBuilderState> liftScaleSimulationKey,
+    GlobalKey<SimulationBuilderState> inlinePreviewScaleSimulationKey,
     List<Story> stories,
     Set<VoidCallback> storyListListeners,
     Set<VoidCallback> panelListeners,
     DisplayMode displayMode,
+    DisplayMode previewDisplayMode,
     StoryId focusedStoryId,
     this.storyLayout,
   })
@@ -61,13 +75,18 @@ class StoryCluster {
         this.clusterDraggableKey = clusterDraggableKey ?? new GlobalKey(),
         this.clusterDragTargetsKey = clusterDragTargetsKey ?? new GlobalKey(),
         this.panelsKey = panelsKey ?? new GlobalKey(),
-        this.scaleTransformKey = scaleTransformKey ?? new GlobalKey(),
         this.titleTransformKey = titleTransformKey ?? new GlobalKey(),
         this.dragFeedbackKey =
             dragFeedbackKey ?? new GlobalKey<StoryClusterDragFeedbackState>(),
         this.focusSimulationKey =
             focusSimulationKey ?? new GlobalKey<SimulationBuilderState>(),
+        this.liftScaleSimulationKey =
+            liftScaleSimulationKey ?? new GlobalKey<SimulationBuilderState>(),
+        this.inlinePreviewScaleSimulationKey =
+            inlinePreviewScaleSimulationKey ??
+                new GlobalKey<SimulationBuilderState>(),
         this._displayMode = displayMode ?? DisplayMode.panels,
+        this._previewDisplayMode = previewDisplayMode ?? DisplayMode.panels,
         this._storyListListeners =
             storyListListeners ?? new Set<VoidCallback>(),
         this._panelListeners = panelListeners ?? new Set<VoidCallback>(),
@@ -124,7 +143,6 @@ class StoryCluster {
     bool inactive,
     GlobalKey clusterDraggableId,
     StoryId focusedStoryId,
-    DisplayMode displayMode,
   }) =>
       new StoryCluster(
         id: this.id,
@@ -132,10 +150,11 @@ class StoryCluster {
         clusterDraggableKey: clusterDraggableId ?? this.clusterDraggableKey,
         clusterDragTargetsKey: this.clusterDragTargetsKey,
         panelsKey: this.panelsKey,
-        scaleTransformKey: this.scaleTransformKey,
         titleTransformKey: this.titleTransformKey,
         dragFeedbackKey: this.dragFeedbackKey,
         focusSimulationKey: this.focusSimulationKey,
+        liftScaleSimulationKey: this.liftScaleSimulationKey,
+        inlinePreviewScaleSimulationKey: this.inlinePreviewScaleSimulationKey,
         stories: new List<Story>.generate(
           _stories.length,
           (int index) => _stories[index].copyWith(
@@ -144,7 +163,8 @@ class StoryCluster {
                 inactive: inactive,
               ),
         ),
-        displayMode: displayMode ?? this._displayMode,
+        displayMode: this._displayMode,
+        previewDisplayMode: this._previewDisplayMode,
         storyListListeners: this._storyListListeners,
         panelListeners: this._panelListeners,
         focusedStoryId: focusedStoryId ?? this.focusedStoryId,

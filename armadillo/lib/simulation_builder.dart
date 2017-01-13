@@ -9,8 +9,6 @@ import 'package:sysui_widgets/ticking_state.dart';
 /// Constants for the simulation.
 const RK4SpringDescription _kSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
-const double _kSimulationTarget = 200.0;
-const double _kJumpAlmostToFinishDelta = 1.0;
 
 typedef void ProgressListener(double progress, bool isDone);
 typedef Widget ProgressBuilder(BuildContext context, double progress);
@@ -19,12 +17,14 @@ typedef Widget ProgressBuilder(BuildContext context, double progress);
 /// stateless.
 class SimulationBuilder extends StatefulWidget {
   final ProgressListener onSimulationChanged;
-  final double initialSimulationProgress;
+  final double initValue;
+  final double targetValue;
   final ProgressBuilder builder;
   SimulationBuilder({
     Key key,
     this.onSimulationChanged,
-    this.initialSimulationProgress: 0.0,
+    this.initValue: 0.0,
+    this.targetValue: 0.0,
     this.builder,
   })
       : super(key: key);
@@ -34,40 +34,46 @@ class SimulationBuilder extends StatefulWidget {
 }
 
 class SimulationBuilderState extends TickingState<SimulationBuilder> {
-  RK4SpringSimulation _simulation =
-      new RK4SpringSimulation(initValue: 0.0, desc: _kSimulationDesc);
+  RK4SpringSimulation _simulation;
 
   @override
   void initState() {
     super.initState();
     _simulation = new RK4SpringSimulation(
-      initValue: config.initialSimulationProgress * _kSimulationTarget,
+      initValue: config.initValue,
       desc: _kSimulationDesc,
     );
-    _simulation.target = _kSimulationTarget;
+    _simulation.target = config.targetValue;
+    startTicking();
   }
 
-  /// If [jumpAlmostToFinish] is true we jump almost to the end of the
-  /// simulation. We jump *almost* to finish so the secondary size simulations
-  /// jump almost to finish as well (otherwise they would animate from unfocused
-  /// size).
-  void forward({bool jumpAlmostToFinish: false}) {
-    if (jumpAlmostToFinish) {
+  @override
+  void didUpdateConfig(SimulationBuilder oldConfig) {
+    super.didUpdateConfig(oldConfig);
+    if (oldConfig.targetValue != config.targetValue) {
+      _simulation.target = config.targetValue;
+      startTicking();
+    }
+  }
+
+  void resetTo(double initValue, double target) {
+    setState(() {
       _simulation = new RK4SpringSimulation(
-        initValue: _kSimulationTarget - _kJumpAlmostToFinishDelta,
+        initValue: initValue,
         desc: _kSimulationDesc,
       );
+    });
+    this.target = target;
+  }
+
+  set target(double target) {
+    if (_simulation.target != target) {
+      _simulation.target = target;
+      startTicking();
     }
-    _simulation.target = _kSimulationTarget;
-    startTicking();
   }
 
-  void reverse() {
-    _simulation.target = 0.0;
-    startTicking();
-  }
-
-  double get progress => _simulation.value / _kSimulationTarget;
+  double get progress => _simulation.value;
 
   @override
   bool handleTick(double elapsedSeconds) {

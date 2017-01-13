@@ -21,7 +21,6 @@ import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
 import 'story_list.dart';
-import 'story_model.dart';
 import 'story_panels.dart';
 import 'story_title.dart';
 
@@ -81,63 +80,14 @@ class StoryClusterWidget extends StatelessWidget {
       : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    Widget widget = new OptionalWrapper(
-      // Don't accept data if we're focused or focusing.
-      useWrapper: _isUnfocused,
-      builder: (BuildContext context, Widget child) =>
-          new ArmadilloDragTarget<StoryClusterId>(
-            onWillAccept: (StoryClusterId storyClusterId, Point point) {
-              StoryCluster storyCluster =
-                  StoryModel.of(context).getStoryCluster(storyClusterId);
-              // Don't accept empty data.
-              if (storyCluster == null || storyCluster.stories.isEmpty) {
-                return false;
-              }
+  Widget build(BuildContext context) => _isUnfocused
+      ? _getUnfocusedDragTargetChild(context)
+      : _getStoryClusterWithInlineStoryTitle(context);
 
-              // Don't accept data that has a story that matches any of our
-              // current stories.
-              bool result = true;
-              storyCluster.stories.forEach((Story s1) {
-                if (result) {
-                  this.storyCluster.stories.forEach((Story s2) {
-                    if (result && s1.id == s2.id) {
-                      result = false;
-                    }
-                  });
-                }
-              });
-
-              return result;
-            },
-            onAccept: (StoryClusterId storyClusterId, Point point) {
-              StoryModel.of(context).combine(
-                    source:
-                        StoryModel.of(context).getStoryCluster(storyClusterId),
-                    target: storyCluster,
-                  );
-              onGainFocus();
-            },
-            builder: (
-              BuildContext context,
-              Map<StoryClusterId, Point> candidateData,
-              Map<dynamic, Point> rejectedData,
-            ) =>
-                _getUnfocusedDragTargetChild(context,
-                    hasCandidates: candidateData.isNotEmpty),
-          ),
-      child: _getStoryClusterWithInlineStoryTitle(context, highlight: false),
-    );
-    return widget;
-  }
-
-  Widget _getUnfocusedDragTargetChild(
-    BuildContext context, {
-    bool hasCandidates,
-  }) {
+  Widget _getUnfocusedDragTargetChild(BuildContext context) {
     Rect initialBoundsOnDrag;
     return new OptionalWrapper(
-      useWrapper: _isUnfocused && !hasCandidates,
+      useWrapper: _isUnfocused,
       builder: (BuildContext context, Widget child) =>
           new ArmadilloLongPressDraggable<StoryClusterId>(
             key: storyCluster.clusterDraggableKey,
@@ -174,74 +124,64 @@ class StoryClusterWidget extends StatelessWidget {
                   localDragStartPoint: localDragStartPoint,
                   initialBounds: initialBoundsOnDrag,
                   showTitle: true,
+                  focused: false,
                 ),
             child: child,
           ),
       child: _getStoryClusterWithInlineStoryTitle(
         context,
-        highlight: hasCandidates,
       ),
     );
   }
 
-  Widget _getStoryClusterWithInlineStoryTitle(
-    BuildContext context, {
-    bool highlight: false,
-  }) =>
-      new SimulatedTransform(
-        key: storyCluster.scaleTransformKey,
-        alignment: FractionalOffset.center,
-        initScale: 1.0,
-        targetScale: StoryClusterDragStateModel
-                .of(context, rebuildOnChange: true)
-                .areStoryClustersDragging
-            ? 0.9
-            : 1.0,
-        child: new Stack(
-          children: <Widget>[
-            new Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                new Expanded(
-                    child: _getStoryCluster(context, highlight: highlight)),
-                new InlineStoryTitle(
-                  focusProgress: focusProgress,
-                  storyCluster: storyCluster,
-                ),
-              ],
-            ),
-            _focusOnTap,
-          ],
-        ),
+  Widget _getStoryClusterWithInlineStoryTitle(BuildContext context) =>
+      new Stack(
+        children: <Widget>[
+          new Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              new Expanded(child: _getStoryCluster(context)),
+              new InlineStoryTitle(
+                focusProgress: focusProgress,
+                storyCluster: storyCluster,
+              ),
+            ],
+          ),
+          _focusOnTap,
+        ],
       );
 
   /// The Story including its StoryBar.
-  Widget _getStoryCluster(
-    BuildContext context, {
-    bool highlight: false,
-  }) =>
-      multiColumn || !_kUseCarousel
-          ? new PanelDragTargets(
+  Widget _getStoryCluster(BuildContext context) => multiColumn || !_kUseCarousel
+      ? new LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            Size currentSize = new Size(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            );
+            return new PanelDragTargets(
               key: storyCluster.clusterDragTargetsKey,
               scale: _kDragScale,
               focusProgress: focusProgress,
+              currentSize: currentSize,
               storyCluster: storyCluster,
+              onGainFocus: onGainFocus,
               child: new StoryPanels(
                 key: storyCluster.panelsKey,
                 storyCluster: storyCluster,
                 focusProgress: focusProgress,
-                highlight: highlight,
                 overlayKey: overlayKey,
                 storyWidgets: storyWidgets,
               ),
-            )
-          : new StoryCarousel(
-              key: storyCluster.carouselKey,
-              stories: storyCluster.stories,
-              focusProgress: focusProgress,
-              highlight: highlight,
             );
+          },
+        )
+      : new StoryCarousel(
+          key: storyCluster.carouselKey,
+          stories: storyCluster.stories,
+          focusProgress: focusProgress,
+        );
 
   Widget get _focusOnTap => new Positioned(
         left: 0.0,
@@ -251,7 +191,7 @@ class StoryClusterWidget extends StatelessWidget {
         child: new Offstage(
           offstage: !_isUnfocused,
           child: new GestureDetector(
-            behavior: HitTestBehavior.opaque,
+            behavior: HitTestBehavior.translucent,
             onTap: onGainFocus,
           ),
         ),

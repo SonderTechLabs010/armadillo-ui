@@ -13,6 +13,7 @@ import 'simulation_builder.dart';
 import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
+import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_widget.dart';
 import 'story_list_layout.dart';
 import 'story_list_render_block.dart';
@@ -64,6 +65,8 @@ class StoryList extends StatelessWidget {
               height: 0.0,
               child: new SimulationBuilder(
                 key: storyCluster.focusSimulationKey,
+                initValue: 0.0,
+                targetValue: 1.0,
                 builder: (BuildContext context, double progress) =>
                     _createStoryCluster(
                       storyModel.activeSortedStoryClusters,
@@ -103,6 +106,7 @@ class StoryList extends StatelessWidget {
         children: new List<Widget>.generate(
           storyModel.activeSortedStoryClusters.length,
           (int index) => _createFocusableStoryCluster(
+                context,
                 storyModel.activeSortedStoryClusters,
                 storyModel.activeSortedStoryClusters[index],
                 storyModel.activeSortedStoryClusters[index].buildStoryWidgets(
@@ -122,26 +126,50 @@ class StoryList extends StatelessWidget {
   }
 
   Widget _createFocusableStoryCluster(
+    BuildContext context,
     List<StoryCluster> storyClusters,
     StoryCluster storyCluster,
     Map<StoryId, Widget> storyWidgets,
   ) =>
       new SimulationBuilder(
-        key: storyCluster.focusSimulationKey,
-        onSimulationChanged: (double progress, bool isDone) {
-          if (progress == 1.0 && isDone) {
-            onStoryClusterFocusCompleted?.call(storyCluster);
-          }
-        },
-        builder: (BuildContext context, double progress) => new StoryListChild(
-              storyLayout: storyCluster.storyLayout,
-              focusProgress: progress,
-              child: _createStoryCluster(
-                storyClusters,
-                storyCluster,
-                progress,
-                storyWidgets,
-              ),
+        key: storyCluster.liftScaleSimulationKey,
+        initValue: 1.0,
+        targetValue: StoryClusterDragStateModel
+                .of(context, rebuildOnChange: true)
+                .areStoryClustersDragging
+            ? 0.9
+            : 1.0,
+        builder: (BuildContext context, double liftScaleProgress) =>
+            new SimulationBuilder(
+              key: storyCluster.inlinePreviewScaleSimulationKey,
+              initValue: 0.0,
+              targetValue: 0.0,
+              builder: (BuildContext context,
+                      double inlinePreviewScaleProgress) =>
+                  new SimulationBuilder(
+                    key: storyCluster.focusSimulationKey,
+                    initValue: 0.0,
+                    targetValue: 0.0,
+                    onSimulationChanged: (double focusProgress, bool isDone) {
+                      if (focusProgress == 1.0 && isDone) {
+                        onStoryClusterFocusCompleted?.call(storyCluster);
+                      }
+                    },
+                    builder: (BuildContext context, double focusProgress) =>
+                        new StoryListChild(
+                          storyLayout: storyCluster.storyLayout,
+                          focusProgress: focusProgress,
+                          inlinePreviewScaleProgress:
+                              inlinePreviewScaleProgress,
+                          liftScaleProgress: liftScaleProgress,
+                          child: _createStoryCluster(
+                            storyClusters,
+                            storyCluster,
+                            focusProgress,
+                            storyWidgets,
+                          ),
+                        ),
+                  ),
             ),
       );
 
@@ -167,7 +195,8 @@ class StoryList extends StatelessWidget {
 
             if (!storyClusterInFocus) {
               // Bring tapped story into focus.
-              storyCluster.focusSimulationKey.currentState?.forward();
+              storyCluster.focusSimulationKey.currentState?.target = 1.0;
+
               storyCluster.stories.forEach((Story story) {
                 story.storyBarKey.currentState?.maximize();
               });
@@ -247,23 +276,29 @@ class StoryListBlockBody extends BlockBody {
       );
 
   @override
-  void updateRenderObject(
-      BuildContext context, StoryListRenderBlock renderObject) {
-    renderObject.mainAxis = mainAxis;
-    renderObject.parentSize = SizeModel.of(context, rebuildOnChange: true).size;
-    renderObject.scrollableKey = scrollableKey;
-    renderObject.bottomPadding = bottomPadding;
-    renderObject.listHeight = listHeight;
+  void updateRenderObject(BuildContext context, RenderBlock renderObject) {
+    StoryListRenderBlock storyListRenderBlock = renderObject;
+    storyListRenderBlock.mainAxis = mainAxis;
+    storyListRenderBlock.parentSize =
+        SizeModel.of(context, rebuildOnChange: true).size;
+    storyListRenderBlock.scrollableKey = scrollableKey;
+    storyListRenderBlock.bottomPadding = bottomPadding;
+    storyListRenderBlock.listHeight = listHeight;
   }
 }
 
 class StoryListChild extends ParentDataWidget<StoryListBlockBody> {
   final StoryLayout storyLayout;
   final double focusProgress;
+  final double liftScaleProgress;
+  final double inlinePreviewScaleProgress;
+
   StoryListChild({
     Widget child,
     this.storyLayout,
     this.focusProgress,
+    this.liftScaleProgress,
+    this.inlinePreviewScaleProgress,
   })
       : super(child: child);
 
@@ -273,11 +308,14 @@ class StoryListChild extends ParentDataWidget<StoryListBlockBody> {
     final StoryListRenderBlockParentData parentData = renderObject.parentData;
     parentData.storyLayout = storyLayout;
     parentData.focusProgress = focusProgress;
+    parentData.liftScaleProgress = liftScaleProgress;
+    parentData.inlinePreviewScaleProgress = inlinePreviewScaleProgress;
   }
 
   @override
   void debugFillDescription(List<String> description) {
     super.debugFillDescription(description);
-    description.add('storyLayout: $storyLayout, focusProgress: $focusProgress');
+    description.add(
+        'storyLayout: $storyLayout, focusProgress: $focusProgress, liftScaleProgress: $liftScaleProgress, inlinePreviewScaleProgress: $inlinePreviewScaleProgress');
   }
 }

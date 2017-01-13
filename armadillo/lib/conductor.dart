@@ -428,7 +428,7 @@ class Conductor extends StatelessWidget {
   }
 
   void _unfocusStoryCluster(StoryCluster s) {
-    s.focusSimulationKey.currentState?.reverse();
+    s.focusSimulationKey.currentState?.target = 0.0;
     s.stories.forEach((Story story) {
       story.storyBarKey.currentState?.minimize();
     });
@@ -488,10 +488,10 @@ class Conductor extends StatelessWidget {
       // Ensure the focused story is completely expanded.
       // We jump almost to finish so the secondary size simulations with jump
       // almost to finish as well (otherwise they animate from unfocused size).
-      targetStoryClusters[0]
-          .focusSimulationKey
-          .currentState
-          ?.forward(jumpAlmostToFinish: true);
+      targetStoryClusters[0].focusSimulationKey.currentState?.resetTo(
+            0.995,
+            1.0,
+          );
 
       // Ensure the focused story's story bar is full open.
       targetStoryClusters[0].stories.forEach((Story story) {

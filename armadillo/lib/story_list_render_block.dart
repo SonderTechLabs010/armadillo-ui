@@ -136,14 +136,47 @@ class StoryListRenderBlock extends RenderBlock {
     assert(constraints.hasBoundedWidth);
     double scrollOffset = _scrollableKey.currentState?.scrollOffset ?? 0.0;
     double maxFocusProgress = 0.0;
+    double inlinePreviewScale = getInlinePreviewScale(parentSize);
+    double inlinePreviewTranslateToParentCenterRatio = math.min(
+      1.0,
+      inlinePreviewScale * 1.5 - 0.3,
+    );
+    double parentCenterOffsetY = listHeight +
+        (_bottomPadding - scrollOffset - (parentSize.height / 2.0));
+    Point parentCenter = new Point(parentSize.width / 2.0, parentCenterOffsetY);
+
     {
       RenderBox child = firstChild;
       while (child != null) {
         final StoryListRenderBlockParentData childParentData = child.parentData;
 
+        double layoutHeight = childParentData.storyLayout.size.height;
+        double layoutWidth = childParentData.storyLayout.size.width;
+        double layoutOffsetX = childParentData.storyLayout.offset.dx;
+        double layoutOffsetY = childParentData.storyLayout.offset.dy;
+        double liftScaleMultiplier = lerpDouble(
+          childParentData.liftScaleProgress,
+          1.0,
+          childParentData.inlinePreviewScaleProgress,
+        );
+        double scaledLayoutHeight = lerpDouble(
+              layoutHeight,
+              parentSize.height * inlinePreviewScale,
+              childParentData.inlinePreviewScaleProgress,
+            ) *
+            liftScaleMultiplier;
+        double scaledLayoutWidth = lerpDouble(
+              layoutWidth,
+              parentSize.width * inlinePreviewScale,
+              childParentData.inlinePreviewScaleProgress,
+            ) *
+            liftScaleMultiplier;
+        double scaleOffsetDeltaX = (layoutWidth - scaledLayoutWidth) / 2.0;
+        double scaleOffsetDeltaY = (layoutHeight - scaledLayoutHeight) / 2.0;
+
         // Layout the child.
         double childHeight = lerpDouble(
-          childParentData.storyLayout.size.height +
+          scaledLayoutHeight +
               lerpDouble(
                 _kStoryInlineTitleHeight,
                 0.0,
@@ -152,13 +185,14 @@ class StoryListRenderBlock extends RenderBlock {
           parentSize.height,
           childParentData.focusProgress,
         );
+        double childWidth = lerpDouble(
+          scaledLayoutWidth,
+          parentSize.width,
+          childParentData.focusProgress,
+        );
         child.layout(
           new BoxConstraints.tightFor(
-            width: lerpDouble(
-              childParentData.storyLayout.size.width,
-              parentSize.width,
-              childParentData.focusProgress,
-            ),
+            width: childWidth,
             height: childHeight,
           ),
           parentUsesSize: false,
@@ -166,17 +200,35 @@ class StoryListRenderBlock extends RenderBlock {
         // Position the child.
         childParentData.offset = new Offset(
           lerpDouble(
-            childParentData.storyLayout.offset.dx + constraints.maxWidth / 2.0,
+            layoutOffsetX + scaleOffsetDeltaX + constraints.maxWidth / 2.0,
             0.0,
             childParentData.focusProgress,
           ),
           lerpDouble(
-            childParentData.storyLayout.offset.dy + listHeight,
+            layoutOffsetY + scaleOffsetDeltaY + listHeight,
             listHeight - parentSize.height - scrollOffset + _bottomPadding,
             childParentData.focusProgress,
           ),
         );
 
+        // Reposition toward center if inline previewing.
+        Point currentCenter = new Point(
+          childParentData.offset.dx + childWidth / 2.0,
+          childParentData.offset.dy + childHeight / 2.0,
+        );
+        Offset centeringOffset = parentCenter - currentCenter;
+        childParentData.offset += centeringOffset.scale(
+          lerpDouble(
+            0.0,
+            inlinePreviewTranslateToParentCenterRatio,
+            childParentData.inlinePreviewScaleProgress,
+          ),
+          lerpDouble(
+            0.0,
+            inlinePreviewTranslateToParentCenterRatio,
+            childParentData.inlinePreviewScaleProgress,
+          ),
+        );
         maxFocusProgress = math.max(
           maxFocusProgress,
           childParentData.focusProgress,
@@ -249,8 +301,18 @@ class StoryListRenderBlock extends RenderBlock {
           ? 1
           : child1ParentData.focusProgress < child2ParentData.focusProgress
               ? -1
-              : 0;
+              : child1ParentData.inlinePreviewScaleProgress >
+                      child2ParentData.inlinePreviewScaleProgress
+                  ? 1
+                  : child1ParentData.inlinePreviewScaleProgress <
+                          child2ParentData.inlinePreviewScaleProgress
+                      ? -1
+                      : 0;
     });
     return children;
   }
+
+  static double getInlinePreviewScale(Size parentSize) =>
+      ((1280.0 * 1.5 - math.max(parentSize.width, parentSize.height)) / 1280.0)
+          .clamp(0.4, 0.8);
 }

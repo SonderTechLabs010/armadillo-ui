@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 
@@ -14,8 +15,10 @@ import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_widget.dart';
+import 'story_list_render_block.dart';
 import 'story_panels.dart';
 
+const double _kStoryBarMinimizedHeight = 4.0;
 const double _kStoryBarMaximizedHeight = 48.0;
 
 /// Displays a representation of a StoryCluster while being dragged.
@@ -26,6 +29,7 @@ class StoryClusterDragFeedback extends StatefulWidget {
   final Point localDragStartPoint;
   final Rect initialBounds;
   final bool showTitle;
+  final bool focused;
 
   StoryClusterDragFeedback({
     Key key,
@@ -35,6 +39,7 @@ class StoryClusterDragFeedback extends StatefulWidget {
     this.localDragStartPoint,
     this.initialBounds,
     this.showTitle: false,
+    this.focused: true,
   })
       : super(key: key);
 
@@ -97,7 +102,8 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
   }
 
   void _updateStoryBars() {
-    if (_storyPanels.isEmpty && _displayModeOverride == DisplayMode.panels) {
+    if (!config.focused ||
+        (_storyPanels.isEmpty && _displayModeOverride == DisplayMode.panels)) {
       config.storyCluster.stories.forEach((Story story) {
         story.storyBarKey.currentState.minimize();
       });
@@ -114,17 +120,33 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     double width;
     double height;
     double childScale;
+    double focusProgress = config.showTitle
+        ? config.storyCluster.focusSimulationKey.currentState?.progress ?? 0.0
+        : 1.0;
+    double inlinePreviewScale = StoryListRenderBlock.getInlinePreviewScale(
+      sizeModel.size,
+    );
+
     if (_displayModeOverride == DisplayMode.tabs) {
-      width = sizeModel.size.width *
+      width = (config.focused
+              ? sizeModel.size.width
+              : config.storyCluster.storyLayout.size.width) *
           (config.storyCluster.stories.length + 1) /
           (_targetClusterStoryCount + 1);
-      height = sizeModel.size.height *
-          (_kStoryBarMaximizedHeight / sizeModel.size.height);
-      childScale = 0.7;
+      height = (config.focused
+              ? sizeModel.size.height
+              : config.storyCluster.storyLayout.size.height) *
+          ((config.focused
+                  ? _kStoryBarMaximizedHeight
+                  : _kStoryBarMinimizedHeight) /
+              (config.focused
+                  ? sizeModel.size.height
+                  : config.storyCluster.storyLayout.size.height));
+      childScale = lerpDouble(inlinePreviewScale, 0.7, focusProgress);
     } else if (_storyPanels.isNotEmpty) {
       width = sizeModel.size.width * _widthFactor;
       height = sizeModel.size.height * _heightFactor;
-      childScale = 0.7;
+      childScale = lerpDouble(inlinePreviewScale, 0.7, focusProgress);
     } else {
       width = config.storyCluster.storyLayout.size.width;
       height = config.storyCluster.storyLayout.size.height;
@@ -132,13 +154,10 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     }
     childSizeModel.size =
         _storyPanels.isNotEmpty ? new Size(width, height) : sizeModel.size;
-    double focusProgress = config.showTitle
-        ? config.storyCluster.focusSimulationKey.currentState?.progress ?? 0.0
-        : 1.0;
     return new SimulatedTransform(
       key: _translationKey,
       targetScale: childScale,
-      alignment: _alignment,
+      alignment: config.focused ? _alignment : FractionalOffset.topLeft,
       child: new SimulatedSizedBox(
         width: _translationKey.currentState == null
             ? config.initialBounds.width
@@ -158,7 +177,6 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                   key: config.storyCluster.panelsKey,
                   storyCluster: config.storyCluster,
                   focusProgress: 0.0,
-                  highlight: false,
                   overlayKey: config.overlayKey,
                   storyWidgets: config.storyWidgets,
                 ),
