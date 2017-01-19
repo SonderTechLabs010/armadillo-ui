@@ -131,6 +131,7 @@ class StoryPanelsState extends State<StoryPanels> {
     Widget child,
   }) {
     final Widget storyWidget = config.storyWidgets[story.id];
+    Rect initialBoundsOnDrag;
     return new OptionalWrapper(
       // Don't allow dragging if we're the only story.
       useWrapper: config.storyCluster.stories.length > 1,
@@ -140,6 +141,18 @@ class StoryPanelsState extends State<StoryPanels> {
             overlayKey: config.overlayKey,
             data: story.clusterId,
             onDragStarted: () {
+              RenderBox box =
+                  story.positionedKey.currentContext.findRenderObject();
+              Point boxTopLeft = box.localToGlobal(Point.origin);
+              Point boxBottomRight = box.localToGlobal(
+                new Point(box.size.width, box.size.height),
+              );
+              initialBoundsOnDrag = new Rect.fromLTRB(
+                boxTopLeft.x,
+                boxTopLeft.y,
+                boxBottomRight.x,
+                boxBottomRight.y,
+              );
               InheritedStoryManager.of(context).split(
                     storyToSplit: story,
                     from: config.storyCluster,
@@ -147,18 +160,18 @@ class StoryPanelsState extends State<StoryPanels> {
               story.storyBarKey.currentState?.minimize();
             },
             childWhenDragging: Nothing.widget,
-            feedback: new Builder(
-              builder: (BuildContext context) {
-                StoryCluster storyCluster = InheritedStoryManager
-                    .of(context)
-                    .getStoryCluster(story.clusterId);
-                return new StoryClusterDragFeedback(
-                  key: storyCluster.dragFeedbackKey,
-                  storyCluster: storyCluster,
-                  storyWidgets: {story.id: storyWidget},
-                );
-              },
-            ),
+            feedbackBuilder: (Point localDragStartPoint) {
+              StoryCluster storyCluster = InheritedStoryManager
+                  .of(context)
+                  .getStoryCluster(story.clusterId);
+              return new StoryClusterDragFeedback(
+                key: storyCluster.dragFeedbackKey,
+                storyCluster: storyCluster,
+                storyWidgets: {story.id: storyWidget},
+                localDragStartPoint: localDragStartPoint,
+                initialBounds: initialBoundsOnDrag,
+              );
+            },
             child: child,
           ),
       child: child,

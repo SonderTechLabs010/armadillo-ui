@@ -22,6 +22,7 @@ class SimulatedTransform extends StatefulWidget {
   final double targetOpacity;
   final RK4SpringDescription springDescription;
   final Widget child;
+  final FractionalOffset alignment;
 
   SimulatedTransform({
     Key key,
@@ -32,6 +33,7 @@ class SimulatedTransform extends StatefulWidget {
     this.targetOpacity: 1.0,
     this.springDescription: _kDefaultSimulationDesc,
     this.child,
+    this.alignment,
   })
       : super(key: key);
 
@@ -92,7 +94,7 @@ class SimulatedTranslationTransformState
           _scaleSimulation.value,
           _scaleSimulation.value,
         ),
-        alignment: FractionalOffset.center,
+        alignment: config.alignment,
         child: new Opacity(
           opacity: _opacitySimulation.value.clamp(0.0, 1.0),
           child: config.child,

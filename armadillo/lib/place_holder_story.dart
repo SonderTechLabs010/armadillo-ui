@@ -33,6 +33,7 @@ class PlaceHolderStory extends Story {
     bool inactive,
     Panel panel,
     GlobalKey clusterDraggableKey,
+    GlobalKey positionedKey,
   }) =>
       new PlaceHolderStory(
         index: this._index,

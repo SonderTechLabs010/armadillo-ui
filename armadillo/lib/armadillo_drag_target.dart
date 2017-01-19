@@ -41,6 +41,12 @@ typedef bool ArmadilloDragTargetWillAccept<T>(T data, Point point);
 /// Signature for causing a [ArmadilloDragTarget] to accept the given data.
 typedef void ArmadilloDragTargetAccept<T>(T data, Point point);
 
+/// Builds the feedback that should be shown while a
+/// [ArmadilloLongPressDraggable] is being dragged.
+/// [localDragStartPoint] indicates where the drag started in the draggable's
+/// local coordinate space.
+typedef Widget FeedbackBuilder(Point localDragStartPoint);
+
 /// A widget that can be dragged from to a [ArmadilloDragTarget] starting from long press.
 ///
 /// When a draggable widget recognizes the start of a drag gesture, it displays
@@ -60,14 +66,14 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
     Key key,
     this.overlayKey,
     this.child,
-    this.feedback,
+    this.feedbackBuilder,
     this.data,
     this.childWhenDragging,
     this.onDragStarted,
   })
       : super(key: key) {
     assert(child != null);
-    assert(feedback != null);
+    assert(feedbackBuilder != null);
   }
 
   /// The data that will be dropped by this draggable.
@@ -84,7 +90,7 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
   final Widget childWhenDragging;
 
   /// The widget to show under the pointer when a drag is under way.
-  final Widget feedback;
+  final FeedbackBuilder feedbackBuilder;
 
   final VoidCallback onDragStarted;
 
@@ -141,14 +147,14 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
     setState(() {
       _activeCount += 1;
     });
-    final RenderBox renderObject = context.findRenderObject();
+    final RenderBox box = context.findRenderObject();
     return new _DragAvatar<T>(
         overlayKey: config.overlayKey,
         data: config.data,
         initialPosition: position,
-        dragStartPoint: renderObject.globalToLocal(position),
-        feedback: config.feedback,
-        onDragEnd: (Velocity velocity, Offset offset, bool wasAccepted) {
+        dragStartPoint: box.globalToLocal(position),
+        feedbackBuilder: config.feedbackBuilder,
+        onDragEnd: (bool wasAccepted) {
           setState(() {
             _activeCount -= 1;
             if (!wasAccepted) {
@@ -288,7 +294,7 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
 }
 
 enum _DragEndKind { dropped, canceled }
-typedef void _OnDragEnd(Velocity velocity, Offset offset, bool wasAccepted);
+typedef void _OnDragEnd(bool wasAccepted);
 
 // The lifetime of this object is a little dubious right now. Specifically, it
 // lives as long as the pointer is down. Arguably it should self-immolate if the
@@ -296,13 +302,14 @@ typedef void _OnDragEnd(Velocity velocity, Offset offset, bool wasAccepted);
 // This will probably need to be changed once we have more experience with using
 // this widget.
 class _DragAvatar<T> extends Drag {
-  _DragAvatar(
-      {this.overlayKey,
-      this.data,
-      Point initialPosition,
-      this.dragStartPoint: Point.origin,
-      this.feedback,
-      this.onDragEnd}) {
+  _DragAvatar({
+    this.overlayKey,
+    this.data,
+    Point initialPosition,
+    this.dragStartPoint,
+    this.feedbackBuilder,
+    this.onDragEnd,
+  }) {
     assert(overlayKey.currentState != null);
     assert(dragStartPoint != null);
     overlayKey.currentState.addBuilder(_build);
@@ -312,14 +319,13 @@ class _DragAvatar<T> extends Drag {
 
   final T data;
   final Point dragStartPoint;
-  final Widget feedback;
+  final FeedbackBuilder feedbackBuilder;
   final _OnDragEnd onDragEnd;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
 
   _DragTargetState<T> _activeTarget;
   List<_DragTargetState<T>> _enteredTargets = <_DragTargetState<T>>[];
   Point _position;
-  Offset _lastOffset;
 
   // Drag API
   @override
@@ -339,7 +345,6 @@ class _DragAvatar<T> extends Drag {
   }
 
   void updateDrag(Point globalPosition) {
-    _lastOffset = globalPosition - dragStartPoint;
     overlayKey.currentState.update();
 
     HitTestResult result = new HitTestResult();
@@ -416,17 +421,26 @@ class _DragAvatar<T> extends Drag {
     overlayKey.currentState.removeBuilder(_build);
     // TODO(ianh): consider passing _entry as well so the client can perform an animation.
     if (onDragEnd != null) {
-      onDragEnd(velocity ?? Velocity.zero, _lastOffset, wasAccepted);
+      onDragEnd(wasAccepted);
     }
   }
 
   Widget _build(BuildContext context) {
-    RenderBox box = overlayKey.currentContext.findRenderObject();
-    Point overlayTopLeft = box.localToGlobal(Point.origin);
-    return new Positioned(
-      left: _lastOffset.dx - overlayTopLeft.x,
-      top: _lastOffset.dy - overlayTopLeft.y,
-      child: new IgnorePointer(child: feedback),
+    RenderBox overlayBox = overlayKey.currentContext.findRenderObject();
+    Point overlayTopLeft = overlayBox.localToGlobal(Point.origin);
+    Offset localOffset = _position - dragStartPoint;
+    return new Stack(
+      children: [
+        new Positioned(
+          left: localOffset.dx - overlayTopLeft.x,
+          top: localOffset.dy - overlayTopLeft.y,
+          child: new IgnorePointer(
+            child: feedbackBuilder(
+              dragStartPoint,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

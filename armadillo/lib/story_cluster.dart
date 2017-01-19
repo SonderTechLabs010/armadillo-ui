@@ -71,7 +71,10 @@ class StoryCluster {
         id: story.clusterId,
         clusterDraggableKey: story.clusterDraggableKey,
         stories: [
-          story.copyWith(panel: new Panel()),
+          story.copyWith(
+            panel: new Panel(),
+            positionedKey: new GlobalKey(),
+          ),
         ],
       );
 

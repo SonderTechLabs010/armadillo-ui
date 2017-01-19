@@ -12,7 +12,7 @@ import 'story_list_layout.dart';
 import 'story_list_render_block_parent_data.dart';
 
 const double _kStoryInlineTitleHeight = 20.0;
-const bool _kSlideUnfocusedAway = false;
+const bool _kSlideUnfocusedAway = true;
 
 /// Overrides [RenderBlock]'s layout, paint, and hit-test behaviour to allow
 /// the following:

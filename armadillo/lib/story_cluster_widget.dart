@@ -133,27 +133,46 @@ class StoryClusterWidget extends StatelessWidget {
   Widget _getUnfocusedDragTargetChild(
     BuildContext context, {
     bool hasCandidates,
-  }) =>
-      new OptionalWrapper(
-        useWrapper: _isUnfocused && !hasCandidates,
-        builder: (BuildContext context, Widget child) =>
-            new ArmadilloLongPressDraggable<StoryClusterId>(
-              key: storyCluster.clusterDraggableKey,
-              overlayKey: overlayKey,
-              data: storyCluster.id,
-              childWhenDragging: Nothing.widget,
-              feedback: new StoryClusterDragFeedback(
-                key: storyCluster.dragFeedbackKey,
-                storyCluster: storyCluster,
-                storyWidgets: storyWidgets,
-              ),
-              child: child,
-            ),
-        child: _getStoryClusterWithInlineStoryTitle(
-          context,
-          highlight: hasCandidates,
-        ),
-      );
+  }) {
+    Rect initialBoundsOnDrag;
+    return new OptionalWrapper(
+      useWrapper: _isUnfocused && !hasCandidates,
+      builder: (BuildContext context, Widget child) =>
+          new ArmadilloLongPressDraggable<StoryClusterId>(
+            key: storyCluster.clusterDraggableKey,
+            overlayKey: overlayKey,
+            data: storyCluster.id,
+            childWhenDragging: Nothing.widget,
+            onDragStarted: () {
+              RenderBox box =
+                  storyCluster.panelsKey.currentContext.findRenderObject();
+              Point boxTopLeft = box.localToGlobal(Point.origin);
+              Point boxBottomRight = box.localToGlobal(
+                new Point(box.size.width, box.size.height),
+              );
+              initialBoundsOnDrag = new Rect.fromLTRB(
+                boxTopLeft.x,
+                boxTopLeft.y,
+                boxBottomRight.x,
+                boxBottomRight.y,
+              );
+            },
+            feedbackBuilder: (Point localDragStartPoint) =>
+                new StoryClusterDragFeedback(
+                  key: storyCluster.dragFeedbackKey,
+                  storyCluster: storyCluster,
+                  storyWidgets: storyWidgets,
+                  localDragStartPoint: localDragStartPoint,
+                  initialBounds: initialBoundsOnDrag,
+                ),
+            child: child,
+          ),
+      child: _getStoryClusterWithInlineStoryTitle(
+        context,
+        highlight: hasCandidates,
+      ),
+    );
+  }
 
   Widget _getStoryClusterWithInlineStoryTitle(
     BuildContext context, {

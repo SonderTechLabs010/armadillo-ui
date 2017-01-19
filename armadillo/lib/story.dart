@@ -70,6 +70,7 @@ class Story {
     bool inactive,
     Panel panel,
     GlobalKey clusterDraggableKey,
+    GlobalKey positionedKey,
   }) =>
       new Story(
         id: this.id,
@@ -86,7 +87,7 @@ class Story {
         storyBarKey: this.storyBarKey,
         storyBarPaddingKey: this.storyBarPaddingKey,
         clusterDraggableKey: this.clusterDraggableKey,
-        positionedKey: this.positionedKey,
+        positionedKey: positionedKey ?? this.positionedKey,
         containerKey: this.containerKey,
         tabSizerKey: this.tabSizerKey,
         panel: panel ?? this.panel,

@@ -22,12 +22,16 @@ class StoryClusterDragFeedback extends StatefulWidget {
   final StoryCluster storyCluster;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
   final Map<StoryId, Widget> storyWidgets;
+  final Point localDragStartPoint;
+  final Rect initialBounds;
 
   StoryClusterDragFeedback({
     Key key,
     this.overlayKey,
     this.storyCluster,
     this.storyWidgets,
+    this.localDragStartPoint,
+    this.initialBounds,
   })
       : super(key: key);
 
@@ -38,13 +42,22 @@ class StoryClusterDragFeedback extends StatefulWidget {
 
 class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
   final GlobalKey _translationKey = new GlobalKey();
-  final GlobalKey _boxKey = new GlobalKey();
   final SizeManager childSizeManager = new SizeManager(Size.zero);
-  Map<Object, Panel> _storyPanels = new Map<Object, Panel>();
+  Map<Object, Panel> _storyPanels = <Object, Panel>{};
   double _widthFactor;
   double _heightFactor;
   DisplayMode _displayModeOverride;
   int _targetClusterStoryCount;
+  FractionalOffset _alignment;
+
+  @override
+  void initState() {
+    super.initState();
+    _alignment = new FractionalOffset(
+      config.localDragStartPoint.x / config.initialBounds.width,
+      config.localDragStartPoint.y / config.initialBounds.height,
+    );
+  }
 
   set storyPanels(Map<Object, Panel> storyPanels) {
     setState(() {
@@ -129,10 +142,14 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       dy: 0.0,
       scale: childScale,
       targetOpacity: opacity,
+      alignment: _alignment,
       child: new SimulatedSizedBox(
-        key: _boxKey,
-        width: width,
-        height: height,
+        width: _translationKey.currentState == null
+            ? config.initialBounds.width
+            : width,
+        height: _translationKey.currentState == null
+            ? config.initialBounds.height
+            : height,
         child: new InheritedSizeManager(
           sizeManager: childSizeManager,
           child: new StoryPanels(

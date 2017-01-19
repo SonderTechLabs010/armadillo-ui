@@ -66,6 +66,8 @@ class LineSegment {
   final _OnPanelEvent onHover;
   final _OnPanelEvent onDrop;
   final int maxStoriesCanAccept;
+  final String name;
+  final bool initiallyTargetable;
 
   LineSegment(
     Point a,
@@ -74,6 +76,8 @@ class LineSegment {
     this.onHover,
     this.onDrop,
     this.maxStoriesCanAccept: 1,
+    this.name,
+    this.initiallyTargetable: true,
   })
       : this.a = (a.x < b.x || a.y < b.y) ? a : b,
         this.b = (a.x < b.x || a.y < b.y) ? b : a {
@@ -89,6 +93,8 @@ class LineSegment {
     _OnPanelEvent onHover,
     _OnPanelEvent onDrop,
     int maxStoriesCanAccept,
+    String name,
+    bool initiallyTargetable: true,
   }) =>
       new LineSegment(
         new Point(x, top),
@@ -97,6 +103,8 @@ class LineSegment {
         onHover: onHover,
         onDrop: onDrop,
         maxStoriesCanAccept: maxStoriesCanAccept,
+        name: name,
+        initiallyTargetable: initiallyTargetable,
       );
 
   factory LineSegment.horizontal({
@@ -107,6 +115,8 @@ class LineSegment {
     _OnPanelEvent onHover,
     _OnPanelEvent onDrop,
     int maxStoriesCanAccept,
+    String name,
+    bool initiallyTargetable: true,
   }) =>
       new LineSegment(
         new Point(left, y),
@@ -115,6 +125,8 @@ class LineSegment {
         onHover: onHover,
         onDrop: onDrop,
         maxStoriesCanAccept: maxStoriesCanAccept,
+        name: name,
+        initiallyTargetable: initiallyTargetable,
       );
 
   bool get isHorizontal => a.y == b.y;
@@ -344,13 +356,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       LineSegment closestLine = _getClosestLine(
         storyClusterPoint,
         storyCluster,
+        _closestTargets[storyCluster] == null,
       );
 
       // ... lock to its closest line if it's an existing candidate whose
       // closest line has changed and we've moved past the sticky distance for
       // its lock point.
-      if (_closestTargets[storyCluster] != closestLine &&
-          ((lockPoint - storyClusterPoint).distance > _kStickyDistance)) {
+      if (_closestTargets[storyCluster] == null ||
+          (_closestTargets[storyCluster] != closestLine &&
+              ((lockPoint - storyClusterPoint).distance > _kStickyDistance))) {
         _lockClosestTarget(
           storyCluster: storyCluster,
           point: storyClusterPoint,
@@ -370,14 +384,19 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     closestLine.onHover?.call(context, storyCluster);
   }
 
-  LineSegment _getClosestLine(Point point, StoryCluster storyCluster) {
+  LineSegment _getClosestLine(
+    Point point,
+    StoryCluster storyCluster,
+    bool initialTarget,
+  ) {
     double minDistance = double.INFINITY;
     LineSegment closestLine;
     _targetLines
         .where((LineSegment line) => line.canAccept(storyCluster))
         .forEach((LineSegment line) {
       double targetLineDistance = line.distanceFrom(point);
-      if (targetLineDistance < minDistance) {
+      if (targetLineDistance < minDistance &&
+          (!initialTarget || line.initiallyTargetable)) {
         minDistance = targetLineDistance;
         closestLine = line;
       }
@@ -414,6 +433,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       // Top edge target.
       _targetLines.add(
         new LineSegment.horizontal(
+          name: 'Top edge target',
           y: verticalMargin + _kTopEdgeTargetYOffset,
           left: horizontalMargin + _kStoryEdgeTargetInset,
           right: sizeManager.size.width -
@@ -438,6 +458,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       // Bottom edge target.
       _targetLines.add(
         new LineSegment.horizontal(
+          name: 'Bottom edge target',
           y: sizeManager.size.height - verticalMargin,
           left: horizontalMargin + _kStoryEdgeTargetInset,
           right: sizeManager.size.width -
@@ -465,6 +486,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     if (availableColumns > 0) {
       _targetLines.add(
         new LineSegment.vertical(
+          name: 'Left edge target',
           x: horizontalMargin,
           top: verticalMargin,
           bottom:
@@ -488,6 +510,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       // Right edge target.
       _targetLines.add(
         new LineSegment.vertical(
+          name: 'Right edge target',
           x: sizeManager.size.width - horizontalMargin,
           top: verticalMargin,
           bottom:
@@ -512,6 +535,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // Story Bar target.
     _targetLines.add(
       new LineSegment.horizontal(
+        name: 'Story Bar target',
         y: verticalMargin + _kStoryBarTargetYOffset,
         left: horizontalMargin + _kStoryEdgeTargetInset,
         right:
@@ -548,6 +572,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // Top discard target.
     _targetLines.add(
       new LineSegment.horizontal(
+        name: 'Top discard target',
+        initiallyTargetable: false,
         y: verticalMargin + _kDiscardTargetTopEdgeYOffset,
         left: horizontalMargin * 3.0,
         right: sizeManager.size.width - 3.0 * horizontalMargin,
@@ -572,6 +598,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // Bottom bring-to-front target.
     _targetLines.add(
       new LineSegment.horizontal(
+        name: 'Bottom bring-to-front target',
+        initiallyTargetable: false,
         y: sizeManager.size.height -
             verticalMargin +
             _kBringToFrontTargetBottomEdgeYOffset,
@@ -620,6 +648,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add left target.
         _targetLines.add(
           new LineSegment.vertical(
+            name: 'Add left target',
             x: left,
             top: top,
             bottom: bottom,
@@ -644,6 +673,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add right target.
         _targetLines.add(
           new LineSegment.vertical(
+            name: 'Add right target',
             x: right,
             top: top,
             bottom: bottom,
@@ -685,6 +715,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add top target.
         _targetLines.add(
           new LineSegment.horizontal(
+            name: 'Add top target',
             y: top,
             left: left,
             right: right,
@@ -709,6 +740,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add bottom target.
         _targetLines.add(
           new LineSegment.horizontal(
+            name: 'Add bottom target',
             y: bottom,
             left: left,
             right: right,
