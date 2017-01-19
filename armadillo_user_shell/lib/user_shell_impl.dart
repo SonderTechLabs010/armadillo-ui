@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart';
+import 'package:apps.modular.services.story/story_provider.fidl.dart';
 import 'package:apps.modular.services.user/focus.fidl.dart';
-import 'package:apps.modular.services.user/story_provider.fidl.dart';
 import 'package:apps.modular.services.user/user_shell.fidl.dart';
 import 'package:apps.modular.services.user/user_context.fidl.dart';
 import 'package:lib.fidl.dart/bindings.dart';

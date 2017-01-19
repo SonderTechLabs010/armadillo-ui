@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import 'package:apps.modular.services.user/story_provider.fidl.dart';
+import 'package:apps.modular.services.story/story_provider.fidl.dart';
 
 const List<String> _kStoryUrls = const <String>[
   'file:///system/apps/color',
