@@ -13,6 +13,7 @@ import 'story_list_render_block_parent_data.dart';
 
 const double _kStoryInlineTitleHeight = 20.0;
 const bool _kSlideUnfocusedAway = true;
+const double _kFocusProgressWhenUnfocusedFullyTransparent = 0.7;
 
 /// Overrides [RenderBlock]'s layout, paint, and hit-test behaviour to allow
 /// the following:
@@ -79,9 +80,36 @@ class StoryListRenderBlock extends RenderBlock {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    _childrenSortedByFocusProgress.forEach((RenderBox child) {
-      final BlockParentData childParentData = child.parentData;
-      context.paintChild(child, childParentData.offset + offset);
+    List<RenderBox> childrenSortedByFocusProgress =
+        _childrenSortedByFocusProgress;
+    if (childrenSortedByFocusProgress.isEmpty) {
+      return;
+    }
+    final StoryListRenderBlockParentData mostFocusedChildParentData =
+        childrenSortedByFocusProgress.last.parentData;
+    int unfocusedAlpha = (lerpDouble(
+                1.0,
+                0.0,
+                mostFocusedChildParentData.focusProgress.clamp(
+                        0.0, _kFocusProgressWhenUnfocusedFullyTransparent) /
+                    _kFocusProgressWhenUnfocusedFullyTransparent) *
+            255)
+        .round();
+
+    childrenSortedByFocusProgress.forEach((RenderBox child) {
+      final StoryListRenderBlockParentData childParentData = child.parentData;
+      if (unfocusedAlpha != 255 && childParentData.focusProgress == 0.0) {
+        // Apply transparency.
+        assert(needsCompositing);
+        context.pushOpacity(
+          childParentData.offset + offset,
+          unfocusedAlpha,
+          (PaintingContext context, Offset offset) =>
+              context.paintChild(child, offset),
+        );
+      } else {
+        context.paintChild(child, childParentData.offset + offset);
+      }
     });
   }
 
