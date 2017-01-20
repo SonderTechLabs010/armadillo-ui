@@ -25,6 +25,7 @@ class StoryCluster {
   final GlobalKey clusterDragTargetsKey;
   final GlobalKey panelsKey;
   final GlobalKey scaleTransformKey;
+  final GlobalKey titleTransformKey;
   final GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey;
   final GlobalKey<SimulationBuilderState> focusSimulationKey;
   DisplayMode _displayMode;
@@ -40,6 +41,7 @@ class StoryCluster {
     GlobalKey clusterDragTargetsKey,
     GlobalKey panelsKey,
     GlobalKey scaleTransformKey,
+    GlobalKey titleTransformKey,
     GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey,
     GlobalKey<SimulationBuilderState> focusSimulationKey,
     List<Story> stories,
@@ -60,6 +62,7 @@ class StoryCluster {
         this.clusterDragTargetsKey = clusterDragTargetsKey ?? new GlobalKey(),
         this.panelsKey = panelsKey ?? new GlobalKey(),
         this.scaleTransformKey = scaleTransformKey ?? new GlobalKey(),
+        this.titleTransformKey = titleTransformKey ?? new GlobalKey(),
         this.dragFeedbackKey =
             dragFeedbackKey ?? new GlobalKey<StoryClusterDragFeedbackState>(),
         this.focusSimulationKey =
@@ -130,6 +133,7 @@ class StoryCluster {
         clusterDragTargetsKey: this.clusterDragTargetsKey,
         panelsKey: this.panelsKey,
         scaleTransformKey: this.scaleTransformKey,
+        titleTransformKey: this.titleTransformKey,
         dragFeedbackKey: this.dragFeedbackKey,
         focusSimulationKey: this.focusSimulationKey,
         stories: new List<Story>.generate(

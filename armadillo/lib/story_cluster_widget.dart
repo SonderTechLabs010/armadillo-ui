@@ -272,22 +272,31 @@ class InlineStoryTitle extends StatelessWidget {
       lerpDouble(_kStoryInlineTitleHeight, 0.0, focusProgress);
 
   @override
-  Widget build(BuildContext context) => new Container(
-        height: getHeight(focusProgress),
-        child: new OverflowBox(
-          minHeight: _kStoryInlineTitleHeight,
-          maxHeight: _kStoryInlineTitleHeight,
-          child: new Padding(
-            padding: const EdgeInsets.only(
-              left: 8.0,
-              right: 8.0,
-              top: 4.0,
-            ),
-            child: new Align(
-              alignment: FractionalOffset.bottomLeft,
-              child: new StoryTitle(
-                title: storyCluster.title,
-                opacity: 1.0 - focusProgress,
+  Widget build(BuildContext context) => new SimulatedTransform(
+        key: storyCluster.titleTransformKey,
+        initOpacity: 1.0,
+        targetOpacity: InheritedStoryClusterDragStateManager
+                .of(context, rebuildOnChange: true)
+                .areStoryClustersDragging
+            ? 0.3
+            : 1.0,
+        child: new Container(
+          height: getHeight(focusProgress),
+          child: new OverflowBox(
+            minHeight: _kStoryInlineTitleHeight,
+            maxHeight: _kStoryInlineTitleHeight,
+            child: new Padding(
+              padding: const EdgeInsets.only(
+                left: 8.0,
+                right: 8.0,
+                top: 4.0,
+              ),
+              child: new Align(
+                alignment: FractionalOffset.bottomLeft,
+                child: new StoryTitle(
+                  title: storyCluster.title,
+                  opacity: 1.0 - focusProgress,
+                ),
               ),
             ),
           ),

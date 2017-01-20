@@ -35,7 +35,7 @@ class SimulatedTransform extends StatefulWidget {
     this.targetOpacity: 1.0,
     this.springDescription: _kDefaultSimulationDesc,
     this.child,
-    this.alignment,
+    this.alignment: FractionalOffset.center,
   })
       : super(key: key);
 
