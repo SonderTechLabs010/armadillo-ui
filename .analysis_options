@@ -1,9 +1,6 @@
 analyzer:
   language:
     enableSuperMixins: true
-  exclude:
-    - out/**
-    - third_party/**
 linter:
   # Full list available at http://dart-lang.github.io/linter/lints/options/options.html.
   rules:
