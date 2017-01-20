@@ -14,6 +14,8 @@ import 'package:sysui_widgets/ticking_state.dart';
 import 'fading_spring_simulation.dart';
 import 'now_manager.dart';
 import 'opacity_manager.dart';
+import 'simulated_transform.dart';
+import 'story_cluster_drag_state_manager.dart';
 
 typedef void OnQuickSettingsProgressChange(double quickSettingsProgress);
 
@@ -177,7 +179,16 @@ class NowState extends TickingState<Now> {
   }
 
   @override
-  Widget build(BuildContext context) => new Stack(
+  Widget build(BuildContext context) => new SimulatedTransform(
+        targetOpacity: InheritedStoryClusterDragStateManager
+                .of(context, rebuildOnChange: true)
+                .areStoryClustersDragging
+            ? 0.0
+            : 1.0,
+        child: _buildNow(context),
+      );
+
+  Widget _buildNow(BuildContext context) => new Stack(
         children: [
           new Listener(
             behavior: HitTestBehavior.translucent,
