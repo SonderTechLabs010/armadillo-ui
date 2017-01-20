@@ -85,19 +85,19 @@ class StoryPanelsState extends State<StoryPanels> {
   void _onPanelsChanged() => scheduleMicrotask(() => setState(() {}));
 
   @override
-  Widget build(BuildContext context) => new Container(
-        foregroundDecoration: config.highlight
-            ? new BoxDecoration(
-                backgroundColor: _kTargetOverlayColor,
-              )
-            : null,
-        child: new LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-          Size currentSize = new Size(
-            constraints.maxWidth,
-            constraints.maxHeight,
-          );
-          return new Stack(
+  Widget build(BuildContext context) => new LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+        Size currentSize = new Size(
+          constraints.maxWidth,
+          constraints.maxHeight,
+        );
+        return new Container(
+          foregroundDecoration: config.highlight
+              ? new BoxDecoration(
+                  backgroundColor: _kTargetOverlayColor,
+                )
+              : null,
+          child: new Stack(
             overflow: Overflow.visible,
             children: config.storyCluster.stories
                 .map(
@@ -121,9 +121,9 @@ class StoryPanelsState extends State<StoryPanels> {
                       ),
                 )
                 .toList(),
-          );
-        }),
-      );
+          ),
+        );
+      });
 
   Widget _getStoryBarDraggableWrapper({
     BuildContext context,
@@ -170,6 +170,7 @@ class StoryPanelsState extends State<StoryPanels> {
                 storyWidgets: {story.id: storyWidget},
                 localDragStartPoint: localDragStartPoint,
                 initialBounds: initialBoundsOnDrag,
+                showTitle: false,
               );
             },
             child: child,

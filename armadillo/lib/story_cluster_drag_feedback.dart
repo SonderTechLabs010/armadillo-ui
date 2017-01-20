@@ -13,6 +13,7 @@ import 'simulated_transform.dart';
 import 'size_manager.dart';
 import 'story.dart';
 import 'story_cluster.dart';
+import 'story_cluster_widget.dart';
 import 'story_panels.dart';
 
 const double _kStoryBarMaximizedHeight = 48.0;
@@ -24,6 +25,7 @@ class StoryClusterDragFeedback extends StatefulWidget {
   final Map<StoryId, Widget> storyWidgets;
   final Point localDragStartPoint;
   final Rect initialBounds;
+  final bool showTitle;
 
   StoryClusterDragFeedback({
     Key key,
@@ -32,6 +34,7 @@ class StoryClusterDragFeedback extends StatefulWidget {
     this.storyWidgets,
     this.localDragStartPoint,
     this.initialBounds,
+    this.showTitle: false,
   })
       : super(key: key);
 
@@ -136,28 +139,43 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     }
     childSizeManager.size =
         _storyPanels.isNotEmpty ? new Size(width, height) : sizeManager.size;
+    double focusProgress = config.showTitle
+        ? config.storyCluster.focusSimulationKey.currentState?.progress ?? 0.0
+        : 1.0;
     return new SimulatedTransform(
       key: _translationKey,
-      dx: 0.0,
-      dy: 0.0,
-      scale: childScale,
+      targetScale: childScale,
       targetOpacity: opacity,
       alignment: _alignment,
       child: new SimulatedSizedBox(
         width: _translationKey.currentState == null
             ? config.initialBounds.width
             : width,
-        height: _translationKey.currentState == null
-            ? config.initialBounds.height
-            : height,
+        height: (_translationKey.currentState == null
+                ? config.initialBounds.height
+                : height) +
+            InlineStoryTitle.getHeight(focusProgress),
         child: new InheritedSizeManager(
           sizeManager: childSizeManager,
-          child: new StoryPanels(
-            storyCluster: config.storyCluster,
-            focusProgress: 0.0,
-            highlight: false,
-            overlayKey: config.overlayKey,
-            storyWidgets: config.storyWidgets,
+          child: new Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              new Expanded(
+                child: new StoryPanels(
+                  key: config.storyCluster.panelsKey,
+                  storyCluster: config.storyCluster,
+                  focusProgress: 0.0,
+                  highlight: false,
+                  overlayKey: config.overlayKey,
+                  storyWidgets: config.storyWidgets,
+                ),
+              ),
+              new InlineStoryTitle(
+                focusProgress: focusProgress,
+                storyCluster: config.storyCluster,
+              ),
+            ],
           ),
         ),
       ),

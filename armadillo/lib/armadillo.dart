@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 import 'conductor.dart';
 import 'now_manager.dart';
 import 'rounded_corner_decoration.dart';
+import 'story_cluster_drag_state_manager.dart';
 import 'story_manager.dart';
 import 'suggestion_manager.dart';
 
@@ -23,12 +24,14 @@ class Armadillo extends StatelessWidget {
   final StoryManager storyManager;
   final SuggestionManager suggestionManager;
   final NowManager nowManager;
+  final StoryClusterDragStateManager storyClusterDragStateManager;
   final Conductor conductor;
 
   Armadillo({
     this.storyManager,
     this.suggestionManager,
     this.nowManager,
+    this.storyClusterDragStateManager,
     this.conductor,
   });
 
@@ -56,7 +59,10 @@ class Armadillo extends StatelessWidget {
             storyManager: storyManager,
             child: new InheritedNowManager(
               nowManager: nowManager,
-              child: conductor,
+              child: new InheritedStoryClusterDragStateManager(
+                storyClusterDragStateManager: storyClusterDragStateManager,
+                child: conductor,
+              ),
             ),
           ),
         ),

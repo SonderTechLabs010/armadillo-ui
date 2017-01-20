@@ -13,6 +13,7 @@ import 'package:armadillo/conductor.dart';
 import 'package:armadillo/constraints_manager.dart';
 import 'package:armadillo/now_manager.dart';
 import 'package:armadillo/story_cluster.dart';
+import 'package:armadillo/story_cluster_drag_state_manager.dart';
 import 'package:armadillo/story_cluster_id.dart';
 import 'package:armadillo/story.dart';
 import 'package:armadillo/story_manager.dart';
@@ -97,6 +98,8 @@ Future main() async {
 
   NowManager nowManager = new NowManager();
   ConstraintsManager constraintsManager = new ConstraintsManager();
+  StoryClusterDragStateManager storyClusterDragStateManager =
+      new StoryClusterDragStateManager();
 
   Widget app = _buildApp(
     storyManager: storyManager,
@@ -106,6 +109,7 @@ Future main() async {
       storyManager: storyManager,
       suggestionManager: suggestionProviderSuggestionManager,
       nowManager: nowManager,
+      storyClusterDragStateManager: storyClusterDragStateManager,
       conductor: conductor,
     ),
     hitTestManager: hitTestManager,

@@ -70,6 +70,7 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
     this.data,
     this.childWhenDragging,
     this.onDragStarted,
+    this.onDragEnded,
   })
       : super(key: key) {
     assert(child != null);
@@ -93,6 +94,7 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
   final FeedbackBuilder feedbackBuilder;
 
   final VoidCallback onDragStarted;
+  final VoidCallback onDragEnded;
 
   final GlobalKey<ArmadilloOverlayState> overlayKey;
 
@@ -161,6 +163,7 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
               // TODO(apwilson): Animate back to original position.
             }
           });
+          config.onDragEnded?.call();
         });
   }
 

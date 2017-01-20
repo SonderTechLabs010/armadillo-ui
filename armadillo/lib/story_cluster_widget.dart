@@ -13,10 +13,12 @@ import 'armadillo_overlay.dart';
 import 'nothing.dart';
 import 'optional_wrapper.dart';
 import 'panel_drag_targets.dart';
+import 'simulated_transform.dart';
 import 'story.dart';
 import 'story_carousel.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
+import 'story_cluster_drag_state_manager.dart';
 import 'story_cluster_id.dart';
 import 'story_manager.dart';
 import 'story_panels.dart';
@@ -156,6 +158,14 @@ class StoryClusterWidget extends StatelessWidget {
                 boxBottomRight.x,
                 boxBottomRight.y,
               );
+              InheritedStoryClusterDragStateManager
+                  .of(context)
+                  .addDraggingStoryCluster(storyCluster);
+            },
+            onDragEnded: () {
+              InheritedStoryClusterDragStateManager
+                  .of(context)
+                  .removeDraggingStoryCluster(storyCluster);
             },
             feedbackBuilder: (Point localDragStartPoint) =>
                 new StoryClusterDragFeedback(
@@ -164,6 +174,7 @@ class StoryClusterWidget extends StatelessWidget {
                   storyWidgets: storyWidgets,
                   localDragStartPoint: localDragStartPoint,
                   initialBounds: initialBoundsOnDrag,
+                  showTitle: true,
                 ),
             child: child,
           ),
@@ -178,19 +189,32 @@ class StoryClusterWidget extends StatelessWidget {
     BuildContext context, {
     bool highlight: false,
   }) =>
-      new Stack(
-        children: [
-          new Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              new Expanded(
-                  child: _getStoryCluster(context, highlight: highlight)),
-              _inlineStoryTitle,
-            ],
-          ),
-          _focusOnTap,
-        ],
+      new SimulatedTransform(
+        key: storyCluster.scaleTransformKey,
+        alignment: FractionalOffset.center,
+        initScale: 1.0,
+        targetScale: InheritedStoryClusterDragStateManager
+                .of(context, rebuildOnChange: true)
+                .areStoryClustersDragging
+            ? 0.9
+            : 1.0,
+        child: new Stack(
+          children: [
+            new Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                new Expanded(
+                    child: _getStoryCluster(context, highlight: highlight)),
+                new InlineStoryTitle(
+                  focusProgress: focusProgress,
+                  storyCluster: storyCluster,
+                ),
+              ],
+            ),
+            _focusOnTap,
+          ],
+        ),
       );
 
   /// The Story including its StoryBar.
@@ -220,9 +244,36 @@ class StoryClusterWidget extends StatelessWidget {
               highlight: highlight,
             );
 
-  /// The Story Title that hovers below the story itself.
-  Widget get _inlineStoryTitle => new Container(
-        height: _inlineStoryTitleHeight,
+  Widget get _focusOnTap => new Positioned(
+        left: 0.0,
+        right: 0.0,
+        top: 0.0,
+        bottom: 0.0,
+        child: new Offstage(
+          offstage: !_isUnfocused,
+          child: new GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onGainFocus,
+          ),
+        ),
+      );
+
+  bool get _isUnfocused => focusProgress == 0.0;
+}
+
+/// The Story Title that hovers below the story itself.
+class InlineStoryTitle extends StatelessWidget {
+  final double focusProgress;
+  final StoryCluster storyCluster;
+
+  InlineStoryTitle({this.focusProgress, this.storyCluster});
+
+  static double getHeight(double focusProgress) =>
+      lerpDouble(_kStoryInlineTitleHeight, 0.0, focusProgress);
+
+  @override
+  Widget build(BuildContext context) => new Container(
+        height: getHeight(focusProgress),
         child: new OverflowBox(
           minHeight: _kStoryInlineTitleHeight,
           maxHeight: _kStoryInlineTitleHeight,
@@ -242,23 +293,4 @@ class StoryClusterWidget extends StatelessWidget {
           ),
         ),
       );
-
-  Widget get _focusOnTap => new Positioned(
-        left: 0.0,
-        right: 0.0,
-        top: 0.0,
-        bottom: 0.0,
-        child: new Offstage(
-          offstage: !_isUnfocused,
-          child: new GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: onGainFocus,
-          ),
-        ),
-      );
-
-  bool get _isUnfocused => focusProgress == 0.0;
-
-  double get _inlineStoryTitleHeight =>
-      lerpDouble(_kStoryInlineTitleHeight, 0.0, focusProgress);
 }

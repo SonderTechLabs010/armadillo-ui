@@ -15,6 +15,7 @@ import 'constraints_manager.dart';
 import 'json_story_generator.dart';
 import 'json_suggestion_manager.dart';
 import 'now_manager.dart';
+import 'story_cluster_drag_state_manager.dart';
 import 'story_manager.dart';
 import 'story_time_randomizer.dart';
 import 'suggestion_manager.dart';
@@ -31,12 +32,15 @@ Future main() async {
   );
   NowManager nowManager = new NowManager();
   ConstraintsManager constraintsManager = new ConstraintsManager();
+  StoryClusterDragStateManager storyClusterDragStateManager =
+      new StoryClusterDragStateManager();
 
   Widget app = _buildApp(
     suggestionManager: jsonSuggestionManager,
     storyManager: storyManager,
     nowManager: nowManager,
     constraintsManager: constraintsManager,
+    storyClusterDragStateManager: storyClusterDragStateManager,
   );
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
@@ -52,6 +56,7 @@ Widget _buildApp({
   StoryManager storyManager,
   NowManager nowManager,
   ConstraintsManager constraintsManager,
+  StoryClusterDragStateManager storyClusterDragStateManager,
 }) =>
     new CheckedModeBanner(
       child: new StoryTimeRandomizer(
@@ -64,6 +69,7 @@ Widget _buildApp({
               storyManager: storyManager,
               suggestionManager: suggestionManager,
               nowManager: nowManager,
+              storyClusterDragStateManager: storyClusterDragStateManager,
               conductor: new Conductor(),
             ),
           ),

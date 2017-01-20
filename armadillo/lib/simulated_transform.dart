@@ -17,7 +17,8 @@ const RK4SpringDescription _kDefaultSimulationDesc =
 class SimulatedTransform extends StatefulWidget {
   final double dx;
   final double dy;
-  final double scale;
+  final double initScale;
+  final double targetScale;
   final double initOpacity;
   final double targetOpacity;
   final RK4SpringDescription springDescription;
@@ -26,9 +27,10 @@ class SimulatedTransform extends StatefulWidget {
 
   SimulatedTransform({
     Key key,
-    this.dx,
-    this.dy,
-    this.scale: 1.0,
+    this.dx: 0.0,
+    this.dy: 0.0,
+    this.initScale,
+    this.targetScale: 1.0,
     this.initOpacity: 1.0,
     this.targetOpacity: 1.0,
     this.springDescription: _kDefaultSimulationDesc,
@@ -61,9 +63,10 @@ class SimulatedTranslationTransformState
       desc: config.springDescription,
     );
     _scaleSimulation = new RK4SpringSimulation(
-      initValue: config.scale,
+      initValue: config.initScale ?? config.targetScale,
       desc: config.springDescription,
     );
+    _scaleSimulation.target = config.targetScale;
     _opacitySimulation = new RK4SpringSimulation(
       initValue: config.initOpacity,
       desc: config.springDescription,
@@ -77,7 +80,7 @@ class SimulatedTranslationTransformState
     super.didUpdateConfig(oldConfig);
     _dxSimulation.target = config.dx;
     _dySimulation.target = config.dy;
-    _scaleSimulation.target = config.scale;
+    _scaleSimulation.target = config.targetScale;
     _opacitySimulation.target = config.targetOpacity;
     startTicking();
   }
