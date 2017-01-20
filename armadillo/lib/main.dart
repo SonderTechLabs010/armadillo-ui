@@ -70,7 +70,9 @@ Widget _buildApp({
               suggestionManager: suggestionManager,
               nowManager: nowManager,
               storyClusterDragStateManager: storyClusterDragStateManager,
-              conductor: new Conductor(),
+              conductor: new Conductor(
+                storyClusterDragStateManager: storyClusterDragStateManager,
+              ),
             ),
           ),
         ),

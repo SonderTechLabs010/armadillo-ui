@@ -41,10 +41,14 @@ Future main() async {
   HitTestManager hitTestManager = new HitTestManager();
   StoryProviderStoryGenerator storyProviderStoryGenerator =
       new StoryProviderStoryGenerator();
+  StoryClusterDragStateManager storyClusterDragStateManager =
+      new StoryClusterDragStateManager();
+
   Conductor conductor = new Conductor(
     useSoftKeyboard: false,
     onQuickSettingsOverlayChanged: hitTestManager.onQuickSettingsOverlayChanged,
     onSuggestionsOverlayChanged: hitTestManager.onSuggestionsOverlayChanged,
+    storyClusterDragStateManager: storyClusterDragStateManager,
   );
   SuggestionProviderSuggestionManager suggestionProviderSuggestionManager =
       new SuggestionProviderSuggestionManager(
@@ -98,8 +102,6 @@ Future main() async {
 
   NowManager nowManager = new NowManager();
   ConstraintsManager constraintsManager = new ConstraintsManager();
-  StoryClusterDragStateManager storyClusterDragStateManager =
-      new StoryClusterDragStateManager();
 
   Widget app = _buildApp(
     storyManager: storyManager,

@@ -21,6 +21,7 @@ import 'size_manager.dart';
 import 'splash_suggestion.dart';
 import 'story.dart';
 import 'story_cluster.dart';
+import 'story_cluster_drag_state_manager.dart';
 import 'story_list.dart';
 import 'story_manager.dart';
 import 'suggestion.dart';
@@ -96,12 +97,18 @@ class Conductor extends StatelessWidget {
   final bool useSoftKeyboard;
   final OnOverlayChanged onQuickSettingsOverlayChanged;
   final OnOverlayChanged onSuggestionsOverlayChanged;
+  final _PeekManager _peekManager;
 
   Conductor({
     this.useSoftKeyboard: true,
     this.onQuickSettingsOverlayChanged,
     this.onSuggestionsOverlayChanged,
-  });
+    StoryClusterDragStateManager storyClusterDragStateManager,
+  })
+      : _peekManager = new _PeekManager(
+          peekingOverlayKey: _suggestionOverlayKey,
+          storyClusterDragStateManager: storyClusterDragStateManager,
+        );
 
   /// Note in particular the magic we're employing here to make the user
   /// state appear to be a part of the story list:
@@ -271,11 +278,11 @@ class Conductor extends StatelessWidget {
             );
           },
           onMinimize: () {
-            _suggestionOverlayKey.currentState.peek = false;
+            _peekManager.nowMinimized = true;
             _suggestionOverlayKey.currentState.hide();
           },
           onMaximize: () {
-            _suggestionOverlayKey.currentState.peek = true;
+            _peekManager.nowMinimized = false;
             _suggestionOverlayKey.currentState.hide();
           },
           onBarVerticalDragUpdate: (DragUpdateDetails details) =>
@@ -411,7 +418,7 @@ class Conductor extends StatelessWidget {
   void _minimizeNow() {
     _nowKey.currentState.minimize();
     _nowKey.currentState.hideQuickSettings();
-    _suggestionOverlayKey.currentState.peek = false;
+    _peekManager.nowMinimized = true;
     _suggestionOverlayKey.currentState.hide();
   }
 
@@ -477,5 +484,39 @@ class Conductor extends StatelessWidget {
 
     // Unhide selected suggestion in suggestion list.
     _suggestionListKey.currentState.resetSelection();
+  }
+}
+
+/// Manages if the [PeekingOverlay] with the [peekingOverlayKey] should
+/// be peeking or not.
+class _PeekManager {
+  final GlobalKey<PeekingOverlayState> peekingOverlayKey;
+  final StoryClusterDragStateManager storyClusterDragStateManager;
+  bool _nowMinimized = false;
+  bool _areStoryClustersDragging = false;
+
+  _PeekManager({this.peekingOverlayKey, this.storyClusterDragStateManager}) {
+    storyClusterDragStateManager.addListener(onStoryClusterDragStateChanged);
+  }
+
+  set nowMinimized(bool value) {
+    if (_nowMinimized != value) {
+      _nowMinimized = value;
+      _updatePeek();
+    }
+  }
+
+  void onStoryClusterDragStateChanged() {
+    if (_areStoryClustersDragging !=
+        storyClusterDragStateManager.areStoryClustersDragging) {
+      _areStoryClustersDragging =
+          storyClusterDragStateManager.areStoryClustersDragging;
+      _updatePeek();
+    }
+  }
+
+  void _updatePeek() {
+    peekingOverlayKey.currentState.peek =
+        (!_nowMinimized && !_areStoryClustersDragging);
   }
 }
