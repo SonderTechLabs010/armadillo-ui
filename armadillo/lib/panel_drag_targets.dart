@@ -225,7 +225,6 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         StoryCluster storyCluster =
             InheritedStoryManager.of(context).getStoryCluster(storyClusterId);
 
-        SizeManager sizeManager = InheritedSizeManager.of(context);
         storyCluster.stories.forEach((Story story) {
           if (story.positionedKey.currentState is SimulatedPositionedState) {
             // Get the Story's current global bounds...

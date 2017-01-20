@@ -10,7 +10,6 @@ import 'package:flutter/widgets.dart';
 
 import 'armadillo_drag_target.dart';
 import 'armadillo_overlay.dart';
-import 'long_hover_detector.dart';
 import 'nothing.dart';
 import 'optional_wrapper.dart';
 import 'panel_drag_targets.dart';
