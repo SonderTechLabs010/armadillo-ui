@@ -22,11 +22,13 @@ class StoryBar extends StatefulWidget {
   final Story story;
   final double minimizedHeight;
   final double maximizedHeight;
+  final bool focused;
   StoryBar({
     Key key,
     Story story,
     this.minimizedHeight,
     this.maximizedHeight,
+    this.focused,
   })
       : this.story = story,
         super(key: key);
@@ -37,6 +39,7 @@ class StoryBar extends StatefulWidget {
 
 class StoryBarState extends TickingState<StoryBar> {
   RK4SpringSimulation _heightSimulation;
+  RK4SpringSimulation _focusedSimulation;
   double _showHeight;
 
   @override
@@ -46,13 +49,28 @@ class StoryBarState extends TickingState<StoryBar> {
       initValue: config.minimizedHeight,
       desc: _kHeightSimulationDesc,
     );
+    _focusedSimulation = new RK4SpringSimulation(
+      initValue: 0.0,
+      desc: _kHeightSimulationDesc,
+    );
+    _focusedSimulation.target = config.focused ? 0.0 : 4.0;
     _showHeight = config.minimizedHeight;
   }
 
   @override
+  void didUpdateConfig(StoryBar oldConfig) {
+    super.didUpdateConfig(oldConfig);
+    if (config.focused != oldConfig.focused) {
+      _focusedSimulation.target = config.focused ? 0.0 : 4.0;
+      startTicking();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) => new Container(
-        height: _height,
+        height: _height - _focusedSimulation.value,
         padding: new EdgeInsets.symmetric(horizontal: 12.0),
+        margin: new EdgeInsets.only(bottom: _focusedSimulation.value),
         decoration: new BoxDecoration(backgroundColor: config.story.themeColor),
         child: new OverflowBox(
           minHeight: config.maximizedHeight,
@@ -127,14 +145,17 @@ class StoryBarState extends TickingState<StoryBar> {
 
   @override
   bool handleTick(double elapsedSeconds) {
-    if (_heightSimulation.isDone) {
+    if (_heightSimulation.isDone && _focusedSimulation.isDone) {
       return false;
     }
 
     // Tick the height simulation.
     _heightSimulation.elapseTime(elapsedSeconds);
 
-    return !_heightSimulation.isDone;
+    // Tick the focus simulation.
+    _focusedSimulation.elapseTime(elapsedSeconds);
+
+    return !_heightSimulation.isDone || !_focusedSimulation.isDone;
   }
 
   void show() {
@@ -155,11 +176,13 @@ class StoryBarState extends TickingState<StoryBar> {
       );
     }
     _showHeight = config.maximizedHeight;
+    _focusedSimulation.target = config.focused ? 0.0 : 4.0;
     show();
   }
 
   void minimize() {
     _showHeight = config.minimizedHeight;
+    _focusedSimulation.target = 0.0;
     show();
   }
 

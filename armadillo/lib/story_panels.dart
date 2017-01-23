@@ -206,6 +206,9 @@ class StoryPanelsState extends State<StoryPanels> {
                         story: story,
                         minimizedHeight: _kStoryBarMinimizedHeight,
                         maximizedHeight: _kStoryBarMaximizedHeight,
+                        focused: (config.storyCluster.displayMode ==
+                                DisplayMode.panels) ||
+                            (config.storyCluster.focusedStoryId == story.id),
                       ),
                     ),
                   ),
@@ -254,15 +257,17 @@ class StoryPanelsState extends State<StoryPanels> {
     if (config.storyCluster.displayMode == DisplayMode.panels) {
       return new EdgeInsets.symmetric(horizontal: 0.0);
     }
+    double storyBarGaps = 4.0 * (config.storyCluster.stories.length - 1);
     int spaces = config.storyCluster.stories.length + 1;
-    double widthPerSpace = toGridValue(currentSize.width / spaces);
+    double widthPerSpace =
+        toGridValue((currentSize.width - storyBarGaps) / spaces);
     int index = config.storyCluster.stories.indexOf(story);
     double left = 0.0;
     for (int i = 0; i < config.storyCluster.stories.length; i++) {
       if (i == index) {
         break;
       }
-      left += widthPerSpace;
+      left += widthPerSpace + 4.0;
       if (config.storyCluster.stories[i].id ==
           config.storyCluster.focusedStoryId) {
         left += widthPerSpace;
@@ -271,7 +276,7 @@ class StoryPanelsState extends State<StoryPanels> {
     double width = (story.id == config.storyCluster.focusedStoryId)
         ? 2.0 * widthPerSpace
         : widthPerSpace;
-    double right = (widthPerSpace * spaces) - left - width;
+    double right = (widthPerSpace * spaces + storyBarGaps) - left - width;
     return new EdgeInsets.only(
       left: math.max(0.0, left),
       right: math.max(0.0, right),

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:math' as math;
+
 /// The settle theshold for the spring (for both distance and/or velocity).
 const double _kTolerance = 0.01;
 
@@ -60,7 +62,11 @@ class RK4SpringSimulation {
   }
 
   bool get isDone => _isDone;
-  double get value => _startValue + _curT * (_targetValue - _startValue);
+  double get value =>
+      (_startValue + _curT * (_targetValue - _startValue)).clamp(
+        math.min(_startValue, _targetValue),
+        math.max(_startValue, _targetValue),
+      );
   double get target => _targetValue;
 
   /// Runs the simulated variable for the given number of [seconds].
