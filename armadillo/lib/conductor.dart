@@ -9,6 +9,7 @@ import 'package:sysui_widgets/device_extension_state.dart';
 
 import 'armadillo_overlay.dart';
 import 'device_extender.dart';
+import 'edge_scroll_drag_target.dart';
 import 'expand_suggestion.dart';
 import 'keyboard_device_extension.dart';
 import 'quick_settings.dart';
@@ -78,6 +79,8 @@ final GlobalKey<ScrollableState> _scrollableKey =
     new GlobalKey<ScrollableState>();
 final GlobalKey<ScrollLockerState> _scrollLockerKey =
     new GlobalKey<ScrollLockerState>();
+final GlobalKey<EdgeScrollDragTargetState> _edgeScrollDragTargetKey =
+    new GlobalKey<EdgeScrollDragTargetState>();
 
 /// The key for adding [Suggestion]s to the [SelectedSuggestionOverlay].  This
 /// is to allow us to animate from a [Suggestion] in an open [SuggestionList]
@@ -170,6 +173,18 @@ class Conductor extends StatelessWidget {
                     }
                   }),
 
+              // Top and bottom edge scrolling drag targets.
+              new Positioned(
+                top: 0.0,
+                left: 0.0,
+                right: 0.0,
+                bottom: 0.0,
+                child: new EdgeScrollDragTarget(
+                  key: _edgeScrollDragTargetKey,
+                  scrollableKey: _scrollableKey,
+                ),
+              ),
+
               // This layout builder tracks the size available for the
               // suggestion overlay and sets its maxHeight appropriately.
               // TODO(apwilson): refactor this to not be so weird.
@@ -243,6 +258,7 @@ class Conductor extends StatelessWidget {
             onStoryClusterFocusStarted: () {
               // Lock scrolling.
               _scrollLockerKey.currentState.lock();
+              _edgeScrollDragTargetKey.currentState.disable();
               _minimizeNow();
             },
             onStoryClusterFocusCompleted: (StoryCluster storyCluster) {
@@ -390,6 +406,7 @@ class Conductor extends StatelessWidget {
 
     // Unlock scrolling.
     _scrollLockerKey.currentState.unlock();
+    _edgeScrollDragTargetKey.currentState.enable();
     _scrollableKey.currentState.scrollTo(
       0.0,
       duration: const Duration(milliseconds: 500),
@@ -406,6 +423,7 @@ class Conductor extends StatelessWidget {
     storyManager.interactionStarted(storyCluster);
 
     _scrollLockerKey.currentState.lock();
+    _edgeScrollDragTargetKey.currentState.disable();
   }
 
   void _unfocusStoryCluster(StoryCluster s) {
@@ -435,6 +453,7 @@ class Conductor extends StatelessWidget {
     bool jumpToFinish: true,
   }) {
     _scrollLockerKey.currentState.lock();
+    _edgeScrollDragTargetKey.currentState.disable();
     _minimizeNow();
     _focusOnStory(storyId, storyManager, jumpToFinish: jumpToFinish);
   }
