@@ -21,17 +21,17 @@ const double _kDeviceScreenInnerBezelRadius = 8.0;
 
 /// The main app which controls the Fuchsia UI.
 class Armadillo extends StatelessWidget {
-  final StoryManager storyManager;
-  final SuggestionManager suggestionManager;
-  final NowManager nowManager;
-  final StoryClusterDragStateManager storyClusterDragStateManager;
+  final StoryModel storyModel;
+  final SuggestionModel suggestionModel;
+  final NowModel nowModel;
+  final StoryClusterDragStateModel storyClusterDragStateModel;
   final Conductor conductor;
 
   Armadillo({
-    this.storyManager,
-    this.suggestionManager,
-    this.nowManager,
-    this.storyClusterDragStateManager,
+    this.storyModel,
+    this.suggestionModel,
+    this.nowModel,
+    this.storyClusterDragStateModel,
     this.conductor,
   });
 
@@ -53,14 +53,14 @@ class Armadillo extends StatelessWidget {
           radius: _kDeviceScreenInnerBezelRadius,
           color: Colors.black,
         ),
-        child: new InheritedSuggestionManager(
-          suggestionManager: suggestionManager,
-          child: new InheritedStoryManager(
-            storyManager: storyManager,
-            child: new InheritedNowManager(
-              nowManager: nowManager,
-              child: new InheritedStoryClusterDragStateManager(
-                storyClusterDragStateManager: storyClusterDragStateManager,
+        child: new ScopedModel<SuggestionModel>(
+          model: suggestionModel,
+          child: new ScopedModel<StoryModel>(
+            model: storyModel,
+            child: new ScopedModel<NowModel>(
+              model: nowModel,
+              child: new ScopedModel<StoryClusterDragStateModel>(
+                model: storyClusterDragStateModel,
                 child: conductor,
               ),
             ),

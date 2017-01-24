@@ -45,7 +45,7 @@ class StoryClusterDragFeedback extends StatefulWidget {
 
 class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
   final GlobalKey _translationKey = new GlobalKey();
-  final SizeManager childSizeManager = new SizeManager(Size.zero);
+  final SizeModel childSizeModel = new SizeModel(Size.zero);
   Map<Object, Panel> _storyPanels = <Object, Panel>{};
   double _widthFactor;
   double _heightFactor;
@@ -110,25 +110,22 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
 
   @override
   Widget build(BuildContext context) {
-    SizeManager sizeManager = InheritedSizeManager.of(
-      context,
-      rebuildOnChange: true,
-    );
+    SizeModel sizeModel = SizeModel.of(context, rebuildOnChange: true);
     double width;
     double height;
     double childScale;
     double opacity;
     if (_displayModeOverride == DisplayMode.tabs) {
-      width = sizeManager.size.width *
+      width = sizeModel.size.width *
           (config.storyCluster.stories.length + 1) /
           (_targetClusterStoryCount + 1);
-      height = sizeManager.size.height *
-          (_kStoryBarMaximizedHeight / sizeManager.size.height);
+      height = sizeModel.size.height *
+          (_kStoryBarMaximizedHeight / sizeModel.size.height);
       childScale = 0.7;
       opacity = 1.0;
     } else if (_storyPanels.isNotEmpty) {
-      width = sizeManager.size.width * _widthFactor;
-      height = sizeManager.size.height * _heightFactor;
+      width = sizeModel.size.width * _widthFactor;
+      height = sizeModel.size.height * _heightFactor;
       childScale = 0.7;
       opacity = 1.0;
     } else {
@@ -137,8 +134,8 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       childScale = 1.0;
       opacity = 0.7;
     }
-    childSizeManager.size =
-        _storyPanels.isNotEmpty ? new Size(width, height) : sizeManager.size;
+    childSizeModel.size =
+        _storyPanels.isNotEmpty ? new Size(width, height) : sizeModel.size;
     double focusProgress = config.showTitle
         ? config.storyCluster.focusSimulationKey.currentState?.progress ?? 0.0
         : 1.0;
@@ -155,8 +152,8 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                 ? config.initialBounds.height
                 : height) +
             InlineStoryTitle.getHeight(focusProgress),
-        child: new InheritedSizeManager(
-          sizeManager: childSizeManager,
+        child: new ScopedModel<SizeModel>(
+          model: childSizeModel,
           child: new Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,

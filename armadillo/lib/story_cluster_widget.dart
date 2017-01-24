@@ -87,9 +87,8 @@ class StoryClusterWidget extends StatelessWidget {
       builder: (BuildContext context, Widget child) =>
           new ArmadilloDragTarget<StoryClusterId>(
             onWillAccept: (StoryClusterId storyClusterId, Point point) {
-              StoryCluster storyCluster = InheritedStoryManager
-                  .of(context)
-                  .getStoryCluster(storyClusterId);
+              StoryCluster storyCluster =
+                  StoryModel.of(context).getStoryCluster(storyClusterId);
               // Don't accept empty data.
               if (storyCluster == null || storyCluster.stories.isEmpty) {
                 return false;
@@ -111,10 +110,9 @@ class StoryClusterWidget extends StatelessWidget {
               return result;
             },
             onAccept: (StoryClusterId storyClusterId, Point point) {
-              InheritedStoryManager.of(context).combine(
-                    source: InheritedStoryManager
-                        .of(context)
-                        .getStoryCluster(storyClusterId),
+              StoryModel.of(context).combine(
+                    source:
+                        StoryModel.of(context).getStoryCluster(storyClusterId),
                     target: storyCluster,
                   );
               onGainFocus();
@@ -158,12 +156,12 @@ class StoryClusterWidget extends StatelessWidget {
                 boxBottomRight.x,
                 boxBottomRight.y,
               );
-              InheritedStoryClusterDragStateManager
+              StoryClusterDragStateModel
                   .of(context)
                   .addDraggingStoryCluster(storyCluster);
             },
             onDragEnded: () {
-              InheritedStoryClusterDragStateManager
+              StoryClusterDragStateModel
                   .of(context)
                   .removeDraggingStoryCluster(storyCluster);
             },
@@ -193,7 +191,7 @@ class StoryClusterWidget extends StatelessWidget {
         key: storyCluster.scaleTransformKey,
         alignment: FractionalOffset.center,
         initScale: 1.0,
-        targetScale: InheritedStoryClusterDragStateManager
+        targetScale: StoryClusterDragStateModel
                 .of(context, rebuildOnChange: true)
                 .areStoryClustersDragging
             ? 0.9
@@ -275,7 +273,7 @@ class InlineStoryTitle extends StatelessWidget {
   Widget build(BuildContext context) => new SimulatedTransform(
         key: storyCluster.titleTransformKey,
         initOpacity: 1.0,
-        targetOpacity: InheritedStoryClusterDragStateManager
+        targetOpacity: StoryClusterDragStateModel
                 .of(context, rebuildOnChange: true)
                 .areStoryClustersDragging
             ? 0.3

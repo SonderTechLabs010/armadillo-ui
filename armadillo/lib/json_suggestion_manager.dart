@@ -17,9 +17,9 @@ import 'suggestion_manager.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/stories.json';
 
-/// A simple suggestion manager that reads suggestions from json maps them to
+/// A simple suggestion model that reads suggestions from json maps them to
 /// stories.
-class JsonSuggestionManager extends SuggestionManager {
+class JsonSuggestionModel extends SuggestionModel {
   Map<Object, List<Suggestion>> _storySuggestionsMap =
       const <Object, List<Suggestion>>{};
   List<Suggestion> _currentSuggestions = const <Suggestion>[];

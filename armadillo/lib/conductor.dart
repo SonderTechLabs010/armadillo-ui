@@ -106,11 +106,11 @@ class Conductor extends StatelessWidget {
     this.useSoftKeyboard: true,
     this.onQuickSettingsOverlayChanged,
     this.onSuggestionsOverlayChanged,
-    StoryClusterDragStateManager storyClusterDragStateManager,
+    StoryClusterDragStateModel storyClusterDragStateModel,
   })
       : _peekManager = new _PeekManager(
           peekingOverlayKey: _suggestionOverlayKey,
-          storyClusterDragStateManager: storyClusterDragStateManager,
+          storyClusterDragStateModel: storyClusterDragStateModel,
         );
 
   /// Note in particular the magic we're employing here to make the user
@@ -130,9 +130,9 @@ class Conductor extends StatelessWidget {
             constraints.maxHeight,
           );
 
-          StoryManager storyManager = InheritedStoryManager.of(context);
+          StoryModel storyModel = StoryModel.of(context);
 
-          storyManager.updateLayouts(fullSize);
+          storyModel.updateLayouts(fullSize);
 
           Widget stack = new Stack(
             children: [
@@ -142,19 +142,19 @@ class Conductor extends StatelessWidget {
                 top: 0.0,
                 bottom: _kMinimizedNowHeight,
                 child: _getStoryList(
-                  storyManager,
+                  storyModel,
                   constraints.maxWidth,
-                  new SizeManager(fullSize),
+                  new SizeModel(fullSize),
                 ),
               ),
 
               // Now.
-              _getNow(storyManager, constraints.maxWidth),
+              _getNow(storyModel, constraints.maxWidth),
 
               // Suggestions Overlay.
               _getSuggestionOverlay(
-                InheritedSuggestionManager.of(context),
-                storyManager,
+                SuggestionModel.of(context),
+                storyModel,
                 constraints.maxWidth,
               ),
 
@@ -227,9 +227,9 @@ class Conductor extends StatelessWidget {
       );
 
   Widget _getStoryList(
-    StoryManager storyManager,
+    StoryModel storyModel,
     double maxWidth,
-    SizeManager sizeManager,
+    SizeModel sizeModel,
   ) =>
       new VerticalShifter(
         key: _verticalShifterKey,
@@ -262,16 +262,16 @@ class Conductor extends StatelessWidget {
               _minimizeNow();
             },
             onStoryClusterFocusCompleted: (StoryCluster storyCluster) {
-              _focusStoryCluster(storyManager, storyCluster);
+              _focusStoryCluster(storyModel, storyCluster);
             },
-            sizeManager: sizeManager,
+            sizeModel: sizeModel,
           ),
         ),
       );
 
   // We place Now in a RepaintBoundary as its animations
   // don't require its parent and siblings to redraw.
-  Widget _getNow(StoryManager storyManager, double parentWidth) =>
+  Widget _getNow(StoryModel storyModel, double parentWidth) =>
       new RepaintBoundary(
         child: new Now(
           key: _nowKey,
@@ -282,7 +282,7 @@ class Conductor extends StatelessWidget {
           onQuickSettingsProgressChange: (double quickSettingsProgress) =>
               _verticalShifterKey.currentState.shiftProgress =
                   quickSettingsProgress,
-          onReturnToOriginButtonTap: () => goToOrigin(storyManager),
+          onReturnToOriginButtonTap: () => goToOrigin(storyModel),
           onShowQuickSettingsOverlay: () =>
               _quickSettingsOverlayKey.currentState.show(),
           onQuickSettingsMaximized: () {
@@ -311,8 +311,8 @@ class Conductor extends StatelessWidget {
       );
 
   Widget _getSuggestionOverlay(
-    SuggestionManager suggestionManager,
-    StoryManager storyManager,
+    SuggestionModel suggestionModel,
+    StoryModel storyModel,
     double maxWidth,
   ) =>
       new PeekingOverlay(
@@ -360,7 +360,7 @@ class Conductor extends StatelessWidget {
             }
           },
           onSuggestionSelected: (Suggestion suggestion, Rect globalBounds) {
-            suggestionManager.onSuggestionSelected(suggestion);
+            suggestionModel.onSuggestionSelected(suggestion);
 
             if (suggestion.selectionType == SelectionType.closeSuggestions) {
               _suggestionOverlayKey.currentState.hide();
@@ -374,7 +374,7 @@ class Conductor extends StatelessWidget {
                             onSuggestionExpanded: (Suggestion suggestion) =>
                                 _focusOnStory(
                                   suggestion.selectionStoryId,
-                                  storyManager,
+                                  storyModel,
                                 ),
                             minimizedNowBarHeight: _kMinimizedNowHeight,
                           )
@@ -384,7 +384,7 @@ class Conductor extends StatelessWidget {
                             onSuggestionExpanded: (Suggestion suggestion) =>
                                 _focusOnStory(
                                   suggestion.selectionStoryId,
-                                  storyManager,
+                                  storyModel,
                                 ),
                           ),
               );
@@ -400,9 +400,9 @@ class Conductor extends StatelessWidget {
         key: _selectedSuggestionOverlayKey,
       );
 
-  void _defocus(StoryManager storyManager) {
+  void _defocus(StoryModel storyModel) {
     // Unfocus all story clusters.
-    storyManager.activeSortedStoryClusters.forEach(_unfocusStoryCluster);
+    storyModel.activeSortedStoryClusters.forEach(_unfocusStoryCluster);
 
     // Unlock scrolling.
     _scrollLockerKey.currentState.unlock();
@@ -415,12 +415,12 @@ class Conductor extends StatelessWidget {
   }
 
   void _focusStoryCluster(
-    StoryManager storyManager,
+    StoryModel storyModel,
     StoryCluster storyCluster,
   ) {
-    // Tell the [StoryManager] the story is now in focus.  This will move the
+    // Tell the [StoryModel] the story is now in focus.  This will move the
     // [Story] to the front of the [StoryList].
-    storyManager.interactionStarted(storyCluster);
+    storyModel.interactionStarted(storyCluster);
 
     _scrollLockerKey.currentState.lock();
     _edgeScrollDragTargetKey.currentState.disable();
@@ -440,31 +440,31 @@ class Conductor extends StatelessWidget {
     _suggestionOverlayKey.currentState.hide();
   }
 
-  void goToOrigin(StoryManager storyManager) {
-    _defocus(storyManager);
+  void goToOrigin(StoryModel storyModel) {
+    _defocus(storyModel);
     _nowKey.currentState.maximize();
-    storyManager.interactionStopped();
+    storyModel.interactionStopped();
   }
 
   /// Called to request the conductor focus on the cluster with [storyId].
   void requestStoryFocus(
     StoryId storyId,
-    StoryManager storyManager, {
+    StoryModel storyModel, {
     bool jumpToFinish: true,
   }) {
     _scrollLockerKey.currentState.lock();
     _edgeScrollDragTargetKey.currentState.disable();
     _minimizeNow();
-    _focusOnStory(storyId, storyManager, jumpToFinish: jumpToFinish);
+    _focusOnStory(storyId, storyModel, jumpToFinish: jumpToFinish);
   }
 
   void _focusOnStory(
     StoryId storyId,
-    StoryManager storyManager, {
+    StoryModel storyModel, {
     bool jumpToFinish: true,
   }) {
     List<StoryCluster> targetStoryClusters =
-        storyManager.storyClusters.where((StoryCluster storyCluster) {
+        storyModel.storyClusters.where((StoryCluster storyCluster) {
       bool result = false;
       storyCluster.stories.forEach((Story story) {
         if (story.id == storyId) {
@@ -479,10 +479,10 @@ class Conductor extends StatelessWidget {
     if (targetStoryClusters.length != 1) {
       print(
           'WARNING: Found ${targetStoryClusters.length} story clusters with a story with id $storyId. Returning to origin.');
-      goToOrigin(storyManager);
+      goToOrigin(storyModel);
     } else {
       // Unfocus all story clusters.
-      storyManager.activeSortedStoryClusters.forEach(_unfocusStoryCluster);
+      storyModel.activeSortedStoryClusters.forEach(_unfocusStoryCluster);
 
       // Ensure the focused story is completely expanded.
       // We jump almost to finish so the secondary size simulations with jump
@@ -498,7 +498,7 @@ class Conductor extends StatelessWidget {
       });
 
       // Focus on the story cluster.
-      _focusStoryCluster(storyManager, targetStoryClusters[0]);
+      _focusStoryCluster(storyModel, targetStoryClusters[0]);
     }
 
     // Unhide selected suggestion in suggestion list.
@@ -510,12 +510,12 @@ class Conductor extends StatelessWidget {
 /// be peeking or not.
 class _PeekManager {
   final GlobalKey<PeekingOverlayState> peekingOverlayKey;
-  final StoryClusterDragStateManager storyClusterDragStateManager;
+  final StoryClusterDragStateModel storyClusterDragStateModel;
   bool _nowMinimized = false;
   bool _areStoryClustersDragging = false;
 
-  _PeekManager({this.peekingOverlayKey, this.storyClusterDragStateManager}) {
-    storyClusterDragStateManager.addListener(onStoryClusterDragStateChanged);
+  _PeekManager({this.peekingOverlayKey, this.storyClusterDragStateModel}) {
+    storyClusterDragStateModel.addListener(onStoryClusterDragStateChanged);
   }
 
   set nowMinimized(bool value) {
@@ -527,9 +527,9 @@ class _PeekManager {
 
   void onStoryClusterDragStateChanged() {
     if (_areStoryClustersDragging !=
-        storyClusterDragStateManager.areStoryClustersDragging) {
+        storyClusterDragStateModel.areStoryClustersDragging) {
       _areStoryClustersDragging =
-          storyClusterDragStateManager.areStoryClustersDragging;
+          storyClusterDragStateModel.areStoryClustersDragging;
       _updatePeek();
     }
   }

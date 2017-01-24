@@ -17,9 +17,9 @@ const double _kOuterBezelRadius = 16.0;
 /// top right.  Each tap of the affordance steps through the [constraints] list
 /// applying each constraint to [child] in turn.
 class ChildConstraintsChanger extends StatefulWidget {
-  final ConstraintsManager constraintsManager;
+  final ConstraintsModel constraintsModel;
   final Widget child;
-  ChildConstraintsChanger({this.constraintsManager, this.child});
+  ChildConstraintsChanger({this.constraintsModel, this.child});
 
   @override
   ChildConstraintsChangerState createState() =>
@@ -33,13 +33,13 @@ class ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
   @override
   void initState() {
     super.initState();
-    _constraints = config.constraintsManager.constraints;
-    config.constraintsManager.addListener(_onChange);
+    _constraints = config.constraintsModel.constraints;
+    config.constraintsModel.addListener(_onChange);
   }
 
   @override
   void dispose() {
-    config.constraintsManager.removeListener(_onChange);
+    config.constraintsModel.removeListener(_onChange);
     super.dispose();
   }
 
@@ -110,7 +110,7 @@ class ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
 
   void _onChange() {
     setState(() {
-      _constraints = config.constraintsManager.constraints;
+      _constraints = config.constraintsModel.constraints;
     });
   }
 }

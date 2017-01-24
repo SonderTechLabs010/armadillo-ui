@@ -16,7 +16,7 @@ import 'suggestion_provider_suggestion_manager.dart';
 class UserShellImpl extends UserShell {
   final UserShellBinding _binding = new UserShellBinding();
   final StoryProviderStoryGenerator storyProviderStoryGenerator;
-  final SuggestionProviderSuggestionManager suggestionProviderSuggestionManager;
+  final SuggestionProviderSuggestionModel suggestionProviderSuggestionModel;
   final FocusControllerImpl focusController;
   final StoryProviderProxy storyProvider = new StoryProviderProxy();
   final SuggestionProviderProxy suggestionProvider =
@@ -25,7 +25,7 @@ class UserShellImpl extends UserShell {
 
   UserShellImpl({
     this.storyProviderStoryGenerator,
-    this.suggestionProviderSuggestionManager,
+    this.suggestionProviderSuggestionModel,
     this.focusController,
   });
 
@@ -45,8 +45,8 @@ class UserShellImpl extends UserShell {
     suggestionProvider.ctrl.bind(suggestionProviderHandle);
     focusController.bind(focusControllerRequest);
     storyProviderStoryGenerator.storyProvider = storyProvider;
-    suggestionProviderSuggestionManager.suggestionProvider = suggestionProvider;
-    suggestionProviderSuggestionManager.focusController = focusController;
+    suggestionProviderSuggestionModel.suggestionProvider = suggestionProvider;
+    suggestionProviderSuggestionModel.focusController = focusController;
   }
 
   @override

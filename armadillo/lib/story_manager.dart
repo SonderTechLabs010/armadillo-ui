@@ -16,10 +16,12 @@ import 'story_generator.dart';
 import 'story_list_layout.dart';
 import 'suggestion_manager.dart';
 
-/// A simple story manager that reads stories from json and reorders them with
-/// user interaction.
-class StoryManager extends ConfigManager {
-  final SuggestionManager suggestionManager;
+export 'config_manager.dart' show ScopedModel, Model;
+
+/// A simple story model that gets its stories from [storyGenerator] and
+/// reorders them with user interaction.
+class StoryModel extends Model {
+  final SuggestionModel suggestionModel;
   final StoryGenerator storyGenerator;
   List<StoryCluster> _storyClusters = const <StoryCluster>[];
   List<StoryCluster> _activeSortedStoryClusters = const <StoryCluster>[];
@@ -27,13 +29,19 @@ class StoryManager extends ConfigManager {
   Size _lastLayoutSize = Size.zero;
   double _listHeight = 0.0;
 
-  StoryManager({this.suggestionManager, this.storyGenerator}) {
+  StoryModel({this.suggestionModel, this.storyGenerator}) {
     storyGenerator.addListener(() {
       _storyClusters = storyGenerator.storyClusters;
       updateLayouts(_lastLayoutSize);
       notifyListeners();
     });
   }
+
+  /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
+  /// details.
+  static StoryModel of(BuildContext context, {bool rebuildOnChange: false}) =>
+      new ModelFinder<StoryModel>()
+          .of(context, rebuildOnChange: rebuildOnChange);
 
   List<StoryCluster> get storyClusters => _storyClusters;
   List<StoryCluster> get activeSortedStoryClusters =>
@@ -92,13 +100,13 @@ class StoryManager extends ConfigManager {
     );
     updateLayouts(_lastLayoutSize);
     notifyListeners();
-    suggestionManager.storyClusterFocusChanged(storyCluster);
+    suggestionModel.storyClusterFocusChanged(storyCluster);
   }
 
   /// Indicates the currently focused story cluster has been defocused.
   void interactionStopped() {
     notifyListeners();
-    suggestionManager.storyClusterFocusChanged(null);
+    suggestionModel.storyClusterFocusChanged(null);
   }
 
   /// Randomizes story interaction times within the story cluster.
@@ -200,37 +208,4 @@ class StoryManager extends ConfigManager {
     });
     return largestStory;
   }
-}
-
-class InheritedStoryManager extends StatelessWidget {
-  final StoryManager storyManager;
-  final Widget child;
-
-  InheritedStoryManager({this.storyManager, this.child});
-
-  @override
-  Widget build(BuildContext context) => new InheritedConfigManagerWidget(
-        configManager: storyManager,
-        builder: (BuildContext context) => new _InheritedStoryManager(
-              storyManager: storyManager,
-              child: child,
-            ),
-      );
-
-  /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
-  /// returns true for the [_InheritedStoryManager] returned by
-  /// [BuildContext.inheritFromWidgetOfExactType].
-  /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
-  /// to [StoryManager].
-  static StoryManager of(BuildContext context, {bool rebuildOnChange: false}) {
-    _InheritedStoryManager inheritedStoryManager = rebuildOnChange
-        ? context.inheritFromWidgetOfExactType(_InheritedStoryManager)
-        : context.ancestorWidgetOfExactType(_InheritedStoryManager);
-    return inheritedStoryManager?.configManager;
-  }
-}
-
-class _InheritedStoryManager extends InheritedConfigManager {
-  _InheritedStoryManager({Widget child, StoryManager storyManager})
-      : super(child: child, configManager: storyManager);
 }

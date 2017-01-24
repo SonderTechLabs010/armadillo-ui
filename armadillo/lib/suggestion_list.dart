@@ -48,19 +48,19 @@ class SuggestionListState extends State<SuggestionList> {
   void append(String text) {
     _inputKey.currentState?.append(text);
     config.onAskTextChanged?.call(text);
-    InheritedSuggestionManager.of(context).askText = this.text;
+    SuggestionModel.of(context).askText = this.text;
   }
 
   void backspace() {
     _inputKey.currentState?.backspace();
     config.onAskTextChanged?.call(text);
-    InheritedSuggestionManager.of(context).askText = text;
+    SuggestionModel.of(context).askText = text;
   }
 
   void clear() {
     _inputKey.currentState?.clear();
     config.onAskTextChanged?.call(text);
-    InheritedSuggestionManager.of(context).askText = null;
+    SuggestionModel.of(context).askText = null;
   }
 
   void resetSelection() {
@@ -90,13 +90,12 @@ class SuggestionListState extends State<SuggestionList> {
   void stopAsking() {
     setState(() {
       _asking = false;
-      InheritedSuggestionManager.of(context).asking = _asking;
+      SuggestionModel.of(context).asking = _asking;
     });
   }
 
   void selectFirstSuggestions() {
-    List<Suggestion> suggestions =
-        InheritedSuggestionManager.of(context).suggestions;
+    List<Suggestion> suggestions = SuggestionModel.of(context).suggestions;
     if (suggestions.isNotEmpty) {
       _onSuggestionSelected(suggestions[0]);
     }
@@ -114,7 +113,7 @@ class SuggestionListState extends State<SuggestionList> {
               behavior: HitTestBehavior.opaque,
               onTap: () {
                 _asking = !_asking;
-                InheritedSuggestionManager.of(context).asking = _asking;
+                SuggestionModel.of(context).asking = _asking;
                 if (_asking) {
                   if (config.onAskingStarted != null) {
                     config.onAskingStarted();
@@ -147,7 +146,7 @@ class SuggestionListState extends State<SuggestionList> {
                         key: _inputKey,
                         focused: _asking,
                         onTextChanged: (String text) {
-                          InheritedSuggestionManager.of(context).askText = text;
+                          SuggestionModel.of(context).askText = text;
                         },
                       ),
                     ),
@@ -176,7 +175,7 @@ class SuggestionListState extends State<SuggestionList> {
         ),
         child: new Block(
           scrollableKey: config.scrollableKey,
-          children: InheritedSuggestionManager
+          children: SuggestionModel
               .of(context, rebuildOnChange: true)
               .suggestions
               .map((Suggestion suggestion) => _createSuggestion(suggestion))
@@ -185,9 +184,8 @@ class SuggestionListState extends State<SuggestionList> {
       );
 
   Widget _createTwoColumnBlock(BuildContext context) {
-    List<Suggestion> suggestions = InheritedSuggestionManager
-        .of(context, rebuildOnChange: true)
-        .suggestions;
+    List<Suggestion> suggestions =
+        SuggestionModel.of(context, rebuildOnChange: true).suggestions;
 
     int minSuggestionsPerColumn = (suggestions.length / 2).floor();
     int additionalLeftSuggestions = suggestions.length % 2;
@@ -230,9 +228,8 @@ class SuggestionListState extends State<SuggestionList> {
   }
 
   Widget _createThreeColumnBlock(BuildContext context) {
-    List<Suggestion> suggestions = InheritedSuggestionManager
-        .of(context, rebuildOnChange: true)
-        .suggestions;
+    List<Suggestion> suggestions =
+        SuggestionModel.of(context, rebuildOnChange: true).suggestions;
 
     int minSuggestionsPerColumn = (suggestions.length / 3).floor();
     int additionalLeftSuggestions = suggestions.length % 3 > 0 ? 1 : 0;

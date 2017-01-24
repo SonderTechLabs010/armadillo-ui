@@ -38,31 +38,31 @@ UserShellImpl _userShell;
 ApplicationContext _applicationContext;
 
 Future main() async {
-  HitTestManager hitTestManager = new HitTestManager();
+  HitTestModel hitTestModel = new HitTestModel();
   StoryProviderStoryGenerator storyProviderStoryGenerator =
       new StoryProviderStoryGenerator();
-  StoryClusterDragStateManager storyClusterDragStateManager =
-      new StoryClusterDragStateManager();
+  StoryClusterDragStateModel storyClusterDragStateModel =
+      new StoryClusterDragStateModel();
 
   Conductor conductor = new Conductor(
     useSoftKeyboard: false,
-    onQuickSettingsOverlayChanged: hitTestManager.onQuickSettingsOverlayChanged,
-    onSuggestionsOverlayChanged: hitTestManager.onSuggestionsOverlayChanged,
-    storyClusterDragStateManager: storyClusterDragStateManager,
+    onQuickSettingsOverlayChanged: hitTestModel.onQuickSettingsOverlayChanged,
+    onSuggestionsOverlayChanged: hitTestModel.onSuggestionsOverlayChanged,
+    storyClusterDragStateModel: storyClusterDragStateModel,
   );
-  SuggestionProviderSuggestionManager suggestionProviderSuggestionManager =
-      new SuggestionProviderSuggestionManager(
+  SuggestionProviderSuggestionModel suggestionProviderSuggestionModel =
+      new SuggestionProviderSuggestionModel(
     storyGenerator: storyProviderStoryGenerator,
-    hitTestManager: hitTestManager,
+    hitTestModel: hitTestModel,
   );
 
-  StoryManager storyManager = new StoryManager(
-    suggestionManager: suggestionProviderSuggestionManager,
+  StoryModel storyModel = new StoryModel(
+    suggestionModel: suggestionProviderSuggestionModel,
     storyGenerator: storyProviderStoryGenerator,
   );
-  suggestionProviderSuggestionManager.storyManager = storyManager;
-  suggestionProviderSuggestionManager.addOnFocusLossListener(() {
-    conductor.goToOrigin(storyManager);
+  suggestionProviderSuggestionModel.storyModel = storyModel;
+  suggestionProviderSuggestionModel.addOnFocusLossListener(() {
+    conductor.goToOrigin(storyModel);
   });
 
   FocusControllerImpl focusController =
@@ -71,7 +71,7 @@ Future main() async {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         conductor.requestStoryFocus(
           new StoryId(storyId),
-          storyManager,
+          storyModel,
           jumpToFinish: false,
         );
       });
@@ -88,7 +88,7 @@ Future main() async {
 
   _userShell = new UserShellImpl(
     storyProviderStoryGenerator: storyProviderStoryGenerator,
-    suggestionProviderSuggestionManager: suggestionProviderSuggestionManager,
+    suggestionProviderSuggestionModel: suggestionProviderSuggestionModel,
     focusController: focusController,
   );
 
@@ -100,44 +100,44 @@ Future main() async {
     UserShell.serviceName,
   );
 
-  NowManager nowManager = new NowManager();
-  ConstraintsManager constraintsManager = new ConstraintsManager();
+  NowModel nowModel = new NowModel();
+  ConstraintsModel constraintsModel = new ConstraintsModel();
 
   Widget app = _buildApp(
-    storyManager: storyManager,
+    storyModel: storyModel,
     storyProviderStoryGenerator: storyProviderStoryGenerator,
-    constraintsManager: constraintsManager,
+    constraintsModel: constraintsModel,
     armadillo: new Armadillo(
-      storyManager: storyManager,
-      suggestionManager: suggestionProviderSuggestionManager,
-      nowManager: nowManager,
-      storyClusterDragStateManager: storyClusterDragStateManager,
+      storyModel: storyModel,
+      suggestionModel: suggestionProviderSuggestionModel,
+      nowModel: nowModel,
+      storyClusterDragStateModel: storyClusterDragStateModel,
       conductor: conductor,
     ),
-    hitTestManager: hitTestManager,
+    hitTestModel: hitTestModel,
   );
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
 
-  constraintsManager.load(defaultBundle);
+  constraintsModel.load(defaultBundle);
 }
 
 Widget _buildApp({
-  StoryManager storyManager,
+  StoryModel storyModel,
   StoryProviderStoryGenerator storyProviderStoryGenerator,
-  ConstraintsManager constraintsManager,
+  ConstraintsModel constraintsModel,
   Armadillo armadillo,
-  HitTestManager hitTestManager,
+  HitTestModel hitTestModel,
 }) =>
     new StoryTimeRandomizer(
-      storyManager: storyManager,
+      storyModel: storyModel,
       child: new ChildConstraintsChanger(
-        constraintsManager: constraintsManager,
+        constraintsModel: constraintsModel,
         child: new DefaultAssetBundle(
           bundle: defaultBundle,
           child: new Stack(children: [
-            new InheritedHitTestManager(
-              hitTestManager: hitTestManager,
+            new ScopedModel<HitTestModel>(
+              model: hitTestModel,
               child: armadillo,
             ),
             new Positioned(
@@ -146,7 +146,7 @@ Widget _buildApp({
               bottom: 0.0,
               width: 100.0,
               child: _buildDiscardDragTarget(
-                storyManager: storyManager,
+                storyModel: storyModel,
                 storyProviderStoryGenerator: storyProviderStoryGenerator,
               ),
             ),
@@ -156,7 +156,7 @@ Widget _buildApp({
               bottom: 0.0,
               width: 100.0,
               child: _buildDiscardDragTarget(
-                storyManager: storyManager,
+                storyModel: storyModel,
                 storyProviderStoryGenerator: storyProviderStoryGenerator,
               ),
             ),
@@ -178,12 +178,12 @@ Widget _buildPerformanceOverlay({Widget child}) => new Stack(
     );
 
 Widget _buildDiscardDragTarget({
-  StoryManager storyManager,
+  StoryModel storyModel,
   StoryProviderStoryGenerator storyProviderStoryGenerator,
 }) =>
     new ArmadilloDragTarget<StoryClusterId>(
       onWillAccept: (StoryClusterId storyClusterId, Point point) =>
-          storyManager.storyClusters.every((StoryCluster storyCluster) =>
+          storyModel.storyClusters.every((StoryCluster storyCluster) =>
               storyCluster.focusSimulationKey.currentState.progress == 0.0),
       onAccept: (StoryClusterId storyClusterId, Point point) =>
           storyProviderStoryGenerator.removeStoryCluster(storyClusterId),

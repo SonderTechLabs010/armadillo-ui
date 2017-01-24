@@ -5,8 +5,16 @@
 import 'package:armadillo/config_manager.dart';
 import 'package:flutter/widgets.dart';
 
+export 'package:armadillo/config_manager.dart' show ScopedModel, Model;
+
 /// Determines which stories can be hit testable.
-class HitTestManager extends ConfigManager {
+class HitTestModel extends Model {
+  /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
+  /// details.
+  static HitTestModel of(BuildContext context, {bool rebuildOnChange: false}) =>
+      new ModelFinder<HitTestModel>()
+          .of(context, rebuildOnChange: rebuildOnChange);
+
   List<String> _focusedStoryIds = [];
   bool _storiesObscuredBySuggestionOverlay = false;
   bool _storiesObscuredByQuickSettingsOverlay = false;
@@ -34,38 +42,4 @@ class HitTestManager extends ConfigManager {
       !_storiesObscuredBySuggestionOverlay &&
       !_storiesObscuredByQuickSettingsOverlay &&
       _focusedStoryIds.contains(storyId);
-}
-
-class InheritedHitTestManager extends StatelessWidget {
-  final HitTestManager hitTestManager;
-  final Widget child;
-
-  InheritedHitTestManager({this.hitTestManager, this.child});
-
-  @override
-  Widget build(BuildContext context) => new InheritedConfigManagerWidget(
-        configManager: hitTestManager,
-        builder: (BuildContext context) => new _InheritedHitTestManager(
-              hitTestManager: hitTestManager,
-              child: child,
-            ),
-      );
-
-  /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
-  /// returns true for the [_InheritedHitTestManager] returned by
-  /// [BuildContext.inheritFromWidgetOfExactType].
-  /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
-  /// to [HitTestManager].
-  static HitTestManager of(BuildContext context,
-      {bool rebuildOnChange: false}) {
-    _InheritedHitTestManager inheritedHitTestManager = rebuildOnChange
-        ? context.inheritFromWidgetOfExactType(_InheritedHitTestManager)
-        : context.ancestorWidgetOfExactType(_InheritedHitTestManager);
-    return inheritedHitTestManager?.configManager;
-  }
-}
-
-class _InheritedHitTestManager extends InheritedConfigManager {
-  _InheritedHitTestManager({Widget child, HitTestManager hitTestManager})
-      : super(child: child, configManager: hitTestManager);
 }

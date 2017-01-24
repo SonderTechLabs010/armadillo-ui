@@ -35,7 +35,7 @@ class StoryList extends StatelessWidget {
   final bool multiColumn;
   final Key scrollableKey;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
-  final SizeManager sizeManager;
+  final SizeModel sizeModel;
 
   StoryList({
     Key key,
@@ -46,22 +46,19 @@ class StoryList extends StatelessWidget {
     this.onStoryClusterFocusStarted,
     this.onStoryClusterFocusCompleted,
     this.quickSettingsHeightBump,
-    this.sizeManager,
+    this.sizeModel,
     this.multiColumn: false,
   })
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    StoryManager storyManager = InheritedStoryManager.of(
-      context,
-      rebuildOnChange: true,
-    );
+    StoryModel storyModel = StoryModel.of(context, rebuildOnChange: true);
 
     // IMPORTANT:  In order for activation of inactive stories from suggestions
     // to work we must have them in the widget tree.
     List<Widget> stackChildren = new List.from(
-      storyManager.inactiveStoryClusters.map(
+      storyModel.inactiveStoryClusters.map(
         (StoryCluster storyCluster) => new Positioned(
               width: 0.0,
               height: 0.0,
@@ -69,7 +66,7 @@ class StoryList extends StatelessWidget {
                 key: storyCluster.focusSimulationKey,
                 builder: (BuildContext context, double progress) =>
                     _createStoryCluster(
-                      storyManager.activeSortedStoryClusters,
+                      storyModel.activeSortedStoryClusters,
                       storyCluster,
                       0.0,
                       storyCluster.buildStoryWidgets(context),
@@ -87,7 +84,7 @@ class StoryList extends StatelessWidget {
         right: 0.0,
         child: new LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-            sizeManager.size = new Size(
+            sizeModel.size = new Size(
               constraints.maxWidth,
               constraints.maxHeight,
             );
@@ -102,13 +99,13 @@ class StoryList extends StatelessWidget {
         scrollableKey: scrollableKey,
         bottomPadding: bottomPadding,
         onScroll: onScroll,
-        listHeight: storyManager.listHeight,
+        listHeight: storyModel.listHeight,
         children: new List<Widget>.generate(
-          storyManager.activeSortedStoryClusters.length,
+          storyModel.activeSortedStoryClusters.length,
           (int index) => _createFocusableStoryCluster(
-                storyManager.activeSortedStoryClusters,
-                storyManager.activeSortedStoryClusters[index],
-                storyManager.activeSortedStoryClusters[index].buildStoryWidgets(
+                storyModel.activeSortedStoryClusters,
+                storyModel.activeSortedStoryClusters[index],
+                storyModel.activeSortedStoryClusters[index].buildStoryWidgets(
                   context,
                 ),
               ),
@@ -118,8 +115,8 @@ class StoryList extends StatelessWidget {
 
     stackChildren.add(new ArmadilloOverlay(key: overlayKey));
 
-    return new InheritedSizeManager(
-      sizeManager: sizeManager,
+    return new ScopedModel<SizeModel>(
+      model: sizeModel,
       child: new Stack(children: stackChildren),
     );
   }
@@ -243,8 +240,7 @@ class StoryListBlockBody extends BlockBody {
   @override
   StoryListRenderBlock createRenderObject(BuildContext context) =>
       new StoryListRenderBlock(
-        parentSize:
-            InheritedSizeManager.of(context, rebuildOnChange: true).size,
+        parentSize: SizeModel.of(context, rebuildOnChange: true).size,
         scrollableKey: scrollableKey,
         bottomPadding: bottomPadding,
         listHeight: listHeight,
@@ -254,8 +250,7 @@ class StoryListBlockBody extends BlockBody {
   void updateRenderObject(
       BuildContext context, StoryListRenderBlock renderObject) {
     renderObject.mainAxis = mainAxis;
-    renderObject.parentSize =
-        InheritedSizeManager.of(context, rebuildOnChange: true).size;
+    renderObject.parentSize = SizeModel.of(context, rebuildOnChange: true).size;
     renderObject.scrollableKey = scrollableKey;
     renderObject.bottomPadding = bottomPadding;
     renderObject.listHeight = listHeight;

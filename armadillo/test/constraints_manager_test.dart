@@ -8,40 +8,40 @@ import 'package:test/test.dart';
 
 void main() {
   test('Before loading we have one unconstrained constraint.', () {
-    ConstraintsManager constraintsManager = new ConstraintsManager();
-    expect(constraintsManager.constraints.length, 1);
-    expect(constraintsManager.constraints[0], const BoxConstraints());
+    ConstraintsModel constraintsModel = new ConstraintsModel();
+    expect(constraintsModel.constraints.length, 1);
+    expect(constraintsModel.constraints[0], const BoxConstraints());
   });
 
   test('Reading bad json results in unconstrained constraints.', () {
-    ConstraintsManager constraintsManager = new ConstraintsManager();
+    ConstraintsModel constraintsModel = new ConstraintsModel();
     bool caughtError = false;
     try {
-      constraintsManager.parseJson('foo');
+      constraintsModel.parseJson('foo');
     } catch (exception) {
       caughtError = true;
     }
     expect(caughtError, true);
-    expect(constraintsManager.constraints.length, 1);
-    expect(constraintsManager.constraints[0], const BoxConstraints());
+    expect(constraintsModel.constraints.length, 1);
+    expect(constraintsModel.constraints[0], const BoxConstraints());
   });
 
   test('Reading valid json results in proper constraints.', () {
-    ConstraintsManager constraintsManager = new ConstraintsManager();
-    constraintsManager.parseJson(
+    ConstraintsModel constraintsModel = new ConstraintsModel();
+    constraintsModel.parseJson(
         '{ "screen_sizes": [ { "width": "360.0", "height": "640.0" }, { "width": "1280.0", "height": "800.0" } ] }');
-    expect(constraintsManager.constraints.length, 3);
-    expect(constraintsManager.constraints[0], const BoxConstraints());
-    expect(constraintsManager.constraints[1],
+    expect(constraintsModel.constraints.length, 3);
+    expect(constraintsModel.constraints[0], const BoxConstraints());
+    expect(constraintsModel.constraints[1],
         const BoxConstraints.tightFor(width: 360.0, height: 640.0));
-    expect(constraintsManager.constraints[2],
+    expect(constraintsModel.constraints[2],
         const BoxConstraints.tightFor(width: 1280.0, height: 800.0));
   });
 
   test('Reading valid json with empty list results in proper constraints.', () {
-    ConstraintsManager constraintsManager = new ConstraintsManager();
-    constraintsManager.parseJson('{ "screen_sizes": [ ] }');
-    expect(constraintsManager.constraints.length, 1);
-    expect(constraintsManager.constraints[0], const BoxConstraints());
+    ConstraintsModel constraintsModel = new ConstraintsModel();
+    constraintsModel.parseJson('{ "screen_sizes": [ ] }');
+    expect(constraintsModel.constraints.length, 1);
+    expect(constraintsModel.constraints[0], const BoxConstraints());
   });
 }

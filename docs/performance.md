@@ -40,7 +40,7 @@ Building causes layout.  Layout causes painting.  Try to do as little rebuilding
 
 1. Localize state changes to just rebuilding those widgets that need to change due to the state change.
 
-1. If there is a large widget tree between where the state changes and where its used use [InheritedWidgets](https://docs.flutter.io/flutter/widgets/InheritedWidget-class.html) to pass that state down without requiring the entire tree to rebuild.  For examples of how we do this, explore [ConfigManager](../armadillo/lib/config_manager) and its subclasses and how they are used in [Armadillo](../armadillo/lib/armadillo).
+1. If there is a large widget tree between where the state changes and where its used use [InheritedWidgets](https://docs.flutter.io/flutter/widgets/InheritedWidget-class.html) to pass that state down without requiring the entire tree to rebuild.  For examples of how we do this, explore [Model](../armadillo/lib/config_manager) and its subclasses and how they are used in [Armadillo](../armadillo/lib/armadillo).
 
 ---
 

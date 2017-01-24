@@ -82,7 +82,7 @@ class MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
 
 /// Creates a list of suggestions for the SuggestionList using the
 /// [maxwell.SuggestionProvider].
-class SuggestionProviderSuggestionManager extends SuggestionManager {
+class SuggestionProviderSuggestionModel extends SuggestionModel {
   // Controls how many suggestions we receive from maxwell's Ask suggestion
   // stream as well as indicates what the user is asking.
   final maxwell.AskControllerProxy _askControllerProxy =
@@ -113,17 +113,17 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
   FocusControllerImpl _focusController;
 
   // Set from an external source - typically the UserShell.
-  StoryManager _storyManager;
+  StoryModel _storyModel;
 
   StoryClusterId _lastFocusedStoryClusterId;
 
   final StoryGenerator storyGenerator;
-  final HitTestManager hitTestManager;
+  final HitTestModel hitTestModel;
   final Set<VoidCallback> _focusLossListeners = new Set<VoidCallback>();
 
-  SuggestionProviderSuggestionManager({
+  SuggestionProviderSuggestionModel({
     this.storyGenerator,
-    this.hitTestManager,
+    this.hitTestModel,
   });
 
   /// Setting [suggestionProvider] triggers the loading on suggestions.
@@ -146,9 +146,9 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
     _focusController = focusController;
   }
 
-  set storyManager(StoryManager storyManager) {
-    _storyManager = storyManager;
-    storyManager.addListener(_onStoryClusterListChanged);
+  set storyModel(StoryModel storyModel) {
+    _storyModel = storyModel;
+    storyModel.addListener(_onStoryClusterListChanged);
   }
 
   void addOnFocusLossListener(VoidCallback listener) {
@@ -229,14 +229,14 @@ class SuggestionProviderSuggestionManager extends SuggestionManager {
             ?.toList() ??
         <String>[];
     _focusController.onFocusedStoriesChanged(focusedStoryIds);
-    hitTestManager.onFocusedStoriesChanged(focusedStoryIds);
+    hitTestModel.onFocusedStoriesChanged(focusedStoryIds);
   }
 
   StoryCluster get _lastFocusedStoryCluster {
     if (_lastFocusedStoryClusterId == null) {
       return null;
     }
-    Iterable<StoryCluster> storyClusters = _storyManager.storyClusters.where(
+    Iterable<StoryCluster> storyClusters = _storyModel.storyClusters.where(
       (StoryCluster storyCluster) =>
           storyCluster.id == _lastFocusedStoryClusterId,
     );

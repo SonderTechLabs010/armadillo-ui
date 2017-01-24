@@ -204,7 +204,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
       new Story(
         id: new StoryId(storyInfo.id),
         builder: (BuildContext context) {
-          bool hitTestable = InheritedHitTestManager
+          bool hitTestable = HitTestModel
               .of(context, rebuildOnChange: true)
               .isStoryHitTestable(storyInfo.id);
 

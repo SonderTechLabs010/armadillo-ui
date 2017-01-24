@@ -8,10 +8,10 @@ import 'story_manager.dart';
 
 /// Adds a button to randomize story times.
 class StoryTimeRandomizer extends StatelessWidget {
-  final StoryManager storyManager;
+  final StoryModel storyModel;
   final Widget child;
 
-  StoryTimeRandomizer({this.storyManager, this.child});
+  StoryTimeRandomizer({this.storyModel, this.child});
 
   @override
   Widget build(BuildContext context) => new Stack(
@@ -24,7 +24,7 @@ class StoryTimeRandomizer extends StatelessWidget {
             height: 50.0,
             child: new GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: storyManager.randomizeStoryTimes,
+              onTap: storyModel.randomizeStoryTimes,
             ),
           ),
         ],

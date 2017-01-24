@@ -12,6 +12,8 @@ import 'opacity_manager.dart';
 import 'quick_settings.dart';
 import 'time_stringer.dart';
 
+export 'config_manager.dart' show ScopedModel, Model;
+
 const String _kUserImage = 'packages/armadillo/res/User.png';
 const String _kBatteryImageWhite =
     'packages/armadillo/res/ic_battery_90_white_1x_web_24dp.png';
@@ -32,8 +34,13 @@ const double _kImportantInfoMinWidth = _kImportantInfoIconSize;
 const double _kIconLabelPadding = 4.0;
 
 /// Manages the contents of [Now].
-class NowManager extends ConfigManager {
+class NowModel extends Model {
   final TimeStringer _timeStringer = new TimeStringer();
+
+  /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
+  /// details.
+  static NowModel of(BuildContext context, {bool rebuildOnChange: false}) =>
+      new ModelFinder<NowModel>().of(context, rebuildOnChange: rebuildOnChange);
 
   @override
   void addListener(VoidCallback listener) {
@@ -79,7 +86,7 @@ class NowManager extends ConfigManager {
   Widget get userContextMinimized => new Padding(
         padding: const EdgeInsets.only(left: 8.0),
         child: new RepaintBoundary(
-          child: new InheritedOpacityWidget(
+          child: new ScopedOpacityWidget(
             builder: (_, Widget child, double opacity) => new Opacity(
                   opacity: opacity,
                   child: child,
@@ -207,7 +214,7 @@ class NowManager extends ConfigManager {
           new Padding(
             padding: const EdgeInsets.only(top: 4.0, right: 4.0),
             child: new RepaintBoundary(
-              child: new InheritedOpacityWidget(
+              child: new ScopedOpacityWidget(
                 builder: (_, Widget child, double opacity) => new Opacity(
                       opacity: opacity,
                       child: child,
@@ -217,7 +224,7 @@ class NowManager extends ConfigManager {
             ),
           ),
           new RepaintBoundary(
-            child: new InheritedOpacityWidget(
+            child: new ScopedOpacityWidget(
               builder: (_, __, double opacity) => new Image.asset(
                     _kBatteryImageWhite,
                     color: Colors.white.withOpacity(opacity),
@@ -240,37 +247,4 @@ class NowManager extends ConfigManager {
         new TextStyle(color: Colors.grey[600]),
         _quickSettingsProgress,
       );
-}
-
-class InheritedNowManager extends StatelessWidget {
-  final NowManager nowManager;
-  final Widget child;
-
-  InheritedNowManager({this.nowManager, this.child});
-
-  @override
-  Widget build(BuildContext context) => new InheritedConfigManagerWidget(
-        configManager: nowManager,
-        builder: (BuildContext context) => new _InheritedNowManager(
-              nowManager: nowManager,
-              child: child,
-            ),
-      );
-
-  /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
-  /// returns true for the [_InheritedNowManager] returned by
-  /// [BuildContext.inheritFromWidgetOfExactType].
-  /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
-  /// to [NowManager].
-  static NowManager of(BuildContext context, {bool rebuildOnChange: false}) {
-    _InheritedNowManager inheritedNowManager = rebuildOnChange
-        ? context.inheritFromWidgetOfExactType(_InheritedNowManager)
-        : context.ancestorWidgetOfExactType(_InheritedNowManager);
-    return inheritedNowManager?.configManager;
-  }
-}
-
-class _InheritedNowManager extends InheritedConfigManager {
-  _InheritedNowManager({Widget child, NowManager nowManager})
-      : super(child: child, configManager: nowManager);
 }

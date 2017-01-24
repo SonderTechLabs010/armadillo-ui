@@ -6,13 +6,21 @@ import 'package:flutter/widgets.dart';
 
 import 'config_manager.dart';
 
+export 'config_manager.dart' show ScopedModel, Model;
+
 /// Tracks the [Size] of something, notifying listeners when it changes.
-/// Using a [SizeManager] allows the [Size] it tracks to be passed down the
-/// widget tree using an [InheritedSizeManager].
-class SizeManager extends ConfigManager {
+/// Using a [SizeModel] allows the [Size] it tracks to be passed down the
+/// widget tree using an [ScopedSizeModel].
+class SizeModel extends Model {
   Size _size;
 
-  SizeManager(Size size) : _size = size ?? Size.zero;
+  SizeModel(Size size) : _size = size ?? Size.zero;
+
+  /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
+  /// details.
+  static SizeModel of(BuildContext context, {bool rebuildOnChange: false}) =>
+      new ModelFinder<SizeModel>()
+          .of(context, rebuildOnChange: rebuildOnChange);
 
   Size get size => _size;
 
@@ -22,40 +30,4 @@ class SizeManager extends ConfigManager {
       notifyListeners();
     }
   }
-}
-
-class InheritedSizeManager extends StatelessWidget {
-  final SizeManager sizeManager;
-  final Widget child;
-
-  InheritedSizeManager({this.sizeManager, this.child});
-
-  @override
-  Widget build(BuildContext context) => new InheritedConfigManagerWidget(
-        configManager: sizeManager,
-        builder: (BuildContext context) => new _InheritedSizeManager(
-              sizeManager: sizeManager,
-              child: child,
-            ),
-      );
-
-  /// [Widget]s who call [of] will be rebuilt whenever [updateShouldNotify]
-  /// returns true for the [_InheritedSizeManager] returned by
-  /// [BuildContext.inheritFromWidgetOfExactType].
-  /// If [rebuildOnChange] is true, the caller will be rebuilt upon changes
-  /// to [SuggestionManager].
-  static SizeManager of(BuildContext context, {bool rebuildOnChange: false}) {
-    _InheritedSizeManager inheritedSuggestionManager = rebuildOnChange
-        ? context.inheritFromWidgetOfExactType(_InheritedSizeManager)
-        : context.ancestorWidgetOfExactType(_InheritedSizeManager);
-    return inheritedSuggestionManager?.configManager;
-  }
-}
-
-class _InheritedSizeManager extends InheritedConfigManager {
-  _InheritedSizeManager({
-    Widget child,
-    SizeManager sizeManager,
-  })
-      : super(child: child, configManager: sizeManager);
 }

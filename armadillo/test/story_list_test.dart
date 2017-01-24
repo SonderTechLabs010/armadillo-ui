@@ -31,16 +31,16 @@ void main() {
 
     StoryList storyList = new StoryList(
       key: storyListKey,
-      sizeManager: new SizeManager(new Size(_kWidthSingleColumn, _kHeight)),
+      sizeModel: new SizeModel(new Size(_kWidthSingleColumn, _kHeight)),
       scrollableKey: scrollableKey,
       multiColumn: false,
       quickSettingsHeightBump: 200.0,
     );
-    StoryManager storyManager = new DummyStoryManager(storyKeys: storyKeys);
+    StoryModel storyModel = new DummyStoryModel(storyKeys: storyKeys);
     await tester.pumpWidget(
       _wrapWithWidgetsApp(
-        child: new InheritedStoryManager(
-          storyManager: storyManager,
+        child: new ScopedModel<StoryModel>(
+          model: storyModel,
           child: new Center(
             child: new SizedBox(
               width: _kWidthSingleColumn,
@@ -75,17 +75,17 @@ void main() {
 
     StoryList storyList = new StoryList(
       key: storyListKey,
-      sizeManager: new SizeManager(new Size(_kWidthMultiColumn, _kHeight)),
+      sizeModel: new SizeModel(new Size(_kWidthMultiColumn, _kHeight)),
       scrollableKey: scrollableKey,
       multiColumn: true,
       quickSettingsHeightBump: 200.0,
     );
-    StoryManager storyManager = new DummyStoryManager(storyKeys: storyKeys);
+    StoryModel storyModel = new DummyStoryModel(storyKeys: storyKeys);
 
     await tester.pumpWidget(
       _wrapWithWidgetsApp(
-        child: new InheritedStoryManager(
-          storyManager: storyManager,
+        child: new ScopedModel<StoryModel>(
+          model: storyModel,
           child: new Center(
             child: new SizedBox(
               width: _kWidthMultiColumn,
@@ -122,10 +122,10 @@ class DummyStoryGenerator extends StoryGenerator {
   List<StoryCluster> get storyClusters => null;
 }
 
-class DummyStoryManager extends StoryManager {
+class DummyStoryModel extends StoryModel {
   final List<GlobalKey> storyKeys;
 
-  DummyStoryManager({this.storyKeys})
+  DummyStoryModel({this.storyKeys})
       : super(
           storyGenerator: new DummyStoryGenerator(),
         );

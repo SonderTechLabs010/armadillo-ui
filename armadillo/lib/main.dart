@@ -24,54 +24,54 @@ import 'suggestion_manager.dart';
 const bool _kShowPerformanceOverlay = false;
 
 Future main() async {
-  JsonSuggestionManager jsonSuggestionManager = new JsonSuggestionManager();
+  JsonSuggestionModel jsonSuggestionModel = new JsonSuggestionModel();
   JsonStoryGenerator jsonStoryGenerator = new JsonStoryGenerator();
-  StoryManager storyManager = new StoryManager(
-    suggestionManager: jsonSuggestionManager,
+  StoryModel storyModel = new StoryModel(
+    suggestionModel: jsonSuggestionModel,
     storyGenerator: jsonStoryGenerator,
   );
-  NowManager nowManager = new NowManager();
-  ConstraintsManager constraintsManager = new ConstraintsManager();
-  StoryClusterDragStateManager storyClusterDragStateManager =
-      new StoryClusterDragStateManager();
+  NowModel nowModel = new NowModel();
+  ConstraintsModel constraintsModel = new ConstraintsModel();
+  StoryClusterDragStateModel storyClusterDragStateModel =
+      new StoryClusterDragStateModel();
 
   Widget app = _buildApp(
-    suggestionManager: jsonSuggestionManager,
-    storyManager: storyManager,
-    nowManager: nowManager,
-    constraintsManager: constraintsManager,
-    storyClusterDragStateManager: storyClusterDragStateManager,
+    suggestionModel: jsonSuggestionModel,
+    storyModel: storyModel,
+    nowModel: nowModel,
+    constraintsModel: constraintsModel,
+    storyClusterDragStateModel: storyClusterDragStateModel,
   );
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
 
   SystemChrome.setEnabledSystemUIOverlays([]);
   jsonStoryGenerator.load(defaultBundle);
-  jsonSuggestionManager.load(defaultBundle);
-  constraintsManager.load(defaultBundle);
+  jsonSuggestionModel.load(defaultBundle);
+  constraintsModel.load(defaultBundle);
 }
 
 Widget _buildApp({
-  SuggestionManager suggestionManager,
-  StoryManager storyManager,
-  NowManager nowManager,
-  ConstraintsManager constraintsManager,
-  StoryClusterDragStateManager storyClusterDragStateManager,
+  SuggestionModel suggestionModel,
+  StoryModel storyModel,
+  NowModel nowModel,
+  ConstraintsModel constraintsModel,
+  StoryClusterDragStateModel storyClusterDragStateModel,
 }) =>
     new CheckedModeBanner(
       child: new StoryTimeRandomizer(
-        storyManager: storyManager,
+        storyModel: storyModel,
         child: new ChildConstraintsChanger(
-          constraintsManager: constraintsManager,
+          constraintsModel: constraintsModel,
           child: new DefaultAssetBundle(
             bundle: defaultBundle,
             child: new Armadillo(
-              storyManager: storyManager,
-              suggestionManager: suggestionManager,
-              nowManager: nowManager,
-              storyClusterDragStateManager: storyClusterDragStateManager,
+              storyModel: storyModel,
+              suggestionModel: suggestionModel,
+              nowModel: nowModel,
+              storyClusterDragStateModel: storyClusterDragStateModel,
               conductor: new Conductor(
-                storyClusterDragStateManager: storyClusterDragStateManager,
+                storyClusterDragStateModel: storyClusterDragStateModel,
               ),
             ),
           ),

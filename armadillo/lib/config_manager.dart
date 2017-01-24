@@ -6,31 +6,24 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
-/// Base class for classes that provide configuration data via
-/// [InheritedWidget]s.
-abstract class ConfigManager {
+/// Base class for classes that provide data via [InheritedWidget]s.
+abstract class Model {
   final Set<VoidCallback> _listeners = new Set<VoidCallback>();
   int version = 0;
 
-  /// Should be called only by those who instantiate
-  /// [InheritedConfigManager] so they can [State.setState].  If you're a
-  /// [Widget] that wants to be rebuilt when [config] changes, use
-  /// [InheritedConfigManager.of].
+  /// [listener] will be notified when the model changes.
   void addListener(VoidCallback listener) {
     _listeners.add(listener);
   }
 
-  /// Should be called only by those who instantiate
-  /// [InheritedConfigManager] so they can [State.setState].  If you're a
-  /// [Widget] that wants to be rebuilt when [config] changes, use
-  /// [InheritedConfigManager.of].
+  /// [listener] will no longer be notified when the model changes.
   void removeListener(VoidCallback listener) {
     _listeners.remove(listener);
   }
 
   int get listenerCount => _listeners.length;
 
-  /// Should be called only by [ConfigManager] when [config] has changed.
+  /// Should be called only by [Model] when the model has changed.
   void notifyListeners() {
     // We schedule a microtask as it's not uncommon for changes that trigger
     // listener notifications to occur in a build step and for listeners to
@@ -45,37 +38,75 @@ abstract class ConfigManager {
   }
 }
 
-class InheritedConfigManagerWidget extends StatefulWidget {
-  final ConfigManager configManager;
-  final WidgetBuilder builder;
+/// Finds a [Model].  This class is necessary as templated classes are relified
+/// but static templated functions are not.
+class ModelFinder<T extends Model> {
+  const ModelFinder();
 
-  InheritedConfigManagerWidget({this.configManager, this.builder});
-
-  @override
-  InheritedConfigManagerWidgetState createState() =>
-      new InheritedConfigManagerWidgetState();
+  /// Returns the [Model] of type [T] of the closest ancestor [ScopedModel].
+  ///
+  /// [Widget]s who call [of] with a [rebuildOnChange] of true will be rebuilt
+  /// whenever there's a change to the returned model.
+  T of(
+    BuildContext context, {
+    bool rebuildOnChange: false,
+  }) {
+    final Type type = new _InheritedModel<T>.forRuntimeType().runtimeType;
+    _InheritedModel<T> inheritedModel = rebuildOnChange
+        ? context.inheritFromWidgetOfExactType(type)
+        : context.ancestorWidgetOfExactType(type);
+    return inheritedModel?.model;
+  }
 }
 
-class InheritedConfigManagerWidgetState
-    extends State<InheritedConfigManagerWidget> {
+/// Allows the given [model] to be accessed by [child] or any of its decendants
+/// using [Model.of].
+class ScopedModel<T extends Model> extends StatelessWidget {
+  final T model;
+  final Widget child;
+
+  ScopedModel({this.model, this.child});
+
+  @override
+  Widget build(BuildContext context) => new _ModelListener(
+        model: model,
+        builder: (BuildContext context) => new _InheritedModel<T>(
+              model: model,
+              child: child,
+            ),
+      );
+}
+
+/// Listens to [model] and calls [builder] whenever [model] changes.
+class _ModelListener extends StatefulWidget {
+  final Model model;
+  final WidgetBuilder builder;
+
+  _ModelListener({this.model, this.builder});
+
+  @override
+  _ModelListenerState createState() => new _ModelListenerState();
+}
+
+class _ModelListenerState extends State<_ModelListener> {
   @override
   void initState() {
     super.initState();
-    config.configManager.addListener(_onChange);
+    config.model.addListener(_onChange);
   }
 
   @override
-  void didUpdateConfig(InheritedConfigManagerWidget oldConfig) {
+  void didUpdateConfig(_ModelListener oldConfig) {
     super.didUpdateConfig(oldConfig);
-    if (config.configManager != oldConfig.configManager) {
-      oldConfig.configManager.removeListener(_onChange);
-      config.configManager.addListener(_onChange);
+    if (config.model != oldConfig.model) {
+      oldConfig.model.removeListener(_onChange);
+      config.model.addListener(_onChange);
     }
   }
 
   @override
   void dispose() {
-    config.configManager.removeListener(_onChange);
+    config.model.removeListener(_onChange);
     super.dispose();
   }
 
@@ -87,16 +118,24 @@ class InheritedConfigManagerWidgetState
   }
 }
 
-/// Base class for [InheritedWidget]s that provide a [ConfigManager].
-class InheritedConfigManager extends InheritedWidget {
-  final ConfigManager configManager;
+/// Provides [model] to its [child] [Widget] tree via [InheritedWidget].  When
+/// [version] changes, all descendants who request (via
+/// [BuildContext.inheritFromWidgetOfExactType]) to be rebuilt when the model
+/// changes will do so.
+class _InheritedModel<T extends Model> extends InheritedWidget {
+  final T model;
   final int version;
-  InheritedConfigManager({Key key, Widget child, ConfigManager configManager})
-      : this.configManager = configManager,
-        this.version = configManager.version,
+  _InheritedModel({Key key, Widget child, T model})
+      : this.model = model,
+        this.version = model.version,
         super(key: key, child: child);
 
+  /// Used to return the runtime type.
+  _InheritedModel.forRuntimeType()
+      : this.model = null,
+        this.version = 0;
+
   @override
-  bool updateShouldNotify(InheritedConfigManager oldWidget) =>
+  bool updateShouldNotify(_InheritedModel<T> oldWidget) =>
       (oldWidget.version != version);
 }

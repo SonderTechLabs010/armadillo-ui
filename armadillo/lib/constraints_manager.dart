@@ -12,7 +12,7 @@ import 'config_manager.dart';
 const String _kJsonUrl = 'packages/armadillo/res/screen_config.json';
 
 /// Reads possible screen sizes from a configuraion json file.
-class ConstraintsManager extends ConfigManager {
+class ConstraintsModel extends Model {
   List<BoxConstraints> _currentConstraints = const <BoxConstraints>[
     const BoxConstraints()
   ];

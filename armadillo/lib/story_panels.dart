@@ -153,7 +153,7 @@ class StoryPanelsState extends State<StoryPanels> {
                 boxBottomRight.x,
                 boxBottomRight.y,
               );
-              InheritedStoryManager.of(context).split(
+              StoryModel.of(context).split(
                     storyToSplit: story,
                     from: config.storyCluster,
                   );
@@ -161,9 +161,8 @@ class StoryPanelsState extends State<StoryPanels> {
             },
             childWhenDragging: Nothing.widget,
             feedbackBuilder: (Point localDragStartPoint) {
-              StoryCluster storyCluster = InheritedStoryManager
-                  .of(context)
-                  .getStoryCluster(story.clusterId);
+              StoryCluster storyCluster =
+                  StoryModel.of(context).getStoryCluster(story.clusterId);
               return new StoryClusterDragFeedback(
                 key: storyCluster.dragFeedbackKey,
                 storyCluster: storyCluster,

@@ -127,7 +127,7 @@ class NowState extends TickingState<Now> {
   final GlobalKey _importantInfoMaximizedKey = new GlobalKey();
   final GlobalKey _userContextTextKey = new GlobalKey();
   final GlobalKey _userImageKey = new GlobalKey();
-  final OpacityManager _minimizedInfoOpacityManager = new OpacityManager(0.0);
+  final OpacityModel _minimizedInfoOpacityModel = new OpacityModel(0.0);
   FadingSpringSimulation _fadingSpringSimulation;
 
   /// [scrolloffset] affects the bottom padding of the user and text elements
@@ -180,7 +180,7 @@ class NowState extends TickingState<Now> {
 
   @override
   Widget build(BuildContext context) => new SimulatedTransform(
-        targetOpacity: InheritedStoryClusterDragStateManager
+        targetOpacity: StoryClusterDragStateModel
                 .of(context, rebuildOnChange: true)
                 .areStoryClustersDragging
             ? 0.0
@@ -247,7 +247,7 @@ class NowState extends TickingState<Now> {
                           new Padding(
                             key: _userContextTextKey,
                             padding: const EdgeInsets.only(top: 24.0),
-                            child: _nowManager(context).userContextMaximized(
+                            child: _nowModel(context).userContextMaximized(
                               opacity: _fallAwayOpacity,
                             ),
                           ),
@@ -258,7 +258,7 @@ class NowState extends TickingState<Now> {
                               child: new Padding(
                                 padding: const EdgeInsets.only(top: 16.0),
                                 child:
-                                    _nowManager(context).importantInfoMaximized(
+                                    _nowModel(context).importantInfoMaximized(
                                   maxWidth: _quickSettingsBackgroundMaximizedWidth -
                                       2.0 *
                                           _kQuickSettingsInnerHorizontalPadding,
@@ -319,7 +319,7 @@ class NowState extends TickingState<Now> {
                 ),
                 shape: BoxShape.circle,
               ),
-              child: _nowManager(context).user,
+              child: _nowModel(context).user,
             ),
           ),
         ),
@@ -348,7 +348,7 @@ class NowState extends TickingState<Now> {
                     ),
                   ),
                   new Container(
-                    child: _nowManager(context).quickSettings(
+                    child: _nowModel(context).quickSettings(
                       opacity: _quickSettingsSlideUpProgress,
                     ),
                   ),
@@ -365,14 +365,14 @@ class NowState extends TickingState<Now> {
           height: config.minHeight,
           padding: new EdgeInsets.symmetric(horizontal: 8.0 + _slideInDistance),
           child: new RepaintBoundary(
-            child: new InheritedOpacityManager(
-              opacityManager: _minimizedInfoOpacityManager,
+            child: new ScopedModel<OpacityModel>(
+              model: _minimizedInfoOpacityModel,
               child: new Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _nowManager(context).userContextMinimized,
-                  _nowManager(context).importantInfoMinimized,
+                  _nowModel(context).userContextMinimized,
+                  _nowModel(context).importantInfoMinimized,
                 ],
               ),
             ),
@@ -381,7 +381,7 @@ class NowState extends TickingState<Now> {
       );
 
   void _updateMinimizedInfoOpacity() {
-    _minimizedInfoOpacityManager.opacity =
+    _minimizedInfoOpacityModel.opacity =
         _fadingSpringSimulation.opacity * 0.6 * _slideInProgress;
   }
 
@@ -448,10 +448,10 @@ class NowState extends TickingState<Now> {
       if (config.onQuickSettingsProgressChange != null) {
         config.onQuickSettingsProgressChange(_quickSettingsProgress);
       }
-      _nowManager(context, rebuildOnChange: false).quickSettingsProgress =
+      _nowModel(context, rebuildOnChange: false).quickSettingsProgress =
           _quickSettingsProgress;
-      _nowManager(context, rebuildOnChange: false)
-          .quickSettingsSlideUpProgress = _quickSettingsSlideUpProgress;
+      _nowModel(context, rebuildOnChange: false).quickSettingsSlideUpProgress =
+          _quickSettingsSlideUpProgress;
     }
 
     _updateMinimizedInfoOpacity();
@@ -621,7 +621,7 @@ class NowState extends TickingState<Now> {
   // (ie battery icon/desc | wifi icon/desc | network icon/desc)
   double get _importantInfoMaximizedWidth {
     double t = _quickSettingsProgress * (1.0 - _minimizationProgress);
-    double minWidth = _nowManager(context).importantInfoMinWidth;
+    double minWidth = _nowModel(context).importantInfoMinWidth;
     return lerpDouble(
         minWidth,
         _quickSettingsBackgroundMaximizedWidth -
@@ -629,6 +629,6 @@ class NowState extends TickingState<Now> {
         t);
   }
 
-  NowManager _nowManager(BuildContext context, {bool rebuildOnChange: true}) =>
-      InheritedNowManager.of(context, rebuildOnChange: rebuildOnChange);
+  NowModel _nowModel(BuildContext context, {bool rebuildOnChange: true}) =>
+      NowModel.of(context, rebuildOnChange: rebuildOnChange);
 }
