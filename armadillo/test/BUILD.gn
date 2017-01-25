@@ -7,6 +7,8 @@ import("//build/dart/dart_test.gni")
 dart_test("test") {
   source_dir = "."
 
+  analysis_options="//apps/sysui/.analysis_options"
+
   deps = [
     "//apps/sysui/armadillo",
     "//lib/flutter/packages/flutter_test",

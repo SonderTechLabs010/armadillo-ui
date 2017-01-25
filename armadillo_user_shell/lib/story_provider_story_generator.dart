@@ -116,7 +116,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
   }
 
   Iterable<Story> get _currentStories => storyClusters.expand(
-        (cluster) => cluster.stories,
+        (StoryCluster cluster) => cluster.stories,
       );
 
   bool containsStory(String storyId) => _currentStories.any(
@@ -182,7 +182,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     _storyControllerMap[storyInfo.id].start(viewOwner.passRequest());
 
     // Create a flutter view from its view!
-    StoryCluster storyCluster = new StoryCluster(stories: [
+    StoryCluster storyCluster = new StoryCluster(stories: <Story>[
       _createStory(
         storyInfo: storyInfo,
         childViewConnection: new ChildViewConnection(
@@ -216,7 +216,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         // TODO(apwilson): Improve title.
         title:
             '[${Uri.parse(storyInfo.url).pathSegments[Uri.parse(storyInfo.url).pathSegments.length-1]} // ${storyInfo.id}]',
-        icons: [],
+        icons: <OpacityBuilder>[],
         avatar: (_, double opacity) => new Opacity(
               opacity: opacity,
               child: new Image.asset(_kUserImage, fit: ImageFit.cover),

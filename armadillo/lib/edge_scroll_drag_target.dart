@@ -68,7 +68,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
   Widget build(BuildContext context) => !_enabled
       ? Nothing.widget
       : new Stack(
-          children: [
+          children: <Widget>[
             new Positioned(
               top: 0.0,
               left: 0.0,

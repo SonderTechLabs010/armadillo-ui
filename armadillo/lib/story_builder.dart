@@ -35,14 +35,16 @@ Widget _widgetBuilder(String module, Map<String, Object> state) {
 }
 
 /// Construct a story object from a decoded json story config.
-Story storyBuilder(Map<String, Object> story) {
+Story storyBuilder(Map<String, dynamic> story) {
+  Map<String, Object> state = story['state'];
+  List<String> icons = story['icons'];
   return new Story(
     id: new StoryId(story['id']),
     builder: (_) => new ScrollConfiguration(
-          child: _widgetBuilder(story['module'], story['state']),
+          child: _widgetBuilder(story['module'], state),
         ),
     title: story['title'],
-    icons: (story['icons'] as List<String>)
+    icons: icons
         .map(
           (String icon) =>
               (BuildContext context, double opacity) => new Image.asset(

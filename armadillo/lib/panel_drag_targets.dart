@@ -53,7 +53,7 @@ typedef void _OnPanelEvent(BuildContext context, StoryCluster storyCluster);
 /// When turned into a widget the [LineSegment] will have the color [color].
 /// When the [LineSegment] is being targeted by a draggable [onHover] will be
 /// called.
-/// When the [LineSegment] is dropped upon with a draggable [onDropped] will be
+/// When the [LineSegment] is dropped upon with a draggable [onDrop] will be
 /// called.
 /// This [LineSegment] can only be targeted by [StoryCluster]s with a story
 /// count of less than or equal to [maxStoriesCanAccept].
@@ -173,7 +173,7 @@ class LineSegment {
 
 /// Wraps its [child] in an [ArmadilloDragTarget] which tracks any
 /// [ArmadilloLongPressDraggable]'s above it such that they can be dropped on
-/// specific parts of [storyCluster]'s [storyCluster.stories]'s [Panel]s.
+/// specific parts of [storyCluster]'s [StoryCluster.stories]'s [Panel]s.
 ///
 /// When an [ArmadilloLongPressDraggable] is above, [child] will be scaled down
 /// slightly depending on [focusProgress].
@@ -274,7 +274,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         Map<StoryClusterId, Point> storyClusterIdCandidates,
         Map<dynamic, Point> rejectedData,
       ) {
-        Map<StoryCluster, Point> storyClusterCandidates = {};
+        Map<StoryCluster, Point> storyClusterCandidates =
+            <StoryCluster, Point>{};
         storyClusterIdCandidates.keys.forEach((StoryClusterId storyClusterId) {
           StoryCluster storyCluster =
               StoryModel.of(context).getStoryCluster(storyClusterId);
@@ -293,7 +294,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Scale the child.
         double childScale = _scaleSimulation.value;
 
-        List<Widget> stackChildren = [
+        List<Widget> stackChildren = <Widget>[
           new Positioned(
             top: 0.0,
             left: 0.0,
@@ -951,8 +952,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       .single
       .panel;
 
-  /// Adds the stories of [storyCluster] to the left of [panel], spanning
-  /// [panel]'s height.
+  /// Adds the stories of [storyCluster] to the left of [storyId]'s panel,
+  /// spanning that panel's height.
   void _addClusterToLeftOfPanel({
     BuildContext context,
     StoryCluster storyCluster,
@@ -986,7 +987,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 2) Make room for new stories.
     _makeRoom(
-      panels: [panel],
+      panels: <Panel>[panel],
       leftDelta: (_kAddedStorySpan * storiesToAdd.length),
       widthFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
     );
@@ -1000,8 +1001,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
   }
 
-  /// Adds the stories of [storyCluster] to the right of [panel], spanning
-  /// [panel]'s height.
+  /// Adds the stories of [storyCluster] to the right of [storyId]'s panel',
+  /// spanning that panel's height.
   void _addClusterToRightOfPanel({
     BuildContext context,
     StoryCluster storyCluster,
@@ -1035,7 +1036,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 2) Make room for new stories.
     _makeRoom(
-      panels: [panel],
+      panels: <Panel>[panel],
       widthFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
     );
 
@@ -1048,8 +1049,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
   }
 
-  /// Adds the stories of [storyCluster] to the top of [panel], spanning
-  /// [panel]'s width.
+  /// Adds the stories of [storyCluster] to the top of [storyId]'s panel,
+  /// spanning that panel's width.
   void _addClusterAbovePanel({
     BuildContext context,
     StoryCluster storyCluster,
@@ -1083,7 +1084,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 2) Make room for new stories.
     _makeRoom(
-      panels: [panel],
+      panels: <Panel>[panel],
       topDelta: (_kAddedStorySpan * storiesToAdd.length),
       heightFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
     );
@@ -1097,8 +1098,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
   }
 
-  /// Adds the stories of [storyCluster] to the bottom of [panel], spanning
-  /// [panel]'s width.
+  /// Adds the stories of [storyCluster] to the bottom of [storyId]'s panel,
+  /// spanning that panel's width.
   void _addClusterBelowPanel({
     BuildContext context,
     StoryCluster storyCluster,
@@ -1132,7 +1133,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 2) Make room for new stories.
     _makeRoom(
-      panels: [panel],
+      panels: <Panel>[panel],
       heightFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
     );
 
@@ -1174,8 +1175,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     config.storyCluster.stories
         .where((Story story) => story.isPlaceHolder)
-        .forEach((PlaceHolderStory story) {
-      panelMap[story.associatedStoryId] = story.panel;
+        .forEach((Story story) {
+      PlaceHolderStory placeHolderStory = story;
+      panelMap[placeHolderStory.associatedStoryId] = placeHolderStory.panel;
     });
 
     // NOTE: We do this in a microtask because of the following:
@@ -1308,7 +1310,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       Rect.lerp(origin & Size.zero, _bounds(panel, size), config.scale);
 
   static List<Story> _getVerticallySortedStories(StoryCluster storyCluster) {
-    List<Story> sortedStories = new List.from(storyCluster.stories);
+    List<Story> sortedStories = new List<Story>.from(storyCluster.stories);
     sortedStories.sort(
       (Story a, Story b) => a.panel.top < b.panel.top
           ? -1
@@ -1322,7 +1324,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   }
 
   static List<Story> _getHorizontallySortedStories(StoryCluster storyCluster) {
-    List<Story> sortedStories = new List.from(storyCluster.stories);
+    List<Story> sortedStories = new List<Story>.from(storyCluster.stories);
     sortedStories.sort(
       (Story a, Story b) => a.panel.left < b.panel.left
           ? -1

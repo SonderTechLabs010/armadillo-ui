@@ -7,12 +7,12 @@ import 'package:test/test.dart';
 
 void main() {
   test('initial value', () {
-    final x = new RK4SpringSimulation(initValue: 0.0);
+    final RK4SpringSimulation x = new RK4SpringSimulation(initValue: 0.0);
     expect(x.value, equals(0.0));
   });
 
   test('interim value', () {
-    final x = new RK4SpringSimulation(initValue: 0.0);
+    final RK4SpringSimulation x = new RK4SpringSimulation(initValue: 0.0);
     expect(x.value, equals(0.0));
     x.target = 1.0;
     expect(x.value, equals(0.0));
@@ -22,7 +22,7 @@ void main() {
   });
 
   test('final value', () {
-    final x = new RK4SpringSimulation(initValue: 0.0);
+    final RK4SpringSimulation x = new RK4SpringSimulation(initValue: 0.0);
     expect(x.value, equals(0.0));
     x.target = 1.0;
     expect(x.value, equals(0.0));
@@ -31,9 +31,9 @@ void main() {
   });
 
   test('more friction takes longer to complete', () {
-    final x1 = new RK4SpringSimulation(
+    final RK4SpringSimulation x1 = new RK4SpringSimulation(
         desc: new RK4SpringDescription(tension: 100.0, friction: 10.0));
-    final x2 = new RK4SpringSimulation(
+    final RK4SpringSimulation x2 = new RK4SpringSimulation(
         desc: new RK4SpringDescription(tension: 100.0, friction: 50.0));
     x1.target = 100.0;
     x2.target = 100.0;
@@ -43,9 +43,9 @@ void main() {
   });
 
   test('less tension takes longer to complete', () {
-    final x1 = new RK4SpringSimulation(
+    final RK4SpringSimulation x1 = new RK4SpringSimulation(
         desc: new RK4SpringDescription(tension: 1000.0, friction: 50.0));
-    final x2 = new RK4SpringSimulation(
+    final RK4SpringSimulation x2 = new RK4SpringSimulation(
         desc: new RK4SpringDescription(tension: 500.0, friction: 50.0));
     x1.target = 100.0;
     x2.target = 100.0;

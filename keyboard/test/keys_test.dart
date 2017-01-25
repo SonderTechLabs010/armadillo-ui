@@ -19,7 +19,7 @@ void main() {
     TextKey textKey = new TextKey('A',
         key: textKeyKey, onText: (String text) => onTextText = text);
 
-    await tester.pumpWidget(new Row(children: [textKey]));
+    await tester.pumpWidget(new Row(children: <Widget>[textKey]));
     expect(onTextText, isNull);
 
     await _tap(tester, _getMiddleOfLeftSide(tester, textKeyKey));
@@ -36,7 +36,7 @@ void main() {
         new ImageKey("doesn't matter", () => pressed = true, key: imageKeyKey);
 
     await tester.pumpWidget(new DefaultAssetBundle(
-        bundle: _defaultBundle, child: new Row(children: [imageKey])));
+        bundle: _defaultBundle, child: new Row(children: <Widget>[imageKey])));
     expect(pressed, isFalse);
 
     await _tap(tester, _getMiddleOfLeftSide(tester, imageKeyKey));
@@ -45,13 +45,13 @@ void main() {
 }
 
 Point _getMiddleOfLeftSide(WidgetTester tester, Key key) {
-  final element = find.byKey(key);
+  Finder element = find.byKey(key);
   Point topLeft = tester.getTopLeft(element);
   Point center = tester.getCenter(element);
   return new Point(topLeft.x, center.y);
 }
 
-_tap(WidgetTester tester, Point point) async {
+Future<Null> _tap(WidgetTester tester, Point point) async {
   TestGesture gesture = await tester.startGesture(point, pointer: 8);
   await tester.pump();
   await gesture.up();

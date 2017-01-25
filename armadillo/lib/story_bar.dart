@@ -85,7 +85,7 @@ class StoryBarState extends TickingState<StoryBar> {
               delegate: new ThreeColumnAlignedLayoutDelegate(
                 partMargin: _kPartMargin,
               ),
-              children: [
+              children: <Widget>[
                 new LayoutId(
                   id: ThreeColumnAlignedLayoutDelegateParts.left,
                   child: new Row(

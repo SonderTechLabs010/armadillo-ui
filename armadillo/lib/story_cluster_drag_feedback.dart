@@ -157,7 +157,7 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
           child: new Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-            children: [
+            children: <Widget>[
               new Expanded(
                 child: new StoryPanels(
                   key: config.storyCluster.panelsKey,

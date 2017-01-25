@@ -110,7 +110,7 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
   Widget build(BuildContext context) => new Offstage(
         offstage: _showProgress == 0.0,
         child: new Stack(
-          children: [
+          children: <Widget>[
             new Positioned(
               left: 0.0,
               top: 0.0,
@@ -217,7 +217,7 @@ class _QuickSettingsState extends State<QuickSettings> {
 
   Widget _airplaneModeToggleIcon() => new ToggleIcon(
         key: _kAirplaneModeToggle,
-        imageList: [
+        imageList: <String>[
           _kAirplaneModeInactiveGrey600,
           _kAirplaneModeActiveBlack,
         ],
@@ -228,7 +228,7 @@ class _QuickSettingsState extends State<QuickSettings> {
 
   Widget _doNotDisturbToggleIcon() => new ToggleIcon(
         key: _kDoNotDisturbModeToggle,
-        imageList: [
+        imageList: <String>[
           _kDoNoDisturbOnBlack,
           _kDoNoDisturbOffGrey600,
         ],
@@ -239,7 +239,7 @@ class _QuickSettingsState extends State<QuickSettings> {
 
   Widget _screenRotationToggleIcon() => new ToggleIcon(
         key: _kScreenRotationToggle,
-        imageList: [
+        imageList: <String>[
           kScreenLockRotationBlack,
           kScreenRotationBlack,
         ],
@@ -253,7 +253,7 @@ class _QuickSettingsState extends State<QuickSettings> {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+        children: <Widget>[
           new Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: _volumeIconSlider()),
@@ -263,7 +263,7 @@ class _QuickSettingsState extends State<QuickSettings> {
           new Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: _divider()),
-          new Row(children: [
+          new Row(children: <Widget>[
             new Expanded(
               flex: 1,
               child: _airplaneModeToggleIcon(),
@@ -280,7 +280,8 @@ class _QuickSettingsState extends State<QuickSettings> {
         ]);
   }
 
-  Widget _buildForWideScreen(BuildContext context) => new Row(children: [
+  Widget _buildForWideScreen(BuildContext context) =>
+      new Row(children: <Widget>[
         new Expanded(
           flex: 3,
           child: _volumeIconSlider(),
@@ -312,7 +313,7 @@ class _QuickSettingsState extends State<QuickSettings> {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+        children: <Widget>[
           new Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: new LayoutBuilder(

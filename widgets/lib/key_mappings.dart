@@ -10,7 +10,7 @@ const int _kAndroidMetaStateRightShiftDown = 129;
 const int _kAndroidMetaStateAltDown = 18;
 const int _kAndroidMetaStateCtrlDown = 12288;
 
-const Map<int, String> _kAndroidKeyCodeMap = const {
+const Map<int, String> _kAndroidKeyCodeMap = const <int, String>{
   7: '0',
   8: '1',
   9: '2',
@@ -57,7 +57,7 @@ const Map<int, String> _kAndroidKeyCodeMap = const {
   76: '/'
 };
 
-const Map<int, String> _kAndroidShiftedKeyCodeMap = const {
+const Map<int, String> _kAndroidShiftedKeyCodeMap = const <int, String>{
   7: ')',
   8: '!',
   9: '@',
@@ -125,7 +125,7 @@ const int _kLinuxMetaStateRightShiftDown = 1;
 const int _kLinuxMetaStateAltDown = 2;
 const int _kLinuxMetaStateCtrlDown = 4096;
 
-const Map<int, String> _kLinuxKeyCodeMap = const {
+const Map<int, String> _kLinuxKeyCodeMap = const <int, String>{
   48: '0',
   49: '1',
   50: '2',
@@ -172,7 +172,7 @@ const Map<int, String> _kLinuxKeyCodeMap = const {
   191: '/'
 };
 
-const Map<int, String> _kLinuxShiftedKeyCodeMap = const {
+const Map<int, String> _kLinuxShiftedKeyCodeMap = const <int, String>{
   48: ')',
   49: '!',
   50: '@',

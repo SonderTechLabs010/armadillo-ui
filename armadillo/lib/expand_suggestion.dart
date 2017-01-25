@@ -79,7 +79,7 @@ class ExpandSuggestion extends ExpansionBehavior {
     RenderBox box = context.findRenderObject();
     Point topLeft = box.localToGlobal(Point.origin);
     return new Stack(
-      children: [
+      children: <Widget>[
         new Positioned(
           left: (suggestionInitialGlobalBounds.left - topLeft.x) *
               (1.0 - _expansionProgress),

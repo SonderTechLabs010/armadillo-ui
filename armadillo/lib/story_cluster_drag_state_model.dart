@@ -4,14 +4,17 @@
 
 import 'package:flutter/widgets.dart';
 
+import 'now.dart';
 import 'model.dart';
+import 'peeking_overlay.dart';
 import 'story_cluster.dart';
+import 'story_list.dart';
 
 export 'model.dart' show ScopedModel, Model;
 
 /// Tracks which story clusters are currently being dragged.  This is used by
 /// some UI elements to scale ([StoryList]), fade out ([Now]), or slide away
-/// ([SuggestionOverlay]).
+/// ([PeekingOverlay]).
 class StoryClusterDragStateModel extends Model {
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.

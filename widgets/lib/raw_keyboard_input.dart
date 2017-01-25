@@ -13,11 +13,12 @@ typedef void OnTextCommitted(String text);
 
 /// Listens for raw key input and shows typed characters in a [Text].
 /// Keys will only be listened to if [focused] is true.
-/// We use this instead of [Input] as we don't want to trigger the platform's
-/// soft keyboard (if it has one).  We hook up our own soft keyboard for now
-/// that calls: [clear], [append], and [backspace] to set the [Text] in the case
-/// no hard keyboard exists (which would render our [RawKeyboardListener]
-/// child useless).
+/// We use this instead of [EditableText] as we don't want to trigger the
+/// platform's soft keyboard (if it has one).  We hook up our own soft keyboard
+/// for now that calls: [RawKeyboardInputState.clear],
+/// [RawKeyboardInputState.append], and [RawKeyboardInputState.backspace] to set
+/// the [Text] in the case no hard keyboard exists (which would render our
+/// [RawKeyboardListener] child useless).
 /// TODO(apwilson): Handle non-Latin-1 characters.
 class RawKeyboardInput extends StatefulWidget {
   final bool focused;
@@ -33,7 +34,8 @@ class RawKeyboardInput extends StatefulWidget {
 }
 
 class RawKeyboardInputState extends State<RawKeyboardInput> {
-  final _scrollableInputTextKey = new GlobalKey<ScrollableInputTextState>();
+  final GlobalKey<ScrollableInputTextState> _scrollableInputTextKey =
+      new GlobalKey<ScrollableInputTextState>();
   @override
   Widget build(BuildContext context) => new RawKeyboardListener(
         onKey: _handleKey,

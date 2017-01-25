@@ -30,7 +30,7 @@ class ScrollableInputTextState extends State<ScrollableInputText> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> blockChildren = [
+    List<Widget> blockChildren = <Widget>[
       new Align(
           alignment: config.alignment ?? const FractionalOffset(0.0, 0.5),
           child: new Text(

@@ -9,7 +9,7 @@ import 'package:flutter/widgets.dart';
 // and a new image is displayed
 class ToggleIcon extends StatefulWidget {
   // A list of image asset paths
-  final List imageList;
+  final List<String> imageList;
   final int initialImageIndex;
   final double width;
   final double height;

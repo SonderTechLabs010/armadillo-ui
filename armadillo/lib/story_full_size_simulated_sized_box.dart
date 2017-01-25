@@ -14,7 +14,7 @@ const double _kStoryBarMaximizedHeight = 48.0;
 
 /// Sets the size of [child] based on [displayMode] and [panel] using a
 /// [SimulatedSizedBox].  This widget expects to have an ancestor
-/// [ScopedSizeModel] which provides the size the [child] should be
+/// [ScopedModel] which provides the size the [child] should be
 /// when fully focused.
 class StoryFullSizeSimulatedSizedBox extends StatelessWidget {
   final Widget child;

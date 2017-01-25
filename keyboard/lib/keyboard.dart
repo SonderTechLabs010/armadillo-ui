@@ -8,9 +8,7 @@ import 'dart:math';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-// TODO(apwilson): Once we have a mojom solution in Fuchsia, reenable.
-// import 'package:flutter/services.dart';
-// import 'package:mojo_services/prediction/prediction.mojom.dart';
+import 'package:sysui_widgets/scrollable_input_text.dart';
 
 import 'edit_text.dart';
 import 'keys.dart';
@@ -251,7 +249,8 @@ const String kKeyboardLayoutsJson = "["
     "]"
     "]";
 
-final List kKeyboardLayouts = JSON.decode(kKeyboardLayoutsJson);
+final List<List<List<Map<String, String>>>> kKeyboardLayouts =
+    JSON.decode(kKeyboardLayoutsJson);
 
 class Keyboard extends StatefulWidget {
   final OnText onText;
@@ -267,7 +266,6 @@ class Keyboard extends StatefulWidget {
 }
 
 class KeyboardState extends State<Keyboard> {
-  static const bool _kUsePredictionService = false;
   static const double _kGoKeyTextSize = 16.0;
   static const double _kSuggestionTextSize = 16.0;
   static const TextStyle _kSuggestionTextStyle = const TextStyle(
@@ -275,28 +273,25 @@ class KeyboardState extends State<Keyboard> {
       fontSize: _kSuggestionTextSize,
       letterSpacing: 2.0);
 
-  // TODO(apwilson): Once we have a mojom solution in Fuchsia, reenable.
-  // PredictionServiceProxy _prediction;
-  final _suggestionKeys = <GlobalKey>[];
+  final List<GlobalKey<TextKeyState>> _suggestionKeys =
+      <GlobalKey<TextKeyState>>[];
   Widget _keyboardWidget;
   List<Widget> _keyboards;
 
   @override
   void initState() {
     super.initState();
-    // TODO(apwilson): Once we have a mojom solution in Fuchsia, reenable.
-    /*
-    if (_kUsePredictionService) {
-      _prediction = shell.connectToApplicationService(
-          "mojo:prediction_service", PredictionService.connectToService);
-    }
-    */
     _keyboards = <Widget>[];
-    kKeyboardLayouts.forEach((keyboard) {
-      _keyboards.add(new IntrinsicHeight(
+    kKeyboardLayouts.forEach((List<List<Map<String, String>>> keyboard) {
+      _keyboards.add(
+        new IntrinsicHeight(
           child: new Column(
-              children:
-                  keyboard.map((jsonRow) => _makeRow(jsonRow)).toList())));
+            children: keyboard
+                .map((List<Map<String, String>> jsonRow) => _makeRow(jsonRow))
+                .toList(),
+          ),
+        ),
+      );
     });
     _keyboardWidget = _keyboards[0];
   }
@@ -313,7 +308,7 @@ class KeyboardState extends State<Keyboard> {
       return;
     }
 
-    final stringList = text.split(' ');
+    final List<String> stringList = text.split(' ');
 
     // If we have no words at all, clear the suggestions.
     if (stringList.isEmpty) {
@@ -321,55 +316,33 @@ class KeyboardState extends State<Keyboard> {
       return;
     }
 
-    final currentWord = stringList.removeLast();
+    final String currentWord = stringList.removeLast();
 
-    if (_kUsePredictionService) {
-      // TODO(apwilson): Once we have a mojom solution in Fuchsia, reenable.
-      /*
-      PredictionInfo predictionInfo = new PredictionInfo();
-      // we are not using bigram atm
-      predictionInfo.previousWords = [];
-      predictionInfo.currentWord = currentWord;
-      _prediction.getPredictionList(predictionInfo, (predictionList) {
-        _clearSuggestions();
-        if (predictionList == null) {
-          return;
-        }
-        for (int i = 0;
-            i < min(_suggestionKeys.length, predictionList.length);
-            i++) {
-          (_suggestionKeys[i].currentState as TextKeyState)?.text =
-              predictionList[i];
-        }
-      });
-      */
-    } else {
-      final wordSuggestionService = new WordSuggestionService();
-      List<String> suggestedWords =
-          wordSuggestionService.suggestWords(currentWord);
-      _clearSuggestions();
-      for (int i = 0;
-          i < min(_suggestionKeys.length, suggestedWords.length);
-          i++) {
-        (_suggestionKeys[i].currentState as TextKeyState)?.text =
-            suggestedWords[i];
-      }
+    final WordSuggestionService wordSuggestionService =
+        new WordSuggestionService();
+    List<String> suggestedWords =
+        wordSuggestionService.suggestWords(currentWord);
+    _clearSuggestions();
+    for (int i = 0;
+        i < min(_suggestionKeys.length, suggestedWords.length);
+        i++) {
+      _suggestionKeys[i].currentState?.text = suggestedWords[i];
     }
   }
 
   void _clearSuggestions() {
-    _suggestionKeys.forEach((suggestionKey) {
-      (suggestionKey.currentState as TextKeyState)?.text = '';
+    _suggestionKeys.forEach((GlobalKey<TextKeyState> suggestionKey) {
+      suggestionKey.currentState?.text = '';
     });
   }
 
-  Row _makeRow(final List jsonRow) {
-    return new Row(
-        children: jsonRow.map((jsonKey) => _makeKey(jsonKey)).toList(),
-        mainAxisAlignment: MainAxisAlignment.center);
-  }
+  Row _makeRow(List<Map<String, String>> jsonRow) => new Row(
+      children: jsonRow
+          .map((Map<String, String> jsonKey) => _makeKey(jsonKey))
+          .toList(),
+      mainAxisAlignment: MainAxisAlignment.center);
 
-  Widget _makeKey(final Map jsonKey) {
+  Widget _makeKey(Map<String, String> jsonKey) {
     String visualType = jsonKey[kKeyVisualType] ?? kKeyVisualTypeText;
     String action = jsonKey[kKeyAction] ?? kKeyActionEmitText;
     int width = int.parse(jsonKey[kKeyWidth] ?? '1');
@@ -422,7 +395,7 @@ class KeyboardState extends State<Keyboard> {
     return new ImageKey(image, _getAction(action), flex: width);
   }
 
-  Function _getAction(String action) {
+  VoidCallback _getAction(String action) {
     switch (action) {
       case kKeyActionEmitText:
         return null;
@@ -463,7 +436,8 @@ class KeyboardState extends State<Keyboard> {
 }
 
 class KeyboardInputOverlay {
-  final GlobalKey editTextKey = new GlobalKey();
+  final GlobalKey<ScrollableInputTextState> editTextKey =
+      new GlobalKey<ScrollableInputTextState>();
 
   Keyboard _keyboard;
 
@@ -485,7 +459,7 @@ class KeyboardInputOverlay {
   }
 
   void _onSuggestion(String suggestion) {
-    final stringList = _text.split(' ');
+    final List<String> stringList = _text.split(' ');
     if (stringList.isEmpty) {
       return;
     }
@@ -515,7 +489,10 @@ class KeyboardInputOverlay {
   }
 
   void _updateSuggestions() {
-    ((_keyboard.key as GlobalKey).currentState as KeyboardState)
-        .updateSuggestions(_text);
+    Key keyboardKey = _keyboard.key;
+    if (keyboardKey is GlobalKey<KeyboardState>) {
+      GlobalKey<KeyboardState> key = keyboardKey;
+      key.currentState.updateSuggestions(_text);
+    }
   }
 }

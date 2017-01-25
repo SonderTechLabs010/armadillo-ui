@@ -5,7 +5,10 @@
 import 'package:flutter/widgets.dart';
 
 import 'panel.dart';
+import 'panel_drag_targets.dart';
 import 'story.dart';
+import 'story_cluster.dart';
+import 'story_panels.dart';
 
 /// A [Story] with no content.  This is used in place of a real story within a
 /// [StoryCluster] to take up empty visual space in [StoryPanels] when

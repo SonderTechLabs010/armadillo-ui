@@ -20,6 +20,7 @@ import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
+import 'story_list.dart';
 import 'story_model.dart';
 import 'story_panels.dart';
 import 'story_title.dart';
@@ -58,7 +59,7 @@ const bool _kUseCarousel = false;
 const double _kDragScale = 0.8;
 
 /// The visual representation of a [Story].  A [Story] has a default size but
-/// will expand to [fullSize] when it comes into focus.  [StoryClusterWidget]s
+/// will expand to full size when it comes into focus.  [StoryClusterWidget]s
 /// are intended to be children of [StoryList].
 class StoryClusterWidget extends StatelessWidget {
   final StoryCluster storyCluster;
@@ -197,11 +198,11 @@ class StoryClusterWidget extends StatelessWidget {
             ? 0.9
             : 1.0,
         child: new Stack(
-          children: [
+          children: <Widget>[
             new Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
-              children: [
+              children: <Widget>[
                 new Expanded(
                     child: _getStoryCluster(context, highlight: highlight)),
                 new InlineStoryTitle(

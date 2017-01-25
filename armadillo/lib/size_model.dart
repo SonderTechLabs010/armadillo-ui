@@ -10,7 +10,7 @@ export 'model.dart' show ScopedModel, Model;
 
 /// Tracks the [Size] of something, notifying listeners when it changes.
 /// Using a [SizeModel] allows the [Size] it tracks to be passed down the
-/// widget tree using an [ScopedSizeModel].
+/// widget tree using an [ScopedModel].
 class SizeModel extends Model {
   Size _size;
 

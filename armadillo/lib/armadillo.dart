@@ -15,8 +15,8 @@ import 'story_cluster_drag_state_model.dart';
 import 'story_model.dart';
 import 'suggestion_model.dart';
 
-const _kBackgroundOverlayColor = const Color(0xB0000000);
-const _kBackgroundImage = 'packages/armadillo/res/Background.jpg';
+const Color _kBackgroundOverlayColor = const Color(0xB0000000);
+const String _kBackgroundImage = 'packages/armadillo/res/Background.jpg';
 const double _kDeviceScreenInnerBezelRadius = 8.0;
 
 /// The main app which controls the Fuchsia UI.

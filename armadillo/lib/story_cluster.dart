@@ -76,7 +76,7 @@ class StoryCluster {
   factory StoryCluster.fromStory(Story story) => new StoryCluster(
         id: story.clusterId,
         clusterDraggableKey: story.clusterDraggableKey,
-        stories: [
+        stories: <Story>[
           story.copyWith(
             panel: new Panel(),
             positionedKey: new GlobalKey(),
@@ -84,7 +84,7 @@ class StoryCluster {
         ],
       );
 
-  List<Story> get stories => new List.unmodifiable(_stories);
+  List<Story> get stories => new List<Story>.unmodifiable(_stories);
 
   Map<StoryId, Widget> buildStoryWidgets(BuildContext context) {
     Map<StoryId, Widget> storyWidgets = <StoryId, Widget>{};
@@ -155,7 +155,7 @@ class StoryCluster {
   int get hashCode => id.hashCode;
 
   @override
-  bool operator ==(other) => (other is StoryCluster && other.id == id);
+  bool operator ==(dynamic other) => (other is StoryCluster && other.id == id);
 
   @override
   String toString() {

@@ -166,7 +166,7 @@ class StoryPanelsState extends State<StoryPanels> {
               return new StoryClusterDragFeedback(
                 key: storyCluster.dragFeedbackKey,
                 storyCluster: storyCluster,
-                storyWidgets: {story.id: storyWidget},
+                storyWidgets: <StoryId, Widget>{story.id: storyWidget},
                 localDragStartPoint: localDragStartPoint,
                 initialBounds: initialBoundsOnDrag,
                 showTitle: false,
@@ -187,7 +187,7 @@ class StoryPanelsState extends State<StoryPanels> {
           ? Nothing.widget
           : new Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+              children: <Widget>[
                 // The story bar that pushes down the story.
                 new SimulatedPadding(
                   key: story.storyBarPaddingKey,

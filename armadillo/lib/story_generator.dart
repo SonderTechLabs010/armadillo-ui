@@ -5,6 +5,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'story_cluster.dart';
+import 'story_list.dart';
 
 /// Generates [StoryCluster]s for the [StoryList].
 abstract class StoryGenerator {
@@ -14,6 +15,6 @@ abstract class StoryGenerator {
   /// [listener] will no longer be called when [storyClusters] changes.
   void removeListener(VoidCallback listener);
 
-  /// The list of [StoryClusters].
+  /// The list of [StoryCluster]s.
   List<StoryCluster> get storyClusters;
 }

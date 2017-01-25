@@ -7,6 +7,8 @@ import("//build/dart/dart_package.gni")
 dart_package("keyboard") {
   package_name = "keyboard"
 
+  analysis_options="//apps/sysui/.analysis_options"
+
   source_dir = "lib"
 
   deps = [

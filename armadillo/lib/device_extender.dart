@@ -18,7 +18,7 @@ class DeviceExtender extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final columnChildren = new List<Widget>();
+    List<Widget> columnChildren = <Widget>[];
     columnChildren.add(new Expanded(child: child));
     columnChildren.addAll(deviceExtensions);
     return new Column(

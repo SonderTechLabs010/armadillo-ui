@@ -12,10 +12,11 @@ const double _kBezelMinimumWidth = 8.0;
 const double _kBezelExtension = 16.0;
 const double _kOuterBezelRadius = 16.0;
 
-/// A widget that changes [child]'s constraints to one within [constraints]. An
-/// affordance to perform this change is placed in [ChildConstraintsChanger]'s
-/// top right.  Each tap of the affordance steps through the [constraints] list
-/// applying each constraint to [child] in turn.
+/// A widget that changes [child]'s constraints to one within
+/// [constraintsModel]. An affordance to perform this change is placed in
+/// [ChildConstraintsChanger]'s top right.  Each tap of the affordance steps
+/// through the [constraintsModel] list applying each constraint to [child] in
+/// turn.
 class ChildConstraintsChanger extends StatefulWidget {
   final ConstraintsModel constraintsModel;
   final Widget child;
@@ -49,7 +50,7 @@ class ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
               _constraints[0] == const BoxConstraints())
       ? config.child
       : new Stack(
-          children: [
+          children: <Widget>[
             _constrainedChild,
             _constraintSwitchingButton,
           ],

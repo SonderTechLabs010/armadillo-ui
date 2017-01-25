@@ -15,7 +15,7 @@ class StoryTimeRandomizer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => new Stack(
-        children: [
+        children: <Widget>[
           child,
           new Positioned(
             left: 0.0,

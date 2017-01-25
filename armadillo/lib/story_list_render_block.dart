@@ -25,12 +25,13 @@ class StoryListRenderBlock extends RenderBlock {
   StoryListRenderBlock({
     List<RenderBox> children,
     Size parentSize,
-    GlobalKey<ScrollableState> scrollableKey,
+    Key scrollableKey,
     double bottomPadding,
     double listHeight,
   })
       : _parentSize = parentSize,
-        _scrollableKey = scrollableKey,
+        _scrollableKey =
+            scrollableKey is GlobalKey<ScrollableState> ? scrollableKey : null,
         _bottomPadding = bottomPadding ?? 0.0,
         _listHeight = listHeight ?? 0.0,
         super(children: children, mainAxis: Axis.vertical);
@@ -46,8 +47,8 @@ class StoryListRenderBlock extends RenderBlock {
 
   GlobalKey<ScrollableState> get scrollableKey => _scrollableKey;
   GlobalKey<ScrollableState> _scrollableKey;
-  set scrollableKey(GlobalKey<ScrollableState> value) {
-    if (_scrollableKey != value) {
+  set scrollableKey(Key value) {
+    if (_scrollableKey != value && value is GlobalKey<ScrollableState>) {
       _scrollableKey = value;
       markNeedsLayout();
     }
@@ -233,7 +234,7 @@ class StoryListRenderBlock extends RenderBlock {
   }
 
   List<RenderBox> get _childrenSortedByFocusProgress {
-    final List<RenderBox> children = [];
+    final List<RenderBox> children = <RenderBox>[];
     RenderBox child = firstChild;
     while (child != null) {
       final BlockParentData childParentData = child.parentData;

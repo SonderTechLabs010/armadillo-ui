@@ -10,7 +10,7 @@ import 'debug.dart';
 typedef void OnFocusStory(String storyId);
 
 class FocusControllerImpl extends FocusController {
-  final List<FocusControllerBinding> _bindings = new List();
+  final List<FocusControllerBinding> _bindings = <FocusControllerBinding>[];
   final List<FocusListenerProxy> _listeners = <FocusListenerProxy>[];
   final OnFocusStory onFocusStory;
 

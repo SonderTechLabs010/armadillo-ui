@@ -74,7 +74,7 @@ class SuggestionWidget extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               onTap: onSelected,
               child: new Row(
-                children: [
+                children: <Widget>[
                   new Expanded(
                     child: new Align(
                       alignment: FractionalOffset.centerLeft,
@@ -85,7 +85,7 @@ class SuggestionWidget extends StatelessWidget {
                         child: new Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
+                          children: <Widget>[
                             new Text(
                               suggestion.title,
                               textAlign: TextAlign.left,

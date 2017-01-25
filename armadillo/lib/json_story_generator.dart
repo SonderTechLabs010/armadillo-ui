@@ -7,6 +7,7 @@ import 'dart:convert' as convert;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'story.dart';
 import 'story_builder.dart';
 import 'story_cluster.dart';
 import 'story_generator.dart';
@@ -32,11 +33,12 @@ class JsonStoryGenerator extends StoryGenerator {
 
   void load(AssetBundle assetBundle) {
     assetBundle.loadString(_kJsonUrl).then((String json) {
-      final decodedJson = convert.JSON.decode(json);
+      final Map<String, List<Map<String, Object>>> decodedJson =
+          convert.JSON.decode(json);
 
       // Load stories
       _storyClusters = decodedJson["stories"]
-          .map((Map<String, Object> story) => new StoryCluster(stories: [
+          .map((Map<String, Object> story) => new StoryCluster(stories: <Story>[
                 storyBuilder(story),
               ]))
           .toList();

@@ -24,15 +24,15 @@ typedef void OnQuickSettingsProgressChange(double quickSettingsProgress);
 const double _kFallAwayDurationFraction = 0.35;
 
 /// The distance above the lowest point we can scroll down to when
-/// [scrollOffset] is 0.0.
+/// [NowState.scrollOffset] is 0.0.
 const double _kRestingDistanceAboveLowestPoint = 80.0;
 
 /// When the recent list's scrollOffset exceeds this value we minimize [Now].
-const _kNowMinimizationScrollOffsetThreshold = 120.0;
+const double _kNowMinimizationScrollOffsetThreshold = 120.0;
 
 /// When the recent list's scrollOffset exceeds this value we hide quick
 /// settings [Now].
-const _kNowQuickSettingsHideScrollOffsetThreshold = 16.0;
+const double _kNowQuickSettingsHideScrollOffsetThreshold = 16.0;
 
 const double _kQuickSettingsHorizontalPadding = 16.0;
 
@@ -130,7 +130,7 @@ class NowState extends TickingState<Now> {
   final OpacityModel _minimizedInfoOpacityModel = new OpacityModel(0.0);
   FadingSpringSimulation _fadingSpringSimulation;
 
-  /// [scrolloffset] affects the bottom padding of the user and text elements
+  /// [scrollOffset] affects the bottom padding of the user and text elements
   /// as well as the overall height of [Now] while maximized.
   double _lastScrollOffset = 0.0;
 
@@ -189,7 +189,7 @@ class NowState extends TickingState<Now> {
       );
 
   Widget _buildNow(BuildContext context) => new Stack(
-        children: [
+        children: <Widget>[
           new Listener(
             behavior: HitTestBehavior.translucent,
             onPointerDown: (PointerDownEvent event) {
@@ -214,7 +214,7 @@ class NowState extends TickingState<Now> {
             child: new Container(
               height: _nowHeight,
               child: new Stack(
-                children: [
+                children: <Widget>[
                   // Quick Settings Background.
                   new Positioned(
                     left: _kQuickSettingsHorizontalPadding,
@@ -240,7 +240,7 @@ class NowState extends TickingState<Now> {
                     top: _userImageTopOffset,
                     child: new Center(
                       child: new Column(
-                        children: [
+                        children: <Widget>[
                           // User Profile image
                           _buildUserImage(),
                           // User Context Text when maximized.
@@ -285,7 +285,7 @@ class NowState extends TickingState<Now> {
         ],
       );
 
-  Widget _buildUserImage() => new Stack(key: _userImageKey, children: [
+  Widget _buildUserImage() => new Stack(key: _userImageKey, children: <Widget>[
         // Shadow.
         new Opacity(
           opacity: _quickSettingsProgress,
@@ -340,7 +340,7 @@ class NowState extends TickingState<Now> {
               minWidth: 0.0,
               child: new Column(
                 key: _quickSettingsKey,
-                children: [
+                children: <Widget>[
                   new Divider(
                     height: 4.0,
                     color: Colors.grey[300].withOpacity(
@@ -370,7 +370,7 @@ class NowState extends TickingState<Now> {
               child: new Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                children: <Widget>[
                   _nowModel(context).userContextMinimized,
                   _nowModel(context).importantInfoMinimized,
                 ],
@@ -393,7 +393,7 @@ class NowState extends TickingState<Now> {
           onVerticalDragEnd: config.onBarVerticalDragEnd,
           child: new Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+            children: <Widget>[
               new Expanded(
                 child: new GestureDetector(
                   behavior: HitTestBehavior.opaque,

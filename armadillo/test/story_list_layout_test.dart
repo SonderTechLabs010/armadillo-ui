@@ -194,7 +194,7 @@ void main() {
     Size size = new Size(100.0, 100.0);
     StoryListLayout layout = new StoryListLayout(size: size);
     List<StoryLayout> stories = layout.layout(
-      storyClustersToLayout: [],
+      storyClustersToLayout: <StoryCluster>[],
       currentTime: _kCurrentTime,
     );
     expect(stories.isEmpty, true);
@@ -204,7 +204,7 @@ void main() {
     Size size = new Size(1000.0, 100.0);
     StoryListLayout layout = new StoryListLayout(size: size);
     List<StoryLayout> stories = layout.layout(
-      storyClustersToLayout: [],
+      storyClustersToLayout: <StoryCluster>[],
       currentTime: _kCurrentTime,
     );
     expect(stories.isEmpty, true);
@@ -214,7 +214,7 @@ void main() {
     StoryListLayout layout = new StoryListLayout(size: _k360x640Size);
     List<StoryLayout> stories = layout.layout(
       storyClustersToLayout: _kDummyStories
-          .map((Story story) => new StoryCluster(stories: [story]))
+          .map((Story story) => new StoryCluster(stories: <Story>[story]))
           .toList(),
       currentTime: _kCurrentTime,
     );
@@ -256,7 +256,7 @@ void main() {
     StoryListLayout layout = new StoryListLayout(size: _k1280x900Size);
     List<StoryLayout> stories = layout.layout(
       storyClustersToLayout: _kDummyStories
-          .map((Story story) => new StoryCluster(stories: [story]))
+          .map((Story story) => new StoryCluster(stories: <Story>[story]))
           .toList(),
       currentTime: _kCurrentTime,
     );

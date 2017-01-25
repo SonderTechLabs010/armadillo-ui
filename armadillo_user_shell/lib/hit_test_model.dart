@@ -15,7 +15,7 @@ class HitTestModel extends Model {
       new ModelFinder<HitTestModel>()
           .of(context, rebuildOnChange: rebuildOnChange);
 
-  List<String> _focusedStoryIds = [];
+  List<String> _focusedStoryIds = <String>[];
   bool _storiesObscuredBySuggestionOverlay = false;
   bool _storiesObscuredByQuickSettingsOverlay = false;
 

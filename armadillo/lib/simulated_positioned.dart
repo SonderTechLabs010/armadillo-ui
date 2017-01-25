@@ -37,7 +37,8 @@ class SimulatedPositioned extends StatefulWidget {
 }
 
 class SimulatedPositionedState extends TickingState<SimulatedPositioned> {
-  final GlobalKey _sizedBoxKey = new GlobalKey();
+  final GlobalKey<SimulatedSizedBoxState> _sizedBoxKey =
+      new GlobalKey<SimulatedSizedBoxState>();
   RK4SpringSimulation _leftSimulation;
   RK4SpringSimulation _topSimulation;
 

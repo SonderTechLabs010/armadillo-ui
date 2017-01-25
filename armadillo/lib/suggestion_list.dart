@@ -73,7 +73,7 @@ class SuggestionListState extends State<SuggestionList> {
     if (suggestion == null || suggestion.isEmpty) {
       return;
     }
-    final stringList = text.split(' ');
+    final List<String> stringList = text.split(' ');
     if (stringList.isEmpty) {
       return;
     }
@@ -103,7 +103,7 @@ class SuggestionListState extends State<SuggestionList> {
 
   @override
   Widget build(BuildContext context) => new Stack(
-        children: [
+        children: <Widget>[
           new Positioned(
             top: 0.0,
             left: 0.0,
@@ -127,7 +127,7 @@ class SuggestionListState extends State<SuggestionList> {
               child: new Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.start,
-                children: [
+                children: <Widget>[
                   // Image.
                   new Padding(
                     padding: const EdgeInsets.only(
@@ -208,7 +208,7 @@ class SuggestionListState extends State<SuggestionList> {
           children: new List<Widget>.generate(
             leftSuggestions.length,
             (int index) => new Row(
-                  children: [
+                  children: <Widget>[
                     new Container(height: 0.0, width: 24.0),
                     new Expanded(
                         child: _createSuggestion(leftSuggestions[index])),
@@ -255,7 +255,7 @@ class SuggestionListState extends State<SuggestionList> {
           children: new List<Widget>.generate(
             leftSuggestions.length,
             (int index) => new Row(
-                  children: [
+                  children: <Widget>[
                     new Container(height: 0.0, width: 24.0),
                     new Expanded(
                       child: _createSuggestion(leftSuggestions[index]),

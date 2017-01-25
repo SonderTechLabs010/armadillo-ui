@@ -31,16 +31,16 @@ import 'suggestion_model.dart';
 import 'vertical_shifter.dart';
 
 /// The height of [Now]'s bar when minimized.
-const _kMinimizedNowHeight = 50.0;
+const double _kMinimizedNowHeight = 50.0;
 
 /// The height of [Now] when maximized.
-const _kMaximizedNowHeight = 440.0;
+const double _kMaximizedNowHeight = 440.0;
 
 /// How far [Now] should raise when quick settings is activated inline.
-const _kQuickSettingsHeightBump = 120.0;
+const double _kQuickSettingsHeightBump = 120.0;
 
 /// How far above the bottom the suggestions overlay peeks.
-const _kSuggestionOverlayPeekHeight = 116.0;
+const double _kSuggestionOverlayPeekHeight = 116.0;
 
 /// If the width of the [Conductor] exceeds this value we will switch to
 /// multicolumn mode for the [StoryList].
@@ -66,8 +66,9 @@ final GlobalKey<QuickSettingsOverlayState> _quickSettingsOverlayKey =
     new GlobalKey<QuickSettingsOverlayState>();
 final GlobalKey<PeekingOverlayState> _suggestionOverlayKey =
     new GlobalKey<PeekingOverlayState>();
-final GlobalKey<DeviceExtensionState> _keyboardDeviceExtensionKey =
-    new GlobalKey<DeviceExtensionState>();
+final GlobalKey<DeviceExtensionState<KeyboardDeviceExtension>>
+    _keyboardDeviceExtensionKey =
+    new GlobalKey<DeviceExtensionState<KeyboardDeviceExtension>>();
 final GlobalKey<KeyboardState> _keyboardKey = new GlobalKey<KeyboardState>();
 
 /// The [VerticalShifter] is used to shift the [StoryList] up when [Now]'s
@@ -91,7 +92,7 @@ final GlobalKey<SelectedSuggestionOverlayState> _selectedSuggestionOverlayKey =
 final GlobalKey<ArmadilloOverlayState> _overlayKey =
     new GlobalKey<ArmadilloOverlayState>();
 
-typedef OnOverlayChanged(bool active);
+typedef void OnOverlayChanged(bool active);
 
 /// Manages the position, size, and state of the story list, user context,
 /// suggestion overlay, device extensions. interruption overlay, and quick
@@ -135,7 +136,7 @@ class Conductor extends StatelessWidget {
           storyModel.updateLayouts(fullSize);
 
           Widget stack = new Stack(
-            children: [
+            children: <Widget>[
               new Positioned(
                 left: 0.0,
                 right: 0.0,
@@ -207,7 +208,7 @@ class Conductor extends StatelessWidget {
           );
           return useSoftKeyboard
               ? new DeviceExtender(
-                  deviceExtensions: [_getKeyboard()],
+                  deviceExtensions: <Widget>[_getKeyboard()],
                   child: stack,
                 )
               : stack;

@@ -50,9 +50,10 @@ typedef Widget FeedbackBuilder(Point localDragStartPoint);
 /// A widget that can be dragged from to a [ArmadilloDragTarget] starting from long press.
 ///
 /// When a draggable widget recognizes the start of a drag gesture, it displays
-/// a [feedback] widget that tracks the user's finger across the screen. If the
-/// user lifts their finger while on top of a [ArmadilloDragTarget], that target is given
-/// the opportunity to accept the [data] carried by the draggble.
+/// a widget built by [feedbackBuilder] that tracks the user's finger across the
+/// screen. If the user lifts their finger while on top of a
+/// [ArmadilloDragTarget], that target is given the opportunity to accept the
+/// [data] carried by the draggble.
 ///
 /// See also:
 ///
@@ -60,8 +61,7 @@ typedef Widget FeedbackBuilder(Point localDragStartPoint);
 class ArmadilloLongPressDraggable<T> extends StatefulWidget {
   /// Creates a widget that can be dragged starting from long press.
   ///
-  /// The [child] and [feedback] arguments must not be null. If
-  /// [maxSimultaneousDrags] is non-null, it must be positive.
+  /// The [child] and [feedbackBuilder] arguments must not be null.
   ArmadilloLongPressDraggable({
     Key key,
     this.overlayKey,
@@ -433,7 +433,7 @@ class _DragAvatar<T> extends Drag {
     Point overlayTopLeft = overlayBox.localToGlobal(Point.origin);
     Offset localOffset = _position - dragStartPoint;
     return new Stack(
-      children: [
+      children: <Widget>[
         new Positioned(
           left: localOffset.dx - overlayTopLeft.x,
           top: localOffset.dy - overlayTopLeft.y,

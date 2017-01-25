@@ -7,15 +7,16 @@ import 'package:flutter/widgets.dart';
 import 'panel.dart';
 import 'story_bar.dart';
 import 'story_cluster_id.dart';
+import 'story_list.dart';
 
-class StoryId<T> extends ValueKey<T> {
-  StoryId(T value) : super(value);
+class StoryId extends ValueKey<dynamic> {
+  StoryId(dynamic value) : super(value);
 }
 
 typedef Widget OpacityBuilder(BuildContext context, double opacity);
 
 /// The representation of a Story.  A Story's contents are display as a [Widget]
-/// provided by [builder] while the size of a story in the [RecentList] is
+/// provided by [builder] while the size of a story in the [StoryList] is
 /// determined by [lastInteraction] and [cumulativeInteractionDuration].
 class Story {
   final StoryId id;
@@ -79,7 +80,7 @@ class Story {
         cumulativeInteractionDuration:
             cumulativeInteractionDuration ?? this.cumulativeInteractionDuration,
         themeColor: this.themeColor,
-        icons: new List.from(this.icons),
+        icons: new List<OpacityBuilder>.from(this.icons),
         avatar: this.avatar,
         title: this.title,
         inactive: inactive ?? this.inactive,
@@ -101,7 +102,7 @@ class Story {
   int get hashCode => id.hashCode;
 
   @override
-  bool operator ==(other) => (other is Story && other.id == id);
+  bool operator ==(dynamic other) => (other is Story && other.id == id);
 
   @override
   String toString() => 'Story( id: $id, title: $title, panel: $panel )';

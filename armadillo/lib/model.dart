@@ -52,15 +52,18 @@ class ModelFinder<T extends Model> {
     bool rebuildOnChange: false,
   }) {
     final Type type = new _InheritedModel<T>.forRuntimeType().runtimeType;
-    _InheritedModel<T> inheritedModel = rebuildOnChange
+    Widget widget = rebuildOnChange
         ? context.inheritFromWidgetOfExactType(type)
         : context.ancestorWidgetOfExactType(type);
-    return inheritedModel?.model;
+    if (widget is _InheritedModel<T>) {
+      return widget.model;
+    }
+    return null;
   }
 }
 
 /// Allows the given [model] to be accessed by [child] or any of its decendants
-/// using [Model.of].
+/// using [ModelFinder].
 class ScopedModel<T extends Model> extends StatelessWidget {
   final T model;
   final Widget child;

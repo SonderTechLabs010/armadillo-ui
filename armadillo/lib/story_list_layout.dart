@@ -6,6 +6,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
+import 'story.dart';
 import 'story_cluster.dart';
 
 /// If [StoryListLayout.size] is wider than this, the stories will be laid out
@@ -112,7 +113,6 @@ class StoryListLayout {
             storyClusterToLayout.cumulativeInteractionDuration.inMinutes,
             possibleJugglingMinutes);
 
-
         if (storyJugglingMinutes > 0) {
           jugglingStoryCount++;
           // Constrain the number of juggling stories within _kMaxJugglingStoryCount
@@ -121,7 +121,6 @@ class StoryListLayout {
             jugglingStoryCount = _kMaxJugglingStoryCount;
           }
         }
-
 
         return new _StoryMetadata(
           interactionMinutes:
@@ -182,8 +181,8 @@ class StoryListLayout {
     } else {
       // Split stories into rows.
       double rowTop = -stories[0].size.height;
-      List<List<_StoryMetadata>> rows = [];
-      List<_StoryMetadata> row = [];
+      List<List<_StoryMetadata>> rows = <List<_StoryMetadata>>[];
+      List<_StoryMetadata> row = <_StoryMetadata>[];
       double rowWidth = 0.0;
 
       for (int i = 0; i < stories.length; i++) {
@@ -311,7 +310,7 @@ class StoryListLayout {
 
             // Stagger our y offset from the previous story.
             if (previousStory != null) {
-              var staggerAmount = previousStory.size.height *
+              double staggerAmount = previousStory.size.height *
                   0.25 *
                   math.min(
                     1.0,
@@ -381,7 +380,7 @@ class StoryListLayout {
   }
 
   double _smoothstep(double a, double b, double n) {
-    var t = (n - a) / (b - a) * 12.0 - 6.0;
+    double t = (n - a) / (b - a) * 12.0 - 6.0;
     return 1.0 / (1.0 + math.pow(math.E, -t));
   }
 
@@ -436,7 +435,7 @@ class StoryListLayout {
 }
 
 /// Stores positions and sizes of a story as it goes through the
-/// [StoryLayout.layout] function.
+/// [StoryListLayout.layout] function.
 class _StoryMetadata extends StoryLayout {
   final int interactionMinutes;
   final int jugglingMinutes;

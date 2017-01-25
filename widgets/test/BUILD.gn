@@ -5,6 +5,9 @@
 import("//build/dart/dart_test.gni")
 
 dart_test("test") {
+
+  analysis_options="//apps/sysui/.analysis_options"
+
   source_dir = "."
 
   deps = [

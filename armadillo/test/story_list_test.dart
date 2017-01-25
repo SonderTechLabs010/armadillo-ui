@@ -57,9 +57,9 @@ void main() {
       _kWidthSingleColumn,
     );
     storyKeys.forEach((GlobalKey key) {
-      final finder = find.byKey(key);
+      final Finder finder = find.byKey(key);
       expect(finder, isNotNull);
-      final size = tester.getSize(finder);
+      final Size size = tester.getSize(finder);
       expect(size.width, _kWidthSingleColumn);
     });
   });
@@ -102,9 +102,9 @@ void main() {
       _kWidthMultiColumn,
     );
     storyKeys.forEach((GlobalKey key) {
-      final finder = find.byKey(key);
+      final Finder finder = find.byKey(key);
       expect(finder, isNotNull);
-      final size = tester.getSize(finder);
+      final Size size = tester.getSize(finder);
       expect(size.width, _kWidthMultiColumn);
       expect(size.height, _kHeight - _kStoryBarMaximizedHeight);
     });
@@ -134,7 +134,7 @@ class DummyStoryModel extends StoryModel {
   List<StoryCluster> get storyClusters => new List<StoryCluster>.generate(
         storyKeys.length,
         (int index) => new StoryCluster(
-              stories: [
+              stories: <Story>[
                 new Story(
                   id: new StoryId(storyKeys[index]),
                   builder: (_) => new Container(key: storyKeys[index]),
@@ -167,7 +167,8 @@ class DummyStoryLayout extends StoryLayout {
 Widget _wrapWithWidgetsApp({Widget child}) => new WidgetsApp(
       title: '',
       color: const Color(0xFFFFFFFF),
-      onGenerateRoute: (RouteSettings settings) => new DelegatingPageRoute(
+      onGenerateRoute: (RouteSettings settings) =>
+          new DelegatingPageRoute<Null>(
             (_) => child,
             settings: settings,
           ),

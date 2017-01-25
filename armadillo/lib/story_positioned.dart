@@ -12,6 +12,7 @@ import 'simulation_builder.dart';
 import 'simulated_positioned.dart';
 import 'story.dart';
 import 'story_cluster.dart';
+import 'story_panels.dart';
 
 const double _kStoryBarMaximizedHeight = 48.0;
 const double _kUnfocusedStoryMargin = 1.0;
@@ -20,7 +21,7 @@ const double _kUnfocusedCornerRadius = 4.0;
 const double _kFocusedCornerRadius = 8.0;
 
 /// Positions the [story] in a [StoryPanels] within the given [currentSize] with
-/// a [SimulatedPositioned] based on [story.panel], [displayMode], and
+/// a [SimulatedPositioned] based on [story]'s panel, [displayMode], and
 /// [isFocused].
 class StoryPositioned extends StatelessWidget {
   final DisplayMode displayMode;

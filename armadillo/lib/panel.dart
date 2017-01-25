@@ -13,7 +13,7 @@ const double _kMinPanelWidth = 320.0;
 const double _kMinPanelHeight = 320.0;
 
 /// The number of grid lines the grid should have in either direction.
-/// TODO(apwilson): This should be calculated from [size] rather than being a
+/// TODO(apwilson): This should be calculated from size rather than being a
 /// constant.
 const double _kGridLines = 1000.0;
 
@@ -66,12 +66,7 @@ typedef void PanelSplitResultCallback(Panel a, Panel b);
 typedef void PanelAbsorbedResultCallback(Panel combined, Panel remainder);
 
 /// A representation of a sub-area of a 1.0 x 1.0 grid with gridlines every
-/// 1.0 / [_kGridLines].  [Panel]s top left is specified by [origin] and its
-/// width and height by [widthFactor] and [heightFactor] respectively.
-/// [origin.dx], [origin.dy], [widthFactor], and [heightFactor] all must be in
-/// the range of [0.0, 1.0].
-/// [origin.dx] + [widthFactor] and [origin.dy] + [heightFactor] both must be
-/// in the range [0.0, 1.0].
+/// 1.0 / [_kGridLines].
 ///
 /// We represent the bounds of a panel in these dimensionless [0.0, 1.0] values
 /// because a given [Panel] may need to be applied more than one 'real' size.
@@ -80,6 +75,12 @@ class Panel {
   final double _heightFactor;
   final double _widthFactor;
 
+  /// [Panel]s top left is specified by [origin] and its
+  /// width and height by [widthFactor] and [heightFactor] respectively.
+  /// [origin]'s dx, [origin]'s dy, [widthFactor], and [heightFactor] all must
+  /// be in the range of [0.0, 1.0].
+  /// [origin]'s dx + [widthFactor] and [origin]'s dy + [heightFactor] both must
+  /// be in the range [0.0, 1.0].
   Panel({
     FractionalOffset origin: FractionalOffset.topLeft,
     double heightFactor: 1.0,
@@ -143,7 +144,7 @@ class Panel {
     panelSplitResultCallback(a, b);
   }
 
-  /// Returns true if [other.origin] aligns with [origin] in an axis.
+  /// Returns true if [other's] origin aligns with [_origin] in an axis.
   bool isOriginAligned(Panel other) => (left == other.left || top == other.top);
 
   /// Returns true if [isOriginAligned] returns true and [other] shares

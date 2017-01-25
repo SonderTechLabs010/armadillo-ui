@@ -48,7 +48,7 @@ class MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
   void onAdd(List<maxwell.Suggestion> suggestions) {
     suggestions.forEach((maxwell.Suggestion suggestion) {
       _suggestions[suggestion.uuid] = new Suggestion(
-        id: new ValueKey(suggestion.uuid),
+        id: new SuggestionId(suggestion.uuid),
         title: suggestion.display.headline,
         themeColor: new Color(suggestion.display.color),
         selectionType: SelectionType.closeSuggestions,
@@ -174,9 +174,8 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
 
   @override
   void onSuggestionSelected(Suggestion suggestion) {
-    final ValueKey<String> id = suggestion.id;
     _suggestionProviderProxy.notifyInteraction(
-      id.value,
+      suggestion.id.value,
       new maxwell.Interaction()..type = maxwell.InteractionType.selected,
     );
   }
@@ -225,7 +224,7 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
 
   void _onStoryListChanged() {
     List<String> focusedStoryIds = _lastFocusedStoryCluster?.stories
-            ?.map((Story story) => story.id.value)
+            ?.map<String>((Story story) => story.id.value)
             ?.toList() ??
         <String>[];
     _focusController.onFocusedStoriesChanged(focusedStoryIds);

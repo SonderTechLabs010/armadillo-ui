@@ -10,7 +10,7 @@ export 'model.dart' show ScopedModel, Model;
 
 /// Tracks the [Opacity] of widget tree, notifying listeners when it changes.
 /// Using an [OpacityModel] allows the [opacity] it tracks to be passed down
-/// the widget tree using an [ScopedOpacityModel].
+/// the widget tree using an [ScopedModel].
 class OpacityModel extends Model {
   double _opacity;
 

@@ -42,10 +42,9 @@ class PeekingOverlay extends StatefulWidget {
 /// A [TickingHeightState] that changes its height to [minHeight] via [hide] and\
 /// [maxHeight] via [show].
 ///
-/// As the [height] increases above [minHeight] the [Widget] returned by
-/// [createWidget] will grow up from the bottom.  The area not given to that
-/// [Widget] will gradually darken until a [height] of
-/// [darkeningBackgroundMaxHeight] is reached.
+/// As the [height] increases above [minHeight] [PeekingOverlay.child] will grow
+/// up from the bottom.  The area not given to that [Widget] will gradually
+/// darken.
 ///
 /// The [createWidget] [Widget] will be clipped to [height] but will be given
 /// [maxHeight] to be laid out in.
@@ -132,7 +131,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
 
   @override
   Widget build(BuildContext context) => new Stack(
-        children: [
+        children: <Widget>[
           new IgnorePointer(
             child: new Container(
               decoration: new BoxDecoration(
@@ -156,7 +155,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
               maxHeight: math.max(height, maxHeight),
               alignment: FractionalOffset.topCenter,
               child: new Stack(
-                children: [
+                children: <Widget>[
                   new CustomPaint(
                     painter: new QuadrilateralPainter(
                       topLeftInset: new Offset(

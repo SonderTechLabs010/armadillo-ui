@@ -7,6 +7,8 @@ import("//build/dart/dart_package.gni")
 dart_package("widgets") {
   package_name = "sysui_widgets"
 
+  analysis_options="//apps/sysui/.analysis_options"
+
   source_dir = "lib"
 
   deps = [

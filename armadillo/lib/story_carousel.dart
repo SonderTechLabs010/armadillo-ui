@@ -65,7 +65,7 @@ class StoryCarousel extends StatelessWidget {
               new BorderRadius.circular(lerpDouble(4.0, 0.0, focusProgress)),
           child: new Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+            children: <Widget>[
               // The story bar that pushes down the story.
               new StoryBar(
                 key: story.storyBarKey,
@@ -77,7 +77,7 @@ class StoryCarousel extends StatelessWidget {
               // The story itself.
               new Expanded(
                 child: new Stack(
-                  children: [
+                  children: <Widget>[
                     _getStoryContents(context, story, size),
                     _getTouchDetectorToHideStoryBar(story),
                     _getVerticalDragDetectorToShowStoryBar(story),

@@ -28,7 +28,7 @@ class VerticalShifterState extends State<VerticalShifter> {
 
   @override
   Widget build(BuildContext context) => new Stack(
-        children: [
+        children: <Widget>[
           // Recent List.
           new Positioned(
             left: 0.0,

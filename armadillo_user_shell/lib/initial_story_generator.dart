@@ -20,10 +20,8 @@ const Map<String, String> _kStoryColors = const <String, String>{
   'file:///system/apps/paint_view': '0xFFAD1457',
 };
 
-Map<String, dynamic> _kStoryRootDocs = {
-  'file:///system/apps/color': {
-    'color': '0xFF1DE9B6'
-  }
+Map<String, dynamic> _kStoryRootDocs = <String, dynamic>{
+  'file:///system/apps/color': <String, String>{'color': '0xFF1DE9B6'},
 };
 
 /// Creates the initial list of stories to be shown when no stories exist.

@@ -15,15 +15,15 @@ void main() {
       (WidgetTester tester) async {
     String onTextText;
 
+    GlobalKey keyboardKey = new GlobalKey();
     Keyboard keyboard = new Keyboard(
-        key: new GlobalKey(),
+        key: keyboardKey,
         onText: (String text) {
           onTextText = text;
         },
         onSuggestion: (String suggestion) {},
         onDelete: () {},
         onGo: () {});
-    GlobalKey keyboardKey = keyboard.key;
 
     await tester.pumpWidget(new DefaultAssetBundle(
         bundle: _defaultBundle, child: new Center(child: keyboard)));
@@ -46,7 +46,7 @@ void main() {
 }
 
 Point _getShiftPosition(WidgetTester tester, Key keyboardKey) {
-  final element = find.byKey(keyboardKey);
+  final Finder element = find.byKey(keyboardKey);
   Point topLeft = tester.getTopLeft(element);
   Point bottomLeft = tester.getBottomLeft(element);
   return new Point(topLeft.x, topLeft.y + ((bottomLeft.y - topLeft.y) * 0.6));
@@ -55,7 +55,7 @@ Point _getShiftPosition(WidgetTester tester, Key keyboardKey) {
 Point _getCenter(WidgetTester tester, Key key) =>
     tester.getCenter(find.byKey(key));
 
-_tap(WidgetTester tester, Point point) async {
+Future<Null> _tap(WidgetTester tester, Point point) async {
   TestGesture gesture = await tester.startGesture(point, pointer: 8);
   await tester.pump();
   await gesture.up();

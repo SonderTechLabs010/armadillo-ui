@@ -29,37 +29,40 @@ class JsonSuggestionModel extends SuggestionModel {
 
   void load(AssetBundle assetBundle) {
     assetBundle.loadString(_kJsonUrl).then((String json) {
-      final decodedJson = JSON.decode(json);
+      final Map<String, dynamic> decodedJson = JSON.decode(json);
 
       // Load suggestions.
-      Map<Object, Suggestion> suggestionMap =
-          new Map<Object, Suggestion>.fromIterable(
-        decodedJson["suggestions"].map(
-          (Map<String, Object> suggestion) => new Suggestion(
-                id: new ValueKey(suggestion['id']),
-                title: suggestion['title'],
-                themeColor: suggestion['color'] != null
-                    ? new Color(int.parse(suggestion['color']))
-                    : Colors.blueGrey[600],
-                selectionType: _getSelectionType(suggestion['selection_type']),
-                selectionStoryId: new StoryId(suggestion['story_id']),
-                icons: suggestion['icons'] != null
-                    ? (suggestion['icons'] as List<String>)
-                        .map(
-                          (String icon) => (BuildContext context) =>
-                              new Image.asset(icon,
-                                  fit: ImageFit.cover, color: Colors.white),
-                        )
-                        .toList()
-                    : const <WidgetBuilder>[],
-                image: suggestion['image'] != null
-                    ? (_) => new Image.asset(
-                          suggestion['image'],
-                          fit: ImageFit.cover,
-                        )
-                    : null,
-                imageType: _getImageType(suggestion['image_type']),
-              ),
+      Map<SuggestionId, Suggestion> suggestionMap =
+          new Map<SuggestionId, Suggestion>.fromIterable(
+        decodedJson['suggestions'].map(
+          (Map<String, dynamic> suggestion) {
+            final List<String> icons = suggestion['icons'];
+            return new Suggestion(
+              id: new SuggestionId(suggestion['id']),
+              title: suggestion['title'],
+              themeColor: suggestion['color'] != null
+                  ? new Color(int.parse(suggestion['color']))
+                  : Colors.blueGrey[600],
+              selectionType: _getSelectionType(suggestion['selection_type']),
+              selectionStoryId: new StoryId(suggestion['story_id']),
+              icons: icons != null
+                  ? icons
+                      .map(
+                        (String icon) => (BuildContext context) =>
+                            new Image.asset(icon,
+                                fit: ImageFit.cover, color: Colors.white),
+                      )
+                      .toList()
+                  : const <WidgetBuilder>[],
+              image: suggestion['image'] != null
+                  ? (_) => new Image.asset(
+                        suggestion['image'],
+                        fit: ImageFit.cover,
+                      )
+                  : null,
+              imageType: _getImageType(suggestion['image_type']),
+            );
+          },
         ),
         key: (Suggestion suggestion) => suggestion.id,
         value: (Suggestion suggestion) => suggestion,
@@ -71,7 +74,7 @@ class JsonSuggestionModel extends SuggestionModel {
           .forEach((String storyId, List<String> suggestions) {
         _storySuggestionsMap[new StoryId(storyId)] = suggestions
             .map((String suggestionId) =>
-                suggestionMap[new ValueKey(suggestionId)])
+                suggestionMap[new SuggestionId(suggestionId)])
             .toList();
       });
 
@@ -140,7 +143,7 @@ class JsonSuggestionModel extends SuggestionModel {
   void _updateSuggestions() {
     if (_askText?.isEmpty ?? true) {
       if (_asking) {
-        _currentSuggestions = [];
+        _currentSuggestions = <Suggestion>[];
       } else {
         List<Suggestion> suggestions = <Suggestion>[];
         if (_activeStoryCluster != null) {
@@ -169,7 +172,7 @@ class JsonSuggestionModel extends SuggestionModel {
               .split(' ')
               .map((String word) =>
                   WordSuggestionService.levenshteinDistance(word, _askText))
-              .reduce((a, b) => math.min(a, b)),
+              .reduce((int a, int b) => math.min(a, b)),
           WordSuggestionService.levenshteinDistance(
               a.title.toLowerCase(), _askText),
         );
@@ -180,7 +183,7 @@ class JsonSuggestionModel extends SuggestionModel {
               .split(' ')
               .map((String word) =>
                   WordSuggestionService.levenshteinDistance(word, _askText))
-              .reduce((a, b) => math.min(a, b)),
+              .reduce((int a, int b) => math.min(a, b)),
           WordSuggestionService.levenshteinDistance(
               b.title.toLowerCase(), _askText),
         );

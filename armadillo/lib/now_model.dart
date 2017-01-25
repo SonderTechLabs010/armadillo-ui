@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'dart:math' as math;
 
 import 'model.dart';
+import 'now.dart';
 import 'opacity_model.dart';
 import 'quick_settings.dart';
 import 'time_stringer.dart';
@@ -106,7 +107,7 @@ class NowModel extends Model {
       height: 32.0,
       child: new Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+        children: <Widget>[
           // battery icon
           new Container(
             width: _kImportantInfoMinWidth,
@@ -130,7 +131,7 @@ class NowModel extends Model {
                   width: math.max(0.0, maxWidth - _kImportantInfoMinWidth),
                   child: new Row(
                     mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
+                    children: <Widget>[
                       // spacer
                       new Container(width: _kIconLabelPadding, height: 1.0),
                       // battery text
@@ -210,7 +211,7 @@ class NowModel extends Model {
 
   Widget get importantInfoMinimized => new Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: [
+        children: <Widget>[
           new Padding(
             padding: const EdgeInsets.only(top: 4.0, right: 4.0),
             child: new RepaintBoundary(

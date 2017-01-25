@@ -9,11 +9,17 @@ import 'package:sysui_widgets/ticking_state.dart';
 const RK4SpringDescription _kDefaultSimulationDesc =
     const RK4SpringDescription(tension: 750.0, friction: 50.0);
 
-/// Animates a [Transform]'s translation [dx] and [dy], [scale] and opacity
-/// with a spring simulation.  When first built this widget's opacity will start
-/// with [initOpacity] and will animate to [targetOpacity].  Rebuilds of this
-/// widget will animate from the current opacity value to [targetOpacity]
-/// instead of animating from [initOpacity].
+/// Animates a [Transform]'s translation [dx] and [dy], scale and opacity
+/// with a spring simulation.
+///
+/// When first built this widget's opacity will start with [initOpacity] and
+/// will animate to [targetOpacity].  Rebuilds of this widget will animate from
+/// the current opacity value to [targetOpacity] instead of animating from
+/// [initOpacity].
+///
+/// When first built this widget's scale will start with [initScale] and will
+/// animate to [targetScale].  Rebuilds of this widget will animate from the
+/// current scale value to [targetScale] instead of animating from [initScale].
 class SimulatedTransform extends StatefulWidget {
   final double dx;
   final double dy;

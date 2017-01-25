@@ -57,7 +57,7 @@ class StoryList extends StatelessWidget {
 
     // IMPORTANT:  In order for activation of inactive stories from suggestions
     // to work we must have them in the widget tree.
-    List<Widget> stackChildren = new List.from(
+    List<Widget> stackChildren = new List<Widget>.from(
       storyModel.inactiveStoryClusters.map(
         (StoryCluster storyCluster) => new Positioned(
               width: 0.0,
@@ -225,7 +225,7 @@ class StoryListBlock extends Block {
 }
 
 class StoryListBlockBody extends BlockBody {
-  final GlobalKey<ScrollableState> scrollableKey;
+  final Key scrollableKey;
   final double bottomPadding;
   final double listHeight;
   StoryListBlockBody({

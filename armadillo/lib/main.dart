@@ -23,7 +23,7 @@ import 'suggestion_model.dart';
 /// Set to true to enable the performance overlay.
 const bool _kShowPerformanceOverlay = false;
 
-Future main() async {
+Future<Null> main() async {
   JsonSuggestionModel jsonSuggestionModel = new JsonSuggestionModel();
   JsonStoryGenerator jsonStoryGenerator = new JsonStoryGenerator();
   StoryModel storyModel = new StoryModel(
@@ -45,7 +45,7 @@ Future main() async {
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
 
-  SystemChrome.setEnabledSystemUIOverlays([]);
+  await SystemChrome.setEnabledSystemUIOverlays(<SystemUiOverlay>[]);
   jsonStoryGenerator.load(defaultBundle);
   jsonSuggestionModel.load(defaultBundle);
   constraintsModel.load(defaultBundle);

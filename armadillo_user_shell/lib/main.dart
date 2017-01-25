@@ -20,6 +20,7 @@ import 'package:armadillo/story_model.dart';
 import 'package:armadillo/story_time_randomizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:lib.fidl.dart/bindings.dart';
 import 'package:sysui_widgets/default_bundle.dart';
 
 import 'focus_controller_impl.dart';
@@ -37,7 +38,7 @@ UserShellImpl _userShell;
 /// This is global as we need it to be alive as long as we are.
 ApplicationContext _applicationContext;
 
-Future main() async {
+Future<Null> main() async {
   HitTestModel hitTestModel = new HitTestModel();
   StoryProviderStoryGenerator storyProviderStoryGenerator =
       new StoryProviderStoryGenerator();
@@ -94,7 +95,7 @@ Future main() async {
 
   _applicationContext = new ApplicationContext.fromStartupInfo();
   _applicationContext.outgoingServices.addServiceForName(
-    (request) {
+    (InterfaceRequest<UserShell> request) {
       _userShell.bind(request);
     },
     UserShell.serviceName,
@@ -135,7 +136,7 @@ Widget _buildApp({
         constraintsModel: constraintsModel,
         child: new DefaultAssetBundle(
           bundle: defaultBundle,
-          child: new Stack(children: [
+          child: new Stack(children: <Widget>[
             new ScopedModel<HitTestModel>(
               model: hitTestModel,
               child: armadillo,

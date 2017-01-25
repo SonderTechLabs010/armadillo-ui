@@ -19,8 +19,12 @@ enum SelectionType { launchStory, modifyStory, doNothing, closeSuggestions }
 /// [Suggestion.image].
 enum ImageType { person, other }
 
+class SuggestionId extends ValueKey<dynamic> {
+  SuggestionId(dynamic value) : super(value);
+}
+
 class Suggestion {
-  final Object id;
+  final SuggestionId id;
   final String title;
   final Color themeColor;
   final SelectionType selectionType;
@@ -43,5 +47,5 @@ class Suggestion {
   int get hashCode => id.hashCode;
 
   @override
-  bool operator ==(other) => (other is Suggestion && other.id == id);
+  bool operator ==(dynamic other) => (other is Suggestion && other.id == id);
 }

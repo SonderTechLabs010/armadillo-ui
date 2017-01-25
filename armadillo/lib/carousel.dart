@@ -7,8 +7,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-const _kDuration = const Duration(milliseconds: 200);
-const _kCurve = Curves.ease;
+const Duration _kDuration = const Duration(milliseconds: 200);
+const Curve _kCurve = Curves.ease;
 
 /// A horizontally-scrolling widget centering one of its children.
 ///
@@ -51,7 +51,7 @@ class CarouselState extends ScrollableState<Carousel> {
   ExtentScrollBehavior _scrollBehavior;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     _updateScrollBehavior();
   }
@@ -69,7 +69,7 @@ class CarouselState extends ScrollableState<Carousel> {
       delegate: new CarouselLayoutDelegate(
           config.children, config.itemExtent, _pixelOffset),
       children: new List<Widget>.generate(
-          config.children.length, (index) => _createChildWrapper(index)));
+          config.children.length, (int index) => _createChildWrapper(index)));
 
   /// Generates a wrapper widget for the child at [index].
   Widget _createChildWrapper(int index) {
@@ -81,7 +81,7 @@ class CarouselState extends ScrollableState<Carousel> {
             child: config.children[index]));
   }
 
-  _updateScrollBehavior() {
+  void _updateScrollBehavior() {
     if (config.locked) {
       _scrollBehavior = new LockedUnboundedBehavior(
         platform: defaultTargetPlatform,
@@ -98,7 +98,7 @@ class CarouselState extends ScrollableState<Carousel> {
   }
 
   @override
-  ScrollBehavior<double, double> createScrollBehavior() {
+  ExtentScrollBehavior createScrollBehavior() {
     return _scrollBehavior;
   }
 
@@ -119,21 +119,18 @@ class CarouselState extends ScrollableState<Carousel> {
   }
 
   /// The number of actual pixels scrolled by unit of scroll offset.
-  double get _pixelsPerScrollUnit {
-    return config.itemExtent;
-  }
+  double get _pixelsPerScrollUnit => config.itemExtent;
 
   @override
   double pixelOffsetToScrollOffset(double pixelOffset) {
-    final pixelsPerScrollUnit = _pixelsPerScrollUnit;
+    double pixelsPerScrollUnit = _pixelsPerScrollUnit;
     return super.pixelOffsetToScrollOffset(
         pixelsPerScrollUnit == 0.0 ? 0.0 : pixelOffset / pixelsPerScrollUnit);
   }
 
   @override
-  double scrollOffsetToPixelOffset(double scrollOffset) {
-    return super.scrollOffsetToPixelOffset(scrollOffset * _pixelsPerScrollUnit);
-  }
+  double scrollOffsetToPixelOffset(double scrollOffset) =>
+      super.scrollOffsetToPixelOffset(scrollOffset * _pixelsPerScrollUnit);
 
   /// The scroll offset expressed in pixels.
   double get _pixelOffset => scrollOffsetToPixelOffset(scrollOffset);
@@ -163,30 +160,31 @@ class CarouselState extends ScrollableState<Carousel> {
   }
 
   @override
-  Future<Null> settleScrollOffset() {
-    return scrollTo(snapScrollOffset(scrollOffset),
-            duration: _kDuration, curve: _kCurve)
-        .then(_notifyItemChanged);
-  }
+  Future<Null> settleScrollOffset() => scrollTo(
+        snapScrollOffset(scrollOffset),
+        duration: _kDuration,
+        curve: _kCurve,
+      )
+          .then(_notifyItemChanged);
 
   /// The index of the currently-centered page.
   ///
   /// Not very useful if there's an active scrolling session.
   int get _pageIndex {
-    final size = config.children.length;
+    final int size = config.children.length;
     if (size == 0) {
       return 0;
     }
     return scrollOffset.floor() % size;
   }
 
-  _notifyItemChanged(_) {
+  void _notifyItemChanged(_) {
     if (config.onItemChanged != null) {
       config.onItemChanged(_pageIndex);
     }
   }
 
-  _notifyItemSelected(int index) {
+  void _notifyItemSelected(int index) {
     if (config.onItemSelected != null && index == _pageIndex) {
       config.onItemSelected(index);
     }
@@ -209,10 +207,10 @@ class CarouselLayoutDelegate extends MultiChildLayoutDelegate {
   CarouselLayoutDelegate(this._items, this._itemExtent, this._scrollOffset);
 
   @override
-  performLayout(Size size) {
-    final centerOffset = (size.width - _itemExtent) / 2;
+  void performLayout(Size size) {
+    final double centerOffset = (size.width - _itemExtent) / 2;
     for (int index = 0; index < _items.length; index++) {
-      final id = index;
+      final int id = index;
       layoutChild(
           id, new BoxConstraints.tight(new Size(_itemExtent, size.height)));
       positionChild(id,

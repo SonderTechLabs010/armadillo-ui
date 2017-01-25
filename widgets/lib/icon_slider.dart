@@ -37,7 +37,6 @@ import 'package:meta/meta.dart';
 ///
 /// See also:
 ///
-///  * [CheckBox]
 ///  * [Radio]
 ///  * [Switch]
 ///  * <https://www.google.com/design/spec/components/sliders.html>

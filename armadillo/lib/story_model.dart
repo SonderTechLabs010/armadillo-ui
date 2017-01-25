@@ -87,7 +87,7 @@ class StoryModel extends Model {
     _listHeight = listHeight;
   }
 
-  /// Updates the [Story.lastInteraction] of [story] to be [DateTime.now].
+  /// Updates the [Story.lastInteraction] of [storyCluster] to be [DateTime.now].
   /// This method is to be called whenever a [Story]'s [Story.builder] [Widget]
   /// comes into focus.
   void interactionStarted(StoryCluster storyCluster) {
@@ -163,7 +163,7 @@ class StoryModel extends Model {
     _add(storyCluster: target.copyWith(clusterDraggableId: new GlobalKey()));
   }
 
-  /// Removes [storyCluster] from the list of story clusters.
+  /// Removes [storyClusterId] from the list of story clusters.
   void remove({StoryClusterId storyClusterId}) {
     _storyClusters.removeWhere((StoryCluster s) => (s.id == storyClusterId));
     updateLayouts(_lastLayoutSize);
