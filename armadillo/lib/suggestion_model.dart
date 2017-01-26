@@ -4,11 +4,11 @@
 
 import 'package:flutter/widgets.dart';
 
-import 'config_manager.dart';
+import 'model.dart';
 import 'story_cluster.dart';
 import 'suggestion.dart';
 
-export 'config_manager.dart' show ScopedModel, Model;
+export 'model.dart' show ScopedModel, Model;
 
 /// The base class for suggestion models.
 abstract class SuggestionModel extends Model {

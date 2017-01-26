@@ -20,7 +20,7 @@ import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_id.dart';
 import 'story_full_size_simulated_sized_box.dart';
-import 'story_manager.dart';
+import 'story_model.dart';
 import 'story_positioned.dart';
 
 const double _kStoryBarMinimizedHeight = 4.0;

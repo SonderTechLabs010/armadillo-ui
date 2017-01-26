@@ -4,7 +4,7 @@
 
 import 'package:flutter/widgets.dart';
 
-import 'story_manager.dart';
+import 'story_model.dart';
 
 /// Adds a button to randomize story times.
 class StoryTimeRandomizer extends StatelessWidget {

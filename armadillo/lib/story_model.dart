@@ -7,16 +7,16 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'config_manager.dart';
+import 'model.dart';
 import 'panel.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_id.dart';
 import 'story_generator.dart';
 import 'story_list_layout.dart';
-import 'suggestion_manager.dart';
+import 'suggestion_model.dart';
 
-export 'config_manager.dart' show ScopedModel, Model;
+export 'model.dart' show ScopedModel, Model;
 
 /// A simple story model that gets its stories from [storyGenerator] and
 /// reorders them with user interaction.

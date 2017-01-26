@@ -4,10 +4,10 @@
 
 import 'package:flutter/widgets.dart';
 
-import 'config_manager.dart';
+import 'model.dart';
 import 'story_cluster.dart';
 
-export 'config_manager.dart' show ScopedModel, Model;
+export 'model.dart' show ScopedModel, Model;
 
 /// Tracks which story clusters are currently being dragged.  This is used by
 /// some UI elements to scale ([StoryList]), fade out ([Now]), or slide away

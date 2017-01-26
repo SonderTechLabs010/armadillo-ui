@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:armadillo/size_manager.dart';
+import 'package:armadillo/size_model.dart';
 import 'package:armadillo/story.dart';
 import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_generator.dart';
 import 'package:armadillo/story_list.dart';
 import 'package:armadillo/story_list_layout.dart';
-import 'package:armadillo/story_manager.dart';
+import 'package:armadillo/story_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/delegating_page_route.dart';

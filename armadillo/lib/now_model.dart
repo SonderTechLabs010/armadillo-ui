@@ -7,12 +7,12 @@ import 'package:flutter/widgets.dart';
 
 import 'dart:math' as math;
 
-import 'config_manager.dart';
-import 'opacity_manager.dart';
+import 'model.dart';
+import 'opacity_model.dart';
 import 'quick_settings.dart';
 import 'time_stringer.dart';
 
-export 'config_manager.dart' show ScopedModel, Model;
+export 'model.dart' show ScopedModel, Model;
 
 const String _kUserImage = 'packages/armadillo/res/User.png';
 const String _kBatteryImageWhite =

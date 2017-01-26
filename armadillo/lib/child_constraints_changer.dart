@@ -5,7 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'constraints_manager.dart';
+import 'constraints_model.dart';
 
 /// Bezel constants.  Used to give the illusion of a device.
 const double _kBezelMinimumWidth = 8.0;

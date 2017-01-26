@@ -10,22 +10,22 @@ import 'package:armadillo/armadillo.dart';
 import 'package:armadillo/armadillo_drag_target.dart';
 import 'package:armadillo/child_constraints_changer.dart';
 import 'package:armadillo/conductor.dart';
-import 'package:armadillo/constraints_manager.dart';
-import 'package:armadillo/now_manager.dart';
+import 'package:armadillo/constraints_model.dart';
+import 'package:armadillo/now_model.dart';
 import 'package:armadillo/story_cluster.dart';
-import 'package:armadillo/story_cluster_drag_state_manager.dart';
+import 'package:armadillo/story_cluster_drag_state_model.dart';
 import 'package:armadillo/story_cluster_id.dart';
 import 'package:armadillo/story.dart';
-import 'package:armadillo/story_manager.dart';
+import 'package:armadillo/story_model.dart';
 import 'package:armadillo/story_time_randomizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:sysui_widgets/default_bundle.dart';
 
 import 'focus_controller_impl.dart';
-import 'hit_test_manager.dart';
+import 'hit_test_model.dart';
 import 'story_provider_story_generator.dart';
-import 'suggestion_provider_suggestion_manager.dart';
+import 'suggestion_provider_suggestion_model.dart';
 import 'user_shell_impl.dart';
 
 /// Set to true to enable the performance overlay.

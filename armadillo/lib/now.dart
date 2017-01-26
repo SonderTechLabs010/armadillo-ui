@@ -12,10 +12,10 @@ import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
 import 'fading_spring_simulation.dart';
-import 'now_manager.dart';
-import 'opacity_manager.dart';
+import 'now_model.dart';
+import 'opacity_model.dart';
 import 'simulated_transform.dart';
-import 'story_cluster_drag_state_manager.dart';
+import 'story_cluster_drag_state_model.dart';
 
 typedef void OnQuickSettingsProgressChange(double quickSettingsProgress);
 

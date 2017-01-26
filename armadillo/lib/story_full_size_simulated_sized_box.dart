@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'panel.dart';
 import 'simulated_sized_box.dart';
 import 'simulation_builder.dart';
-import 'size_manager.dart';
+import 'size_model.dart';
 import 'story_cluster.dart';
 
 const double _kStoryBarMaximizedHeight = 48.0;

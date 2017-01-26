@@ -7,7 +7,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import 'config_manager.dart';
+import 'model.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/screen_config.json';
 

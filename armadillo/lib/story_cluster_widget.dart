@@ -18,9 +18,9 @@ import 'story.dart';
 import 'story_carousel.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
-import 'story_cluster_drag_state_manager.dart';
+import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
-import 'story_manager.dart';
+import 'story_model.dart';
 import 'story_panels.dart';
 import 'story_title.dart';
 

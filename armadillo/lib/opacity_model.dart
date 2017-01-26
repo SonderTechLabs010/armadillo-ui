@@ -4,9 +4,9 @@
 
 import 'package:flutter/widgets.dart';
 
-import 'config_manager.dart';
+import 'model.dart';
 
-export 'config_manager.dart' show ScopedModel, Model;
+export 'model.dart' show ScopedModel, Model;
 
 /// Tracks the [Opacity] of widget tree, notifying listeners when it changes.
 /// Using an [OpacityModel] allows the [opacity] it tracks to be passed down

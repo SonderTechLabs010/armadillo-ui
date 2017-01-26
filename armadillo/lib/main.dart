@@ -11,14 +11,14 @@ import 'package:sysui_widgets/default_bundle.dart';
 import 'armadillo.dart';
 import 'child_constraints_changer.dart';
 import 'conductor.dart';
-import 'constraints_manager.dart';
+import 'constraints_model.dart';
 import 'json_story_generator.dart';
-import 'json_suggestion_manager.dart';
-import 'now_manager.dart';
-import 'story_cluster_drag_state_manager.dart';
-import 'story_manager.dart';
+import 'json_suggestion_model.dart';
+import 'now_model.dart';
+import 'story_cluster_drag_state_model.dart';
+import 'story_model.dart';
 import 'story_time_randomizer.dart';
-import 'suggestion_manager.dart';
+import 'suggestion_model.dart';
 
 /// Set to true to enable the performance overlay.
 const bool _kShowPerformanceOverlay = false;

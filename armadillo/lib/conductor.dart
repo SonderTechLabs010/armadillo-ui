@@ -18,16 +18,16 @@ import 'now.dart';
 import 'peeking_overlay.dart';
 import 'scroll_locker.dart';
 import 'selected_suggestion_overlay.dart';
-import 'size_manager.dart';
+import 'size_model.dart';
 import 'splash_suggestion.dart';
 import 'story.dart';
 import 'story_cluster.dart';
-import 'story_cluster_drag_state_manager.dart';
+import 'story_cluster_drag_state_model.dart';
 import 'story_list.dart';
-import 'story_manager.dart';
+import 'story_model.dart';
 import 'suggestion.dart';
 import 'suggestion_list.dart';
-import 'suggestion_manager.dart';
+import 'suggestion_model.dart';
 import 'vertical_shifter.dart';
 
 /// The height of [Now]'s bar when minimized.

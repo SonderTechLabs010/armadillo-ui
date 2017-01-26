@@ -12,15 +12,15 @@ import 'package:armadillo/story.dart';
 import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_cluster_id.dart';
 import 'package:armadillo/story_generator.dart';
-import 'package:armadillo/story_manager.dart';
+import 'package:armadillo/story_model.dart';
 import 'package:armadillo/suggestion.dart';
-import 'package:armadillo/suggestion_manager.dart';
+import 'package:armadillo/suggestion_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lib.fidl.dart/bindings.dart';
 
 import 'focus_controller_impl.dart';
-import 'hit_test_manager.dart';
+import 'hit_test_model.dart';
 
 final Map<maxwell.SuggestionImageType, ImageType> _kImageTypeMap =
     <maxwell.SuggestionImageType, ImageType>{

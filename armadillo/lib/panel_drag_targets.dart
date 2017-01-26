@@ -13,12 +13,12 @@ import 'armadillo_drag_target.dart';
 import 'panel.dart';
 import 'place_holder_story.dart';
 import 'simulated_positioned.dart';
-import 'size_manager.dart';
+import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_id.dart';
-import 'story_manager.dart';
+import 'story_model.dart';
 
 const double _kLineWidth = 4.0;
 const double _kTopEdgeTargetYOffset = 64.0;

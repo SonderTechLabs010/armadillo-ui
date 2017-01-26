@@ -9,11 +9,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'conductor.dart';
-import 'now_manager.dart';
+import 'now_model.dart';
 import 'rounded_corner_decoration.dart';
-import 'story_cluster_drag_state_manager.dart';
-import 'story_manager.dart';
-import 'suggestion_manager.dart';
+import 'story_cluster_drag_state_model.dart';
+import 'story_model.dart';
+import 'suggestion_model.dart';
 
 const _kBackgroundOverlayColor = const Color(0xB0000000);
 const _kBackgroundImage = 'packages/armadillo/res/Background.jpg';

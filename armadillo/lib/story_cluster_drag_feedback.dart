@@ -10,7 +10,7 @@ import 'armadillo_overlay.dart';
 import 'panel.dart';
 import 'simulated_sized_box.dart';
 import 'simulated_transform.dart';
-import 'size_manager.dart';
+import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_widget.dart';

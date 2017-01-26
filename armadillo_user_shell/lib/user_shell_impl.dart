@@ -11,7 +11,7 @@ import 'package:lib.fidl.dart/bindings.dart';
 
 import 'focus_controller_impl.dart';
 import 'story_provider_story_generator.dart';
-import 'suggestion_provider_suggestion_manager.dart';
+import 'suggestion_provider_suggestion_model.dart';
 
 class UserShellImpl extends UserShell {
   final UserShellBinding _binding = new UserShellBinding();

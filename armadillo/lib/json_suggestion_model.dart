@@ -13,7 +13,7 @@ import 'package:keyboard/word_suggestion_service.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'suggestion.dart';
-import 'suggestion_manager.dart';
+import 'suggestion_model.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/stories.json';
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:armadillo/constraints_manager.dart';
+import 'package:armadillo/constraints_model.dart';
 import 'package:flutter/widgets.dart';
 import 'package:test/test.dart';
 

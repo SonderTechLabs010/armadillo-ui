@@ -4,9 +4,9 @@
 
 import 'package:flutter/widgets.dart';
 
-import 'config_manager.dart';
+import 'model.dart';
 
-export 'config_manager.dart' show ScopedModel, Model;
+export 'model.dart' show ScopedModel, Model;
 
 /// Tracks the [Size] of something, notifying listeners when it changes.
 /// Using a [SizeModel] allows the [Size] it tracks to be passed down the

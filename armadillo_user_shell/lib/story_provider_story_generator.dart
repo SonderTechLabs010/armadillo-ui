@@ -15,7 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:lib.fidl.dart/bindings.dart' as bindings;
 
 import 'debug.dart';
-import 'hit_test_manager.dart';
+import 'hit_test_model.dart';
 import 'initial_story_generator.dart';
 import 'story_provider_watcher_impl.dart';
 

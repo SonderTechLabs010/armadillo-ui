@@ -10,14 +10,14 @@ import 'package:flutter/widgets.dart';
 import 'armadillo_overlay.dart';
 import 'nothing.dart';
 import 'simulation_builder.dart';
-import 'size_manager.dart';
+import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_widget.dart';
 import 'story_list_layout.dart';
 import 'story_list_render_block.dart';
 import 'story_list_render_block_parent_data.dart';
-import 'story_manager.dart';
+import 'story_model.dart';
 
 /// In multicolumn mode, the distance the right column will be offset up.
 const double _kRightBump = 64.0;

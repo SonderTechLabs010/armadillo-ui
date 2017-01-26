@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/raw_keyboard_input.dart';
 
 import 'suggestion.dart';
-import 'suggestion_manager.dart';
+import 'suggestion_model.dart';
 import 'suggestion_widget.dart';
 
 const String _kImage = 'packages/armadillo/res/logo_googleg_24dpx4.png';
