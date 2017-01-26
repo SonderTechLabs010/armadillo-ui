@@ -10,6 +10,9 @@ import 'package:flutter/rendering.dart';
 
 import 'armadillo_overlay.dart';
 
+/// The time to wait before triggering a long press.
+const Duration _kLongPressTimeout = const Duration(milliseconds: 300);
+
 /// Much of this code is borrowed from the Flutter framework's inplementation
 /// of [Draggable] and [DragTarget].  What is different about this
 /// implementation is the addition of each piece of data having an associated
@@ -104,7 +107,7 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
   /// recognizing a drag.
   DelayedMultiDragGestureRecognizer createRecognizer(
           GestureMultiDragStartCallback onStart) =>
-      new DelayedMultiDragGestureRecognizer()
+      new DelayedMultiDragGestureRecognizer(delay: _kLongPressTimeout)
         ..onStart = (Point position) {
           Drag result = onStart(position);
           if (result != null) {

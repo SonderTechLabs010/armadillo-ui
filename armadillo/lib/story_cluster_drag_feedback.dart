@@ -114,7 +114,6 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     double width;
     double height;
     double childScale;
-    double opacity;
     if (_displayModeOverride == DisplayMode.tabs) {
       width = sizeModel.size.width *
           (config.storyCluster.stories.length + 1) /
@@ -122,17 +121,14 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       height = sizeModel.size.height *
           (_kStoryBarMaximizedHeight / sizeModel.size.height);
       childScale = 0.7;
-      opacity = 1.0;
     } else if (_storyPanels.isNotEmpty) {
       width = sizeModel.size.width * _widthFactor;
       height = sizeModel.size.height * _heightFactor;
       childScale = 0.7;
-      opacity = 1.0;
     } else {
       width = config.storyCluster.storyLayout.size.width;
       height = config.storyCluster.storyLayout.size.height;
       childScale = 1.0;
-      opacity = 0.7;
     }
     childSizeModel.size =
         _storyPanels.isNotEmpty ? new Size(width, height) : sizeModel.size;
@@ -142,7 +138,6 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     return new SimulatedTransform(
       key: _translationKey,
       targetScale: childScale,
-      targetOpacity: opacity,
       alignment: _alignment,
       child: new SimulatedSizedBox(
         width: _translationKey.currentState == null
