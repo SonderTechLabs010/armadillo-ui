@@ -29,7 +29,7 @@ current_branch=`git rev-parse --abbrev-ref HEAD`
 branches=`git for-each-ref --format='%(refname:short)' refs/heads/`
 
 if [[ "$command" == "branch" ]]; then
-  if [[ "$branches" != "master" ]]; then
+  if [[ "$branches" != "master" && "$branches" != "" ]]; then
     tput setaf 4
     $echo "$project"
     tput sgr0
