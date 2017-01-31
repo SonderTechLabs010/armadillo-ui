@@ -13,7 +13,7 @@ import 'package:sysui_widgets/ticking_state.dart';
 import 'armadillo_drag_target.dart';
 import 'panel.dart';
 import 'place_holder_story.dart';
-import 'simulated_positioned.dart';
+import 'simulated_fractional.dart';
 import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
@@ -46,6 +46,9 @@ const double _kStickyDistance = 32.0;
 
 const RK4SpringDescription _kScaleSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
+
+const RK4SpringDescription _kOpacitySimulationDesc =
+    const RK4SpringDescription(tension: 900.0, friction: 50.0);
 
 typedef void _OnPanelEvent(BuildContext context, StoryCluster storyCluster);
 
@@ -204,6 +207,7 @@ class PanelDragTargets extends StatefulWidget {
 }
 
 class PanelDragTargetsState extends TickingState<PanelDragTargets> {
+  final GlobalKey _childContainerKey = new GlobalKey();
   final Set<LineSegment> _targetLines = new Set<LineSegment>();
 
   /// When a 'closest target' is chosen, the [Point] of the candidate becomes
@@ -217,6 +221,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   final RK4SpringSimulation _scaleSimulation = new RK4SpringSimulation(
     initValue: 1.0,
     desc: _kScaleSimulationDesc,
+  );
+  final RK4SpringSimulation _opacitySimulation = new RK4SpringSimulation(
+    initValue: 0.0,
+    desc: _kOpacitySimulationDesc,
   );
 
   /// When candidates are dragged over this drag target we add
@@ -260,7 +268,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               StoryModel.of(context).getStoryCluster(storyClusterId);
 
           storyCluster.stories.forEach((Story story) {
-            if (story.positionedKey.currentState is SimulatedPositionedState) {
+            if (story.positionedKey.currentState is SimulatedFractionalState) {
               // Get the Story's current global bounds...
               RenderBox storyBox =
                   story.positionedKey.currentContext.findRenderObject();
@@ -271,21 +279,23 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
               // Convert the Story's global bounds into bounds local to the
               // StoryPanels...
-              RenderBox panelsBox = config.storyCluster.panelsKey.currentContext
-                  .findRenderObject();
+              RenderBox panelsBox =
+                  _childContainerKey.currentContext.findRenderObject();
               Point storyInPanelsTopLeft =
                   panelsBox.globalToLocal(storyTopLeft);
               Point storyInPanelsBottomRight =
                   panelsBox.globalToLocal(storyBottomRight);
-
-              // Jump the Story's SimulatedPositioned to its new location to
+              // Jump the Story's SimulatedFractional to its new location to
               // ensure a seamless animation into place.
-              SimulatedPositionedState state = story.positionedKey.currentState;
-              state.bounds = new Rect.fromLTRB(
-                storyInPanelsTopLeft.x,
-                storyInPanelsTopLeft.y,
-                storyInPanelsBottomRight.x,
-                storyInPanelsBottomRight.y,
+              SimulatedFractionalState state = story.positionedKey.currentState;
+              state.jump(
+                new Rect.fromLTRB(
+                  storyInPanelsTopLeft.x,
+                  storyInPanelsTopLeft.y,
+                  storyInPanelsBottomRight.x,
+                  storyInPanelsBottomRight.y,
+                ),
+                panelsBox.size,
               );
             }
           });
@@ -327,6 +337,13 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             startTicking();
           }
 
+          double newTargetOpacity =
+              storyClusterIdCandidates.isEmpty ? 0.0 : 0.5;
+          if (_opacitySimulation.target != newTargetOpacity) {
+            _opacitySimulation.target = newTargetOpacity;
+            startTicking();
+          }
+
           // Scale the child.
           double childScale = _scaleSimulation.value;
 
@@ -341,11 +358,12 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
                     new Matrix4.identity().scaled(childScale, childScale),
                 alignment: FractionalOffset.center,
                 child: new Container(
-                  decoration: storyClusterCandidates.isNotEmpty
-                      ? new BoxDecoration(
-                          backgroundColor: _kTargetBackgroundColor,
-                        )
-                      : null,
+                  key: _childContainerKey,
+                  decoration: new BoxDecoration(
+                    backgroundColor: _kTargetBackgroundColor.withOpacity(
+                      _opacitySimulation.value,
+                    ),
+                  ),
                   child: config.child,
                 ),
               ),
@@ -407,7 +425,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   @override
   bool handleTick(double elapsedSeconds) {
     _scaleSimulation.elapseTime(elapsedSeconds);
-    return !_scaleSimulation.isDone;
+    _opacitySimulation.elapseTime(elapsedSeconds);
+
+    return !(_scaleSimulation.isDone && _opacitySimulation.isDone);
   }
 
   /// If [hasCandidates] is true and we're currently in the timeline, start

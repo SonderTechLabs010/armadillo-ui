@@ -56,14 +56,13 @@ class SimulationBuilderState extends TickingState<SimulationBuilder> {
     }
   }
 
-  void resetTo(double initValue, double target) {
+  void jump(double value) {
     setState(() {
       _simulation = new RK4SpringSimulation(
-        initValue: initValue,
+        initValue: value,
         desc: _kSimulationDesc,
       );
     });
-    this.target = target;
   }
 
   set target(double target) {

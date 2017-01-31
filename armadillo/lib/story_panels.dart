@@ -93,14 +93,13 @@ class StoryPanelsState extends State<StoryPanels> {
           children: config.storyCluster.stories
               .map(
                 (Story story) => new StoryPositioned(
+                      storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
                       focusProgress: config.focusProgress,
                       displayMode: config.storyCluster.displayMode,
                       isFocused:
                           (config.storyCluster.focusedStoryId == story.id),
                       story: story,
                       currentSize: currentSize,
-                      focusSimulationKey:
-                          config.storyCluster.focusSimulationKey,
                       child: _getStory(
                         context,
                         story,
@@ -234,7 +233,7 @@ class StoryPanelsState extends State<StoryPanels> {
           displayMode: config.storyCluster.displayMode,
           panel: story.panel,
           containerKey: story.containerKey,
-          focusSimulationKey: config.storyCluster.focusSimulationKey,
+          storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
           child: config.storyWidgets[story.id],
         ),
       );

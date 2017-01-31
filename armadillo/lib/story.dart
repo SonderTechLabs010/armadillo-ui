@@ -5,6 +5,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'panel.dart';
+import 'simulated_fractional.dart';
 import 'story_bar.dart';
 import 'story_cluster_id.dart';
 import 'story_list.dart';
@@ -32,7 +33,7 @@ class Story {
   final GlobalKey<StoryBarState> storyBarKey;
   final GlobalKey storyBarPaddingKey;
   final GlobalKey clusterDraggableKey;
-  final GlobalKey positionedKey;
+  final GlobalKey<SimulatedFractionalState> positionedKey;
   final GlobalKey containerKey;
   final GlobalKey tabSizerKey;
   final Panel panel;
