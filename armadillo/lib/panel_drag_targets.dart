@@ -28,6 +28,8 @@ const double _kBringToFrontTargetBottomEdgeYOffset = 48.0;
 const double _kStoryBarTargetYOffset = 16.0;
 const double _kStoryTopEdgeTargetYOffset = 112.0;
 const double _kStoryEdgeTargetInset = 48.0;
+const double _kUnfocusedCornerRadius = 4.0;
+const double _kFocusedCornerRadius = 8.0;
 const int _kMaxStoriesPerCluster = 100;
 const double _kAddedStorySpan = 0.01;
 const Color _kEdgeTargetColor = const Color(0xFFFFFF00);
@@ -357,15 +359,27 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
                 transform:
                     new Matrix4.identity().scaled(childScale, childScale),
                 alignment: FractionalOffset.center,
-                child: new Container(
-                  key: _childContainerKey,
-                  decoration: new BoxDecoration(
-                    backgroundColor: _kTargetBackgroundColor.withOpacity(
-                      _opacitySimulation.value,
+                child: new Stack(children: <Widget>[
+                  new Container(
+                    key: _childContainerKey,
+                    decoration: new BoxDecoration(
+                      backgroundColor: _kTargetBackgroundColor.withOpacity(
+                        _opacitySimulation.value,
+                      ),
+                      boxShadow: kElevationToShadow[12],
+                      borderRadius: new BorderRadius.all(
+                        new Radius.circular(
+                          lerpDouble(
+                            _kUnfocusedCornerRadius,
+                            _kFocusedCornerRadius,
+                            config.focusProgress,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  child: config.child,
-                ),
+                  config.child,
+                ]),
               ),
             )
           ];

@@ -26,14 +26,14 @@ abstract class TickingState<T extends StatefulWidget> extends State<T>
 
   @override
   void dispose() {
-    _ticker?.stop();
+    _ticker?.dispose();
     _ticker = null;
     super.dispose();
   }
 
   void _onTick(Duration elapsed) {
     if (!mounted) {
-      _ticker?.stop();
+      _ticker?.dispose();
       _ticker = null;
       return;
     }
@@ -44,7 +44,7 @@ abstract class TickingState<T extends StatefulWidget> extends State<T>
     setState(() {
       bool continueTicking = handleTick(elapsedSeconds);
       if (!continueTicking) {
-        _ticker?.stop();
+        _ticker?.dispose();
         _ticker = null;
       }
     });

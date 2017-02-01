@@ -20,6 +20,8 @@ import 'story_panels.dart';
 
 const double _kStoryBarMinimizedHeight = 4.0;
 const double _kStoryBarMaximizedHeight = 48.0;
+const double _kUnfocusedCornerRadius = 4.0;
+const double _kFocusedCornerRadius = 8.0;
 
 /// Displays a representation of a StoryCluster while being dragged.
 class StoryClusterDragFeedback extends StatefulWidget {
@@ -49,23 +51,12 @@ class StoryClusterDragFeedback extends StatefulWidget {
 }
 
 class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
-  final GlobalKey _translationKey = new GlobalKey();
-  final SizeModel childSizeModel = new SizeModel(Size.zero);
+  final GlobalKey _childKey = new GlobalKey();
   Map<Object, Panel> _storyPanels = <Object, Panel>{};
   double _widthFactor;
   double _heightFactor;
   DisplayMode _displayModeOverride;
   int _targetClusterStoryCount;
-  FractionalOffset _alignment;
-
-  @override
-  void initState() {
-    super.initState();
-    _alignment = new FractionalOffset(
-      config.localDragStartPoint.x / config.initialBounds.width,
-      config.localDragStartPoint.y / config.initialBounds.height,
-    );
-  }
 
   set storyPanels(Map<Object, Panel> storyPanels) {
     setState(() {
@@ -134,14 +125,8 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
           (config.storyCluster.stories.length + 1) /
           (_targetClusterStoryCount + 1);
       height = (config.focused
-              ? sizeModel.size.height
-              : config.storyCluster.storyLayout.size.height) *
-          ((config.focused
-                  ? _kStoryBarMaximizedHeight
-                  : _kStoryBarMinimizedHeight) /
-              (config.focused
-                  ? sizeModel.size.height
-                  : config.storyCluster.storyLayout.size.height));
+          ? _kStoryBarMaximizedHeight
+          : _kStoryBarMinimizedHeight);
       childScale = lerpDouble(inlinePreviewScale, 0.7, focusProgress);
     } else if (_storyPanels.isNotEmpty) {
       width = sizeModel.size.width * _widthFactor;
@@ -152,42 +137,57 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       height = config.storyCluster.storyLayout.size.height;
       childScale = 1.0;
     }
-    childSizeModel.size =
-        _storyPanels.isNotEmpty ? new Size(width, height) : sizeModel.size;
-    return new SimulatedTransform(
-      key: _translationKey,
-      targetScale: childScale,
-      alignment: config.focused ? _alignment : FractionalOffset.topLeft,
-      child: new SimulatedSizedBox(
-        width: _translationKey.currentState == null
-            ? config.initialBounds.width
-            : width,
-        height: (_translationKey.currentState == null
-                ? config.initialBounds.height
-                : height) +
-            InlineStoryTitle.getHeight(focusProgress),
-        child: new ScopedModel<SizeModel>(
-          model: childSizeModel,
-          child: new Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              new Expanded(
-                child: new StoryPanels(
+    return new SimulatedSizedBox(
+      key: _childKey,
+      width: (_childKey.currentState == null
+              ? config.initialBounds.width
+              : width) *
+          childScale,
+      height: (_childKey.currentState == null
+                  ? config.initialBounds.height
+                  : height) *
+              childScale +
+          InlineStoryTitle.getHeight(focusProgress),
+      child: new Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          new Expanded(
+            child: new Stack(
+              children: <Widget>[
+                new SimulatedTransform(
+                  initOpacity: 0.0,
+                  targetOpacity: 1.0,
+                  child: new Container(
+                    decoration: new BoxDecoration(
+                      boxShadow: kElevationToShadow[12],
+                      borderRadius: new BorderRadius.all(
+                        new Radius.circular(
+                          lerpDouble(
+                            _kUnfocusedCornerRadius,
+                            _kFocusedCornerRadius,
+                            focusProgress,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                new StoryPanels(
                   key: config.storyCluster.panelsKey,
                   storyCluster: config.storyCluster,
                   focusProgress: 0.0,
                   overlayKey: config.overlayKey,
                   storyWidgets: config.storyWidgets,
                 ),
-              ),
-              new InlineStoryTitle(
-                focusProgress: focusProgress,
-                storyCluster: config.storyCluster,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          new InlineStoryTitle(
+            focusProgress: focusProgress,
+            storyCluster: config.storyCluster,
+          ),
+        ],
       ),
     );
   }
