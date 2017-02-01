@@ -102,6 +102,7 @@ class Conductor extends StatelessWidget {
   final OnOverlayChanged onQuickSettingsOverlayChanged;
   final OnOverlayChanged onSuggestionsOverlayChanged;
   final _PeekManager _peekManager;
+  bool _ignoreNextScrollOffsetChange = false;
 
   Conductor({
     this.useSoftKeyboard: true,
@@ -244,6 +245,10 @@ class Conductor extends StatelessWidget {
             quickSettingsHeightBump: _kQuickSettingsHeightBump,
             bottomPadding: _kMaximizedNowHeight,
             onScroll: (double scrollOffset) {
+              if (_ignoreNextScrollOffsetChange) {
+                _ignoreNextScrollOffsetChange = false;
+                return;
+              }
               _nowKey.currentState.scrollOffset = scrollOffset;
 
               // Peak suggestion overlay more when overscrolling.
@@ -422,6 +427,24 @@ class Conductor extends StatelessWidget {
     // Tell the [StoryModel] the story is now in focus.  This will move the
     // [Story] to the front of the [StoryList].
     storyModel.interactionStarted(storyCluster);
+
+    // We need to set the scroll offset to 0.0 to ensure the story
+    // bars don't become untouchable when fully focused:
+    // If we're at a scroll offset other than zero, the StoryListRenderBlock
+    // might not be as big as it would need to be to fully cover the screen and
+    // thus would have areas where its painting but not receiving hit testing.
+    // Right now the StoryListRenderBlock ensures that its at least the size of
+    // the screen when we're focused but doesn't take into account the scroll
+    // offset.  It seems weird to size the StoryListRenderBlock based on the
+    // scroll offset and it also seems weird to scroll to offset 0.0 from some
+    // arbitrary scroll offset when we defocus so this solves both issues with
+    // one stone.
+    //
+    // If we don't ignore the onScroll resulting from setting the scroll offset
+    // to 0.0 we will inadvertently maximize now and peek the suggestion
+    // overlay.
+    _ignoreNextScrollOffsetChange = true;
+    _scrollableKey.currentState.scrollTo(0.0);
 
     _scrollLockerKey.currentState.lock();
     _edgeScrollDragTargetKey.currentState.disable();

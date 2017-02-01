@@ -128,7 +128,10 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
   }
 
   void _frameCallback(Duration timeStamp) {
-    if (_scrollSimulation.target == 0 && _scrollSimulation.isDone) {
+    // Cancel callbacks if we've disabled the drag targets or we've completed
+    // the simulation.
+    if (!_enabled ||
+        (_scrollSimulation.target == 0.0 && _scrollSimulation.isDone)) {
       return;
     }
     if (_lastTimeStamp != null) {
