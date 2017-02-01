@@ -13,8 +13,11 @@ class RK4SpringDescription {
   final double tension;
   final double friction;
   final double startingVelocity;
-  const RK4SpringDescription(
-      {this.tension: 300.0, this.friction: 25.0, this.startingVelocity: 0.0});
+  const RK4SpringDescription({
+    this.tension: 300.0,
+    this.friction: 25.0,
+    this.startingVelocity: 0.0,
+  });
 }
 
 /// Transitions values given to it via a fourth order Runge-Kutta spring
@@ -29,6 +32,11 @@ class RK4SpringSimulation {
   /// The current velocity of the spring.
   double _velocity;
 
+  /// The current acceleration multiplier.  This slowly grows as the simulation
+  /// progresses.  This is used to make the spring more gentle by slowing its
+  /// initial progress.
+  double _accelerationMultipler;
+
   bool _isDone;
 
   /// How far along the spring the current value is, 0 being start and 1 being
@@ -36,11 +44,14 @@ class RK4SpringSimulation {
   /// below 1 etc, as it 'springs'.
   double _curT = 0.0;
 
-  RK4SpringSimulation(
-      {double initValue: 0.0, this.desc: const RK4SpringDescription()})
+  RK4SpringSimulation({
+    double initValue: 0.0,
+    this.desc: const RK4SpringDescription(),
+  })
       : _startValue = initValue,
         _targetValue = initValue,
         _velocity = 0.0,
+        _accelerationMultipler = 0.0,
         _isDone = true;
 
   /// Sets a new [target] value for the simulation.
@@ -57,6 +68,7 @@ class RK4SpringSimulation {
       if (_startValue != _targetValue) {
         _curT = 0.0;
         _isDone = false;
+        _accelerationMultipler = 0.0;
       }
     }
   }
@@ -80,10 +92,15 @@ class RK4SpringSimulation {
     while (secondsRemaining > 0.0) {
       double stepSize =
           secondsRemaining > _kMaxStepSize ? _kMaxStepSize : secondsRemaining;
+      _accelerationMultipler = math.min(
+        1.0,
+        _accelerationMultipler + stepSize * 6.0,
+      );
       if (_evaluateRK(stepSize)) {
         _curT = 1.0;
         _velocity = 0.0;
         _isDone = true;
+        _accelerationMultipler = 0.0;
         break;
       }
       secondsRemaining -= _kMaxStepSize;
@@ -134,5 +151,5 @@ class RK4SpringSimulation {
   }
 
   double _accelerateX(double x, {double vel}) =>
-      -desc.tension * x - desc.friction * vel;
+      (-desc.tension * x - desc.friction * vel) * _accelerationMultipler;
 }
