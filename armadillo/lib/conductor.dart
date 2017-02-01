@@ -249,6 +249,7 @@ class Conductor extends StatelessWidget {
                 _ignoreNextScrollOffsetChange = false;
                 return;
               }
+              _edgeScrollDragTargetKey.currentState.onScroll();
               _nowKey.currentState.scrollOffset = scrollOffset;
 
               // Peak suggestion overlay more when overscrolling.

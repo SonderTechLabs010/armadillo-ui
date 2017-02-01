@@ -9,6 +9,7 @@ import 'package:sysui_widgets/ticking_state.dart';
 
 import 'armadillo_drag_target.dart';
 import 'nothing.dart';
+import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
 
 const double _kDragTargetHeight = 100.0;
@@ -64,63 +65,90 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
     }
   }
 
+  void onScroll() {
+    setState(() {});
+  }
+
   @override
-  Widget build(BuildContext context) => !_enabled
-      ? Nothing.widget
-      : new Stack(
-          children: <Widget>[
-            new Positioned(
-              top: 0.0,
-              left: 0.0,
-              right: 0.0,
-              height: _kDragTargetHeight,
-              child: _buildDragTarget(
-                onBuild: (bool hasDraggableAbove) {
-                  if (_topHadDraggableAbove &&
-                      !hasDraggableAbove &&
-                      !_bottomHadDraggableAbove) {
-                    // Stop the simulation.
-                    _scrollSimulation.target = 0.0;
-                    startTicking();
-                  } else if (!_bottomHadDraggableAbove &&
-                      !_topHadDraggableAbove &&
-                      hasDraggableAbove) {
-                    // Start a simulation toward max
-                    _scrollSimulation.target = _kTargetScrollSpeed;
-                    startTicking();
-                    _scheduleFrameCallback();
-                  }
-                  _topHadDraggableAbove = hasDraggableAbove;
-                },
-              ),
-            ),
-            new Positioned(
-              bottom: 0.0,
-              left: 0.0,
-              right: 0.0,
-              height: _kDragTargetHeight,
-              child: _buildDragTarget(
-                onBuild: (bool hasDraggableAbove) {
-                  if (_bottomHadDraggableAbove &&
-                      !hasDraggableAbove &&
-                      !_topHadDraggableAbove) {
-                    // Stop the simulation.
-                    _scrollSimulation.target = 0.0;
-                    startTicking();
-                  } else if (!_bottomHadDraggableAbove &&
-                      !_topHadDraggableAbove &&
-                      hasDraggableAbove) {
-                    // Start a simulation toward min
-                    _scrollSimulation.target = -_kTargetScrollSpeed;
-                    startTicking();
-                    _scheduleFrameCallback();
-                  }
-                  _bottomHadDraggableAbove = hasDraggableAbove;
-                },
-              ),
-            ),
-          ],
-        );
+  Widget build(BuildContext context) {
+    bool clusterBeingDragged = StoryClusterDragStateModel
+        .of(context, rebuildOnChange: true)
+        .areStoryClustersDragging;
+    bool scrolledToTop = config.scrollableKey.currentState.scrollOffset ==
+        config.scrollableKey.currentState.scrollBehavior.maxScrollOffset;
+    bool scrolledToBottom = config.scrollableKey.currentState.scrollOffset ==
+        config.scrollableKey.currentState.scrollBehavior.minScrollOffset;
+    if (!clusterBeingDragged) {
+      _topHadDraggableAbove = false;
+      _bottomHadDraggableAbove = false;
+    }
+    if (scrolledToTop) {
+      _topHadDraggableAbove = false;
+    }
+    if (scrolledToBottom) {
+      _bottomHadDraggableAbove = false;
+    }
+    return !_enabled || !clusterBeingDragged
+        ? Nothing.widget
+        : new Stack(
+            children: <Widget>[
+              scrolledToTop
+                  ? Nothing.widget
+                  : new Positioned(
+                      top: 0.0,
+                      left: 0.0,
+                      right: 0.0,
+                      height: _kDragTargetHeight,
+                      child: _buildDragTarget(
+                        onBuild: (bool hasDraggableAbove) {
+                          if (_topHadDraggableAbove &&
+                              !hasDraggableAbove &&
+                              !_bottomHadDraggableAbove) {
+                            // Stop the simulation.
+                            _scrollSimulation.target = 0.0;
+                            startTicking();
+                          } else if (!_bottomHadDraggableAbove &&
+                              !_topHadDraggableAbove &&
+                              hasDraggableAbove) {
+                            // Start a simulation toward max
+                            _scrollSimulation.target = _kTargetScrollSpeed;
+                            startTicking();
+                            _scheduleFrameCallback();
+                          }
+                          _topHadDraggableAbove = hasDraggableAbove;
+                        },
+                      ),
+                    ),
+              scrolledToBottom
+                  ? Nothing.widget
+                  : new Positioned(
+                      bottom: 0.0,
+                      left: 0.0,
+                      right: 0.0,
+                      height: _kDragTargetHeight,
+                      child: _buildDragTarget(
+                        onBuild: (bool hasDraggableAbove) {
+                          if (_bottomHadDraggableAbove &&
+                              !hasDraggableAbove &&
+                              !_topHadDraggableAbove) {
+                            // Stop the simulation.
+                            _scrollSimulation.target = 0.0;
+                            startTicking();
+                          } else if (!_bottomHadDraggableAbove &&
+                              !_topHadDraggableAbove &&
+                              hasDraggableAbove) {
+                            // Start a simulation toward min
+                            _scrollSimulation.target = -_kTargetScrollSpeed;
+                            startTicking();
+                            _scheduleFrameCallback();
+                          }
+                          _bottomHadDraggableAbove = hasDraggableAbove;
+                        },
+                      ),
+                    ),
+            ],
+          );
+  }
 
   void _scheduleFrameCallback() {
     _lastTimeStamp = null;
