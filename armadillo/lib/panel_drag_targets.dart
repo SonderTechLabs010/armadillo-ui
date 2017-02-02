@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
@@ -11,6 +10,7 @@ import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
 import 'armadillo_drag_target.dart';
+import 'line_segment.dart';
 import 'panel.dart';
 import 'place_holder_story.dart';
 import 'simulated_fractional.dart';
@@ -21,7 +21,6 @@ import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_id.dart';
 import 'story_model.dart';
 
-const double _kLineWidth = 4.0;
 const double _kTopEdgeTargetYOffset = 64.0;
 const double _kDiscardTargetTopEdgeYOffset = -48.0;
 const double _kBringToFrontTargetBottomEdgeYOffset = 48.0;
@@ -51,132 +50,6 @@ const RK4SpringDescription _kScaleSimulationDesc =
 
 const RK4SpringDescription _kOpacitySimulationDesc =
     const RK4SpringDescription(tension: 900.0, friction: 50.0);
-
-typedef void _OnPanelEvent(BuildContext context, StoryCluster storyCluster);
-
-/// Details about a target used by [PanelDragTargets].
-///
-/// [LineSegment] specifies a line from [a] to [b].
-/// When turned into a widget the [LineSegment] will have the color [color].
-/// When the [LineSegment] is being targeted by a draggable [onHover] will be
-/// called.
-/// When the [LineSegment] is dropped upon with a draggable [onDrop] will be
-/// called.
-/// This [LineSegment] can only be targeted by [StoryCluster]s with a story
-/// count of less than or equal to [maxStoriesCanAccept].
-class LineSegment {
-  /// [a] always aligns with [b] in either vertically or horizontally.
-  /// [a] is always 'less than' [b] in x or y direction.
-  final Point a;
-  final Point b;
-  final Color color;
-  final _OnPanelEvent onHover;
-  final _OnPanelEvent onDrop;
-  final int maxStoriesCanAccept;
-  final String name;
-  final bool initiallyTargetable;
-
-  LineSegment(
-    Point a,
-    Point b, {
-    this.color: const Color(0xFFFFFFFF),
-    this.onHover,
-    this.onDrop,
-    this.maxStoriesCanAccept: 1,
-    this.name,
-    this.initiallyTargetable: true,
-  })
-      : this.a = (a.x < b.x || a.y < b.y) ? a : b,
-        this.b = (a.x < b.x || a.y < b.y) ? b : a {
-    // Ensure the line is either vertical or horizontal.
-    assert(a.x == b.x || a.y == b.y);
-  }
-
-  factory LineSegment.vertical({
-    double x,
-    double top,
-    double bottom,
-    Color color,
-    _OnPanelEvent onHover,
-    _OnPanelEvent onDrop,
-    int maxStoriesCanAccept,
-    String name,
-    bool initiallyTargetable: true,
-  }) =>
-      new LineSegment(
-        new Point(x, top),
-        new Point(x, bottom),
-        color: color,
-        onHover: onHover,
-        onDrop: onDrop,
-        maxStoriesCanAccept: maxStoriesCanAccept,
-        name: name,
-        initiallyTargetable: initiallyTargetable,
-      );
-
-  factory LineSegment.horizontal({
-    double y,
-    double left,
-    double right,
-    Color color,
-    _OnPanelEvent onHover,
-    _OnPanelEvent onDrop,
-    int maxStoriesCanAccept,
-    String name,
-    bool initiallyTargetable: true,
-  }) =>
-      new LineSegment(
-        new Point(left, y),
-        new Point(right, y),
-        color: color,
-        onHover: onHover,
-        onDrop: onDrop,
-        maxStoriesCanAccept: maxStoriesCanAccept,
-        name: name,
-        initiallyTargetable: initiallyTargetable,
-      );
-
-  bool get isHorizontal => a.y == b.y;
-  bool get isVertical => !isHorizontal;
-  bool canAccept(StoryCluster storyCluster) =>
-      storyCluster.stories.length <= maxStoriesCanAccept;
-
-  double distanceFrom(Point p) {
-    if (isHorizontal) {
-      if (p.x < a.x) {
-        return math.sqrt(math.pow(p.x - a.x, 2) + math.pow(p.y - a.y, 2));
-      } else if (p.x > b.x) {
-        return math.sqrt(math.pow(p.x - b.x, 2) + math.pow(p.y - b.y, 2));
-      } else {
-        return (p.y - a.y).abs();
-      }
-    } else {
-      if (p.y < a.y) {
-        return math.sqrt(math.pow(p.x - a.x, 2) + math.pow(p.y - a.y, 2));
-      } else if (p.y > b.y) {
-        return math.sqrt(math.pow(p.x - b.x, 2) + math.pow(p.y - b.y, 2));
-      } else {
-        return (p.x - a.x).abs();
-      }
-    }
-  }
-
-  Positioned buildStackChild({bool highlighted: false}) => new Positioned(
-        left: a.x - _kLineWidth / 2.0,
-        top: a.y - _kLineWidth / 2.0,
-        width: isHorizontal ? b.x - a.x + _kLineWidth : _kLineWidth,
-        height: isVertical ? b.y - a.y + _kLineWidth : _kLineWidth,
-        child: new Container(
-          decoration: new BoxDecoration(
-            backgroundColor: color.withOpacity(highlighted ? 1.0 : 0.3),
-          ),
-        ),
-      );
-
-  @override
-  String toString() =>
-      'LineSegment(a: $a, b: $b, color: $color, maxStoriesCanAccept: $maxStoriesCanAccept)';
-}
 
 /// Wraps its [child] in an [ArmadilloDragTarget] which tracks any
 /// [ArmadilloLongPressDraggable]'s above it such that they can be dropped on
