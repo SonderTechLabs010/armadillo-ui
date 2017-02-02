@@ -8,11 +8,20 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+import 'story_cluster_widget.dart' show InlineStoryTitle;
 import 'story_list_layout.dart';
 import 'story_list_render_block_parent_data.dart';
 
-const double _kStoryInlineTitleHeight = 20.0;
+/// Set to true to slide the unfocused children of [StoryListRenderBlock] as the
+/// focused child grows.
 const bool _kSlideUnfocusedAway = true;
+
+/// The distance in the Y direction to slide the unfocused children of
+/// [StoryListRenderBlock] as the focused child grows.
+const double _kSlideUnfocusedAwayOffsetY = -200.0;
+
+/// The unfocused children of [StoryListRenderBlock] should be fully transparent
+/// when the focused child's focus progress reaches this value and beyond.
 const double _kFocusProgressWhenUnfocusedFullyTransparent = 0.7;
 
 /// Overrides [RenderBlock]'s layout, paint, and hit-test behaviour to allow
@@ -177,11 +186,7 @@ class StoryListRenderBlock extends RenderBlock {
         // Layout the child.
         double childHeight = lerpDouble(
           scaledLayoutHeight +
-              lerpDouble(
-                _kStoryInlineTitleHeight,
-                0.0,
-                childParentData.focusProgress,
-              ),
+              InlineStoryTitle.getHeight(childParentData.focusProgress),
           parentSize.height,
           childParentData.focusProgress,
         );
@@ -246,7 +251,7 @@ class StoryListRenderBlock extends RenderBlock {
         final StoryListRenderBlockParentData childParentData = child.parentData;
         if (childParentData.focusProgress == 0.0) {
           childParentData.offset = childParentData.offset +
-              new Offset(0.0, -parentSize.height * maxFocusProgress);
+              new Offset(0.0, _kSlideUnfocusedAwayOffsetY * maxFocusProgress);
         }
         child = childParentData.nextSibling;
       }
