@@ -18,6 +18,7 @@ import 'story.dart';
 import 'story_bar.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
+import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
 import 'story_full_size_simulated_sized_box.dart';
 import 'story_model.dart';
@@ -147,6 +148,14 @@ class StoryPanelsState extends State<StoryPanels> {
                     from: config.storyCluster,
                   );
               story.storyBarKey.currentState?.minimize();
+              StoryClusterDragStateModel.of(context).addDragging(
+                    story.clusterId,
+                  );
+            },
+            onDragEnded: () {
+              StoryClusterDragStateModel.of(context).removeDragging(
+                    story.clusterId,
+                  );
             },
             childWhenDragging: Nothing.widget,
             feedbackBuilder: (Point localDragStartPoint) {

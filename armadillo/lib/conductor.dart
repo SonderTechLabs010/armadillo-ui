@@ -532,7 +532,7 @@ class _PeekManager {
   final GlobalKey<PeekingOverlayState> peekingOverlayKey;
   final StoryClusterDragStateModel storyClusterDragStateModel;
   bool _nowMinimized = false;
-  bool _areStoryClustersDragging = false;
+  bool _isDragging = false;
 
   _PeekManager({this.peekingOverlayKey, this.storyClusterDragStateModel}) {
     storyClusterDragStateModel.addListener(onStoryClusterDragStateChanged);
@@ -546,16 +546,13 @@ class _PeekManager {
   }
 
   void onStoryClusterDragStateChanged() {
-    if (_areStoryClustersDragging !=
-        storyClusterDragStateModel.areStoryClustersDragging) {
-      _areStoryClustersDragging =
-          storyClusterDragStateModel.areStoryClustersDragging;
+    if (_isDragging != storyClusterDragStateModel.isDragging) {
+      _isDragging = storyClusterDragStateModel.isDragging;
       _updatePeek();
     }
   }
 
   void _updatePeek() {
-    peekingOverlayKey.currentState.peek =
-        (!_nowMinimized && !_areStoryClustersDragging);
+    peekingOverlayKey.currentState.peek = (!_nowMinimized && !_isDragging);
   }
 }

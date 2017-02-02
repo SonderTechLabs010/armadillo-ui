@@ -107,14 +107,14 @@ class StoryClusterWidget extends StatelessWidget {
                 boxBottomRight.x,
                 boxBottomRight.y,
               );
-              StoryClusterDragStateModel
-                  .of(context)
-                  .addDraggingStoryCluster(storyCluster);
+              StoryClusterDragStateModel.of(context).addDragging(
+                    storyCluster.id,
+                  );
             },
             onDragEnded: () {
-              StoryClusterDragStateModel
-                  .of(context)
-                  .removeDraggingStoryCluster(storyCluster);
+              StoryClusterDragStateModel.of(context).removeDragging(
+                    storyCluster.id,
+                  );
             },
             feedbackBuilder: (Point localDragStartPoint) =>
                 new StoryClusterDragFeedback(
@@ -216,7 +216,7 @@ class InlineStoryTitle extends StatelessWidget {
         initOpacity: 1.0,
         targetOpacity: StoryClusterDragStateModel
                 .of(context, rebuildOnChange: true)
-                .areStoryClustersDragging
+                .isDragging
             ? 0.3
             : 1.0,
         child: new Container(

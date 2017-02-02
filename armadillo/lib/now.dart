@@ -182,7 +182,7 @@ class NowState extends TickingState<Now> {
   Widget build(BuildContext context) => new SimulatedTransform(
         targetOpacity: StoryClusterDragStateModel
                 .of(context, rebuildOnChange: true)
-                .areStoryClustersDragging
+                .isDragging
             ? 0.0
             : 1.0,
         child: _buildNow(context),

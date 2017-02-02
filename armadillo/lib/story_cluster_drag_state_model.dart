@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'now.dart';
 import 'model.dart';
 import 'peeking_overlay.dart';
-import 'story_cluster.dart';
+import 'story_cluster_id.dart';
 import 'story_list.dart';
 
 export 'model.dart' show ScopedModel, Model;
@@ -23,17 +23,17 @@ class StoryClusterDragStateModel extends Model {
       new ModelFinder<StoryClusterDragStateModel>()
           .of(context, rebuildOnChange: rebuildOnChange);
 
-  final Set<StoryCluster> _draggingStoryClusters = new Set<StoryCluster>();
+  final Set<StoryClusterId> _draggingStoryClusters = new Set<StoryClusterId>();
 
-  bool get areStoryClustersDragging => _draggingStoryClusters.isNotEmpty;
+  bool get isDragging => _draggingStoryClusters.isNotEmpty;
 
-  void addDraggingStoryCluster(StoryCluster storyCluster) {
-    _draggingStoryClusters.add(storyCluster);
+  void addDragging(StoryClusterId storyClusterId) {
+    _draggingStoryClusters.add(storyClusterId);
     notifyListeners();
   }
 
-  void removeDraggingStoryCluster(StoryCluster storyCluster) {
-    _draggingStoryClusters.remove(storyCluster);
+  void removeDragging(StoryClusterId storyClusterId) {
+    _draggingStoryClusters.remove(storyClusterId);
     notifyListeners();
   }
 }

@@ -136,7 +136,7 @@ class StoryList extends StatelessWidget {
         initValue: 1.0,
         targetValue: StoryClusterDragStateModel
                 .of(context, rebuildOnChange: true)
-                .areStoryClustersDragging
+                .isDragging
             ? 0.9
             : 1.0,
         builder: (BuildContext context, double liftScaleProgress) =>
