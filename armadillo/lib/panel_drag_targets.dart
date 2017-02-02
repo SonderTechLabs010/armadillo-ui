@@ -20,6 +20,7 @@ import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_id.dart';
 import 'story_model.dart';
+import 'target_line_overlay.dart';
 
 const double _kTopEdgeTargetYOffset = 64.0;
 const double _kDiscardTargetTopEdgeYOffset = -48.0;
@@ -82,7 +83,6 @@ class PanelDragTargets extends StatefulWidget {
 }
 
 class PanelDragTargetsState extends TickingState<PanelDragTargets> {
-  final GlobalKey _childContainerKey = new GlobalKey();
   final Set<LineSegment> _targetLines = new Set<LineSegment>();
 
   /// When a 'closest target' is chosen, the [Point] of the candidate becomes
@@ -138,192 +138,160 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   @override
   Widget build(BuildContext context) => new ArmadilloDragTarget<StoryClusterId>(
         onWillAccept: (_, __) => true,
-        onAccept: (StoryClusterId storyClusterId, _) {
-          StoryCluster storyCluster =
-              StoryModel.of(context).getStoryCluster(storyClusterId);
-
-          storyCluster.stories.forEach((Story story) {
-            if (story.positionedKey.currentState is SimulatedFractionalState) {
-              // Get the Story's current global bounds...
-              RenderBox storyBox =
-                  story.positionedKey.currentContext.findRenderObject();
-              Point storyTopLeft = storyBox.localToGlobal(Point.origin);
-              Point storyBottomRight = storyBox.localToGlobal(
-                new Point(storyBox.size.width, storyBox.size.height),
-              );
-
-              // Convert the Story's global bounds into bounds local to the
-              // StoryPanels...
-              RenderBox panelsBox =
-                  _childContainerKey.currentContext.findRenderObject();
-              Point storyInPanelsTopLeft =
-                  panelsBox.globalToLocal(storyTopLeft);
-              Point storyInPanelsBottomRight =
-                  panelsBox.globalToLocal(storyBottomRight);
-              // Jump the Story's SimulatedFractional to its new location to
-              // ensure a seamless animation into place.
-              SimulatedFractionalState state = story.positionedKey.currentState;
-              state.jump(
-                new Rect.fromLTRB(
-                  storyInPanelsTopLeft.x,
-                  storyInPanelsTopLeft.y,
-                  storyInPanelsBottomRight.x,
-                  storyInPanelsBottomRight.y,
-                ),
-                panelsBox.size,
-              );
-            }
-          });
-
-          if (config.focusProgress == 0.0) {
-            config.onGainFocus?.call();
-          }
-
-          _closestTargets[storyCluster]?.onDrop?.call(context, storyCluster);
-        },
-        builder: (
-          BuildContext context,
-          Map<StoryClusterId, Point> storyClusterIdCandidates,
-          Map<dynamic, Point> rejectedData,
-        ) {
-          _updateInlinePreviewScalingSimulation(
-            storyClusterIdCandidates.isNotEmpty,
-          );
-          Map<StoryCluster, Point> storyClusterCandidates =
-              <StoryCluster, Point>{};
-          storyClusterIdCandidates.keys
-              .forEach((StoryClusterId storyClusterId) {
-            Point storyClusterPoint = storyClusterIdCandidates[storyClusterId];
-            StoryCluster storyCluster =
-                StoryModel.of(context).getStoryCluster(storyClusterId);
-            storyClusterCandidates[storyCluster] = storyClusterPoint;
-          });
-
-          _updateClosestTargets(storyClusterCandidates);
-
-          // Scale child to config.scale if we aren't in the timeline
-          // and we have a candidate being dragged over us.
-          double newScale =
-              storyClusterCandidates.isEmpty || config.focusProgress == 0.0
-                  ? 1.0
-                  : config.scale;
-          if (_scaleSimulation.target != newScale) {
-            _scaleSimulation.target = newScale;
-            startTicking();
-          }
-
-          double newTargetOpacity =
-              storyClusterIdCandidates.isEmpty ? 0.0 : 0.5;
-          if (_opacitySimulation.target != newTargetOpacity) {
-            _opacitySimulation.target = newTargetOpacity;
-            startTicking();
-          }
-
-          // Scale the child.
-          double childScale = _scaleSimulation.value;
-
-          List<Widget> stackChildren = <Widget>[
-            new Positioned(
-              top: 0.0,
-              left: 0.0,
-              right: 0.0,
-              bottom: 0.0,
-              child: new Transform(
-                transform:
-                    new Matrix4.identity().scaled(childScale, childScale),
-                alignment: FractionalOffset.center,
-                child: new Stack(children: <Widget>[
-                  new Container(
-                    key: _childContainerKey,
-                    decoration: new BoxDecoration(
-                      backgroundColor: _kTargetBackgroundColor.withOpacity(
-                        _opacitySimulation.value,
-                      ),
-                      boxShadow: kElevationToShadow[12],
-                      borderRadius: new BorderRadius.all(
-                        new Radius.circular(
-                          lerpDouble(
-                            _kUnfocusedCornerRadius,
-                            _kFocusedCornerRadius,
-                            config.focusProgress,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  config.child,
-                ]),
-              ),
-            )
-          ];
-
-          // When we have a candidate and we're fully focused, show the target
-          // lines.
-          if (_kDrawTargetLines && storyClusterCandidates.isNotEmpty) {
-            // Add all the lines.
-            stackChildren.addAll(
-              _targetLines
-                  .where(
-                    (LineSegment line) => !storyClusterCandidates.keys.every(
-                          (StoryCluster key) => !line.canAccept(key),
-                        ),
-                  )
-                  .map(
-                    (LineSegment line) => line.buildStackChild(),
-                  ),
-            );
-            // Add candidate points
-            stackChildren.addAll(
-              storyClusterCandidates.values.map(
-                (Point point) => new Positioned(
-                      left: point.x - 5.0,
-                      top: point.y - 5.0,
-                      width: 10.0,
-                      height: 10.0,
-                      child: new Container(
-                        decoration: new BoxDecoration(
-                          backgroundColor: new Color(0xFFFFFF00),
-                        ),
-                      ),
-                    ),
-              ),
-            );
-            // Add candidate lockpoints
-            stackChildren.addAll(
-              _closestTargetLockPoints.values.map(
-                (Point point) => new Positioned(
-                      left: point.x - 5.0,
-                      top: point.y - 5.0,
-                      width: 10.0,
-                      height: 10.0,
-                      child: new Container(
-                        decoration: new BoxDecoration(
-                          backgroundColor: new Color(0xFFFF00FF),
-                        ),
-                      ),
-                    ),
-              ),
-            );
-          }
-          return new Stack(children: stackChildren);
-        },
+        onAccept: (StoryClusterId storyClusterId, _) =>
+            _onDrop(StoryModel.of(context).getStoryCluster(storyClusterId)),
+        builder: _build,
       );
 
   @override
   bool handleTick(double elapsedSeconds) {
     _scaleSimulation.elapseTime(elapsedSeconds);
     _opacitySimulation.elapseTime(elapsedSeconds);
-
     return !(_scaleSimulation.isDone && _opacitySimulation.isDone);
   }
 
-  /// If [hasCandidates] is true and we're currently in the timeline, start
-  /// the inline preview scale simulation.  If either is false, reverse the
-  /// simulation back to its beginning.
-  void _updateInlinePreviewScalingSimulation(bool hasCandidates) {
+  void _onDrop(StoryCluster storyCluster) {
+    _transposeToChildCoordinates(storyCluster.stories);
+
+    if (_inTimeline) {
+      config.onGainFocus?.call();
+    }
+
+    _closestTargets[storyCluster]?.onDrop?.call(context, storyCluster);
+  }
+
+  bool get _inTimeline => config.focusProgress == 0.0;
+
+  Widget _build(
+    BuildContext context,
+    Map<StoryClusterId, Point> storyClusterIdCandidates,
+    Map<dynamic, Point> rejectedData,
+  ) {
+    bool hasCandidates = storyClusterIdCandidates.isNotEmpty;
+
+    _updateInlinePreviewScalingSimulation(hasCandidates && _inTimeline);
+
+    Map<StoryCluster, Point> storyClusterCandidates = _getStoryClusterMap(
+      storyClusterIdCandidates,
+    );
+
+    _updateClosestTargets(storyClusterCandidates);
+
+    // Scale child to config.scale if we aren't in the timeline
+    // and we have a candidate being dragged over us.
+    _scale = hasCandidates && !_inTimeline ? config.scale : 1.0;
+
+    // Fade in shadow and background color if we have candidates.
+    _opacity = hasCandidates ? 1.0 : 0.0;
+
+    return new TargetLineOverlay(
+      drawTargetLines: _kDrawTargetLines,
+      targetLines: _targetLines,
+      closestTargetLockPoints: _closestTargetLockPoints,
+      storyClusterCandidates: storyClusterCandidates,
+      child: new Transform(
+        transform: new Matrix4.identity().scaled(_scale, _scale),
+        alignment: FractionalOffset.center,
+        child: new Stack(
+          children: <Widget>[
+            new Opacity(
+              opacity: _opacity,
+              child: new Container(
+                decoration: new BoxDecoration(
+                  backgroundColor: _kTargetBackgroundColor,
+                  boxShadow: kElevationToShadow[12],
+                  borderRadius: new BorderRadius.all(
+                    new Radius.circular(
+                      lerpDouble(
+                        _kUnfocusedCornerRadius,
+                        _kFocusedCornerRadius,
+                        config.focusProgress,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            config.child,
+          ],
+        ),
+      ),
+    );
+  }
+
+  set _scale(double scale) {
+    if (_scaleSimulation.target != scale) {
+      _scaleSimulation.target = scale;
+      startTicking();
+    }
+  }
+
+  double get _scale => _scaleSimulation.value;
+
+  set _opacity(double opacity) {
+    if (_opacitySimulation.target != opacity) {
+      _opacitySimulation.target = opacity;
+      startTicking();
+    }
+  }
+
+  double get _opacity => _opacitySimulation.value;
+
+  /// Moves the [stories] corrdinates from whatever space they're in to the
+  /// coordinate space of our [PanelDragTargets.child].
+  void _transposeToChildCoordinates(List<Story> stories) {
+    stories.forEach((Story story) {
+      // Get the Story's current global bounds...
+      RenderBox storyBox =
+          story.positionedKey.currentContext.findRenderObject();
+      Point storyTopLeft = storyBox.localToGlobal(Point.origin);
+      Point storyBottomRight = storyBox.localToGlobal(
+        new Point(storyBox.size.width, storyBox.size.height),
+      );
+
+      // Convert the Story's global bounds into bounds local to the
+      // StoryPanels...
+      RenderBox panelsBox =
+          config.storyCluster.panelsKey.currentContext.findRenderObject();
+      Point storyInPanelsTopLeft = panelsBox.globalToLocal(storyTopLeft);
+      Point storyInPanelsBottomRight =
+          panelsBox.globalToLocal(storyBottomRight);
+      // Jump the Story's SimulatedFractional to its new location to
+      // ensure a seamless animation into place.
+      SimulatedFractionalState state = story.positionedKey.currentState;
+      state.jump(
+        new Rect.fromLTRB(
+          storyInPanelsTopLeft.x,
+          storyInPanelsTopLeft.y,
+          storyInPanelsBottomRight.x,
+          storyInPanelsBottomRight.y,
+        ),
+        panelsBox.size,
+      );
+    });
+  }
+
+  Map<StoryCluster, Point> _getStoryClusterMap(
+    Map<StoryClusterId, Point> storyClusterIdMap,
+  ) {
+    Map<StoryCluster, Point> storyClusterMap = <StoryCluster, Point>{};
+    storyClusterIdMap.keys.forEach(
+      (StoryClusterId storyClusterId) {
+        Point storyClusterPoint = storyClusterIdMap[storyClusterId];
+        StoryCluster storyCluster =
+            StoryModel.of(context).getStoryCluster(storyClusterId);
+        storyClusterMap[storyCluster] = storyClusterPoint;
+      },
+    );
+    return storyClusterMap;
+  }
+
+  /// If [activate] is true, start the inline preview scale simulation.  If
+  /// false, reverse the simulation back to its beginning.
+  void _updateInlinePreviewScalingSimulation(bool activate) {
     scheduleMicrotask(() {
       config.storyCluster.inlinePreviewScaleSimulationKey.currentState?.target =
-          (hasCandidates && config.focusProgress == 0.0) ? 1.0 : 0.0;
+          activate ? 1.0 : 0.0;
     });
   }
 
@@ -567,7 +535,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       ),
     );
 
-    if (config.focusProgress != 0.0) {
+    if (!_inTimeline) {
       // Top discard target.
       _targetLines.add(
         new LineSegment.horizontal(
