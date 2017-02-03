@@ -89,9 +89,20 @@ class StoryPanelsState extends State<StoryPanels> {
           constraints.maxWidth,
           constraints.maxHeight,
         );
+
+        /// Move placeholders to the beginning of the list when putting them in
+        /// the stack to ensure they are behind the real stories in paint order.
+        List<Story> sortedStories =
+            new List<Story>.from(config.storyCluster.stories);
+        sortedStories.sort(
+          (Story a, Story b) => a.isPlaceHolder && !b.isPlaceHolder
+              ? -1
+              : !a.isPlaceHolder && b.isPlaceHolder ? 1 : 0,
+        );
+
         return new Stack(
           overflow: Overflow.visible,
-          children: config.storyCluster.stories
+          children: sortedStories
               .map(
                 (Story story) => new StoryPositioned(
                       storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
@@ -192,7 +203,7 @@ class StoryPanelsState extends State<StoryPanels> {
     EdgeInsets storyBarPadding,
   ) =>
       story.isPlaceHolder
-          ? Nothing.widget
+          ? story.builder(context)
           : new Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[

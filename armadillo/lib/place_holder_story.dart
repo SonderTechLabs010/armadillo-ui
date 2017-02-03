@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 
 import 'panel.dart';
 import 'panel_drag_targets.dart';
+import 'simulated_fractional.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_panels.dart';
@@ -16,14 +17,21 @@ import 'story_panels.dart';
 /// combining of two clusters).
 class PlaceHolderStory extends Story {
   final StoryId associatedStoryId;
-  final int _index;
 
-  PlaceHolderStory({int index, this.associatedStoryId, Panel panel})
-      : _index = index,
-        super(
-          id: new StoryId('PlaceHolder $index'),
+  PlaceHolderStory({
+    this.associatedStoryId,
+    Panel panel,
+    GlobalKey<SimulatedFractionalState> positionedKey,
+  })
+      : super(
+          id: new StoryId('PlaceHolder $associatedStoryId'),
           panel: panel,
-          builder: (_) => new Container(),
+          positionedKey: positionedKey,
+          builder: (_) => new Container(
+                decoration: new BoxDecoration(
+                  backgroundColor: new Color(0xFFE6E6E6).withOpacity(0.25),
+                ),
+              ),
         );
 
   @override
@@ -39,8 +47,8 @@ class PlaceHolderStory extends Story {
     GlobalKey positionedKey,
   }) =>
       new PlaceHolderStory(
-        index: this._index,
         panel: panel ?? this.panel,
         associatedStoryId: this.associatedStoryId,
+        positionedKey: positionedKey ?? this.positionedKey,
       );
 }

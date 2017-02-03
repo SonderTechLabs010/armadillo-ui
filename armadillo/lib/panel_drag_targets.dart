@@ -97,10 +97,6 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     initValue: 1.0,
     desc: _kScaleSimulationDesc,
   );
-  final RK4SpringSimulation _opacitySimulation = new RK4SpringSimulation(
-    initValue: 0.0,
-    desc: _kOpacitySimulationDesc,
-  );
 
   /// When candidates are dragged over this drag target we add
   /// [PlaceHolderStory]s to the [StoryCluster] this target is representing.
@@ -146,8 +142,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   @override
   bool handleTick(double elapsedSeconds) {
     _scaleSimulation.elapseTime(elapsedSeconds);
-    _opacitySimulation.elapseTime(elapsedSeconds);
-    return !(_scaleSimulation.isDone && _opacitySimulation.isDone);
+    return !_scaleSimulation.isDone;
   }
 
   void _onDrop(StoryCluster storyCluster) {
@@ -181,9 +176,6 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // and we have a candidate being dragged over us.
     _scale = hasCandidates && !_inTimeline ? config.scale : 1.0;
 
-    // Fade in shadow and background color if we have candidates.
-    _opacity = hasCandidates ? 1.0 : 0.0;
-
     return new TargetLineOverlay(
       drawTargetLines: _kDrawTargetLines,
       targetLines: _targetLines,
@@ -192,29 +184,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       child: new Transform(
         transform: new Matrix4.identity().scaled(_scale, _scale),
         alignment: FractionalOffset.center,
-        child: new Stack(
-          children: <Widget>[
-            new Opacity(
-              opacity: _opacity,
-              child: new Container(
-                decoration: new BoxDecoration(
-                  backgroundColor: _kTargetBackgroundColor,
-                  boxShadow: kElevationToShadow[12],
-                  borderRadius: new BorderRadius.all(
-                    new Radius.circular(
-                      lerpDouble(
-                        _kUnfocusedCornerRadius,
-                        _kFocusedCornerRadius,
-                        config.focusProgress,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            config.child,
-          ],
-        ),
+        child: config.child,
       ),
     );
   }
@@ -227,15 +197,6 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   }
 
   double get _scale => _scaleSimulation.value;
-
-  set _opacity(double opacity) {
-    if (_opacitySimulation.target != opacity) {
-      _opacitySimulation.target = opacity;
-      startTicking();
-    }
-  }
-
-  double get _opacity => _opacitySimulation.value;
 
   /// Moves the [stories] corrdinates from whatever space they're in to the
   /// coordinate space of our [PanelDragTargets.child].
@@ -408,7 +369,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           right:
               sizeModel.size.width - horizontalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
-          maxStoriesCanAccept: availableRows,
+          maxStoriesCanAccept: _kMaxStoriesPerCluster -
+              config.storyCluster.stories.length, //availableRows,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterAbovePanels(
                 context: context,
@@ -432,7 +394,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           right:
               sizeModel.size.width - horizontalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
-          maxStoriesCanAccept: availableRows,
+          maxStoriesCanAccept: _kMaxStoriesPerCluster -
+              config.storyCluster.stories.length, //availableRows,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterBelowPanels(
                 context: context,
@@ -459,7 +422,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           bottom:
               sizeModel.size.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
-          maxStoriesCanAccept: availableColumns,
+          maxStoriesCanAccept: _kMaxStoriesPerCluster -
+              config.storyCluster.stories.length, //availableColumns,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToLeftOfPanels(
                 context: context,
@@ -483,7 +447,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           bottom:
               sizeModel.size.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
-          maxStoriesCanAccept: availableColumns,
+          maxStoriesCanAccept: _kMaxStoriesPerCluster -
+              config.storyCluster.stories.length, //availableColumns,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToRightOfPanels(
                 context: context,
@@ -620,7 +585,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             top: top,
             bottom: bottom,
             color: _kStoryEdgeTargetColor,
-            maxStoriesCanAccept: verticalSplits,
+            maxStoriesCanAccept: _kMaxStoriesPerCluster -
+                config.storyCluster.stories.length, //verticalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToLeftOfPanel(
                   context: context,
@@ -645,7 +611,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             top: top,
             bottom: bottom,
             color: _kStoryEdgeTargetColor,
-            maxStoriesCanAccept: verticalSplits,
+            maxStoriesCanAccept: _kMaxStoriesPerCluster -
+                config.storyCluster.stories.length, //verticalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToRightOfPanel(
                   context: context,
@@ -688,7 +655,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             left: left,
             right: right,
             color: _kStoryEdgeTargetColor,
-            maxStoriesCanAccept: horizontalSplits,
+            maxStoriesCanAccept: _kMaxStoriesPerCluster -
+                config.storyCluster.stories.length, //horizontalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterAbovePanel(
                   context: context,
@@ -713,7 +681,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             left: left,
             right: right,
             color: _kStoryEdgeTargetColor,
-            maxStoriesCanAccept: horizontalSplits,
+            maxStoriesCanAccept: _kMaxStoriesPerCluster -
+                config.storyCluster.stories.length, //horizontalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterBelowPanel(
                   context: context,
@@ -772,13 +741,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     config.storyCluster.displayMode = DisplayMode.panels;
 
     // 0) Remove any existing preview stories.
-    config.storyCluster.removePreviews();
+    Map<StoryId, PlaceHolderStory> placeholders =
+        config.storyCluster.removePreviews();
 
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (int index) => new PlaceHolderStory(
-                  index: index,
+            (int index) =>
+                placeholders[storyCluster.stories[index].id] ??
+                new PlaceHolderStory(
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -820,13 +791,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     config.storyCluster.displayMode = displayMode;
 
     // 0) Remove any existing preview stories.
-    config.storyCluster.removePreviews();
+    Map<StoryId, PlaceHolderStory> placeholders =
+        config.storyCluster.removePreviews();
 
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (int index) => new PlaceHolderStory(
-                  index: index,
+            (int index) =>
+                placeholders[storyCluster.stories[index].id] ??
+                new PlaceHolderStory(
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -866,13 +839,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     config.storyCluster.displayMode = DisplayMode.panels;
 
     // 0) Remove any existing preview stories.
-    config.storyCluster.removePreviews();
+    Map<StoryId, PlaceHolderStory> placeholders =
+        config.storyCluster.removePreviews();
 
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (int index) => new PlaceHolderStory(
-                  index: index,
+            (int index) =>
+                placeholders[storyCluster.stories[index].id] ??
+                new PlaceHolderStory(
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -913,13 +888,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     config.storyCluster.displayMode = DisplayMode.panels;
 
     // 0) Remove any existing preview stories.
-    config.storyCluster.removePreviews();
+    Map<StoryId, PlaceHolderStory> placeholders =
+        config.storyCluster.removePreviews();
 
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (int index) => new PlaceHolderStory(
-                  index: index,
+            (int index) =>
+                placeholders[storyCluster.stories[index].id] ??
+                new PlaceHolderStory(
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -966,13 +943,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     config.storyCluster.displayMode = DisplayMode.panels;
 
     // 0) Remove any existing preview stories.
-    config.storyCluster.removePreviews();
+    Map<StoryId, PlaceHolderStory> placeholders =
+        config.storyCluster.removePreviews();
 
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (int index) => new PlaceHolderStory(
-                  index: index,
+            (int index) =>
+                placeholders[storyCluster.stories[index].id] ??
+                new PlaceHolderStory(
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -1015,13 +994,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     config.storyCluster.displayMode = DisplayMode.panels;
 
     // 0) Remove any existing preview stories.
-    config.storyCluster.removePreviews();
+    Map<StoryId, PlaceHolderStory> placeholders =
+        config.storyCluster.removePreviews();
 
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (int index) => new PlaceHolderStory(
-                  index: index,
+            (int index) =>
+                placeholders[storyCluster.stories[index].id] ??
+                new PlaceHolderStory(
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -1063,13 +1044,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     config.storyCluster.displayMode = DisplayMode.panels;
 
     // 0) Remove any existing preview stories.
-    config.storyCluster.removePreviews();
+    Map<StoryId, PlaceHolderStory> placeholders =
+        config.storyCluster.removePreviews();
 
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (int index) => new PlaceHolderStory(
-                  index: index,
+            (int index) =>
+                placeholders[storyCluster.stories[index].id] ??
+                new PlaceHolderStory(
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )
@@ -1112,13 +1095,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     config.storyCluster.displayMode = DisplayMode.panels;
 
     // 0) Remove any existing preview stories.
-    config.storyCluster.removePreviews();
+    Map<StoryId, PlaceHolderStory> placeholders =
+        config.storyCluster.removePreviews();
 
     List<Story> storiesToAdd = preview
         ? new List<Story>.generate(
             storyCluster.stories.length,
-            (int index) => new PlaceHolderStory(
-                  index: index,
+            (int index) =>
+                placeholders[storyCluster.stories[index].id] ??
+                new PlaceHolderStory(
                   associatedStoryId: storyCluster.stories[index].id,
                 ),
           )

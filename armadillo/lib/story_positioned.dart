@@ -6,7 +6,6 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 
-import 'nothing.dart';
 import 'panel.dart';
 import 'simulated_fractional.dart';
 import 'story.dart';
@@ -67,31 +66,29 @@ class StoryPositioned extends StatelessWidget {
       ),
     );
 
-    return story.isPlaceHolder
-        ? Nothing.widget
-        : displayMode == DisplayMode.panels
-            ? new SimulatedFractional(
-                key: story.positionedKey,
-                fractionalTop: panel.top + topMargin,
-                fractionalLeft: panel.left + leftMargin,
-                fractionalWidth: panel.width - (leftMargin + rightMargin),
-                fractionalHeight: panel.height - (topMargin + bottomMargin),
-                size: currentSize,
-                child: new ClipRRect(
-                  borderRadius: borderRadius,
-                  child: child,
-                ),
-              )
-            : new SimulatedFractional(
-                key: story.positionedKey,
-                fractionalTop: 0.0,
-                fractionalLeft: 0.0,
-                fractionalWidth: 1.0,
-                fractionalHeight: (isFocused)
-                    ? 1.0
-                    : storyBarMaximizedHeight / currentSize.height,
-                size: currentSize,
-                child: child,
-              );
+    return displayMode == DisplayMode.panels
+        ? new SimulatedFractional(
+            key: story.positionedKey,
+            fractionalTop: panel.top + topMargin,
+            fractionalLeft: panel.left + leftMargin,
+            fractionalWidth: panel.width - (leftMargin + rightMargin),
+            fractionalHeight: panel.height - (topMargin + bottomMargin),
+            size: currentSize,
+            child: new ClipRRect(
+              borderRadius: borderRadius,
+              child: child,
+            ),
+          )
+        : new SimulatedFractional(
+            key: story.positionedKey,
+            fractionalTop: 0.0,
+            fractionalLeft: 0.0,
+            fractionalWidth: 1.0,
+            fractionalHeight: (isFocused)
+                ? 1.0
+                : storyBarMaximizedHeight / currentSize.height,
+            size: currentSize,
+            child: child,
+          );
   }
 }

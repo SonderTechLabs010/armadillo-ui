@@ -5,6 +5,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'panel.dart';
+import 'place_holder_story.dart';
 import 'simulation_builder.dart';
 import 'story.dart';
 import 'story_cluster_drag_feedback.dart';
@@ -185,12 +186,16 @@ class StoryCluster {
   }
 
   /// Removes any preview stories from [stories]
-  void removePreviews() {
+  Map<StoryId, PlaceHolderStory> removePreviews() {
+    Map<StoryId, PlaceHolderStory> storiesRemoved =
+        <StoryId, PlaceHolderStory>{};
     _stories.toList().forEach((Story story) {
-      if (story.isPlaceHolder) {
+      if (story is PlaceHolderStory) {
         absorb(_stories.where((Story s) => story.id == s.id).single);
+        storiesRemoved[story.associatedStoryId] = story;
       }
     });
+    return storiesRemoved;
   }
 
   /// Returns the [Panel]s of the [stories].
