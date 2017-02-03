@@ -73,7 +73,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
   Widget build(BuildContext context) {
     bool clusterBeingDragged = StoryClusterDragStateModel
         .of(context, rebuildOnChange: true)
-        .areStoryClustersDragging;
+        .isDragging;
     bool scrolledToTop = config.scrollableKey.currentState.scrollOffset ==
         config.scrollableKey.currentState.scrollBehavior.maxScrollOffset;
     bool scrolledToBottom = config.scrollableKey.currentState.scrollOffset ==
