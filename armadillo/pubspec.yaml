@@ -8,7 +8,6 @@ dependencies:
     path: ../../modules/email/email_flutter
   flutter:
     sdk: flutter
-  intl: ^0.14.0
   keyboard:
     path: ../keyboard
   models:
