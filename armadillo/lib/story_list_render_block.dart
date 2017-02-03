@@ -37,13 +37,24 @@ class StoryListRenderBlock extends RenderBlock {
     Key scrollableKey,
     double bottomPadding,
     double listHeight,
+    Color scrimColor,
   })
       : _parentSize = parentSize,
         _scrollableKey =
             scrollableKey is GlobalKey<ScrollableState> ? scrollableKey : null,
         _bottomPadding = bottomPadding ?? 0.0,
         _listHeight = listHeight ?? 0.0,
+        _scrimColor = scrimColor ?? new Color(0x00000000),
         super(children: children, mainAxis: Axis.vertical);
+
+  Color get scrimColor => _scrimColor;
+  Color _scrimColor;
+  set scrimColor(Color value) {
+    if (_scrimColor != value) {
+      _scrimColor = value;
+      markNeedsPaint();
+    }
+  }
 
   Size get parentSize => _parentSize;
   Size _parentSize;
@@ -95,8 +106,10 @@ class StoryListRenderBlock extends RenderBlock {
     if (childrenSortedByFocusProgress.isEmpty) {
       return;
     }
+    final RenderBox lastChild = childrenSortedByFocusProgress.last;
+    childrenSortedByFocusProgress.remove(lastChild);
     final StoryListRenderBlockParentData mostFocusedChildParentData =
-        childrenSortedByFocusProgress.last.parentData;
+        lastChild.parentData;
     int unfocusedAlpha = (lerpDouble(
                 1.0,
                 0.0,
@@ -107,20 +120,37 @@ class StoryListRenderBlock extends RenderBlock {
         .round();
 
     childrenSortedByFocusProgress.forEach((RenderBox child) {
-      final StoryListRenderBlockParentData childParentData = child.parentData;
-      if (unfocusedAlpha != 255 && childParentData.focusProgress == 0.0) {
-        // Apply transparency.
-        assert(needsCompositing);
-        context.pushOpacity(
-          childParentData.offset + offset,
-          unfocusedAlpha,
-          (PaintingContext context, Offset offset) =>
-              context.paintChild(child, offset),
-        );
-      } else {
-        context.paintChild(child, childParentData.offset + offset);
-      }
+      _paintChild(context, offset, child, unfocusedAlpha);
     });
+
+    if (_scrimColor.alpha != 0) {
+      context.canvas.drawRect(
+        new Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height),
+        new Paint()..color = _scrimColor,
+      );
+    }
+    _paintChild(context, offset, lastChild, unfocusedAlpha);
+  }
+
+  void _paintChild(
+    PaintingContext context,
+    Offset offset,
+    RenderBox child,
+    int unfocusedAlpha,
+  ) {
+    final StoryListRenderBlockParentData childParentData = child.parentData;
+    if (unfocusedAlpha != 255 && childParentData.focusProgress == 0.0) {
+      // Apply transparency.
+      assert(needsCompositing);
+      context.pushOpacity(
+        childParentData.offset + offset,
+        unfocusedAlpha,
+        (PaintingContext context, Offset offset) =>
+            context.paintChild(child, offset),
+      );
+    } else {
+      context.paintChild(child, childParentData.offset + offset);
+    }
   }
 
   @override

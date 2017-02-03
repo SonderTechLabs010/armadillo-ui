@@ -74,6 +74,8 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
     this.childWhenDragging,
     this.onDragStarted,
     this.onDragEnded,
+    this.onAcceptable,
+    this.onUnacceptable,
   })
       : super(key: key) {
     assert(child != null);
@@ -98,6 +100,8 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
 
   final VoidCallback onDragStarted;
   final VoidCallback onDragEnded;
+  final VoidCallback onAcceptable;
+  final VoidCallback onUnacceptable;
 
   final GlobalKey<ArmadilloOverlayState> overlayKey;
 
@@ -159,6 +163,8 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
         initialPosition: position,
         dragStartPoint: box.globalToLocal(position),
         feedbackBuilder: config.feedbackBuilder,
+        onAcceptable: config.onAcceptable,
+        onUnacceptable: config.onUnacceptable,
         onDragEnd: (bool wasAccepted) {
           setState(() {
             _activeCount -= 1;
@@ -314,6 +320,8 @@ class _DragAvatar<T> extends Drag {
     Point initialPosition,
     this.dragStartPoint,
     this.feedbackBuilder,
+    this.onAcceptable,
+    this.onUnacceptable,
     this.onDragEnd,
   }) {
     assert(overlayKey.currentState != null);
@@ -327,6 +335,8 @@ class _DragAvatar<T> extends Drag {
   final Point dragStartPoint;
   final FeedbackBuilder feedbackBuilder;
   final _OnDragEnd onDragEnd;
+  final VoidCallback onAcceptable;
+  final VoidCallback onUnacceptable;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
 
   _DragTargetState<T> _activeTarget;
@@ -385,6 +395,11 @@ class _DragAvatar<T> extends Drag {
         return target.didEnter(data, localPosition);
       }, orElse: () => null);
 
+      if (_activeTarget == null && newTarget != null) {
+        onAcceptable?.call();
+      } else if (_activeTarget != null && newTarget == null) {
+        onUnacceptable?.call();
+      }
       _activeTarget = newTarget;
     }
 
@@ -427,6 +442,9 @@ class _DragAvatar<T> extends Drag {
       _enteredTargets.remove(_activeTarget);
     }
     _leaveAllEntered();
+    if (wasAccepted) {
+      onUnacceptable?.call();
+    }
     _activeTarget = null;
     overlayKey.currentState.removeBuilder(_build);
     // TODO(ianh): consider passing _entry as well so the client can perform an animation.

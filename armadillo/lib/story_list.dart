@@ -19,6 +19,7 @@ import 'story_list_layout.dart';
 import 'story_list_render_block.dart';
 import 'story_list_render_block_parent_data.dart';
 import 'story_model.dart';
+import 'story_rearrangement_scrim_model.dart';
 
 /// In multicolumn mode, the distance the right column will be offset up.
 const double _kRightBump = 64.0;
@@ -273,6 +274,9 @@ class StoryListBlockBody extends BlockBody {
         scrollableKey: scrollableKey,
         bottomPadding: bottomPadding,
         listHeight: listHeight,
+        scrimColor: StoryRearrangementScrimModel
+            .of(context, rebuildOnChange: true)
+            .scrimColor,
       );
 
   @override
@@ -284,6 +288,9 @@ class StoryListBlockBody extends BlockBody {
     storyListRenderBlock.scrollableKey = scrollableKey;
     storyListRenderBlock.bottomPadding = bottomPadding;
     storyListRenderBlock.listHeight = listHeight;
+    storyListRenderBlock.scrimColor = StoryRearrangementScrimModel
+        .of(context, rebuildOnChange: true)
+        .scrimColor;
   }
 }
 

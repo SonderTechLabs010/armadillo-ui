@@ -25,6 +25,7 @@ import 'story_cluster.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_list.dart';
 import 'story_model.dart';
+import 'story_rearrangement_scrim_model.dart';
 import 'suggestion.dart';
 import 'suggestion_list.dart';
 import 'suggestion_model.dart';
@@ -138,6 +139,7 @@ class Conductor extends StatelessWidget {
 
           Widget stack = new Stack(
             children: <Widget>[
+              /// Story List.
               new Positioned(
                 left: 0.0,
                 right: 0.0,
@@ -147,6 +149,24 @@ class Conductor extends StatelessWidget {
                   storyModel,
                   constraints.maxWidth,
                   new SizeModel(fullSize),
+                ),
+              ),
+
+              /// Since the Story List doesn't cover the bottom now area but
+              /// it does paint a scrim on top of its children, we need to paint
+              /// the scrim here as well in the area that the Story List
+              /// doesn't cover.
+              new Positioned(
+                left: 0.0,
+                right: 0.0,
+                bottom: 0.0,
+                height: _kMinimizedNowHeight,
+                child: new Container(
+                  decoration: new BoxDecoration(
+                    backgroundColor: StoryRearrangementScrimModel
+                        .of(context, rebuildOnChange: true)
+                        .scrimColor,
+                  ),
                 ),
               ),
 

@@ -24,8 +24,11 @@ class StoryClusterDragStateModel extends Model {
           .of(context, rebuildOnChange: rebuildOnChange);
 
   final Set<StoryClusterId> _draggingStoryClusters = new Set<StoryClusterId>();
+  final Set<StoryClusterId> _acceptableStoryClusters =
+      new Set<StoryClusterId>();
 
   bool get isDragging => _draggingStoryClusters.isNotEmpty;
+  bool get isAcceptable => _acceptableStoryClusters.isNotEmpty;
 
   void addDragging(StoryClusterId storyClusterId) {
     _draggingStoryClusters.add(storyClusterId);
@@ -34,6 +37,16 @@ class StoryClusterDragStateModel extends Model {
 
   void removeDragging(StoryClusterId storyClusterId) {
     _draggingStoryClusters.remove(storyClusterId);
+    notifyListeners();
+  }
+
+  void addAcceptance(StoryClusterId storyClusterId) {
+    _acceptableStoryClusters.add(storyClusterId);
+    notifyListeners();
+  }
+
+  void removeAcceptance(StoryClusterId storyClusterId) {
+    _acceptableStoryClusters.remove(storyClusterId);
     notifyListeners();
   }
 }

@@ -13,6 +13,7 @@ import 'now_model.dart';
 import 'rounded_corner_decoration.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_model.dart';
+import 'story_rearrangement_scrim_model.dart';
 import 'suggestion_model.dart';
 
 const Color _kBackgroundOverlayColor = const Color(0xB0000000);
@@ -25,6 +26,7 @@ class Armadillo extends StatelessWidget {
   final SuggestionModel suggestionModel;
   final NowModel nowModel;
   final StoryClusterDragStateModel storyClusterDragStateModel;
+  final StoryRearrangementScrimModel storyRearrangementScrimModel;
   final Conductor conductor;
 
   Armadillo({
@@ -32,6 +34,7 @@ class Armadillo extends StatelessWidget {
     this.suggestionModel,
     this.nowModel,
     this.storyClusterDragStateModel,
+    this.storyRearrangementScrimModel,
     this.conductor,
   });
 
@@ -61,7 +64,10 @@ class Armadillo extends StatelessWidget {
               model: nowModel,
               child: new ScopedModel<StoryClusterDragStateModel>(
                 model: storyClusterDragStateModel,
-                child: conductor,
+                child: new ScopedModel<StoryRearrangementScrimModel>(
+                  model: storyRearrangementScrimModel,
+                  child: conductor,
+                ),
               ),
             ),
           ),

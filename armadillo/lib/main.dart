@@ -18,6 +18,7 @@ import 'now_model.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_model.dart';
 import 'story_time_randomizer.dart';
+import 'story_rearrangement_scrim_model.dart';
 import 'suggestion_model.dart';
 
 /// Set to true to enable the performance overlay.
@@ -34,6 +35,10 @@ Future<Null> main() async {
   ConstraintsModel constraintsModel = new ConstraintsModel();
   StoryClusterDragStateModel storyClusterDragStateModel =
       new StoryClusterDragStateModel();
+  StoryRearrangementScrimModel storyRearrangementScrimModel =
+      new StoryRearrangementScrimModel(
+    storyClusterDragStateModel: storyClusterDragStateModel,
+  );
 
   Widget app = _buildApp(
     suggestionModel: jsonSuggestionModel,
@@ -41,6 +46,7 @@ Future<Null> main() async {
     nowModel: nowModel,
     constraintsModel: constraintsModel,
     storyClusterDragStateModel: storyClusterDragStateModel,
+    storyRearrangementScrimModel: storyRearrangementScrimModel,
   );
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
@@ -57,6 +63,7 @@ Widget _buildApp({
   NowModel nowModel,
   ConstraintsModel constraintsModel,
   StoryClusterDragStateModel storyClusterDragStateModel,
+  StoryRearrangementScrimModel storyRearrangementScrimModel,
 }) =>
     new CheckedModeBanner(
       child: new StoryTimeRandomizer(
@@ -70,6 +77,7 @@ Widget _buildApp({
               suggestionModel: suggestionModel,
               nowModel: nowModel,
               storyClusterDragStateModel: storyClusterDragStateModel,
+              storyRearrangementScrimModel: storyRearrangementScrimModel,
               conductor: new Conductor(
                 storyClusterDragStateModel: storyClusterDragStateModel,
               ),

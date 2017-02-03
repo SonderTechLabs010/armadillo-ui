@@ -17,6 +17,7 @@ import 'package:armadillo/story_cluster_drag_state_model.dart';
 import 'package:armadillo/story_cluster_id.dart';
 import 'package:armadillo/story.dart';
 import 'package:armadillo/story_model.dart';
+import 'package:armadillo/story_rearrangement_scrim_model.dart';
 import 'package:armadillo/story_time_randomizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -44,6 +45,10 @@ Future<Null> main() async {
       new StoryProviderStoryGenerator();
   StoryClusterDragStateModel storyClusterDragStateModel =
       new StoryClusterDragStateModel();
+  StoryRearrangementScrimModel storyRearrangementScrimModel =
+      new StoryRearrangementScrimModel(
+    storyClusterDragStateModel: storyClusterDragStateModel,
+  );
 
   Conductor conductor = new Conductor(
     useSoftKeyboard: false,
@@ -113,6 +118,7 @@ Future<Null> main() async {
       suggestionModel: suggestionProviderSuggestionModel,
       nowModel: nowModel,
       storyClusterDragStateModel: storyClusterDragStateModel,
+      storyRearrangementScrimModel: storyRearrangementScrimModel,
       conductor: conductor,
     ),
     hitTestModel: hitTestModel,
