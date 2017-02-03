@@ -7,11 +7,13 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:meta/meta.dart';
 
 import 'conductor.dart';
 import 'now_model.dart';
 import 'rounded_corner_decoration.dart';
 import 'story_cluster_drag_state_model.dart';
+import 'story_drag_transition_model.dart';
 import 'story_model.dart';
 import 'story_rearrangement_scrim_model.dart';
 import 'suggestion_model.dart';
@@ -27,15 +29,17 @@ class Armadillo extends StatelessWidget {
   final NowModel nowModel;
   final StoryClusterDragStateModel storyClusterDragStateModel;
   final StoryRearrangementScrimModel storyRearrangementScrimModel;
+  final StoryDragTransitionModel storyDragTransitionModel;
   final Conductor conductor;
 
   Armadillo({
-    this.storyModel,
-    this.suggestionModel,
-    this.nowModel,
-    this.storyClusterDragStateModel,
-    this.storyRearrangementScrimModel,
-    this.conductor,
+    @required this.storyModel,
+    @required this.suggestionModel,
+    @required this.nowModel,
+    @required this.storyClusterDragStateModel,
+    @required this.storyRearrangementScrimModel,
+    @required this.storyDragTransitionModel,
+    @required this.conductor,
   });
 
   @override
@@ -66,7 +70,10 @@ class Armadillo extends StatelessWidget {
                 model: storyClusterDragStateModel,
                 child: new ScopedModel<StoryRearrangementScrimModel>(
                   model: storyRearrangementScrimModel,
-                  child: conductor,
+                  child: new ScopedModel<StoryDragTransitionModel>(
+                    model: storyDragTransitionModel,
+                    child: conductor,
+                  ),
                 ),
               ),
             ),

@@ -10,7 +10,6 @@ class StoryListRenderBlockParentData extends BlockParentData {
   final RenderObject owner;
   StoryLayout storyLayout;
   double _focusProgress;
-  double _liftScaleProgress;
   double _inlinePreviewScaleProgress;
 
   StoryListRenderBlockParentData(this.owner);
@@ -23,15 +22,6 @@ class StoryListRenderBlockParentData extends BlockParentData {
   }
 
   double get focusProgress => _focusProgress;
-
-  set liftScaleProgress(double liftScaleProgress) {
-    if (_liftScaleProgress != liftScaleProgress) {
-      _liftScaleProgress = liftScaleProgress;
-      owner.markNeedsLayout();
-    }
-  }
-
-  double get liftScaleProgress => _liftScaleProgress;
 
   set inlinePreviewScaleProgress(double inlinePreviewScaleProgress) {
     if (_inlinePreviewScaleProgress != inlinePreviewScaleProgress) {

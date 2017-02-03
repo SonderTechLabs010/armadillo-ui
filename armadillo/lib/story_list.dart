@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:ui' show lerpDouble;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -13,8 +15,8 @@ import 'simulation_builder.dart';
 import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
-import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_widget.dart';
+import 'story_drag_transition_model.dart';
 import 'story_list_layout.dart';
 import 'story_list_render_block.dart';
 import 'story_list_render_block_parent_data.dart';
@@ -133,43 +135,30 @@ class StoryList extends StatelessWidget {
     Map<StoryId, Widget> storyWidgets,
   ) =>
       new SimulationBuilder(
-        key: storyCluster.liftScaleSimulationKey,
-        initValue: 1.0,
-        targetValue: StoryClusterDragStateModel
-                .of(context, rebuildOnChange: true)
-                .isDragging
-            ? 0.9
-            : 1.0,
-        builder: (BuildContext context, double liftScaleProgress) =>
+        key: storyCluster.inlinePreviewScaleSimulationKey,
+        initValue: 0.0,
+        targetValue: 0.0,
+        builder: (BuildContext context, double inlinePreviewScaleProgress) =>
             new SimulationBuilder(
-              key: storyCluster.inlinePreviewScaleSimulationKey,
+              key: storyCluster.focusSimulationKey,
               initValue: 0.0,
               targetValue: 0.0,
-              builder: (BuildContext context,
-                      double inlinePreviewScaleProgress) =>
-                  new SimulationBuilder(
-                    key: storyCluster.focusSimulationKey,
-                    initValue: 0.0,
-                    targetValue: 0.0,
-                    onSimulationChanged: (double focusProgress, bool isDone) {
-                      if (focusProgress == 1.0 && isDone) {
-                        onStoryClusterFocusCompleted?.call(storyCluster);
-                      }
-                    },
-                    builder: (BuildContext context, double focusProgress) =>
-                        new StoryListChild(
-                          storyLayout: storyCluster.storyLayout,
-                          focusProgress: focusProgress,
-                          inlinePreviewScaleProgress:
-                              inlinePreviewScaleProgress,
-                          liftScaleProgress: liftScaleProgress,
-                          child: _createStoryCluster(
-                            storyClusters,
-                            storyCluster,
-                            focusProgress,
-                            storyWidgets,
-                          ),
-                        ),
+              onSimulationChanged: (double focusProgress, bool isDone) {
+                if (focusProgress == 1.0 && isDone) {
+                  onStoryClusterFocusCompleted?.call(storyCluster);
+                }
+              },
+              builder: (BuildContext context, double focusProgress) =>
+                  new StoryListChild(
+                    storyLayout: storyCluster.storyLayout,
+                    focusProgress: focusProgress,
+                    inlinePreviewScaleProgress: inlinePreviewScaleProgress,
+                    child: _createStoryCluster(
+                      storyClusters,
+                      storyCluster,
+                      focusProgress,
+                      storyWidgets,
+                    ),
                   ),
             ),
       );
@@ -277,6 +266,11 @@ class StoryListBlockBody extends BlockBody {
         scrimColor: StoryRearrangementScrimModel
             .of(context, rebuildOnChange: true)
             .scrimColor,
+        liftScale: lerpDouble(
+          1.0,
+          0.9,
+          StoryDragTransitionModel.of(context, rebuildOnChange: true).progress,
+        ),
       );
 
   @override
@@ -291,20 +285,23 @@ class StoryListBlockBody extends BlockBody {
     storyListRenderBlock.scrimColor = StoryRearrangementScrimModel
         .of(context, rebuildOnChange: true)
         .scrimColor;
+    storyListRenderBlock.liftScale = lerpDouble(
+      1.0,
+      0.9,
+      StoryDragTransitionModel.of(context, rebuildOnChange: true).progress,
+    );
   }
 }
 
 class StoryListChild extends ParentDataWidget<StoryListBlockBody> {
   final StoryLayout storyLayout;
   final double focusProgress;
-  final double liftScaleProgress;
   final double inlinePreviewScaleProgress;
 
   StoryListChild({
     Widget child,
     this.storyLayout,
     this.focusProgress,
-    this.liftScaleProgress,
     this.inlinePreviewScaleProgress,
   })
       : super(child: child);
@@ -315,7 +312,6 @@ class StoryListChild extends ParentDataWidget<StoryListBlockBody> {
     final StoryListRenderBlockParentData parentData = renderObject.parentData;
     parentData.storyLayout = storyLayout;
     parentData.focusProgress = focusProgress;
-    parentData.liftScaleProgress = liftScaleProgress;
     parentData.inlinePreviewScaleProgress = inlinePreviewScaleProgress;
   }
 
@@ -323,6 +319,6 @@ class StoryListChild extends ParentDataWidget<StoryListBlockBody> {
   void debugFillDescription(List<String> description) {
     super.debugFillDescription(description);
     description.add(
-        'storyLayout: $storyLayout, focusProgress: $focusProgress, liftScaleProgress: $liftScaleProgress, inlinePreviewScaleProgress: $inlinePreviewScaleProgress');
+        'storyLayout: $storyLayout, focusProgress: $focusProgress, inlinePreviewScaleProgress: $inlinePreviewScaleProgress');
   }
 }

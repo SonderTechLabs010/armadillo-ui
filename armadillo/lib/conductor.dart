@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:ui' show lerpDouble;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:keyboard/keyboard.dart';
@@ -23,9 +25,9 @@ import 'splash_suggestion.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_state_model.dart';
+import 'story_drag_transition_model.dart';
 import 'story_list.dart';
 import 'story_model.dart';
-import 'story_rearrangement_scrim_model.dart';
 import 'suggestion.dart';
 import 'suggestion_list.dart';
 import 'suggestion_model.dart';
@@ -140,33 +142,27 @@ class Conductor extends StatelessWidget {
           Widget stack = new Stack(
             children: <Widget>[
               /// Story List.
-              new Positioned(
-                left: 0.0,
-                right: 0.0,
-                top: 0.0,
-                bottom: _kMinimizedNowHeight,
+              new ScopedStoryDragTransitionWidget(
+                builder: (
+                  BuildContext context,
+                  Widget child,
+                  double progress,
+                ) =>
+                    new Positioned(
+                      left: 0.0,
+                      right: 0.0,
+                      top: 0.0,
+                      bottom: lerpDouble(
+                        _kMinimizedNowHeight,
+                        0.0,
+                        progress,
+                      ),
+                      child: child,
+                    ),
                 child: _getStoryList(
                   storyModel,
                   constraints.maxWidth,
                   new SizeModel(fullSize),
-                ),
-              ),
-
-              /// Since the Story List doesn't cover the bottom now area but
-              /// it does paint a scrim on top of its children, we need to paint
-              /// the scrim here as well in the area that the Story List
-              /// doesn't cover.
-              new Positioned(
-                left: 0.0,
-                right: 0.0,
-                bottom: 0.0,
-                height: _kMinimizedNowHeight,
-                child: new Container(
-                  decoration: new BoxDecoration(
-                    backgroundColor: StoryRearrangementScrimModel
-                        .of(context, rebuildOnChange: true)
-                        .scrimColor,
-                  ),
                 ),
               ),
 
@@ -258,40 +254,49 @@ class Conductor extends StatelessWidget {
         verticalShift: _kQuickSettingsHeightBump,
         child: new ScrollLocker(
           key: _scrollLockerKey,
-          child: new StoryList(
-            scrollableKey: _scrollableKey,
-            overlayKey: _overlayKey,
-            multiColumn: maxWidth > _kStoryListMultiColumnWidthThreshold,
-            quickSettingsHeightBump: _kQuickSettingsHeightBump,
-            bottomPadding: _kMaximizedNowHeight,
-            onScroll: (double scrollOffset) {
-              if (_ignoreNextScrollOffsetChange) {
-                _ignoreNextScrollOffsetChange = false;
-                return;
-              }
-              _edgeScrollDragTargetKey.currentState.onScroll();
-              _nowKey.currentState.scrollOffset = scrollOffset;
+          child: new ScopedStoryDragTransitionWidget(
+            builder: (BuildContext context, Widget child, double progress) =>
+                new StoryList(
+                  scrollableKey: _scrollableKey,
+                  overlayKey: _overlayKey,
+                  multiColumn: maxWidth > _kStoryListMultiColumnWidthThreshold,
+                  quickSettingsHeightBump: _kQuickSettingsHeightBump,
+                  bottomPadding: _kMaximizedNowHeight +
+                      lerpDouble(
+                        0.0,
+                        _kMinimizedNowHeight,
+                        progress,
+                      ),
+                  onScroll: (double scrollOffset) {
+                    if (_ignoreNextScrollOffsetChange) {
+                      _ignoreNextScrollOffsetChange = false;
+                      return;
+                    }
+                    _edgeScrollDragTargetKey.currentState.onScroll();
+                    _nowKey.currentState.scrollOffset = scrollOffset;
 
-              // Peak suggestion overlay more when overscrolling.
-              if (scrollOffset < -_kSuggestionOverlayPullScrollOffset &&
-                  _suggestionOverlayKey.currentState.hiding) {
-                _suggestionOverlayKey.currentState.setHeight(
-                  _kSuggestionOverlayPeekHeight -
-                      (scrollOffset + _kSuggestionOverlayPullScrollOffset) *
-                          _kSuggestionOverlayScrollFactor,
-                );
-              }
-            },
-            onStoryClusterFocusStarted: () {
-              // Lock scrolling.
-              _scrollLockerKey.currentState.lock();
-              _edgeScrollDragTargetKey.currentState.disable();
-              _minimizeNow();
-            },
-            onStoryClusterFocusCompleted: (StoryCluster storyCluster) {
-              _focusStoryCluster(storyModel, storyCluster);
-            },
-            sizeModel: sizeModel,
+                    // Peak suggestion overlay more when overscrolling.
+                    if (scrollOffset < -_kSuggestionOverlayPullScrollOffset &&
+                        _suggestionOverlayKey.currentState.hiding) {
+                      _suggestionOverlayKey.currentState.setHeight(
+                        _kSuggestionOverlayPeekHeight -
+                            (scrollOffset +
+                                    _kSuggestionOverlayPullScrollOffset) *
+                                _kSuggestionOverlayScrollFactor,
+                      );
+                    }
+                  },
+                  onStoryClusterFocusStarted: () {
+                    // Lock scrolling.
+                    _scrollLockerKey.currentState.lock();
+                    _edgeScrollDragTargetKey.currentState.disable();
+                    _minimizeNow();
+                  },
+                  onStoryClusterFocusCompleted: (StoryCluster storyCluster) {
+                    _focusStoryCluster(storyModel, storyCluster);
+                  },
+                  sizeModel: sizeModel,
+                ),
           ),
         ),
       );

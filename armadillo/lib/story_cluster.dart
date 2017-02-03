@@ -24,16 +24,11 @@ class StoryCluster {
   final GlobalKey clusterDraggableKey;
   final GlobalKey clusterDragTargetsKey;
   final GlobalKey panelsKey;
-  final GlobalKey titleTransformKey;
   final GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey;
 
   /// The focus simulation is the scaling that occurs when the
   /// user has focused on the cluster to bring it to full screen size.
   final GlobalKey<SimulationBuilderState> focusSimulationKey;
-
-  /// The lift scale simulation is the scaling that occurs when the user
-  /// begins dragging a cluster around the timeline.
-  final GlobalKey<SimulationBuilderState> liftScaleSimulationKey;
 
   /// The inline preview scale simulation is the scaling that occurs when the
   /// user drags a cluster over this cluster while in the timeline.
@@ -51,11 +46,8 @@ class StoryCluster {
     GlobalKey clusterDraggableKey,
     GlobalKey clusterDragTargetsKey,
     GlobalKey panelsKey,
-    GlobalKey scaleTransformKey,
-    GlobalKey titleTransformKey,
     GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey,
     GlobalKey<SimulationBuilderState> focusSimulationKey,
-    GlobalKey<SimulationBuilderState> liftScaleSimulationKey,
     GlobalKey<SimulationBuilderState> inlinePreviewScaleSimulationKey,
     List<Story> stories,
     Set<VoidCallback> storyListListeners,
@@ -75,13 +67,10 @@ class StoryCluster {
         this.clusterDraggableKey = clusterDraggableKey ?? new GlobalKey(),
         this.clusterDragTargetsKey = clusterDragTargetsKey ?? new GlobalKey(),
         this.panelsKey = panelsKey ?? new GlobalKey(),
-        this.titleTransformKey = titleTransformKey ?? new GlobalKey(),
         this.dragFeedbackKey =
             dragFeedbackKey ?? new GlobalKey<StoryClusterDragFeedbackState>(),
         this.focusSimulationKey =
             focusSimulationKey ?? new GlobalKey<SimulationBuilderState>(),
-        this.liftScaleSimulationKey =
-            liftScaleSimulationKey ?? new GlobalKey<SimulationBuilderState>(),
         this.inlinePreviewScaleSimulationKey =
             inlinePreviewScaleSimulationKey ??
                 new GlobalKey<SimulationBuilderState>(),
@@ -150,10 +139,8 @@ class StoryCluster {
         clusterDraggableKey: clusterDraggableId ?? this.clusterDraggableKey,
         clusterDragTargetsKey: this.clusterDragTargetsKey,
         panelsKey: this.panelsKey,
-        titleTransformKey: this.titleTransformKey,
         dragFeedbackKey: this.dragFeedbackKey,
         focusSimulationKey: this.focusSimulationKey,
-        liftScaleSimulationKey: this.liftScaleSimulationKey,
         inlinePreviewScaleSimulationKey: this.inlinePreviewScaleSimulationKey,
         stories: new List<Story>.generate(
           _stories.length,

@@ -16,6 +16,7 @@ import 'json_story_generator.dart';
 import 'json_suggestion_model.dart';
 import 'now_model.dart';
 import 'story_cluster_drag_state_model.dart';
+import 'story_drag_transition_model.dart';
 import 'story_model.dart';
 import 'story_time_randomizer.dart';
 import 'story_rearrangement_scrim_model.dart';
@@ -39,6 +40,10 @@ Future<Null> main() async {
       new StoryRearrangementScrimModel(
     storyClusterDragStateModel: storyClusterDragStateModel,
   );
+  StoryDragTransitionModel storyDragTransitionModel =
+      new StoryDragTransitionModel(
+    storyClusterDragStateModel: storyClusterDragStateModel,
+  );
 
   Widget app = _buildApp(
     suggestionModel: jsonSuggestionModel,
@@ -47,6 +52,7 @@ Future<Null> main() async {
     constraintsModel: constraintsModel,
     storyClusterDragStateModel: storyClusterDragStateModel,
     storyRearrangementScrimModel: storyRearrangementScrimModel,
+    storyDragTransitionModel: storyDragTransitionModel,
   );
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
@@ -64,6 +70,7 @@ Widget _buildApp({
   ConstraintsModel constraintsModel,
   StoryClusterDragStateModel storyClusterDragStateModel,
   StoryRearrangementScrimModel storyRearrangementScrimModel,
+  StoryDragTransitionModel storyDragTransitionModel,
 }) =>
     new CheckedModeBanner(
       child: new StoryTimeRandomizer(
@@ -78,6 +85,7 @@ Widget _buildApp({
               nowModel: nowModel,
               storyClusterDragStateModel: storyClusterDragStateModel,
               storyRearrangementScrimModel: storyRearrangementScrimModel,
+              storyDragTransitionModel: storyDragTransitionModel,
               conductor: new Conductor(
                 storyClusterDragStateModel: storyClusterDragStateModel,
               ),

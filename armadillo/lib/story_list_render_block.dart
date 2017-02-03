@@ -38,6 +38,7 @@ class StoryListRenderBlock extends RenderBlock {
     double bottomPadding,
     double listHeight,
     Color scrimColor,
+    double liftScale,
   })
       : _parentSize = parentSize,
         _scrollableKey =
@@ -45,6 +46,7 @@ class StoryListRenderBlock extends RenderBlock {
         _bottomPadding = bottomPadding ?? 0.0,
         _listHeight = listHeight ?? 0.0,
         _scrimColor = scrimColor ?? new Color(0x00000000),
+        _liftScale = liftScale ?? 1.0,
         super(children: children, mainAxis: Axis.vertical);
 
   Color get scrimColor => _scrimColor;
@@ -88,6 +90,15 @@ class StoryListRenderBlock extends RenderBlock {
   set listHeight(double value) {
     if (_listHeight != value) {
       _listHeight = value;
+      markNeedsLayout();
+    }
+  }
+
+  double get liftScale => _liftScale;
+  double _liftScale;
+  set liftScale(double value) {
+    if (_liftScale != value) {
+      _liftScale = value;
       markNeedsLayout();
     }
   }
@@ -194,7 +205,7 @@ class StoryListRenderBlock extends RenderBlock {
         double layoutOffsetX = childParentData.storyLayout.offset.dx;
         double layoutOffsetY = childParentData.storyLayout.offset.dy;
         double liftScaleMultiplier = lerpDouble(
-          childParentData.liftScaleProgress,
+          liftScale,
           1.0,
           childParentData.inlinePreviewScaleProgress,
         );

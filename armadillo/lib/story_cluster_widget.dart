@@ -13,13 +13,13 @@ import 'armadillo_overlay.dart';
 import 'nothing.dart';
 import 'optional_wrapper.dart';
 import 'panel_drag_targets.dart';
-import 'simulated_transform.dart';
 import 'story.dart';
 import 'story_carousel.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
+import 'story_drag_transition_model.dart';
 import 'story_list.dart';
 import 'story_panels.dart';
 import 'story_title.dart';
@@ -221,14 +221,12 @@ class InlineStoryTitle extends StatelessWidget {
       lerpDouble(_kStoryInlineTitleHeight, 0.0, focusProgress);
 
   @override
-  Widget build(BuildContext context) => new SimulatedTransform(
-        key: storyCluster.titleTransformKey,
-        initOpacity: 1.0,
-        targetOpacity: StoryClusterDragStateModel
-                .of(context, rebuildOnChange: true)
-                .isDragging
-            ? 0.3
-            : 1.0,
+  Widget build(BuildContext context) => new ScopedStoryDragTransitionWidget(
+        builder: (BuildContext context, Widget child, double progress) =>
+            new Opacity(
+              opacity: lerpDouble(1.0, 0.3, progress),
+              child: child,
+            ),
         child: new Container(
           height: getHeight(focusProgress),
           child: new OverflowBox(

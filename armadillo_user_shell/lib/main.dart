@@ -16,6 +16,7 @@ import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_cluster_drag_state_model.dart';
 import 'package:armadillo/story_cluster_id.dart';
 import 'package:armadillo/story.dart';
+import 'package:armadillo/story_drag_transition_model.dart';
 import 'package:armadillo/story_model.dart';
 import 'package:armadillo/story_rearrangement_scrim_model.dart';
 import 'package:armadillo/story_time_randomizer.dart';
@@ -47,6 +48,10 @@ Future<Null> main() async {
       new StoryClusterDragStateModel();
   StoryRearrangementScrimModel storyRearrangementScrimModel =
       new StoryRearrangementScrimModel(
+    storyClusterDragStateModel: storyClusterDragStateModel,
+  );
+  StoryDragTransitionModel storyDragTransitionModel =
+      new StoryDragTransitionModel(
     storyClusterDragStateModel: storyClusterDragStateModel,
   );
 
@@ -119,6 +124,7 @@ Future<Null> main() async {
       nowModel: nowModel,
       storyClusterDragStateModel: storyClusterDragStateModel,
       storyRearrangementScrimModel: storyRearrangementScrimModel,
+      storyDragTransitionModel: storyDragTransitionModel,
       conductor: conductor,
     ),
     hitTestModel: hitTestModel,
