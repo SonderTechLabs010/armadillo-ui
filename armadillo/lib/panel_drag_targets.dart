@@ -357,8 +357,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     List<Panel> panels =
         _originalStoryPlacement.map((Story story) => story.panel).toList();
-    int availableRows =
-        maxRows(sizeModel.size) - _getCurrentRows(panels: panels);
+    int availableRows = maxRows(sizeModel.size) -
+        _getCurrentRows(
+          panels: panels,
+        );
     if (availableRows > 0) {
       // Top edge target.
       _targetLines.add(
@@ -369,8 +371,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           right:
               sizeModel.size.width - horizontalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
-          maxStoriesCanAccept: _kMaxStoriesPerCluster -
-              config.storyCluster.stories.length, //availableRows,
+          maxStoriesCanAccept: availableRows,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterAbovePanels(
                 context: context,
@@ -394,8 +395,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           right:
               sizeModel.size.width - horizontalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
-          maxStoriesCanAccept: _kMaxStoriesPerCluster -
-              config.storyCluster.stories.length, //availableRows,
+          maxStoriesCanAccept: availableRows,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterBelowPanels(
                 context: context,
@@ -412,7 +412,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
 
     // Left edge target.
-    int availableColumns = maxColumns(sizeModel.size) - _currentColumns;
+    int availableColumns = maxColumns(sizeModel.size) -
+        _getCurrentColumns(
+          panels: panels,
+        );
     if (availableColumns > 0) {
       _targetLines.add(
         new LineSegment.vertical(
@@ -422,8 +425,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           bottom:
               sizeModel.size.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
-          maxStoriesCanAccept: _kMaxStoriesPerCluster -
-              config.storyCluster.stories.length, //availableColumns,
+          maxStoriesCanAccept: availableColumns,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToLeftOfPanels(
                 context: context,
@@ -447,8 +449,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           bottom:
               sizeModel.size.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
-          maxStoriesCanAccept: _kMaxStoriesPerCluster -
-              config.storyCluster.stories.length, //availableColumns,
+          maxStoriesCanAccept: availableColumns,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToRightOfPanels(
                 context: context,
@@ -565,7 +566,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       Rect bounds = _transform(story.panel, center, sizeModel.size);
 
       // If we can split vertically add vertical targets on left and right.
-      int verticalSplits = _getVerticalSplitCount(story.panel, sizeModel.size);
+      int verticalSplits = _getVerticalSplitCount(
+        story.panel,
+        sizeModel.size,
+        panels,
+      );
       if (verticalSplits > 0) {
         double left = bounds.left + _kStoryEdgeTargetInset;
         double right = bounds.right - _kStoryEdgeTargetInset;
@@ -585,8 +590,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             top: top,
             bottom: bottom,
             color: _kStoryEdgeTargetColor,
-            maxStoriesCanAccept: _kMaxStoriesPerCluster -
-                config.storyCluster.stories.length, //verticalSplits,
+            maxStoriesCanAccept: verticalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToLeftOfPanel(
                   context: context,
@@ -611,8 +615,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             top: top,
             bottom: bottom,
             color: _kStoryEdgeTargetColor,
-            maxStoriesCanAccept: _kMaxStoriesPerCluster -
-                config.storyCluster.stories.length, //verticalSplits,
+            maxStoriesCanAccept: verticalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToRightOfPanel(
                   context: context,
@@ -655,8 +658,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             left: left,
             right: right,
             color: _kStoryEdgeTargetColor,
-            maxStoriesCanAccept: _kMaxStoriesPerCluster -
-                config.storyCluster.stories.length, //horizontalSplits,
+            maxStoriesCanAccept: horizontalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterAbovePanel(
                   context: context,
@@ -681,8 +683,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             left: left,
             right: right,
             color: _kStoryEdgeTargetColor,
-            maxStoriesCanAccept: _kMaxStoriesPerCluster -
-                config.storyCluster.stories.length, //horizontalSplits,
+            maxStoriesCanAccept: horizontalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterBelowPanel(
                   context: context,
@@ -1256,7 +1257,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   int _getCurrentRows({List<Panel> panels}) =>
       _getRows(left: 0.0, right: 1.0, panels: panels);
 
-  int get _currentColumns => _getColumns(top: 0.0, bottom: 1.0);
+  int _getCurrentColumns({List<Panel> panels}) =>
+      _getColumns(top: 0.0, bottom: 1.0, panels: panels);
 
   int _getRows({double left, double right, List<Panel> panels}) {
     Set<double> tops = new Set<double>();
@@ -1270,9 +1272,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     return tops.length;
   }
 
-  int _getColumns({double top, double bottom}) {
+  int _getColumns({double top, double bottom, List<Panel> panels}) {
     Set<double> lefts = new Set<double>();
-    config.storyCluster.panels
+    panels
         .where((Panel panel) =>
             (top <= panel.top && bottom > panel.top) ||
             (top < panel.top && panel.bottom > top))
@@ -1294,8 +1296,13 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         panels: panels,
       );
 
-  int _getVerticalSplitCount(Panel panel, Size fullSize) =>
-      maxColumns(fullSize) - _getColumns(top: panel.top, bottom: panel.bottom);
+  int _getVerticalSplitCount(Panel panel, Size fullSize, List<Panel> panels) =>
+      maxColumns(fullSize) -
+      _getColumns(
+        top: panel.top,
+        bottom: panel.bottom,
+        panels: panels,
+      );
 
   Rect _bounds(Panel panel, Size size) => new Rect.fromLTRB(
         panel.left * size.width,
