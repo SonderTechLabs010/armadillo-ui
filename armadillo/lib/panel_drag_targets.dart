@@ -18,6 +18,7 @@ import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
+import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
 import 'story_model.dart';
 import 'target_line_overlay.dart';
@@ -170,6 +171,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       storyClusterIdCandidates,
     );
 
+    _updateStoryBars(hasCandidates);
     _updateClosestTargets(storyClusterCandidates);
 
     // Scale child to config.scale if we aren't in the timeline
@@ -197,6 +199,22 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   }
 
   double get _scale => _scaleSimulation.value;
+
+  void _updateStoryBars(bool hasCandidates) {
+    if (!StoryClusterDragStateModel.of(context).isDragging) {
+      return;
+    }
+
+    if (hasCandidates) {
+      config.storyCluster.stories.forEach((Story story) {
+        story.storyBarKey.currentState?.maximize();
+      });
+    } else {
+      config.storyCluster.stories.forEach((Story story) {
+        story.storyBarKey.currentState?.minimize();
+      });
+    }
+  }
 
   /// Moves the [stories] corrdinates from whatever space they're in to the
   /// coordinate space of our [PanelDragTargets.child].

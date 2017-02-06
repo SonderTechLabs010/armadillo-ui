@@ -14,6 +14,7 @@ import 'simulated_transform.dart';
 import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
+import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_widget.dart';
 import 'story_list_render_block.dart';
 import 'story_panels.dart';
@@ -57,6 +58,20 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
   double _heightFactor;
   DisplayMode _displayModeOverride;
   int _targetClusterStoryCount;
+  StoryClusterDragStateModel _storyClusterDragStateModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _storyClusterDragStateModel = StoryClusterDragStateModel.of(context);
+    _storyClusterDragStateModel.addListener(_updateStoryBars);
+  }
+
+  @override
+  void dispose() {
+    _storyClusterDragStateModel.removeListener(_updateStoryBars);
+    super.dispose();
+  }
 
   set storyPanels(Map<Object, Panel> storyPanels) {
     setState(() {
@@ -73,7 +88,6 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       });
       _widthFactor = maxRight - minLeft;
       _heightFactor = maxBottom - minTop;
-      _updateStoryBars();
     });
   }
 
@@ -82,7 +96,6 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       _displayModeOverride = displayMode;
       config.storyCluster.displayMode = displayMode;
       config.storyCluster.focusedStoryId = null;
-      _updateStoryBars();
     });
   }
 
@@ -93,20 +106,28 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
   }
 
   void _updateStoryBars() {
-    if (!config.focused ||
-        (_storyPanels.isEmpty && _displayModeOverride == DisplayMode.panels)) {
+    if (!mounted) {
+      return;
+    }
+    if (!StoryClusterDragStateModel.of(context).isDragging) {
+      return;
+    }
+
+    if (StoryClusterDragStateModel.of(context).isAcceptable) {
       config.storyCluster.stories.forEach((Story story) {
-        story.storyBarKey.currentState.minimize();
+        story.storyBarKey.currentState.maximize();
       });
     } else {
       config.storyCluster.stories.forEach((Story story) {
-        story.storyBarKey.currentState.maximize();
+        story.storyBarKey.currentState.minimize();
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    _updateStoryBars();
+
     SizeModel sizeModel = SizeModel.of(context, rebuildOnChange: true);
     double width;
     double height;

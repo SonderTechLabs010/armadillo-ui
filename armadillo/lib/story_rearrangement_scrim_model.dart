@@ -21,8 +21,9 @@ class StoryRearrangementScrimModel extends TickingModel {
     desc: _kSimulationDesc,
   );
 
-  StoryRearrangementScrimModel(
-      {StoryClusterDragStateModel storyClusterDragStateModel}) {
+  StoryRearrangementScrimModel({
+    StoryClusterDragStateModel storyClusterDragStateModel,
+  }) {
     storyClusterDragStateModel.addListener(() {
       _opacitySimulation.target =
           storyClusterDragStateModel.isAcceptable ? 0.6 : 0.0;
