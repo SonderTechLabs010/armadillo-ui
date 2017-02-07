@@ -162,8 +162,7 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
 
     double realStoriesFractionalCenterX = realStoriesFractionalLeft +
         (realStoriesFractionalRight - realStoriesFractionalLeft) / 2.0;
-    double realStoriesFractionalCenterY = realStoriesFractionalTop +
-        (realStoriesFractionalBottom - realStoriesFractionalTop) / 2.0;
+    double realStoriesFractionalTopY = realStoriesFractionalTop;
 
     // Since the user begins the drag at config.localDragStartPoint and we want
     // to move the story to a better visual position when previewing we animate
@@ -175,7 +174,8 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
           : 0.0,
       dy: isAcceptable
           ? config.localDragStartPoint.y -
-              targetHeight * realStoriesFractionalCenterY
+              targetHeight * realStoriesFractionalTopY -
+              childScale * _kStoryBarMaximizedHeight
           : 0.0,
       child: new SimulatedSizedBox(
         key: _childKey,

@@ -52,6 +52,8 @@ const RK4SpringDescription _kScaleSimulationDesc =
 const RK4SpringDescription _kOpacitySimulationDesc =
     const RK4SpringDescription(tension: 900.0, friction: 50.0);
 
+const Duration _kHoverDuration = const Duration(milliseconds: 400);
+
 /// Wraps its [child] in an [ArmadilloDragTarget] which tracks any
 /// [ArmadilloLongPressDraggable]'s above it such that they can be dropped on
 /// specific parts of [storyCluster]'s [StoryCluster.stories]'s [Panel]s.
@@ -108,6 +110,14 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   DisplayMode _originalDisplayMode;
 
   bool _hadCandidates = false;
+
+  /// Candidates become valid after hovering over this drag target for
+  /// [_kHoverDuration]
+  bool _candidatesValid = false;
+
+  /// The timer which triggers candidate validity when [_kHoverDuration]
+  /// elapses.
+  Timer _candidateValidityTimer;
 
   @override
   void initState() {
@@ -176,8 +186,51 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
   /// [storyClusterIdCandidates] are the clusters that are currently
   /// being dragged over this drag target with their associated local
-  /// poisiton.
+  /// position.
   Widget _build(Map<StoryClusterId, Point> storyClusterIdCandidates) {
+    if (_inTimeline) {
+      if (storyClusterIdCandidates.isEmpty) {
+        _candidateValidityTimer?.cancel();
+        _candidateValidityTimer = null;
+        _candidatesValid = false;
+        StoryClusterDragStateModel
+            .of(context)
+            .removeAcceptance(config.storyCluster.id);
+      } else {
+        if (!_candidatesValid && _candidateValidityTimer == null) {
+          _candidateValidityTimer = new Timer(
+            _kHoverDuration,
+            () {
+              if (mounted) {
+                setState(
+                  () {
+                    _candidatesValid = true;
+                    _candidateValidityTimer = null;
+                    StoryClusterDragStateModel
+                        .of(context)
+                        .addAcceptance(config.storyCluster.id);
+                  },
+                );
+              }
+            },
+          );
+        }
+      }
+    }
+
+    return _buildWithConfirmedCandidates(
+      !_inTimeline || _candidatesValid
+          ? storyClusterIdCandidates
+          : <StoryClusterId, Point>{},
+    );
+  }
+
+  /// [storyClusterIdCandidates] are the clusters that are currently
+  /// being dragged over this drag target for the prerequesite time period with
+  /// their associated local position.
+  Widget _buildWithConfirmedCandidates(
+    Map<StoryClusterId, Point> storyClusterIdCandidates,
+  ) {
     bool hasCandidates = storyClusterIdCandidates.isNotEmpty;
     if (hasCandidates && !_hadCandidates) {
       _originalFocusedStoryId = config.storyCluster.focusedStoryId;
@@ -292,7 +345,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   void _updateInlinePreviewScalingSimulation(bool activate) {
     scheduleMicrotask(() {
       config.storyCluster.inlinePreviewScaleSimulationKey.currentState?.target =
-          activate ? 1.0 : 0.0;
+          activate ? 1.0 : _candidateValidityTimer != null ? 0.3 : 0.0;
     });
   }
 

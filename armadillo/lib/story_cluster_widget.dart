@@ -117,16 +117,6 @@ class StoryClusterWidget extends StatelessWidget {
                     storyCluster.id,
                   );
             },
-            onAcceptable: () {
-              StoryClusterDragStateModel.of(context).addAcceptance(
-                    storyCluster.id,
-                  );
-            },
-            onUnacceptable: () {
-              StoryClusterDragStateModel.of(context).removeAcceptance(
-                    storyCluster.id,
-                  );
-            },
             feedbackBuilder: (Point localDragStartPoint) =>
                 new StoryClusterDragFeedback(
                   key: storyCluster.dragFeedbackKey,
