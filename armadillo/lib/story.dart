@@ -34,6 +34,7 @@ class Story {
   final GlobalKey storyBarPaddingKey;
   final GlobalKey clusterDraggableKey;
   final GlobalKey<SimulatedFractionalState> positionedKey;
+  final GlobalKey<SimulatedFractionalState> shadowPositionedKey;
   final GlobalKey containerKey;
   final GlobalKey tabSizerKey;
   final Panel panel;
@@ -53,6 +54,7 @@ class Story {
     GlobalKey storyBarPaddingKey,
     GlobalKey clusterDraggableKey,
     GlobalKey positionedKey,
+    GlobalKey shadowPositionedKey,
     GlobalKey containerKey,
     GlobalKey tabSizerKey,
     Panel panel,
@@ -62,6 +64,7 @@ class Story {
         this.storyBarPaddingKey = storyBarPaddingKey ?? new GlobalKey(),
         this.clusterDraggableKey = clusterDraggableKey ?? new GlobalKey(),
         this.positionedKey = positionedKey ?? new GlobalKey(),
+        this.shadowPositionedKey = shadowPositionedKey ?? new GlobalKey(),
         this.containerKey = containerKey ?? new GlobalKey(),
         this.tabSizerKey = tabSizerKey ?? new GlobalKey(),
         this.panel = panel ?? new Panel();
@@ -73,6 +76,7 @@ class Story {
     Panel panel,
     GlobalKey clusterDraggableKey,
     GlobalKey positionedKey,
+    GlobalKey shadowPositionedKey,
   }) =>
       new Story(
         id: this.id,
@@ -90,6 +94,7 @@ class Story {
         storyBarPaddingKey: this.storyBarPaddingKey,
         clusterDraggableKey: this.clusterDraggableKey,
         positionedKey: positionedKey ?? this.positionedKey,
+        shadowPositionedKey: shadowPositionedKey ?? this.shadowPositionedKey,
         containerKey: this.containerKey,
         tabSizerKey: this.tabSizerKey,
         panel: panel ?? this.panel,

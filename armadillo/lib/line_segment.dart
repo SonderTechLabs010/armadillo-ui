@@ -98,7 +98,7 @@ class LineSegment {
   bool get isHorizontal => a.y == b.y;
   bool get isVertical => !isHorizontal;
   bool canAccept(StoryCluster storyCluster) =>
-      storyCluster.stories.length <= maxStoriesCanAccept;
+      storyCluster.realStories.length <= maxStoriesCanAccept;
 
   double distanceFrom(Point p) {
     if (isHorizontal) {

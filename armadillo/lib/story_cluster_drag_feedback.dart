@@ -8,7 +8,6 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
 
 import 'armadillo_overlay.dart';
-import 'panel.dart';
 import 'simulated_sized_box.dart';
 import 'simulated_transform.dart';
 import 'size_model.dart';
@@ -53,56 +52,26 @@ class StoryClusterDragFeedback extends StatefulWidget {
 
 class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
   final GlobalKey _childKey = new GlobalKey();
-  Map<Object, Panel> _storyPanels = <Object, Panel>{};
-  double _widthFactor;
-  double _heightFactor;
-  DisplayMode _displayModeOverride;
-  int _targetClusterStoryCount;
   StoryClusterDragStateModel _storyClusterDragStateModel;
+  List<Story> _originalStories;
+  DisplayMode _originalDisplayMode;
 
   @override
   void initState() {
     super.initState();
     _storyClusterDragStateModel = StoryClusterDragStateModel.of(context);
     _storyClusterDragStateModel.addListener(_updateStoryBars);
+    // Store off original stories and display state and on change to
+    // isAccepted, revert to initial story locations and
+    // display state.
+    _originalStories = config.storyCluster.stories;
+    _originalDisplayMode = config.storyCluster.displayMode;
   }
 
   @override
   void dispose() {
     _storyClusterDragStateModel.removeListener(_updateStoryBars);
     super.dispose();
-  }
-
-  set storyPanels(Map<Object, Panel> storyPanels) {
-    setState(() {
-      _storyPanels = new Map<Object, Panel>.from(storyPanels);
-      double minLeft = 1.0;
-      double minTop = 1.0;
-      double maxRight = 0.0;
-      double maxBottom = 0.0;
-      _storyPanels.values.forEach((Panel panel) {
-        minLeft = math.min(minLeft, panel.left);
-        minTop = math.min(minTop, panel.top);
-        maxRight = math.max(maxRight, panel.right);
-        maxBottom = math.max(maxBottom, panel.bottom);
-      });
-      _widthFactor = maxRight - minLeft;
-      _heightFactor = maxBottom - minTop;
-    });
-  }
-
-  set displayMode(DisplayMode displayMode) {
-    setState(() {
-      _displayModeOverride = displayMode;
-      config.storyCluster.displayMode = displayMode;
-      config.storyCluster.focusedStoryId = null;
-    });
-  }
-
-  set targetClusterStoryCount(int targetClusterStoryCount) {
-    setState(() {
-      _targetClusterStoryCount = targetClusterStoryCount;
-    });
   }
 
   void _updateStoryBars() {
@@ -115,12 +84,22 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
 
     if (StoryClusterDragStateModel.of(context).isAcceptable) {
       config.storyCluster.stories.forEach((Story story) {
-        story.storyBarKey.currentState.maximize();
+        story.storyBarKey.currentState?.maximize();
       });
     } else {
       config.storyCluster.stories.forEach((Story story) {
-        story.storyBarKey.currentState.minimize();
+        story.storyBarKey.currentState?.minimize();
       });
+
+      // Revert to initial story locations and display state.
+      config.storyCluster.removePreviews();
+      _originalStories.forEach((Story story) {
+        config.storyCluster.replaceStoryPanel(
+          storyId: story.id,
+          withPanel: story.panel,
+        );
+      });
+      config.storyCluster.displayMode = _originalDisplayMode;
     }
   }
 
@@ -138,77 +117,90 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     double inlinePreviewScale = StoryListRenderBlock.getInlinePreviewScale(
       sizeModel.size,
     );
+    bool isAcceptable = StoryClusterDragStateModel
+        .of(
+          context,
+          rebuildOnChange: true,
+        )
+        .isAcceptable;
 
-    if (_displayModeOverride == DisplayMode.tabs) {
-      width = (config.focused
-              ? sizeModel.size.width
-              : config.storyCluster.storyLayout.size.width) *
-          (config.storyCluster.stories.length + 1) /
-          (_targetClusterStoryCount + 1);
-      height = (config.focused
-          ? _kStoryBarMaximizedHeight
-          : _kStoryBarMinimizedHeight);
-      childScale = lerpDouble(inlinePreviewScale, 0.7, focusProgress);
-    } else if (_storyPanels.isNotEmpty) {
-      width = sizeModel.size.width * _widthFactor;
-      height = sizeModel.size.height * _heightFactor;
+    if (isAcceptable) {
+      width = sizeModel.size.width;
+      height = sizeModel.size.height;
       childScale = lerpDouble(inlinePreviewScale, 0.7, focusProgress);
     } else {
       width = config.storyCluster.storyLayout.size.width;
       height = config.storyCluster.storyLayout.size.height;
       childScale = 1.0;
     }
-    return new SimulatedSizedBox(
-      key: _childKey,
-      width: (_childKey.currentState == null
-              ? config.initialBounds.width
-              : width) *
-          childScale,
-      height: (_childKey.currentState == null
-                  ? config.initialBounds.height
-                  : height) *
-              childScale +
-          InlineStoryTitle.getHeight(focusProgress),
-      child: new Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          new Expanded(
-            child: new Stack(
-              children: <Widget>[
-                new SimulatedTransform(
-                  initOpacity: 0.0,
-                  targetOpacity: 1.0,
-                  child: new Container(
-                    decoration: new BoxDecoration(
-                      boxShadow: kElevationToShadow[12],
-                      borderRadius: new BorderRadius.all(
-                        new Radius.circular(
-                          lerpDouble(
-                            _kUnfocusedCornerRadius,
-                            _kFocusedCornerRadius,
-                            focusProgress,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                new StoryPanels(
-                  key: config.storyCluster.panelsKey,
-                  storyCluster: config.storyCluster,
-                  focusProgress: 0.0,
-                  overlayKey: config.overlayKey,
-                  storyWidgets: config.storyWidgets,
-                ),
-              ],
+    double targetWidth =
+        (_childKey.currentState == null ? config.initialBounds.width : width) *
+            childScale;
+    double targetHeight = (_childKey.currentState == null
+            ? config.initialBounds.height
+            : height) *
+        childScale;
+
+    // Determine the fractional bounds of the real stories in this cluster.
+    // We do this so we can properly position the drag feedback under the user's
+    // finger when in preview mode.
+    double realStoriesFractionalLeft = 1.0;
+    double realStoriesFractionalRight = 0.0;
+    double realStoriesFractionalTop = 1.0;
+    double realStoriesFractionalBottom = 0.0;
+
+    config.storyCluster.realStories.forEach((Story story) {
+      realStoriesFractionalLeft =
+          math.min(realStoriesFractionalLeft, story.panel.left);
+      realStoriesFractionalRight =
+          math.max(realStoriesFractionalRight, story.panel.right);
+      realStoriesFractionalTop =
+          math.min(realStoriesFractionalTop, story.panel.top);
+      realStoriesFractionalBottom =
+          math.max(realStoriesFractionalBottom, story.panel.bottom);
+    });
+
+    double realStoriesFractionalCenterX = realStoriesFractionalLeft +
+        (realStoriesFractionalRight - realStoriesFractionalLeft) / 2.0;
+    double realStoriesFractionalCenterY = realStoriesFractionalTop +
+        (realStoriesFractionalBottom - realStoriesFractionalTop) / 2.0;
+
+    // Since the user begins the drag at config.localDragStartPoint and we want
+    // to move the story to a better visual position when previewing we animate
+    // its translation when isAcceptable is true.
+    return new SimulatedTransform(
+      dx: isAcceptable
+          ? config.localDragStartPoint.x -
+              targetWidth * realStoriesFractionalCenterX
+          : 0.0,
+      dy: isAcceptable
+          ? config.localDragStartPoint.y -
+              targetHeight * realStoriesFractionalCenterY
+          : 0.0,
+      child: new SimulatedSizedBox(
+        key: _childKey,
+        width: targetWidth,
+        height: targetHeight + InlineStoryTitle.getHeight(focusProgress),
+        child: new Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            new Expanded(
+              child: new StoryPanels(
+                key: config.storyCluster.panelsKey,
+                storyCluster: config.storyCluster,
+                focusProgress: 0.0,
+                overlayKey: config.overlayKey,
+                storyWidgets: config.storyWidgets,
+                paintShadows: true,
+              ),
             ),
-          ),
-          new InlineStoryTitle(
-            focusProgress: focusProgress,
-            storyCluster: config.storyCluster,
-          ),
-        ],
+            new InlineStoryTitle(
+              focusProgress: focusProgress,
+              storyCluster: config.storyCluster,
+            ),
+          ],
+        ),
       ),
     );
   }

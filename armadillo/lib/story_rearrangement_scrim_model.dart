@@ -32,6 +32,7 @@ class StoryRearrangementScrimModel extends TickingModel {
   }
 
   Color get scrimColor => Colors.black.withOpacity(_opacitySimulation.value);
+  double get progress => _opacitySimulation.value / 0.6;
 
   @override
   bool handleTick(double elapsedSeconds) {

@@ -38,7 +38,7 @@ class StoryCluster {
   DisplayMode _previewDisplayMode;
   final Set<VoidCallback> _storyListListeners;
   final Set<VoidCallback> _panelListeners;
-  StoryId focusedStoryId;
+  StoryId _focusedStoryId;
   StoryLayout storyLayout;
 
   StoryCluster({
@@ -80,7 +80,7 @@ class StoryCluster {
         this._storyListListeners =
             storyListListeners ?? new Set<VoidCallback>(),
         this._panelListeners = panelListeners ?? new Set<VoidCallback>(),
-        this.focusedStoryId = focusedStoryId ?? stories[0].id;
+        this._focusedStoryId = focusedStoryId ?? stories[0].id;
 
   factory StoryCluster.fromStory(Story story) => new StoryCluster(
         id: story.clusterId,
@@ -93,7 +93,20 @@ class StoryCluster {
         ],
       );
 
+  /// The list of stories in this cluster including both 'real' stories and
+  /// place holder stories.
   List<Story> get stories => new List<Story>.unmodifiable(_stories);
+
+  /// The list of 'real' stories in this cluster.
+  List<Story> get realStories => new List<Story>.unmodifiable(
+        _stories.where((Story story) => !story.isPlaceHolder),
+      );
+
+  /// The list of place holder stories in this cluster.
+  List<PlaceHolderStory> get previewStories =>
+      new List<PlaceHolderStory>.unmodifiable(
+        _stories.where((Story story) => story.isPlaceHolder),
+      );
 
   Map<StoryId, Widget> buildStoryWidgets(BuildContext context) {
     Map<StoryId, Widget> storyWidgets = <StoryId, Widget>{};
@@ -132,7 +145,6 @@ class StoryCluster {
     Duration cumulativeInteractionDuration,
     bool inactive,
     GlobalKey clusterDraggableId,
-    StoryId focusedStoryId,
   }) =>
       new StoryCluster(
         id: this.id,
@@ -155,7 +167,7 @@ class StoryCluster {
         previewDisplayMode: this._previewDisplayMode,
         storyListListeners: this._storyListListeners,
         panelListeners: this._panelListeners,
-        focusedStoryId: focusedStoryId ?? this.focusedStoryId,
+        focusedStoryId: this._focusedStoryId,
         storyLayout: this.storyLayout,
       );
 
@@ -246,14 +258,24 @@ class StoryCluster {
   }
 
   /// Adds the [story] to [stories] with a [Panel] of [withPanel].
-  void add({Story story, Panel withPanel}) {
-    _stories.add(story.copyWith(panel: withPanel));
+  void add({Story story, Panel withPanel, int atIndex}) {
+    if (atIndex == null) {
+      _stories.add(story.copyWith(panel: withPanel));
+    } else {
+      _stories.insert(atIndex, story.copyWith(panel: withPanel));
+    }
     _notifyStoryListListeners();
   }
 
   /// Replaces the [Story.panel] of the story with [panel] with [withPanel]/
   void replace({Panel panel, Panel withPanel}) {
     Story story = _stories.where((Story story) => story.panel == panel).single;
+    _replaceStory(story: story, withPanel: withPanel);
+  }
+
+  /// Replaces the [Story.panel] of the story with [storyId] with [withPanel]/
+  void replaceStoryPanel({StoryId storyId, Panel withPanel}) {
+    Story story = _stories.where((Story story) => story.id == storyId).single;
     _replaceStory(story: story, withPanel: withPanel);
   }
 
@@ -307,6 +329,15 @@ class StoryCluster {
 
     _notifyStoryListListeners();
   }
+
+  set focusedStoryId(StoryId storyId) {
+    if (storyId != _focusedStoryId) {
+      _focusedStoryId = storyId;
+      _notifyPanelListeners();
+    }
+  }
+
+  StoryId get focusedStoryId => _focusedStoryId;
 
   static String _getClusterTitle(List<Story> stories) {
     String title = '';

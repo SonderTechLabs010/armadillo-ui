@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 
 import 'panel.dart';
 import 'simulated_fractional.dart';
-import 'story.dart';
 import 'story_cluster.dart';
 import 'story_panels.dart';
 
@@ -17,32 +16,34 @@ const double _kStoryMargin = 4.0;
 const double _kUnfocusedCornerRadius = 4.0;
 const double _kFocusedCornerRadius = 8.0;
 
-/// Positions the [story] in a [StoryPanels] within the given [currentSize] with
-/// a [SimulatedFractional] based on [story]'s panel, [displayMode], and
+/// Positions the [child] in a [StoryPanels] within the given [currentSize] with
+/// a [SimulatedFractional] based on [panel], [displayMode], and
 /// [isFocused].
 class StoryPositioned extends StatelessWidget {
   final DisplayMode displayMode;
   final bool isFocused;
-  final Story story;
+  final Panel panel;
   final Size currentSize;
   final double focusProgress;
   final Widget child;
   final double storyBarMaximizedHeight;
+  final Key childContainerKey;
+  final bool clip;
 
   StoryPositioned({
     this.storyBarMaximizedHeight,
     this.displayMode,
     this.isFocused,
-    this.story,
+    this.panel,
     this.currentSize,
     this.focusProgress,
+    this.childContainerKey,
+    this.clip: true,
     this.child,
   });
 
   @override
   Widget build(BuildContext context) {
-    Panel panel = story.panel;
-
     double scale =
         lerpDouble(_kUnfocusedStoryMargin, _kStoryMargin, focusProgress) /
             _kStoryMargin;
@@ -68,19 +69,21 @@ class StoryPositioned extends StatelessWidget {
 
     return displayMode == DisplayMode.panels
         ? new SimulatedFractional(
-            key: story.positionedKey,
+            key: childContainerKey,
             fractionalTop: panel.top + topMargin,
             fractionalLeft: panel.left + leftMargin,
             fractionalWidth: panel.width - (leftMargin + rightMargin),
             fractionalHeight: panel.height - (topMargin + bottomMargin),
             size: currentSize,
-            child: new ClipRRect(
-              borderRadius: borderRadius,
-              child: child,
-            ),
+            child: !clip
+                ? child
+                : new ClipRRect(
+                    borderRadius: borderRadius,
+                    child: child,
+                  ),
           )
         : new SimulatedFractional(
-            key: story.positionedKey,
+            key: childContainerKey,
             fractionalTop: 0.0,
             fractionalLeft: 0.0,
             fractionalWidth: 1.0,

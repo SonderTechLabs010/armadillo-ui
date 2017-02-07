@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 
@@ -14,6 +15,7 @@ import 'optional_wrapper.dart';
 import 'panel.dart';
 import 'simulated_fractionally_sized_box.dart';
 import 'simulated_padding.dart';
+import 'simulated_transform.dart';
 import 'story.dart';
 import 'story_bar.dart';
 import 'story_cluster.dart';
@@ -26,6 +28,8 @@ import 'story_positioned.dart';
 
 const double _kStoryBarMinimizedHeight = 4.0;
 const double _kStoryBarMaximizedHeight = 48.0;
+const double _kUnfocusedCornerRadius = 4.0;
+const double _kFocusedCornerRadius = 8.0;
 
 /// Displays up to four stories in a grid-like layout.
 class StoryPanels extends StatefulWidget {
@@ -33,6 +37,7 @@ class StoryPanels extends StatefulWidget {
   final double focusProgress;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
   final Map<StoryId, Widget> storyWidgets;
+  final bool paintShadows;
 
   StoryPanels({
     Key key,
@@ -40,6 +45,7 @@ class StoryPanels extends StatefulWidget {
     this.focusProgress,
     this.overlayKey,
     this.storyWidgets,
+    this.paintShadows: false,
   })
       : super(key: key) {
     assert(() {
@@ -80,7 +86,13 @@ class StoryPanelsState extends State<StoryPanels> {
     super.dispose();
   }
 
-  void _onPanelsChanged() => scheduleMicrotask(() => setState(() {}));
+  void _onPanelsChanged() => scheduleMicrotask(
+        () {
+          if (mounted) {
+            setState(() {});
+          }
+        },
+      );
 
   @override
   Widget build(BuildContext context) => new LayoutBuilder(
@@ -100,30 +112,65 @@ class StoryPanelsState extends State<StoryPanels> {
               : !a.isPlaceHolder && b.isPlaceHolder ? 1 : 0,
         );
 
-        return new Stack(
-          overflow: Overflow.visible,
-          children: sortedStories
-              .map(
-                (Story story) => new StoryPositioned(
-                      storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
-                      focusProgress: config.focusProgress,
-                      displayMode: config.storyCluster.displayMode,
-                      isFocused:
-                          (config.storyCluster.focusedStoryId == story.id),
-                      story: story,
-                      currentSize: currentSize,
-                      child: _getStory(
-                        context,
-                        story,
-                        _getStoryBarPadding(
-                          story: story,
-                          currentSize: currentSize,
+        List<Widget> stackChildren = <Widget>[];
+
+        if (config.paintShadows) {
+          stackChildren.addAll(
+            config.storyCluster.realStories.map(
+              (Story story) => new StoryPositioned(
+                    storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
+                    focusProgress: config.focusProgress,
+                    displayMode: config.storyCluster.displayMode,
+                    isFocused: (config.storyCluster.focusedStoryId == story.id),
+                    panel: story.panel,
+                    currentSize: currentSize,
+                    clip: false,
+                    child: new SimulatedTransform(
+                      initOpacity: 0.0,
+                      targetOpacity: 1.0,
+                      child: new Container(
+                        decoration: new BoxDecoration(
+                          boxShadow: kElevationToShadow[12],
+                          borderRadius: new BorderRadius.all(
+                            new Radius.circular(
+                              lerpDouble(
+                                _kUnfocusedCornerRadius,
+                                _kFocusedCornerRadius,
+                                config.focusProgress,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-              )
-              .toList(),
+                  ),
+            ),
+          );
+        }
+
+        stackChildren.addAll(
+          sortedStories.map(
+            (Story story) => new StoryPositioned(
+                  storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
+                  focusProgress: config.focusProgress,
+                  displayMode: config.storyCluster.displayMode,
+                  isFocused: (config.storyCluster.focusedStoryId == story.id),
+                  panel: story.panel,
+                  currentSize: currentSize,
+                  childContainerKey: story.positionedKey,
+                  child: _getStory(
+                    context,
+                    story,
+                    _getStoryBarPadding(
+                      story: story,
+                      currentSize: currentSize,
+                    ),
+                  ),
+                ),
+          ),
         );
+
+        return new Stack(overflow: Overflow.visible, children: stackChildren);
       });
 
   Widget _getStoryBarDraggableWrapper({
@@ -135,7 +182,7 @@ class StoryPanelsState extends State<StoryPanels> {
     Rect initialBoundsOnDrag;
     return new OptionalWrapper(
       // Don't allow dragging if we're the only story.
-      useWrapper: config.storyCluster.stories.length > 1,
+      useWrapper: config.storyCluster.realStories.length > 1,
       builder: (BuildContext context, Widget child) =>
           new ArmadilloLongPressDraggable<StoryClusterId>(
             key: story.clusterDraggableKey,

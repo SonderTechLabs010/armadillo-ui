@@ -22,6 +22,7 @@ import 'story_cluster_id.dart';
 import 'story_drag_transition_model.dart';
 import 'story_list.dart';
 import 'story_panels.dart';
+import 'story_rearrangement_scrim_model.dart';
 import 'story_title.dart';
 
 /// The minimum story height.
@@ -224,7 +225,13 @@ class InlineStoryTitle extends StatelessWidget {
   Widget build(BuildContext context) => new ScopedStoryDragTransitionWidget(
         builder: (BuildContext context, Widget child, double progress) =>
             new Opacity(
-              opacity: lerpDouble(1.0, 0.3, progress),
+              opacity: lerpDouble(
+                lerpDouble(1.0, 0.5, progress),
+                0.0,
+                StoryRearrangementScrimModel
+                    .of(context, rebuildOnChange: true)
+                    .progress,
+              ),
               child: child,
             ),
         child: new Container(
