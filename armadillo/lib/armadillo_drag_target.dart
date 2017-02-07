@@ -140,7 +140,9 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
   GestureRecognizer _recognizer;
   int _activeCount = 0;
 
-  bool get _canDrag => _activeCount < 1;
+  bool get _canDrag =>
+      (_activeCount < 1) &&
+      !(config.overlayKey.currentState?.hasBuilders ?? false);
 
   void _routePointer(PointerEvent event) {
     if (_canDrag) {
@@ -181,7 +183,7 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
     final bool showChild =
         _activeCount == 0 || config.childWhenDragging == null;
     return new Listener(
-        onPointerDown: _canDrag ? _routePointer : null,
+        onPointerDown: _routePointer,
         child: showChild ? config.child : config.childWhenDragging);
   }
 }

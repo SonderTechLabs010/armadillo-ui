@@ -18,6 +18,8 @@ class ArmadilloOverlay extends StatefulWidget {
 class ArmadilloOverlayState extends State<ArmadilloOverlay> {
   final Set<WidgetBuilder> _builders = new Set<WidgetBuilder>();
 
+  bool get hasBuilders => _builders.isNotEmpty;
+
   void addBuilder(WidgetBuilder builder) => setState(() {
         _builders.add(builder);
       });
