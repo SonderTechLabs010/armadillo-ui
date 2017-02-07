@@ -67,4 +67,11 @@ class SimulatedFractionallySizedBoxState
     _heightFactorSimulation.elapseTime(elapsedSeconds);
     return !_heightFactorSimulation.isDone;
   }
+
+  void jump({double heightFactor}) {
+    _heightFactorSimulation = new RK4SpringSimulation(
+      initValue: heightFactor,
+      desc: config.springDescription,
+    );
+  }
 }

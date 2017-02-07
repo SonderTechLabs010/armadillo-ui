@@ -9,6 +9,7 @@ import 'simulated_fractional.dart';
 import 'story_bar.dart';
 import 'story_cluster_id.dart';
 import 'story_list.dart';
+import 'simulated_fractionally_sized_box.dart';
 
 class StoryId extends ValueKey<dynamic> {
   StoryId(dynamic value) : super(value);
@@ -36,7 +37,7 @@ class Story {
   final GlobalKey<SimulatedFractionalState> positionedKey;
   final GlobalKey<SimulatedFractionalState> shadowPositionedKey;
   final GlobalKey containerKey;
-  final GlobalKey tabSizerKey;
+  final GlobalKey<SimulatedFractionallySizedBoxState> tabSizerKey;
   final Panel panel;
 
   Story({
@@ -56,7 +57,7 @@ class Story {
     GlobalKey positionedKey,
     GlobalKey shadowPositionedKey,
     GlobalKey containerKey,
-    GlobalKey tabSizerKey,
+    GlobalKey<SimulatedFractionallySizedBoxState> tabSizerKey,
     Panel panel,
   })
       : this.clusterId = clusterId ?? new StoryClusterId(),
@@ -66,7 +67,8 @@ class Story {
         this.positionedKey = positionedKey ?? new GlobalKey(),
         this.shadowPositionedKey = shadowPositionedKey ?? new GlobalKey(),
         this.containerKey = containerKey ?? new GlobalKey(),
-        this.tabSizerKey = tabSizerKey ?? new GlobalKey(),
+        this.tabSizerKey =
+            tabSizerKey ?? new GlobalKey<SimulatedFractionallySizedBoxState>(),
         this.panel = panel ?? new Panel();
 
   Story copyWith({

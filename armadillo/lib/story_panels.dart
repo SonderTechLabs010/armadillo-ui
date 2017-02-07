@@ -262,6 +262,21 @@ class StoryPanelsState extends State<StoryPanels> {
                     onTap: () {
                       config.storyCluster.focusedStoryId = story.id;
                       _onPanelsChanged();
+                      // If we're in tabbed mode we want to jump the newly
+                      // focused story's size to full size instead of animating
+                      // it.
+                      if (config.storyCluster.displayMode == DisplayMode.tabs) {
+                        config.storyCluster.stories.forEach((Story story) {
+                          bool storyFocused =
+                              (config.storyCluster.focusedStoryId == story.id);
+                          story.tabSizerKey.currentState
+                              .jump(heightFactor: storyFocused ? 1.0 : 0.0);
+                          if (storyFocused) {
+                            story.positionedKey.currentState
+                                .jumpFractionalHeight(1.0);
+                          }
+                        });
+                      }
                     },
                     child: _getStoryBarDraggableWrapper(
                       context: context,

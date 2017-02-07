@@ -120,6 +120,13 @@ class SimulatedFractionalState extends TickingState<SimulatedFractional> {
         _fractionalHeightSimulation.isDone);
   }
 
+  void jumpFractionalHeight(double fractionalHeight) {
+    _fractionalHeightSimulation = new RK4SpringSimulation(
+      initValue: fractionalHeight,
+      desc: config.springDescription,
+    );
+  }
+
   void jump(Rect bounds, Size newSize) {
     _fractionalTopSimulation = new RK4SpringSimulation(
       initValue: bounds.topLeft.y / newSize.height,
