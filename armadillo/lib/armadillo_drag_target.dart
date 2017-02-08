@@ -341,7 +341,7 @@ class _DragAvatar<T> extends Drag {
   final VoidCallback onUnacceptable;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
 
-  _DragTargetState<T> _activeTarget;
+  List<_DragTargetState<T>> _activeTargets = <_DragTargetState<T>>[];
   List<_DragTargetState<T>> _enteredTargets = <_DragTargetState<T>>[];
   Point _position;
 
@@ -370,8 +370,7 @@ class _DragAvatar<T> extends Drag {
 
     List<_DragTargetState<T>> targets = _getDragTargets(result.path).toList();
     bool listsMatch = false;
-    if (targets.length >= _enteredTargets.length &&
-        _enteredTargets.isNotEmpty) {
+    if (targets.length == _enteredTargets.length) {
       listsMatch = true;
       Iterator<_DragTargetState<T>> iterator = targets.iterator;
       for (int i = 0; i < _enteredTargets.length; i += 1) {
@@ -389,20 +388,20 @@ class _DragAvatar<T> extends Drag {
       _leaveAllEntered();
 
       // Enter new targets.
-      _DragTargetState<T> newTarget =
-          targets.firstWhere((_DragTargetState<T> target) {
+      List<_DragTargetState<T>> newTargets =
+          targets.where((_DragTargetState<T> target) {
         _enteredTargets.add(target);
         RenderBox box = target.context.findRenderObject();
         Point localPosition = box.globalToLocal(globalPosition);
         return target.didEnter(data, localPosition);
-      }, orElse: () => null);
+      }).toList();
 
-      if (_activeTarget == null && newTarget != null) {
+      if (_activeTargets.isEmpty && newTargets.isNotEmpty) {
         onAcceptable?.call();
-      } else if (_activeTarget != null && newTarget == null) {
+      } else if (_activeTargets.isNotEmpty && newTargets.isEmpty) {
         onUnacceptable?.call();
       }
-      _activeTarget = newTarget;
+      _activeTargets = newTargets;
     }
 
     // Update positions
@@ -438,16 +437,18 @@ class _DragAvatar<T> extends Drag {
 
   void finishDrag(_DragEndKind endKind, [Velocity velocity]) {
     bool wasAccepted = false;
-    if (endKind == _DragEndKind.dropped && _activeTarget != null) {
-      _activeTarget.didDrop(data);
+    if (endKind == _DragEndKind.dropped && _activeTargets.isNotEmpty) {
+      _activeTargets.forEach((_DragTargetState<T> activeTarget) {
+        activeTarget.didDrop(data);
+        _enteredTargets.remove(activeTarget);
+      });
       wasAccepted = true;
-      _enteredTargets.remove(_activeTarget);
     }
     _leaveAllEntered();
     if (wasAccepted) {
       onUnacceptable?.call();
     }
-    _activeTarget = null;
+    _activeTargets = <_DragTargetState<T>>[];
     overlayKey.currentState.removeBuilder(_build);
     // TODO(ianh): consider passing _entry as well so the client can perform an animation.
     if (onDragEnd != null) {
