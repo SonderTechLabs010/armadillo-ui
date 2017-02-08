@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/scheduler.dart';
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
-import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
 import 'armadillo_drag_target.dart';
@@ -12,21 +12,13 @@ import 'nothing.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
 
-const double _kDragTargetHeight = 100.0;
 const Color _kDraggableHoverColor = const Color(0x00FFFF00);
 const Color _kNoDraggableHoverColor = const Color(0x00FFFF00);
-const double _kTargetScrollSpeed = 1500.0;
+const double _kDragScrollThreshold = 120.0;
 
 /// Called whenever an [ArmadilloDragTarget] child of [EdgeScrollDragTarget] is
 /// built.
-typedef void _BuildCallback(bool hasDraggableAbove);
-
-/// Scroll speed spring simulation
-const RK4SpringDescription _kScrollSpeedSimulationDesc =
-    const RK4SpringDescription(
-  tension: 450.0,
-  friction: 50.0,
-);
+typedef void _BuildCallback(bool hasDraggableAbove, List<Point> points);
 
 /// The drag targets which cause the given [scrollableKey]'s [Scrollable] to
 /// scroll when a draggable hovers over them.
@@ -40,14 +32,10 @@ class EdgeScrollDragTarget extends StatefulWidget {
 }
 
 class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
-  final RK4SpringSimulation _scrollSimulation = new RK4SpringSimulation(
-    initValue: 0.0,
-    desc: _kScrollSpeedSimulationDesc,
-  );
-  bool _topHadDraggableAbove = false;
-  bool _bottomHadDraggableAbove = false;
   bool _enabled = true;
-  Duration _lastTimeStamp;
+  double _currentVelocity = 0.0;
+  double _lastHeight = 2.0 * _kDragScrollThreshold;
+  double _y = _kDragScrollThreshold;
 
   void disable() {
     if (_enabled) {
@@ -65,117 +53,128 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
     }
   }
 
-  void onScroll() {
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
     bool clusterBeingDragged = StoryClusterDragStateModel
         .of(context, rebuildOnChange: true)
         .isDragging;
-    bool scrolledToTop = config.scrollableKey.currentState.scrollOffset ==
-        config.scrollableKey.currentState.scrollBehavior.maxScrollOffset;
-    bool scrolledToBottom = config.scrollableKey.currentState.scrollOffset ==
-        config.scrollableKey.currentState.scrollBehavior.minScrollOffset;
-    if (!clusterBeingDragged) {
-      _topHadDraggableAbove = false;
-      _bottomHadDraggableAbove = false;
-    }
-    if (scrolledToTop) {
-      _topHadDraggableAbove = false;
-    }
-    if (scrolledToBottom) {
-      _bottomHadDraggableAbove = false;
+    if (!_enabled || !clusterBeingDragged) {
+      _y = _lastHeight / 2.0;
     }
     return !_enabled || !clusterBeingDragged
         ? Nothing.widget
         : new Stack(
             children: <Widget>[
-              scrolledToTop
-                  ? Nothing.widget
-                  : new Positioned(
-                      top: 0.0,
-                      left: 0.0,
-                      right: 0.0,
-                      height: _kDragTargetHeight,
-                      child: _buildDragTarget(
-                        onBuild: (bool hasDraggableAbove) {
-                          if (_topHadDraggableAbove &&
-                              !hasDraggableAbove &&
-                              !_bottomHadDraggableAbove) {
-                            // Stop the simulation.
-                            _scrollSimulation.target = 0.0;
-                            startTicking();
-                          } else if (!_bottomHadDraggableAbove &&
-                              !_topHadDraggableAbove &&
-                              hasDraggableAbove) {
-                            // Start a simulation toward max
-                            _scrollSimulation.target = _kTargetScrollSpeed;
-                            startTicking();
-                            _scheduleFrameCallback();
-                          }
-                          _topHadDraggableAbove = hasDraggableAbove;
-                        },
-                      ),
-                    ),
-              scrolledToBottom
-                  ? Nothing.widget
-                  : new Positioned(
-                      bottom: 0.0,
-                      left: 0.0,
-                      right: 0.0,
-                      height: _kDragTargetHeight,
-                      child: _buildDragTarget(
-                        onBuild: (bool hasDraggableAbove) {
-                          if (_bottomHadDraggableAbove &&
-                              !hasDraggableAbove &&
-                              !_topHadDraggableAbove) {
-                            // Stop the simulation.
-                            _scrollSimulation.target = 0.0;
-                            startTicking();
-                          } else if (!_bottomHadDraggableAbove &&
-                              !_topHadDraggableAbove &&
-                              hasDraggableAbove) {
-                            // Start a simulation toward min
-                            _scrollSimulation.target = -_kTargetScrollSpeed;
-                            startTicking();
-                            _scheduleFrameCallback();
-                          }
-                          _bottomHadDraggableAbove = hasDraggableAbove;
-                        },
-                      ),
-                    ),
+              new Positioned(
+                top: 0.0,
+                left: 0.0,
+                right: 0.0,
+                bottom: 0.0,
+                child: _buildDragTarget(
+                  onBuild: (bool hasDraggableAbove, List<Point> points) {
+                    RenderBox box = context.findRenderObject();
+                    _lastHeight = box.size.height;
+                    _y = _lastHeight;
+                    points.forEach((Point point) {
+                      _y = math.min(_y, point.y);
+                    });
+                    if (_shouldScrollUp || _shouldScrollDown) {
+                      startTicking();
+                    }
+                  },
+                ),
+              ),
             ],
           );
   }
 
-  void _scheduleFrameCallback() {
-    _lastTimeStamp = null;
-    SchedulerBinding.instance.addPostFrameCallback(_frameCallback);
+  bool get _shouldScrollUp => _y < _kDragScrollThreshold;
+  bool get _shouldScrollDown => _y > _lastHeight - _kDragScrollThreshold;
+
+  @override
+  bool handleTick(double seconds) {
+    // Cancel callbacks if we've disabled the drag targets or we've settled.
+    if (!_enabled ||
+        (_currentVelocity == 0.0 && !_shouldScrollUp && !_shouldScrollDown)) {
+      return false;
+    }
+
+    double minScrollOffset =
+        config.scrollableKey.currentState.scrollBehavior.minScrollOffset;
+    double maxScrollOffset =
+        config.scrollableKey.currentState.scrollBehavior.maxScrollOffset;
+    double currentScrollOffset = config.scrollableKey.currentState.scrollOffset;
+
+    double cumulativeScrollDelta = 0.0;
+    double secondsRemaining = seconds;
+    final double _kMaxStepSize = 1 / 60;
+    while (secondsRemaining > 0.0) {
+      double stepSize =
+          secondsRemaining > _kMaxStepSize ? _kMaxStepSize : secondsRemaining;
+      cumulativeScrollDelta += _getScrollAmount(stepSize);
+      secondsRemaining -= _kMaxStepSize;
+    }
+    config.scrollableKey.currentState.scrollTo(
+      (currentScrollOffset + cumulativeScrollDelta).clamp(
+        minScrollOffset,
+        maxScrollOffset,
+      ),
+    );
+    return true;
   }
 
-  void _frameCallback(Duration timeStamp) {
-    // Cancel callbacks if we've disabled the drag targets or we've completed
-    // the simulation.
-    if (!_enabled ||
-        (_scrollSimulation.target == 0.0 && _scrollSimulation.isDone)) {
-      return;
-    }
-    if (_lastTimeStamp != null) {
-      // Set scroll value.
-      double scrollDelta = _scrollSimulation.value *
-          (timeStamp - _lastTimeStamp).inMicroseconds.toDouble() /
-          1000000.0;
-      config.scrollableKey.currentState.scrollTo(
-          (config.scrollableKey.currentState.scrollOffset + scrollDelta).clamp(
-        config.scrollableKey.currentState.scrollBehavior.minScrollOffset,
-        config.scrollableKey.currentState.scrollBehavior.maxScrollOffset,
-      ));
+  double _getScrollAmount(double seconds) {
+    const double a = 1.0;
+    const double b = 0.5;
+    const double c = 1.5;
+    const double d = 0.02;
+    const double e = 2.0;
+
+    // If we should scroll up, accelerate upward.
+    if (_shouldScrollUp) {
+      _currentVelocity += math.pow(
+              math.min(
+                1.0,
+                (_kDragScrollThreshold - _y) / _kDragScrollThreshold * e,
+              ),
+              a) *
+          b *
+          seconds *
+          60;
     }
 
-    _lastTimeStamp = timeStamp;
-    SchedulerBinding.instance.addPostFrameCallback(_frameCallback);
+    // If we should scroll down, accelerate downward.
+    if (_shouldScrollDown) {
+      _currentVelocity -= math.pow(
+              math.min(
+                1.0,
+                (_y - (_lastHeight - _kDragScrollThreshold)) /
+                    _kDragScrollThreshold *
+                    e,
+              ),
+              a) *
+          b *
+          seconds *
+          60;
+    }
+
+    // Apply friction.
+    double friction;
+    if (_y < (_lastHeight / 2)) {
+      friction = math.pow(math.max(0.0, _y) / _kDragScrollThreshold, c) * d;
+    } else {
+      friction = math.pow(
+              math.max(0.0, (_lastHeight - _y)) / _kDragScrollThreshold, c) *
+          d;
+    }
+    _currentVelocity -= _currentVelocity * friction * seconds * 60;
+
+    // Once we drop below a certian threshold, jump to 0.0.
+    if (_currentVelocity.abs() < 0.1) {
+      _currentVelocity = 0.0;
+    }
+
+    return _currentVelocity * seconds * 60;
   }
 
   Widget _buildDragTarget({
@@ -190,7 +189,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
           Map<StoryClusterId, Point> candidateData,
           Map<dynamic, Point> rejectedData,
         ) {
-          onBuild(rejectedData.isNotEmpty);
+          onBuild(rejectedData.isNotEmpty, rejectedData.values.toList());
           return new IgnorePointer(
             child: new Container(
               decoration: new BoxDecoration(
@@ -202,19 +201,4 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
           );
         },
       );
-
-  @override
-  bool handleTick(double elapsedSeconds) {
-    bool continueTicking = false;
-
-    if (_scrollSimulation != null) {
-      if (!_scrollSimulation.isDone) {
-        _scrollSimulation.elapseTime(elapsedSeconds);
-        if (!_scrollSimulation.isDone) {
-          continueTicking = true;
-        }
-      }
-    }
-    return continueTicking;
-  }
 }
