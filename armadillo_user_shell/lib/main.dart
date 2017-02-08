@@ -4,7 +4,7 @@
 
 import 'dart:async';
 
-import 'package:apps.modular.lib.app.dart/app.dart';
+import 'package:application.lib.app.dart/app.dart';
 import 'package:apps.modular.services.user/user_shell.fidl.dart';
 import 'package:armadillo/armadillo.dart';
 import 'package:armadillo/armadillo_drag_target.dart';
