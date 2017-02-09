@@ -126,22 +126,33 @@ class Panel {
   /// Splits the panel in half, passing the resulting two halves to
   /// [panelSplitResultCallback].
   void split(PanelSplitResultCallback panelSplitResultCallback) {
-    bool tall = _heightFactor > _widthFactor;
-    Panel a = new Panel(
-      origin: _origin,
-      heightFactor: tall ? _heightFactor / 2.0 : _heightFactor,
-      widthFactor: tall ? _widthFactor : _widthFactor / 2.0,
-    );
-    Panel b = new Panel(
-      origin: _origin +
-          new FractionalOffset(
-            tall ? 0.0 : _widthFactor / 2.0,
-            tall ? _heightFactor / 2.0 : 0.0,
-          ),
-      heightFactor: tall ? _heightFactor / 2.0 : _heightFactor,
-      widthFactor: tall ? _widthFactor : _widthFactor / 2.0,
-    );
-    panelSplitResultCallback(a, b);
+    if (_heightFactor > _widthFactor) {
+      double aHeightFactor = toGridValue(_heightFactor / 2.0);
+      Panel a = new Panel(
+        origin: _origin,
+        heightFactor: aHeightFactor,
+        widthFactor: _widthFactor,
+      );
+      Panel b = new Panel(
+        origin: _origin + new FractionalOffset(0.0, aHeightFactor),
+        heightFactor: _heightFactor - aHeightFactor,
+        widthFactor: _widthFactor,
+      );
+      panelSplitResultCallback(a, b);
+    } else {
+      double aWidthFactor = toGridValue(_widthFactor / 2.0);
+      Panel a = new Panel(
+        origin: _origin,
+        heightFactor: _heightFactor,
+        widthFactor: aWidthFactor,
+      );
+      Panel b = new Panel(
+        origin: _origin + new FractionalOffset(aWidthFactor, 0.0),
+        heightFactor: _heightFactor,
+        widthFactor: _widthFactor - aWidthFactor,
+      );
+      panelSplitResultCallback(a, b);
+    }
   }
 
   /// Returns true if [other's] origin aligns with [_origin] in an axis.

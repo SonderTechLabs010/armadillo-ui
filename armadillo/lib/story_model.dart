@@ -144,15 +144,14 @@ class StoryModel extends Model {
     for (int i = 0; i < source.stories.length; i++) {
       Story sourceStory = source.stories[i];
       Story largestStory = _getLargestStory(target.stories);
-      if (largestStory.panel.canBeSplitVertically(_lastLayoutSize.width) ||
-          largestStory.panel.canBeSplitHorizontally(_lastLayoutSize.height)) {
-        largestStory.panel.split((Panel a, Panel b) {
-          target.replace(panel: largestStory.panel, withPanel: a);
-          target.add(story: sourceStory, withPanel: b);
-          target.normalizeSizes();
-        });
-      } else {
-        print('Cannot add story as a panel!  We must switch to tabs!');
+      largestStory.panel.split((Panel a, Panel b) {
+        target.replace(panel: largestStory.panel, withPanel: a);
+        target.add(story: sourceStory, withPanel: b);
+        target.normalizeSizes();
+      });
+      if (!largestStory.panel.canBeSplitVertically(_lastLayoutSize.width) &&
+          !largestStory.panel.canBeSplitHorizontally(_lastLayoutSize.height)) {
+        target.displayMode = DisplayMode.tabs;
       }
     }
 

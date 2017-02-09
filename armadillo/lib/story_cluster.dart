@@ -244,16 +244,46 @@ class StoryCluster {
     }
 
     panels.toList().forEach(
-          (Panel panel) => replace(
-                panel: panel,
-                withPanel: new Panel.fromLTRB(
-                  leftMap[panel.left],
-                  topMap[panel.top],
-                  leftMap[panel.right],
-                  topMap[panel.bottom],
-                ),
-              ),
+      (Panel panel) {
+        assert(() {
+          bool hadErrors = false;
+          if (leftMap[panel.left] == null) {
+            print(
+                'leftMap doesn\'t contain left ${panel.left}: ${leftMap.keys}');
+            hadErrors = true;
+          }
+          if (topMap[panel.top] == null) {
+            print('topMap doesn\'t contain top ${panel.top}: ${topMap.keys}');
+            hadErrors = true;
+          }
+          if (leftMap[panel.right] == null) {
+            print(
+                'leftMap doesn\'t contain right ${panel.right}: ${leftMap.keys}');
+            hadErrors = true;
+          }
+          if (topMap[panel.bottom] == null) {
+            print(
+                'topMap doesn\'t contain bottom ${panel.bottom}: ${topMap.keys}');
+            hadErrors = true;
+          }
+          if (hadErrors) {
+            panels.forEach((Panel panel) {
+              print(' |--> $panel');
+            });
+          }
+          return !hadErrors;
+        });
+        replace(
+          panel: panel,
+          withPanel: new Panel.fromLTRB(
+            leftMap[panel.left],
+            topMap[panel.top],
+            leftMap[panel.right],
+            topMap[panel.bottom],
+          ),
         );
+      },
+    );
     _notifyPanelListeners();
   }
 
