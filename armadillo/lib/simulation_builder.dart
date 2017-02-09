@@ -20,11 +20,14 @@ class SimulationBuilder extends StatefulWidget {
   final double initValue;
   final double targetValue;
   final ProgressBuilder builder;
+  final RK4SpringDescription springDescription;
+
   SimulationBuilder({
     Key key,
     this.onSimulationChanged,
     this.initValue: 0.0,
     this.targetValue: 0.0,
+    this.springDescription: _kSimulationDesc,
     this.builder,
   })
       : super(key: key);
@@ -41,7 +44,7 @@ class SimulationBuilderState extends TickingState<SimulationBuilder> {
     super.initState();
     _simulation = new RK4SpringSimulation(
       initValue: config.initValue,
-      desc: _kSimulationDesc,
+      desc: config.springDescription,
     );
     _simulation.target = config.targetValue;
     startTicking();
@@ -60,7 +63,7 @@ class SimulationBuilderState extends TickingState<SimulationBuilder> {
     setState(() {
       _simulation = new RK4SpringSimulation(
         initValue: value,
-        desc: _kSimulationDesc,
+        desc: config.springDescription,
       );
     });
   }

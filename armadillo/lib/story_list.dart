@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
+import 'package:sysui_widgets/rk4_spring_simulation.dart';
 
 import 'armadillo_overlay.dart';
 import 'nothing.dart';
@@ -27,6 +28,9 @@ import 'story_rearrangement_scrim_model.dart';
 const double _kRightBump = 64.0;
 
 const double _kStoryInlineTitleHeight = 20.0;
+
+const RK4SpringDescription _kInlinePreviewSimulationDesc =
+    const RK4SpringDescription(tension: 900.0, friction: 50.0);
 
 typedef void OnStoryClusterFocusCompleted(StoryCluster storyCluster);
 
@@ -136,6 +140,7 @@ class StoryList extends StatelessWidget {
   ) =>
       new SimulationBuilder(
         key: storyCluster.inlinePreviewScaleSimulationKey,
+        springDescription: _kInlinePreviewSimulationDesc,
         initValue: 0.0,
         targetValue: 0.0,
         builder: (BuildContext context, double inlinePreviewScaleProgress) =>
