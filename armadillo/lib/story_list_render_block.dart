@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:math' as math;
-import 'dart:ui' show lerpDouble;
+import 'dart:ui' show lerpDouble, ImageFilter;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -23,6 +23,13 @@ const double _kSlideUnfocusedAwayOffsetY = -200.0;
 /// The unfocused children of [StoryListRenderBlock] should be fully transparent
 /// when the focused child's focus progress reaches this value and beyond.
 const double _kFocusProgressWhenUnfocusedFullyTransparent = 0.7;
+
+/// The ratio to use when converting the alpha of the scrim color to the
+/// gaussian blur sigma values.
+const double _kAlphaToBlurRatio = 1 / 25;
+
+/// If true, children behind the scrim will be blurred.
+const bool _kBlurScrimmedChildren = true;
 
 /// Overrides [RenderBlock]'s layout, paint, and hit-test behaviour to allow
 /// the following:
@@ -135,12 +142,30 @@ class StoryListRenderBlock extends RenderBlock {
     });
 
     if (_scrimColor.alpha != 0) {
-      context.canvas.drawRect(
-        new Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height),
-        new Paint()..color = _scrimColor,
-      );
+      if (_kBlurScrimmedChildren) {
+        context.pushBackdropFilter(
+          offset,
+          new ImageFilter.blur(
+            sigmaX: _scrimColor.alpha * _kAlphaToBlurRatio,
+            sigmaY: _scrimColor.alpha * _kAlphaToBlurRatio,
+          ),
+          _paintScrim,
+        );
+      } else {
+        _paintScrim(context, offset);
+      }
     }
     _paintChild(context, offset, lastChild, unfocusedAlpha);
+  }
+
+  void _paintScrim(
+    PaintingContext context,
+    Offset offset,
+  ) {
+    context.canvas.drawRect(
+      new Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height),
+      new Paint()..color = _scrimColor,
+    );
   }
 
   void _paintChild(
