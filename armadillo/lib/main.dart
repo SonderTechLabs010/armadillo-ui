@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/default_bundle.dart';
@@ -25,7 +26,18 @@ import 'suggestion_model.dart';
 /// Set to true to enable the performance overlay.
 const bool _kShowPerformanceOverlay = false;
 
+/// Set to true to enable dumping of all errors, not just the first one.
+const bool _kDumpAllErrors = false;
+
 Future<Null> main() async {
+  if (_kDumpAllErrors) {
+    FlutterError.onError =
+        (FlutterErrorDetails details) => FlutterError.dumpErrorToConsole(
+              details,
+              forceReport: true,
+            );
+  }
+
   JsonSuggestionModel jsonSuggestionModel = new JsonSuggestionModel();
   JsonStoryGenerator jsonStoryGenerator = new JsonStoryGenerator();
   StoryModel storyModel = new StoryModel(

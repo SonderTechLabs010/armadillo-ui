@@ -20,6 +20,7 @@ import 'package:armadillo/story_drag_transition_model.dart';
 import 'package:armadillo/story_model.dart';
 import 'package:armadillo/story_rearrangement_scrim_model.dart';
 import 'package:armadillo/story_time_randomizer.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:lib.fidl.dart/bindings.dart';
@@ -34,6 +35,9 @@ import 'user_shell_impl.dart';
 /// Set to true to enable the performance overlay.
 const bool _kShowPerformanceOverlay = false;
 
+/// Set to true to enable dumping of all errors, not just the first one.
+const bool _kDumpAllErrors = false;
+
 /// This is global as we need it to be alive as long as we are.
 UserShellImpl _userShell;
 
@@ -41,6 +45,14 @@ UserShellImpl _userShell;
 ApplicationContext _applicationContext;
 
 Future<Null> main() async {
+  if (_kDumpAllErrors) {
+    FlutterError.onError =
+        (FlutterErrorDetails details) => FlutterError.dumpErrorToConsole(
+              details,
+              forceReport: true,
+            );
+  }
+
   HitTestModel hitTestModel = new HitTestModel();
   StoryProviderStoryGenerator storyProviderStoryGenerator =
       new StoryProviderStoryGenerator();
