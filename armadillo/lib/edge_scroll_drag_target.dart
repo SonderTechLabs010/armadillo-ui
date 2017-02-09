@@ -8,13 +8,13 @@ import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
 import 'armadillo_drag_target.dart';
+import 'kenichi_edge_scrolling.dart';
 import 'nothing.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
 
 const Color _kDraggableHoverColor = const Color(0x00FFFF00);
 const Color _kNoDraggableHoverColor = const Color(0x00FFFF00);
-const double _kDragScrollThreshold = 120.0;
 
 /// Called whenever an [ArmadilloDragTarget] child of [EdgeScrollDragTarget] is
 /// built.
@@ -32,10 +32,8 @@ class EdgeScrollDragTarget extends StatefulWidget {
 }
 
 class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
+  final KenichiEdgeScrolling _kenichiEdgeScrolling = new KenichiEdgeScrolling();
   bool _enabled = true;
-  double _currentVelocity = 0.0;
-  double _lastHeight = 2.0 * _kDragScrollThreshold;
-  double _y = _kDragScrollThreshold;
 
   void disable() {
     if (_enabled) {
@@ -59,7 +57,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
         .of(context, rebuildOnChange: true)
         .isDragging;
     if (!_enabled || !clusterBeingDragged) {
-      _y = _lastHeight / 2.0;
+      _kenichiEdgeScrolling.onNoDrag();
     }
     return !_enabled || !clusterBeingDragged
         ? Nothing.widget
@@ -73,12 +71,13 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
                 child: _buildDragTarget(
                   onBuild: (bool hasDraggableAbove, List<Point> points) {
                     RenderBox box = context.findRenderObject();
-                    _lastHeight = box.size.height;
-                    _y = _lastHeight;
+                    double height = box.size.height;
+                    double y = height;
                     points.forEach((Point point) {
-                      _y = math.min(_y, point.y);
+                      y = math.min(y, point.y);
                     });
-                    if (_shouldScrollUp || _shouldScrollDown) {
+                    _kenichiEdgeScrolling.update(y, height);
+                    if (!_kenichiEdgeScrolling.isDone) {
                       startTicking();
                     }
                   },
@@ -88,14 +87,10 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
           );
   }
 
-  bool get _shouldScrollUp => _y < _kDragScrollThreshold;
-  bool get _shouldScrollDown => _y > _lastHeight - _kDragScrollThreshold;
-
   @override
   bool handleTick(double seconds) {
     // Cancel callbacks if we've disabled the drag targets or we've settled.
-    if (!_enabled ||
-        (_currentVelocity == 0.0 && !_shouldScrollUp && !_shouldScrollDown)) {
+    if (!_enabled || _kenichiEdgeScrolling.isDone) {
       return false;
     }
 
@@ -111,7 +106,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
     while (secondsRemaining > 0.0) {
       double stepSize =
           secondsRemaining > _kMaxStepSize ? _kMaxStepSize : secondsRemaining;
-      cumulativeScrollDelta += _getScrollAmount(stepSize);
+      cumulativeScrollDelta += _kenichiEdgeScrolling.getScrollDelta(stepSize);
       secondsRemaining -= _kMaxStepSize;
     }
     config.scrollableKey.currentState.scrollTo(
@@ -121,60 +116,6 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
       ),
     );
     return true;
-  }
-
-  double _getScrollAmount(double seconds) {
-    const double a = 1.0;
-    const double b = 0.5;
-    const double c = 1.5;
-    const double d = 0.02;
-    const double e = 2.0;
-
-    // If we should scroll up, accelerate upward.
-    if (_shouldScrollUp) {
-      _currentVelocity += math.pow(
-              math.min(
-                1.0,
-                (_kDragScrollThreshold - _y) / _kDragScrollThreshold * e,
-              ),
-              a) *
-          b *
-          seconds *
-          60;
-    }
-
-    // If we should scroll down, accelerate downward.
-    if (_shouldScrollDown) {
-      _currentVelocity -= math.pow(
-              math.min(
-                1.0,
-                (_y - (_lastHeight - _kDragScrollThreshold)) /
-                    _kDragScrollThreshold *
-                    e,
-              ),
-              a) *
-          b *
-          seconds *
-          60;
-    }
-
-    // Apply friction.
-    double friction;
-    if (_y < (_lastHeight / 2)) {
-      friction = math.pow(math.max(0.0, _y) / _kDragScrollThreshold, c) * d;
-    } else {
-      friction = math.pow(
-              math.max(0.0, (_lastHeight - _y)) / _kDragScrollThreshold, c) *
-          d;
-    }
-    _currentVelocity -= _currentVelocity * friction * seconds * 60;
-
-    // Once we drop below a certian threshold, jump to 0.0.
-    if (_currentVelocity.abs() < 0.1) {
-      _currentVelocity = 0.0;
-    }
-
-    return _currentVelocity * seconds * 60;
   }
 
   Widget _buildDragTarget({
