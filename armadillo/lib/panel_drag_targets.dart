@@ -57,6 +57,8 @@ const Duration _kVerticalEdgeHoverDuration = const Duration(
   milliseconds: 1000,
 );
 
+const double _kVerticalFlingToDiscardSpeedThreshold = 2000.0;
+
 /// Wraps its [child] in an [ArmadilloDragTarget] which tracks any
 /// [ArmadilloLongPressDraggable]'s above it such that they can be dropped on
 /// specific parts of [storyCluster]'s [StoryCluster.stories]'s [Panel]s.
@@ -166,8 +168,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   Widget build(BuildContext context) => new ArmadilloDragTarget<StoryClusterId>(
         onWillAccept: (StoryClusterId storyClusterId, _) =>
             config.storyCluster.id != storyClusterId,
-        onAccept: (StoryClusterId storyClusterId, _) =>
-            _onAccept(StoryModel.of(context).getStoryCluster(storyClusterId)),
+        onAccept: (StoryClusterId storyClusterId, _, Velocity velocity) =>
+            _onAccept(
+              StoryModel.of(context).getStoryCluster(storyClusterId),
+              velocity,
+            ),
         builder: (
           BuildContext context,
           Map<StoryClusterId, Point> storyClusterIdCandidates,
@@ -182,7 +187,20 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     return !_scaleSimulation.isDone;
   }
 
-  void _onAccept(StoryCluster storyCluster) {
+  void _onAccept(StoryCluster storyCluster, Velocity velocity) {
+    // When focused, if the cluster has been flung, don't call the target
+    // onDrop, instead just adjust the appropriate story bars.  Since a dragged
+    // story cluster is already not a part of this cluster, not calling onDrop
+    // ensures it will not be added to this cluster.
+    if (!_inTimeline &&
+        velocity.pixelsPerSecond.dy.abs() >
+            _kVerticalFlingToDiscardSpeedThreshold) {
+      storyCluster.stories.forEach((Story story) {
+        story.storyBarKey.currentState?.minimize();
+      });
+      return;
+    }
+
     _transposeToChildCoordinates(storyCluster.stories);
 
     config.onAccept?.call();

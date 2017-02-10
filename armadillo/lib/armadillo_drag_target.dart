@@ -42,7 +42,11 @@ typedef Widget ArmadilloDragTargetBuilder<T>(
 typedef bool ArmadilloDragTargetWillAccept<T>(T data, Point point);
 
 /// Signature for causing a [ArmadilloDragTarget] to accept the given data.
-typedef void ArmadilloDragTargetAccept<T>(T data, Point point);
+typedef void ArmadilloDragTargetAccept<T>(
+  T data,
+  Point point,
+  Velocity velocity,
+);
 
 /// Builds the feedback that should be shown while a
 /// [ArmadilloLongPressDraggable] is being dragged.
@@ -285,7 +289,7 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
     });
   }
 
-  void didDrop(dynamic data) {
+  void didDrop(dynamic data, Velocity velocity) {
     assert(_candidateData[data] != null);
     if (mounted) {
       Point point = _candidateData[data];
@@ -295,7 +299,7 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
           config.onNoCandidates?.call();
         }
       });
-      config.onAccept?.call(data, point);
+      config.onAccept?.call(data, point, velocity);
     }
   }
 
@@ -439,7 +443,7 @@ class _DragAvatar<T> extends Drag {
     bool wasAccepted = false;
     if (endKind == _DragEndKind.dropped && _activeTargets.isNotEmpty) {
       _activeTargets.forEach((_DragTargetState<T> activeTarget) {
-        activeTarget.didDrop(data);
+        activeTarget.didDrop(data, velocity);
         _enteredTargets.remove(activeTarget);
       });
       wasAccepted = true;
