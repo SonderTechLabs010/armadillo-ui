@@ -91,7 +91,12 @@ class StoryPositioned extends StatelessWidget {
                 ? 1.0
                 : storyBarMaximizedHeight / currentSize.height,
             size: currentSize,
-            child: child,
+            child: !clip
+                ? child
+                : new ClipRRect(
+                    borderRadius: borderRadius,
+                    child: child,
+                  ),
           );
   }
 }
