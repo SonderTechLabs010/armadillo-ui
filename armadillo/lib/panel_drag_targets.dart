@@ -39,6 +39,8 @@ const Color _kBringToFrontTargetColor = const Color(0xFF00FF00);
 const Color _kStoryEdgeTargetColor = const Color(0xFF0000FF);
 const Color _kTargetBackgroundColor = const Color.fromARGB(128, 153, 234, 216);
 
+const String _kStoryBarTargetName = 'Story Bar target';
+
 /// Set to true to draw target lines.
 const bool _kDrawTargetLines = false;
 
@@ -475,6 +477,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     LineSegment closestLine;
     _targetLines
         .where((LineSegment line) => line.canAccept(storyCluster))
+        .where((LineSegment line) =>
+            line.distanceFrom(point) < line.validityDistance)
         .forEach((LineSegment line) {
       double targetLineDistance = line.distanceFrom(point);
       if (targetLineDistance < minDistance &&
@@ -483,6 +487,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         closestLine = line;
       }
     });
+    if (closestLine == null) {
+      closestLine = _targetLines
+          .where((LineSegment line) => line.name == _kStoryBarTargetName)
+          .single;
+    }
     return closestLine;
   }
 
@@ -615,21 +624,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // Story Bar target.
     _targetLines.add(
       new LineSegment.horizontal(
-        name: 'Story Bar target',
+        name: _kStoryBarTargetName,
         y: verticalMargin + _kStoryBarTargetYOffset,
         left: horizontalMargin + _kStoryEdgeTargetInset,
         right: sizeModel.size.width - horizontalMargin - _kStoryEdgeTargetInset,
         color: _kStoryBarTargetColor,
+        validityDistance: verticalMargin + _kStoryBarTargetYOffset,
         maxStoriesCanAccept:
             _kMaxStoriesPerCluster - config.storyCluster.stories.length,
-        onHover: (BuildContext context, StoryCluster storyCluster) {
-          _addClusterToRightOfPanels(
-            context: context,
-            storyCluster: storyCluster,
-            preview: true,
-            displayMode: DisplayMode.tabs,
-          );
-        },
+        onHover: _onStoryBarHover,
         onDrop: _onStoryBarDrop,
       ),
     );
@@ -644,6 +647,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           left: horizontalMargin * 3.0,
           right: sizeModel.size.width - 3.0 * horizontalMargin,
           color: _kDiscardTargetColor,
+          validityDistance: verticalMargin + _kDiscardTargetTopEdgeYOffset,
           maxStoriesCanAccept: _kMaxStoriesPerCluster,
           onHover: (BuildContext context, StoryCluster storyCluster) {
             config.storyCluster.removePreviews();
@@ -672,6 +676,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           left: horizontalMargin * 3.0,
           right: sizeModel.size.width - 3.0 * horizontalMargin,
           color: _kBringToFrontTargetColor,
+          validityDistance:
+              verticalMargin - _kBringToFrontTargetBottomEdgeYOffset,
           maxStoriesCanAccept: _kMaxStoriesPerCluster,
           onHover: (BuildContext context, StoryCluster storyCluster) {
             config.storyCluster.removePreviews();
@@ -858,12 +864,26 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
                   onHover: lineSegment.onHover,
                   onDrop: lineSegment.onDrop,
                   maxStoriesCanAccept: lineSegment.maxStoriesCanAccept,
+                  validityDistance: lerpDouble(
+                    0.0,
+                    lineSegment.validityDistance,
+                    verticalScale,
+                  ),
                 ),
           )
           .toList();
       _targetLines.clear();
       _targetLines.addAll(scaledLines);
     }
+  }
+
+  void _onStoryBarHover(BuildContext context, StoryCluster storyCluster) {
+    _addClusterToRightOfPanels(
+      context: context,
+      storyCluster: storyCluster,
+      preview: true,
+      displayMode: DisplayMode.tabs,
+    );
   }
 
   void _onStoryBarDrop(BuildContext context, StoryCluster storyCluster) {

@@ -35,17 +35,18 @@ class TargetLineOverlay extends StatelessWidget {
     // When we have a candidate, show the target lines.
     if (drawTargetLines && storyClusterCandidates.isNotEmpty) {
       // Add all the lines.
-      stackChildren.addAll(
-        targetLines
-            .where(
-              (LineSegment line) => !storyClusterCandidates.keys.every(
-                    (StoryCluster key) => !line.canAccept(key),
-                  ),
-            )
-            .map(
-              (LineSegment line) => line.buildStackChild(),
-            ),
-      );
+      targetLines
+          .where(
+            (LineSegment line) => !storyClusterCandidates.keys.every(
+                  (StoryCluster key) => !line.canAccept(key),
+                ),
+          )
+          .forEach(
+            (LineSegment line) => stackChildren.addAll(
+                  line.buildStackChildren(),
+                ),
+          );
+
       // Add candidate points
       stackChildren.addAll(
         storyClusterCandidates.values.map(

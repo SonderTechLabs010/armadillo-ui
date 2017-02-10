@@ -4,6 +4,7 @@
 
 import 'dart:math' as math;
 
+import 'package:flutter/material.dart' as material;
 import 'package:flutter/widgets.dart';
 
 import 'panel_drag_targets.dart';
@@ -35,15 +36,21 @@ class LineSegment {
   final String name;
   final bool initiallyTargetable;
 
+  /// A [LineSegment] is considered a valid target for accepting stories if
+  /// the [distanceFrom] [Point] of the stories in question is within the
+  /// [validityDistance] of this [LineSegment].
+  final double validityDistance;
+
   LineSegment(
     Point a,
     Point b, {
-    this.color: const Color(0xFFFFFFFF),
+    this.color: material.Colors.white,
     this.onHover,
     this.onDrop,
     this.maxStoriesCanAccept: 1,
     this.name,
     this.initiallyTargetable: true,
+    this.validityDistance: double.INFINITY,
   })
       : this.a = (a.x < b.x || a.y < b.y) ? a : b,
         this.b = (a.x < b.x || a.y < b.y) ? b : a {
@@ -55,12 +62,13 @@ class LineSegment {
     double x,
     double top,
     double bottom,
-    Color color,
+    Color color: material.Colors.white,
     OnPanelEvent onHover,
     OnPanelEvent onDrop,
-    int maxStoriesCanAccept,
+    int maxStoriesCanAccept: 1,
     String name,
     bool initiallyTargetable: true,
+    double validityDistance: double.INFINITY,
   }) =>
       new LineSegment(
         new Point(x, top),
@@ -71,18 +79,20 @@ class LineSegment {
         maxStoriesCanAccept: maxStoriesCanAccept,
         name: name,
         initiallyTargetable: initiallyTargetable,
+        validityDistance: validityDistance,
       );
 
   factory LineSegment.horizontal({
     double y,
     double left,
     double right,
-    Color color,
+    Color color: material.Colors.white,
     OnPanelEvent onHover,
     OnPanelEvent onDrop,
-    int maxStoriesCanAccept,
+    int maxStoriesCanAccept: 1,
     String name,
     bool initiallyTargetable: true,
+    double validityDistance: double.INFINITY,
   }) =>
       new LineSegment(
         new Point(left, y),
@@ -93,6 +103,7 @@ class LineSegment {
         maxStoriesCanAccept: maxStoriesCanAccept,
         name: name,
         initiallyTargetable: initiallyTargetable,
+        validityDistance: validityDistance,
       );
 
   bool get isHorizontal => a.y == b.y;
@@ -120,7 +131,17 @@ class LineSegment {
     }
   }
 
-  Positioned buildStackChild({bool highlighted: false}) => new Positioned(
+  List<Positioned> buildStackChildren({bool highlighted: false}) =>
+      validityDistance != double.INFINITY
+          ? <Positioned>[
+              _buildValidityDistanceWidget(highlighted: highlighted),
+              _buildLineWidget(highlighted: highlighted),
+            ]
+          : <Positioned>[
+              _buildLineWidget(highlighted: highlighted),
+            ];
+
+  Positioned _buildLineWidget({bool highlighted: false}) => new Positioned(
         left: a.x - _kLineWidth / 2.0,
         top: a.y - _kLineWidth / 2.0,
         width: isHorizontal ? b.x - a.x + _kLineWidth : _kLineWidth,
@@ -128,6 +149,21 @@ class LineSegment {
         child: new Container(
           decoration: new BoxDecoration(
             backgroundColor: color.withOpacity(highlighted ? 1.0 : 0.3),
+          ),
+        ),
+      );
+
+  Positioned _buildValidityDistanceWidget({bool highlighted: false}) =>
+      new Positioned(
+        left: a.x - _kLineWidth / 2.0 - validityDistance,
+        top: a.y - _kLineWidth / 2.0 - validityDistance,
+        width: (isHorizontal ? b.x - a.x + _kLineWidth : _kLineWidth) +
+            2 * validityDistance,
+        height: (isVertical ? b.y - a.y + _kLineWidth : _kLineWidth) +
+            2 * validityDistance,
+        child: new Container(
+          decoration: new BoxDecoration(
+            backgroundColor: color.withOpacity(highlighted ? 0.3 : 0.1),
           ),
         ),
       );
