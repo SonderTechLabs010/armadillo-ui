@@ -178,7 +178,13 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       config.onGainFocus?.call();
     }
 
-    _closestTargets[storyCluster]?.onDrop?.call(context, storyCluster);
+    // If a target hasn't been chosen yet, default to dropping on the story bar
+    // target as that's always there.
+    if (_closestTargets[storyCluster]?.onDrop != null) {
+      _closestTargets[storyCluster].onDrop.call(context, storyCluster);
+    } else {
+      _onStoryBarDrop(context, storyCluster);
+    }
     _updateFocusedStoryId(storyCluster);
   }
 
@@ -582,23 +588,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             displayMode: DisplayMode.tabs,
           );
         },
-        onDrop: (BuildContext context, StoryCluster storyCluster) {
-          config.storyCluster.removePreviews();
-          storyCluster.removePreviews();
-          _cleanup(context: context, preview: true);
-
-          config.storyCluster.displayMode = DisplayMode.tabs;
-          config.storyCluster.focusedStoryId = storyCluster.focusedStoryId;
-
-          StoryModel.of(context).combine(
-                source: storyCluster,
-                target: config.storyCluster,
-              );
-
-          storyCluster.realStories.forEach((Story story) {
-            story.storyBarKey.currentState?.maximize();
-          });
-        },
+        onDrop: _onStoryBarDrop,
       ),
     );
 
@@ -832,6 +822,24 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       _targetLines.clear();
       _targetLines.addAll(scaledLines);
     }
+  }
+
+  void _onStoryBarDrop(BuildContext context, StoryCluster storyCluster) {
+    config.storyCluster.removePreviews();
+    storyCluster.removePreviews();
+    _cleanup(context: context, preview: true);
+
+    config.storyCluster.displayMode = DisplayMode.tabs;
+    config.storyCluster.focusedStoryId = storyCluster.focusedStoryId;
+
+    StoryModel.of(context).combine(
+          source: storyCluster,
+          target: config.storyCluster,
+        );
+
+    storyCluster.realStories.forEach((Story story) {
+      story.storyBarKey.currentState?.maximize();
+    });
   }
 
   /// Adds the stories of [storyCluster] to the left, spanning the full height.
