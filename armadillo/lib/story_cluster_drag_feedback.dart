@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
@@ -61,18 +62,42 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     super.initState();
     _storyClusterDragStateModel = StoryClusterDragStateModel.of(context);
     _storyClusterDragStateModel.addListener(_updateStoryBars);
+
     // Store off original stories and display state and on change to
     // isAccepted, revert to initial story locations and
     // display state.
     _originalStories = config.storyCluster.stories;
     _originalDisplayMode = config.storyCluster.displayMode;
+    config.storyCluster.addPanelListener(_onPanelsChanged);
+  }
+
+  @override
+  void didUpdateConfig(StoryClusterDragFeedback oldConfig) {
+    super.didUpdateConfig(oldConfig);
+    if (oldConfig.storyCluster.id != config.storyCluster.id) {
+      oldConfig.storyCluster.removePanelListener(_onPanelsChanged);
+      config.storyCluster.addPanelListener(_onPanelsChanged);
+    }
   }
 
   @override
   void dispose() {
+    config.storyCluster.removePanelListener(_onPanelsChanged);
     _storyClusterDragStateModel.removeListener(_updateStoryBars);
     super.dispose();
   }
+
+  /// Since we shift the drag feedback based on [DisplayMode] of
+  /// [StoryClusterDragFeedback.storyCluster] we need to [setState] when that
+  /// change occurs.  [StoryClusterDragFeedback.storyCluster.addPanelListener]
+  /// with this function accomplishes this.
+  void _onPanelsChanged() => scheduleMicrotask(
+        () {
+          if (mounted) {
+            setState(() {});
+          }
+        },
+      );
 
   void _updateStoryBars() {
     if (!mounted) {
@@ -162,20 +187,27 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
 
     double realStoriesFractionalCenterX = realStoriesFractionalLeft +
         (realStoriesFractionalRight - realStoriesFractionalLeft) / 2.0;
+    double realStoriesFractionalCenterY = realStoriesFractionalTop +
+        (realStoriesFractionalBottom - realStoriesFractionalTop) / 2.0;
     double realStoriesFractionalTopY = realStoriesFractionalTop;
 
     // Since the user begins the drag at config.localDragStartPoint and we want
     // to move the story to a better visual position when previewing we animate
     // its translation when isAcceptable is true.
+    // In tab mode we center on the story's story bar.
+    // In panel mode we center on the story itself.
     return new SimulatedTransform(
       dx: isAcceptable
           ? config.localDragStartPoint.x -
               targetWidth * realStoriesFractionalCenterX
           : 0.0,
       dy: isAcceptable
-          ? config.localDragStartPoint.y -
-              targetHeight * realStoriesFractionalTopY -
-              childScale * _kStoryBarMaximizedHeight
+          ? config.storyCluster.displayMode == DisplayMode.tabs
+              ? config.localDragStartPoint.y -
+                  targetHeight * realStoriesFractionalTopY -
+                  childScale * _kStoryBarMaximizedHeight
+              : config.localDragStartPoint.y -
+                  targetHeight * realStoriesFractionalCenterY
           : 0.0,
       child: new SimulatedSizedBox(
         key: _childKey,
