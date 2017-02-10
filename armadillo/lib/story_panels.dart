@@ -31,6 +31,9 @@ const double _kStoryBarMaximizedHeight = 48.0;
 const double _kUnfocusedCornerRadius = 4.0;
 const double _kFocusedCornerRadius = 8.0;
 
+/// Set to true to give the focused tab twice the space as an unfocused tab.
+const bool _kGrowFocusedTab = false;
+
 /// Displays up to four stories in a grid-like layout.
 class StoryPanels extends StatefulWidget {
   final StoryCluster storyCluster;
@@ -333,12 +336,15 @@ class StoryPanelsState extends State<StoryPanels> {
   EdgeInsets _getStoryBarPadding({
     Story story,
     Size currentSize,
+    bool growFocused: _kGrowFocusedTab,
   }) {
     if (config.storyCluster.displayMode == DisplayMode.panels) {
       return new EdgeInsets.symmetric(horizontal: 0.0);
     }
     double storyBarGaps = 4.0 * (config.storyCluster.stories.length - 1);
-    int spaces = config.storyCluster.stories.length + 1;
+    int spaces = _kGrowFocusedTab
+        ? config.storyCluster.stories.length + 1
+        : config.storyCluster.stories.length;
     double widthPerSpace =
         toGridValue((currentSize.width - storyBarGaps) / spaces);
     int index = config.storyCluster.stories.indexOf(story);
@@ -348,14 +354,16 @@ class StoryPanelsState extends State<StoryPanels> {
         break;
       }
       left += widthPerSpace + 4.0;
-      if (config.storyCluster.stories[i].id ==
-          config.storyCluster.focusedStoryId) {
+      if (growFocused &&
+          config.storyCluster.stories[i].id ==
+              config.storyCluster.focusedStoryId) {
         left += widthPerSpace;
       }
     }
-    double width = (story.id == config.storyCluster.focusedStoryId)
-        ? 2.0 * widthPerSpace
-        : widthPerSpace;
+    double width =
+        growFocused && (story.id == config.storyCluster.focusedStoryId)
+            ? 2.0 * widthPerSpace
+            : widthPerSpace;
     double right = (widthPerSpace * spaces + storyBarGaps) - left - width;
     return new EdgeInsets.only(
       left: math.max(0.0, left),
