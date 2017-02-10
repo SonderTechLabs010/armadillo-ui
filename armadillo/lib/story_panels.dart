@@ -223,16 +223,6 @@ class StoryPanelsState extends State<StoryPanels> {
                     story.clusterId,
                   );
             },
-            onAcceptable: () {
-              StoryClusterDragStateModel.of(context).addAcceptance(
-                    story.clusterId,
-                  );
-            },
-            onUnacceptable: () {
-              StoryClusterDragStateModel.of(context).removeAcceptance(
-                    story.clusterId,
-                  );
-            },
             childWhenDragging: Nothing.widget,
             feedbackBuilder: (Point localDragStartPoint) {
               StoryCluster storyCluster =

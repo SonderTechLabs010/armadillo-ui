@@ -44,6 +44,7 @@ class StoryList extends StatelessWidget {
   final Key scrollableKey;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
   final SizeModel sizeModel;
+  final VoidCallback onStoryClusterVerticalEdgeHover;
 
   StoryList({
     Key key,
@@ -55,6 +56,7 @@ class StoryList extends StatelessWidget {
     this.onStoryClusterFocusCompleted,
     this.quickSettingsHeightBump,
     this.sizeModel,
+    this.onStoryClusterVerticalEdgeHover,
     this.multiColumn: false,
   })
       : super(key: key);
@@ -194,31 +196,40 @@ class StoryList extends StatelessWidget {
           focusProgress: progress,
           storyCluster: storyCluster,
           multiColumn: multiColumn,
-          onGainFocus: () {
-            bool storyClusterInFocus = false;
-            storyClusters.forEach((StoryCluster s) {
-              if (_inFocus(s)) {
-                storyClusterInFocus = true;
-              }
-            });
-
-            if (!storyClusterInFocus) {
-              // Bring tapped story into focus.
-              storyCluster.focusSimulationKey.currentState?.target = 1.0;
-
-              storyCluster.stories.forEach((Story story) {
-                story.storyBarKey.currentState?.maximize();
-              });
-
-              onStoryClusterFocusStarted?.call();
+          onAccept: () {
+            if (!_inFocus(storyCluster)) {
+              _onGainFocus(storyClusters, storyCluster);
             }
           },
+          onTap: () => _onGainFocus(storyClusters, storyCluster),
+          onVerticalEdgeHover: onStoryClusterVerticalEdgeHover,
           storyWidgets: storyWidgets,
         ),
       );
 
   bool _inFocus(StoryCluster s) =>
       (s.focusSimulationKey.currentState?.progress ?? 0.0) > 0.0;
+
+  void _onGainFocus(
+    List<StoryCluster> storyClusters,
+    StoryCluster storyCluster,
+  ) {
+    // Defocus any focused stories.
+    storyClusters.forEach((StoryCluster s) {
+      if (_inFocus(s)) {
+        s.unFocus();
+      }
+    });
+
+    // Bring tapped story into focus.
+    storyCluster.focusSimulationKey.currentState?.target = 1.0;
+
+    storyCluster.stories.forEach((Story story) {
+      story.storyBarKey.currentState?.maximize();
+    });
+
+    onStoryClusterFocusStarted?.call();
+  }
 }
 
 class StoryListBlock extends Block {

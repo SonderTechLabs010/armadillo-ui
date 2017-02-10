@@ -107,7 +107,8 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       return;
     }
 
-    if (StoryClusterDragStateModel.of(context).isAcceptable) {
+    if (StoryClusterDragStateModel.of(context).isAcceptable &&
+        config.storyCluster.previewStories.isNotEmpty) {
       config.storyCluster.stories.forEach((Story story) {
         story.storyBarKey.currentState?.maximize();
       });
@@ -149,7 +150,7 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
         )
         .isAcceptable;
 
-    if (isAcceptable) {
+    if (isAcceptable && config.storyCluster.previewStories.isNotEmpty) {
       width = sizeModel.size.width;
       height = sizeModel.size.height;
       childScale = lerpDouble(inlinePreviewScale, 0.7, focusProgress);
@@ -196,19 +197,22 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     // its translation when isAcceptable is true.
     // In tab mode we center on the story's story bar.
     // In panel mode we center on the story itself.
+    double newDx = isAcceptable || config.localDragStartPoint.x > targetWidth
+        ? config.localDragStartPoint.x -
+            targetWidth * realStoriesFractionalCenterX
+        : 0.0;
+    double newDy = isAcceptable || config.localDragStartPoint.y > targetHeight
+        ? config.storyCluster.displayMode == DisplayMode.tabs
+            ? config.localDragStartPoint.y -
+                targetHeight * realStoriesFractionalTopY -
+                childScale * _kStoryBarMaximizedHeight
+            : config.localDragStartPoint.y -
+                targetHeight * realStoriesFractionalCenterY
+        : 0.0;
+
     return new SimulatedTransform(
-      dx: isAcceptable
-          ? config.localDragStartPoint.x -
-              targetWidth * realStoriesFractionalCenterX
-          : 0.0,
-      dy: isAcceptable
-          ? config.storyCluster.displayMode == DisplayMode.tabs
-              ? config.localDragStartPoint.y -
-                  targetHeight * realStoriesFractionalTopY -
-                  childScale * _kStoryBarMaximizedHeight
-              : config.localDragStartPoint.y -
-                  targetHeight * realStoriesFractionalCenterY
-          : 0.0,
+      targetDx: newDx,
+      targetDy: newDy,
       child: new SimulatedSizedBox(
         key: _childKey,
         width: targetWidth,

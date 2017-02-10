@@ -65,7 +65,9 @@ class StoryClusterWidget extends StatelessWidget {
   final StoryCluster storyCluster;
   final bool multiColumn;
   final double focusProgress;
-  final VoidCallback onGainFocus;
+  final VoidCallback onAccept;
+  final VoidCallback onTap;
+  final VoidCallback onVerticalEdgeHover;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
   final Map<StoryId, Widget> storyWidgets;
 
@@ -74,7 +76,9 @@ class StoryClusterWidget extends StatelessWidget {
     this.storyCluster,
     this.multiColumn,
     this.focusProgress,
-    this.onGainFocus,
+    this.onAccept,
+    this.onTap,
+    this.onVerticalEdgeHover,
     this.overlayKey,
     this.storyWidgets,
   })
@@ -167,7 +171,8 @@ class StoryClusterWidget extends StatelessWidget {
               focusProgress: focusProgress,
               currentSize: currentSize,
               storyCluster: storyCluster,
-              onGainFocus: onGainFocus,
+              onAccept: onAccept,
+              onVerticalEdgeHover: onVerticalEdgeHover,
               child: new StoryPanels(
                 key: storyCluster.panelsKey,
                 storyCluster: storyCluster,
@@ -193,7 +198,7 @@ class StoryClusterWidget extends StatelessWidget {
           offstage: !_isUnfocused,
           child: new GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onTap: onGainFocus,
+            onTap: onTap,
           ),
         ),
       );

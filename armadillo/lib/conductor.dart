@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
@@ -295,6 +296,9 @@ class Conductor extends StatelessWidget {
                     _focusStoryCluster(storyModel, storyCluster);
                   },
                   sizeModel: sizeModel,
+                  onStoryClusterVerticalEdgeHover: () => scheduleMicrotask(
+                        () => goToOrigin(storyModel),
+                      ),
                 ),
           ),
         ),
@@ -433,7 +437,9 @@ class Conductor extends StatelessWidget {
 
   void _defocus(StoryModel storyModel) {
     // Unfocus all story clusters.
-    storyModel.activeSortedStoryClusters.forEach(_unfocusStoryCluster);
+    storyModel.activeSortedStoryClusters.forEach(
+      (StoryCluster storyCluster) => storyCluster.unFocus(),
+    );
 
     // Unlock scrolling.
     _scrollLockerKey.currentState.unlock();
@@ -473,13 +479,6 @@ class Conductor extends StatelessWidget {
 
     _scrollLockerKey.currentState.lock();
     _edgeScrollDragTargetKey.currentState.disable();
-  }
-
-  void _unfocusStoryCluster(StoryCluster s) {
-    s.focusSimulationKey.currentState?.target = 0.0;
-    s.stories.forEach((Story story) {
-      story.storyBarKey.currentState?.minimize();
-    });
   }
 
   void _minimizeNow() {
@@ -531,7 +530,9 @@ class Conductor extends StatelessWidget {
       goToOrigin(storyModel);
     } else {
       // Unfocus all story clusters.
-      storyModel.activeSortedStoryClusters.forEach(_unfocusStoryCluster);
+      storyModel.activeSortedStoryClusters.forEach(
+        (StoryCluster storyCluster) => storyCluster.unFocus(),
+      );
 
       // Ensure the focused story is completely expanded.
       targetStoryClusters[0].focusSimulationKey.currentState?.jump(1.0);

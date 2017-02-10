@@ -60,12 +60,15 @@ const Duration _kHoverDuration = const Duration(milliseconds: 400);
 ///
 /// When an [ArmadilloLongPressDraggable] is above, [child] will be scaled down
 /// slightly depending on [focusProgress].
+/// [onVerticalEdgeHover] will be called whenever a cluster hovers over the top
+/// or bottom targets.
 class PanelDragTargets extends StatefulWidget {
   final StoryCluster storyCluster;
   final Widget child;
   final double scale;
   final double focusProgress;
-  final VoidCallback onGainFocus;
+  final VoidCallback onAccept;
+  final VoidCallback onVerticalEdgeHover;
   final Size currentSize;
   final Set<LineSegment> _targetLines = new Set<LineSegment>();
 
@@ -75,7 +78,8 @@ class PanelDragTargets extends StatefulWidget {
     this.child,
     this.scale,
     this.focusProgress,
-    this.onGainFocus,
+    this.onAccept,
+    this.onVerticalEdgeHover,
     this.currentSize,
   })
       : super(key: key);
@@ -156,7 +160,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         onWillAccept: (StoryClusterId storyClusterId, _) =>
             config.storyCluster.id != storyClusterId,
         onAccept: (StoryClusterId storyClusterId, _) =>
-            _onDrop(StoryModel.of(context).getStoryCluster(storyClusterId)),
+            _onAccept(StoryModel.of(context).getStoryCluster(storyClusterId)),
         builder: (
           BuildContext context,
           Map<StoryClusterId, Point> storyClusterIdCandidates,
@@ -171,12 +175,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     return !_scaleSimulation.isDone;
   }
 
-  void _onDrop(StoryCluster storyCluster) {
+  void _onAccept(StoryCluster storyCluster) {
     _transposeToChildCoordinates(storyCluster.stories);
 
-    if (_inTimeline) {
-      config.onGainFocus?.call();
-    }
+    config.onAccept?.call();
 
     // If a target hasn't been chosen yet, default to dropping on the story bar
     // target as that's always there.
@@ -194,14 +196,25 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   /// being dragged over this drag target with their associated local
   /// position.
   Widget _build(Map<StoryClusterId, Point> storyClusterIdCandidates) {
+    // Update the acceptance of a dragged StoryCluster.  If we have no
+    // candidates we're not accepting it.  If we do have condidates and we're
+    // focused we do accept it.  If we're in the timeline we need to wait for
+    // the validity timer to go off before accepting it.
+    if (storyClusterIdCandidates.isEmpty) {
+      StoryClusterDragStateModel
+          .of(context)
+          .removeAcceptance(config.storyCluster.id);
+    } else if (!_inTimeline) {
+      StoryClusterDragStateModel
+          .of(context)
+          .addAcceptance(config.storyCluster.id);
+    }
+
     if (_inTimeline) {
       if (storyClusterIdCandidates.isEmpty) {
         _candidateValidityTimer?.cancel();
         _candidateValidityTimer = null;
         _candidatesValid = false;
-        StoryClusterDragStateModel
-            .of(context)
-            .removeAcceptance(config.storyCluster.id);
       } else {
         if (!_candidatesValid && _candidateValidityTimer == null) {
           _candidateValidityTimer = new Timer(
@@ -609,15 +622,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             config.storyCluster.removePreviews();
             _cleanup(context: context, preview: true);
             _updateDragFeedback(storyCluster);
-            config.storyCluster.displayMode = DisplayMode.panels;
+            config.onVerticalEdgeHover?.call();
           },
-          onDrop: (BuildContext context, StoryCluster storyCluster) {
-            config.storyCluster.removePreviews();
-            _cleanup(context: context, preview: true);
-            config.storyCluster.displayMode = DisplayMode.panels;
-
-            // TODO(apwilson): Animate storyCluster away.
-          },
+          onDrop: (BuildContext context, StoryCluster storyCluster) => null,
         ),
       );
 
@@ -637,15 +644,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             config.storyCluster.removePreviews();
             _cleanup(context: context, preview: true);
             _updateDragFeedback(storyCluster);
-            config.storyCluster.displayMode = DisplayMode.panels;
+            config.onVerticalEdgeHover?.call();
           },
-          onDrop: (BuildContext context, StoryCluster storyCluster) {
-            config.storyCluster.removePreviews();
-            _cleanup(context: context, preview: true);
-            config.storyCluster.displayMode = DisplayMode.panels;
-            // TODO(apwilson): Defocus this cluster away.
-            // Bring storyCluster into focus.
-          },
+          onDrop: (BuildContext context, StoryCluster storyCluster) => null,
         ),
       );
     }

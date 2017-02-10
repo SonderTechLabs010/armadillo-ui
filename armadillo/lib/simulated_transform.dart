@@ -9,7 +9,7 @@ import 'package:sysui_widgets/ticking_state.dart';
 const RK4SpringDescription _kDefaultSimulationDesc =
     const RK4SpringDescription(tension: 750.0, friction: 50.0);
 
-/// Animates a [Transform]'s translation [dx] and [dy], scale and opacity
+/// Animates a [Transform]'s translation x, y, scale and opacity
 /// with a spring simulation.
 ///
 /// When first built this widget's opacity will start with [initOpacity] and
@@ -21,8 +21,10 @@ const RK4SpringDescription _kDefaultSimulationDesc =
 /// animate to [targetScale].  Rebuilds of this widget will animate from the
 /// current scale value to [targetScale] instead of animating from [initScale].
 class SimulatedTransform extends StatefulWidget {
-  final double dx;
-  final double dy;
+  final double initDx;
+  final double initDy;
+  final double targetDx;
+  final double targetDy;
   final double initScale;
   final double targetScale;
   final double initOpacity;
@@ -33,8 +35,10 @@ class SimulatedTransform extends StatefulWidget {
 
   SimulatedTransform({
     Key key,
-    this.dx: 0.0,
-    this.dy: 0.0,
+    this.initDx: 0.0,
+    this.initDy: 0.0,
+    this.targetDx: 0.0,
+    this.targetDy: 0.0,
     this.initScale: 1.0,
     this.targetScale: 1.0,
     this.initOpacity: 1.0,
@@ -61,11 +65,11 @@ class SimulatedTranslationTransformState
   void initState() {
     super.initState();
     _dxSimulation = new RK4SpringSimulation(
-      initValue: config.dx,
+      initValue: config.initDx ?? config.targetDx,
       desc: config.springDescription,
     );
     _dySimulation = new RK4SpringSimulation(
-      initValue: config.dy,
+      initValue: config.initDy ?? config.targetDy,
       desc: config.springDescription,
     );
     _scaleSimulation = new RK4SpringSimulation(
@@ -84,8 +88,8 @@ class SimulatedTranslationTransformState
   @override
   void didUpdateConfig(SimulatedTransform oldConfig) {
     super.didUpdateConfig(oldConfig);
-    _dxSimulation.target = config.dx;
-    _dySimulation.target = config.dy;
+    _dxSimulation.target = config.targetDx;
+    _dySimulation.target = config.targetDy;
     _scaleSimulation.target = config.targetScale;
     _opacitySimulation.target = config.targetOpacity;
     startTicking();

@@ -382,6 +382,13 @@ class StoryCluster {
 
   StoryId get focusedStoryId => _focusedStoryId;
 
+  void unFocus() {
+    focusSimulationKey.currentState?.target = 0.0;
+    stories.forEach((Story story) {
+      story.storyBarKey.currentState?.minimize();
+    });
+  }
+
   static String _getClusterTitle(List<Story> stories) {
     String title = '';
     stories.where((Story story) => !story.isPlaceHolder).forEach((Story story) {
