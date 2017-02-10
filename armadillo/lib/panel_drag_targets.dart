@@ -53,6 +53,9 @@ const RK4SpringDescription _kOpacitySimulationDesc =
     const RK4SpringDescription(tension: 900.0, friction: 50.0);
 
 const Duration _kHoverDuration = const Duration(milliseconds: 400);
+const Duration _kVerticalEdgeHoverDuration = const Duration(
+  milliseconds: 1000,
+);
 
 /// Wraps its [child] in an [ArmadilloDragTarget] which tracks any
 /// [ArmadilloLongPressDraggable]'s above it such that they can be dropped on
@@ -122,6 +125,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   /// The timer which triggers candidate validity when [_kHoverDuration]
   /// elapses.
   Timer _candidateValidityTimer;
+
+  /// The timer which triggers [PanelDragTargets.onVerticalEdgeHover] when
+  /// [_kVerticalEdgeHoverDuration] elapses.
+  Timer _verticalEdgeHoverTimer;
 
   @override
   void initState() {
@@ -435,6 +442,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   }) {
     _closestTargetLockPoints[storyCluster] = point;
     _closestTargets[storyCluster] = closestLine;
+    _verticalEdgeHoverTimer?.cancel();
+    _verticalEdgeHoverTimer = null;
     closestLine.onHover?.call(context, storyCluster);
     _updateFocusedStoryId(storyCluster);
   }
@@ -622,9 +631,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             config.storyCluster.removePreviews();
             _cleanup(context: context, preview: true);
             _updateDragFeedback(storyCluster);
-            config.onVerticalEdgeHover?.call();
+            _verticalEdgeHoverTimer = new Timer(
+              _kVerticalEdgeHoverDuration,
+              () => config.onVerticalEdgeHover?.call(),
+            );
           },
-          onDrop: (BuildContext context, StoryCluster storyCluster) => null,
+          onDrop: (BuildContext context, StoryCluster storyCluster) {
+            _verticalEdgeHoverTimer?.cancel();
+            _verticalEdgeHoverTimer = null;
+          },
         ),
       );
 
@@ -644,9 +659,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             config.storyCluster.removePreviews();
             _cleanup(context: context, preview: true);
             _updateDragFeedback(storyCluster);
-            config.onVerticalEdgeHover?.call();
+            _verticalEdgeHoverTimer = new Timer(
+              _kVerticalEdgeHoverDuration,
+              () => config.onVerticalEdgeHover?.call(),
+            );
           },
-          onDrop: (BuildContext context, StoryCluster storyCluster) => null,
+          onDrop: (BuildContext context, StoryCluster storyCluster) {
+            _verticalEdgeHoverTimer?.cancel();
+            _verticalEdgeHoverTimer = null;
+          },
         ),
       );
     }
