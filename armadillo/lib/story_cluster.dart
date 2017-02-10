@@ -32,8 +32,15 @@ class StoryCluster {
   final GlobalKey<SimulationBuilderState> focusSimulationKey;
 
   /// The inline preview scale simulation is the scaling that occurs when the
-  /// user drags a cluster over this cluster while in the timeline.
+  /// user drags a cluster over this cluster while in the timeline after the
+  /// inline preview timeout occurs.
   final GlobalKey<SimulationBuilderState> inlinePreviewScaleSimulationKey;
+
+  /// The inline preview hint scale simulation is the scaling that occurs when
+  /// the user drags a cluster over this cluster while in the timeline before
+  /// the inline preview timeout occurs.
+  final GlobalKey<SimulationBuilderState> inlinePreviewHintScaleSimulationKey;
+
   DisplayMode _displayMode;
   DisplayMode _previewDisplayMode;
   final Set<VoidCallback> _storyListListeners;
@@ -50,6 +57,7 @@ class StoryCluster {
     GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey,
     GlobalKey<SimulationBuilderState> focusSimulationKey,
     GlobalKey<SimulationBuilderState> inlinePreviewScaleSimulationKey,
+    GlobalKey<SimulationBuilderState> inlinePreviewHintScaleSimulationKey,
     List<Story> stories,
     Set<VoidCallback> storyListListeners,
     Set<VoidCallback> panelListeners,
@@ -74,6 +82,9 @@ class StoryCluster {
             focusSimulationKey ?? new GlobalKey<SimulationBuilderState>(),
         this.inlinePreviewScaleSimulationKey =
             inlinePreviewScaleSimulationKey ??
+                new GlobalKey<SimulationBuilderState>(),
+        this.inlinePreviewHintScaleSimulationKey =
+            inlinePreviewHintScaleSimulationKey ??
                 new GlobalKey<SimulationBuilderState>(),
         this._displayMode = displayMode ?? DisplayMode.panels,
         this._previewDisplayMode = previewDisplayMode ?? DisplayMode.panels,
@@ -155,6 +166,8 @@ class StoryCluster {
         dragFeedbackKey: this.dragFeedbackKey,
         focusSimulationKey: this.focusSimulationKey,
         inlinePreviewScaleSimulationKey: this.inlinePreviewScaleSimulationKey,
+        inlinePreviewHintScaleSimulationKey:
+            this.inlinePreviewHintScaleSimulationKey,
         stories: new List<Story>.generate(
           _stories.length,
           (int index) => _stories[index].copyWith(

@@ -11,6 +11,7 @@ class StoryListRenderBlockParentData extends BlockParentData {
   StoryLayout storyLayout;
   double _focusProgress;
   double _inlinePreviewScaleProgress;
+  double _inlinePreviewHintScaleProgress;
 
   StoryListRenderBlockParentData(this.owner);
 
@@ -31,4 +32,13 @@ class StoryListRenderBlockParentData extends BlockParentData {
   }
 
   double get inlinePreviewScaleProgress => _inlinePreviewScaleProgress;
+
+  set inlinePreviewHintScaleProgress(double inlinePreviewHintScaleProgress) {
+    if (_inlinePreviewHintScaleProgress != inlinePreviewHintScaleProgress) {
+      _inlinePreviewHintScaleProgress = inlinePreviewHintScaleProgress;
+      owner.markNeedsLayout();
+    }
+  }
+
+  double get inlinePreviewHintScaleProgress => _inlinePreviewHintScaleProgress;
 }

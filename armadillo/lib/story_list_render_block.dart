@@ -229,8 +229,13 @@ class StoryListRenderBlock extends RenderBlock {
         double layoutWidth = childParentData.storyLayout.size.width;
         double layoutOffsetX = childParentData.storyLayout.offset.dx;
         double layoutOffsetY = childParentData.storyLayout.offset.dy;
+        double hintScale = lerpDouble(
+          1.0,
+          1.25,
+          childParentData.inlinePreviewHintScaleProgress,
+        );
         double liftScaleMultiplier = lerpDouble(
-          liftScale,
+          liftScale * hintScale,
           1.0,
           childParentData.inlinePreviewScaleProgress,
         );

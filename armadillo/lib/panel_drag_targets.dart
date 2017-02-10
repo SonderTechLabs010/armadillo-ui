@@ -351,7 +351,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   void _updateInlinePreviewScalingSimulation(bool activate) {
     scheduleMicrotask(() {
       config.storyCluster.inlinePreviewScaleSimulationKey.currentState?.target =
-          activate ? 1.0 : _candidateValidityTimer != null ? 0.3 : 0.0;
+          activate ? 1.0 : 0.0;
+      config.storyCluster.inlinePreviewHintScaleSimulationKey.currentState
+          ?.target = (activate || _candidateValidityTimer != null) ? 1.0 : 0.0;
     });
   }
 

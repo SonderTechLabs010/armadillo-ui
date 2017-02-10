@@ -139,31 +139,45 @@ class StoryList extends StatelessWidget {
     Map<StoryId, Widget> storyWidgets,
   ) =>
       new SimulationBuilder(
-        key: storyCluster.inlinePreviewScaleSimulationKey,
+        key: storyCluster.inlinePreviewHintScaleSimulationKey,
         springDescription: _kInlinePreviewSimulationDesc,
         initValue: 0.0,
         targetValue: 0.0,
-        builder: (BuildContext context, double inlinePreviewScaleProgress) =>
+        builder: (
+          BuildContext context,
+          double inlinePreviewHintScaleProgress,
+        ) =>
             new SimulationBuilder(
-              key: storyCluster.focusSimulationKey,
+              key: storyCluster.inlinePreviewScaleSimulationKey,
+              springDescription: _kInlinePreviewSimulationDesc,
               initValue: 0.0,
               targetValue: 0.0,
-              onSimulationChanged: (double focusProgress, bool isDone) {
-                if (focusProgress == 1.0 && isDone) {
-                  onStoryClusterFocusCompleted?.call(storyCluster);
-                }
-              },
-              builder: (BuildContext context, double focusProgress) =>
-                  new StoryListChild(
-                    storyLayout: storyCluster.storyLayout,
-                    focusProgress: focusProgress,
-                    inlinePreviewScaleProgress: inlinePreviewScaleProgress,
-                    child: _createStoryCluster(
-                      storyClusters,
-                      storyCluster,
-                      focusProgress,
-                      storyWidgets,
-                    ),
+              builder: (BuildContext context,
+                      double inlinePreviewScaleProgress) =>
+                  new SimulationBuilder(
+                    key: storyCluster.focusSimulationKey,
+                    initValue: 0.0,
+                    targetValue: 0.0,
+                    onSimulationChanged: (double focusProgress, bool isDone) {
+                      if (focusProgress == 1.0 && isDone) {
+                        onStoryClusterFocusCompleted?.call(storyCluster);
+                      }
+                    },
+                    builder: (BuildContext context, double focusProgress) =>
+                        new StoryListChild(
+                          storyLayout: storyCluster.storyLayout,
+                          focusProgress: focusProgress,
+                          inlinePreviewScaleProgress:
+                              inlinePreviewScaleProgress,
+                          inlinePreviewHintScaleProgress:
+                              inlinePreviewHintScaleProgress,
+                          child: _createStoryCluster(
+                            storyClusters,
+                            storyCluster,
+                            focusProgress,
+                            storyWidgets,
+                          ),
+                        ),
                   ),
             ),
       );
@@ -302,12 +316,14 @@ class StoryListChild extends ParentDataWidget<StoryListBlockBody> {
   final StoryLayout storyLayout;
   final double focusProgress;
   final double inlinePreviewScaleProgress;
+  final double inlinePreviewHintScaleProgress;
 
   StoryListChild({
     Widget child,
     this.storyLayout,
     this.focusProgress,
     this.inlinePreviewScaleProgress,
+    this.inlinePreviewHintScaleProgress,
   })
       : super(child: child);
 
@@ -318,12 +334,17 @@ class StoryListChild extends ParentDataWidget<StoryListBlockBody> {
     parentData.storyLayout = storyLayout;
     parentData.focusProgress = focusProgress;
     parentData.inlinePreviewScaleProgress = inlinePreviewScaleProgress;
+    parentData.inlinePreviewHintScaleProgress = inlinePreviewHintScaleProgress;
   }
 
   @override
   void debugFillDescription(List<String> description) {
     super.debugFillDescription(description);
     description.add(
-        'storyLayout: $storyLayout, focusProgress: $focusProgress, inlinePreviewScaleProgress: $inlinePreviewScaleProgress');
+      'storyLayout: $storyLayout, '
+          'focusProgress: $focusProgress, '
+          'inlinePreviewScaleProgress: $inlinePreviewScaleProgress, '
+          'inlinePreviewHintScaleProgress: $inlinePreviewHintScaleProgress',
+    );
   }
 }
