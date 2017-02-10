@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
@@ -153,23 +152,29 @@ class StoryPanelsState extends State<StoryPanels> {
 
         stackChildren.addAll(
           sortedStories.map(
-            (Story story) => new StoryPositioned(
-                  storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
-                  focusProgress: config.focusProgress,
-                  displayMode: config.storyCluster.displayMode,
-                  isFocused: (config.storyCluster.focusedStoryId == story.id),
-                  panel: story.panel,
-                  currentSize: currentSize,
-                  childContainerKey: story.positionedKey,
-                  child: _getStory(
-                    context,
-                    story,
-                    _getStoryBarPadding(
-                      story: story,
-                      currentSize: currentSize,
-                    ),
-                  ),
+            (Story story) {
+              List<double> fractionalPadding = _getStoryBarPadding(
+                story: story,
+                width: currentSize.width,
+              );
+
+              return new StoryPositioned(
+                storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
+                focusProgress: config.focusProgress,
+                displayMode: config.storyCluster.displayMode,
+                isFocused: (config.storyCluster.focusedStoryId == story.id),
+                panel: story.panel,
+                currentSize: currentSize,
+                childContainerKey: story.positionedKey,
+                child: _getStory(
+                  context,
+                  story,
+                  fractionalPadding[0],
+                  fractionalPadding[1],
+                  currentSize,
                 ),
+              );
+            },
           ),
         );
 
@@ -250,7 +255,9 @@ class StoryPanelsState extends State<StoryPanels> {
   Widget _getStory(
     BuildContext context,
     Story story,
-    EdgeInsets storyBarPadding,
+    double fractionalLeftPadding,
+    double fractionalRightPadding,
+    Size currentSize,
   ) =>
       story.isPlaceHolder
           ? story.builder(context)
@@ -260,7 +267,9 @@ class StoryPanelsState extends State<StoryPanels> {
                 // The story bar that pushes down the story.
                 new SimulatedPadding(
                   key: story.storyBarPaddingKey,
-                  padding: storyBarPadding,
+                  fractionalLeftPadding: fractionalLeftPadding,
+                  fractionalRightPadding: fractionalRightPadding,
+                  width: currentSize.width,
                   child: new GestureDetector(
                     onTap: () {
                       config.storyCluster.focusedStoryId = story.id;
@@ -333,41 +342,43 @@ class StoryPanelsState extends State<StoryPanels> {
         ),
       );
 
-  EdgeInsets _getStoryBarPadding({
+  /// Returns the fractionalLeftPadding [0] and fractionalRightPadding [1] for
+  /// the [story].  If [growFocused] is true, the focused story is given double
+  /// the width of the other stories.
+  List<double> _getStoryBarPadding({
     Story story,
-    Size currentSize,
+    double width,
     bool growFocused: _kGrowFocusedTab,
   }) {
     if (config.storyCluster.displayMode == DisplayMode.panels) {
-      return new EdgeInsets.symmetric(horizontal: 0.0);
+      return <double>[0.0, 0.0];
     }
-    double storyBarGaps = 4.0 * (config.storyCluster.stories.length - 1);
+    int storyBarGaps = config.storyCluster.stories.length - 1;
     int spaces = _kGrowFocusedTab
         ? config.storyCluster.stories.length + 1
         : config.storyCluster.stories.length;
-    double widthPerSpace =
-        toGridValue((currentSize.width - storyBarGaps) / spaces);
+    double gapFractionalWidth = 4.0 / width;
+    double fractionalWidthPerSpace =
+        (1.0 - (storyBarGaps * gapFractionalWidth)) / spaces;
+
     int index = config.storyCluster.stories.indexOf(story);
     double left = 0.0;
     for (int i = 0; i < config.storyCluster.stories.length; i++) {
       if (i == index) {
         break;
       }
-      left += widthPerSpace + 4.0;
+      left += fractionalWidthPerSpace + gapFractionalWidth;
       if (growFocused &&
           config.storyCluster.stories[i].id ==
               config.storyCluster.focusedStoryId) {
-        left += widthPerSpace;
+        left += fractionalWidthPerSpace;
       }
     }
-    double width =
+    double fractionalWidth =
         growFocused && (story.id == config.storyCluster.focusedStoryId)
-            ? 2.0 * widthPerSpace
-            : widthPerSpace;
-    double right = (widthPerSpace * spaces + storyBarGaps) - left - width;
-    return new EdgeInsets.only(
-      left: math.max(0.0, left),
-      right: math.max(0.0, right),
-    );
+            ? 2.0 * fractionalWidthPerSpace
+            : fractionalWidthPerSpace;
+    double right = 1.0 - left - fractionalWidth;
+    return <double>[left, right];
   }
 }

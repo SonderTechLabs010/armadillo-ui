@@ -9,15 +9,20 @@ import 'package:sysui_widgets/ticking_state.dart';
 const RK4SpringDescription _kDefaultSimulationDesc =
     const RK4SpringDescription(tension: 750.0, friction: 50.0);
 
-/// Animates a [Padding]'s [padding] with a spring simulation.
+/// Animates a [Padding]'s [fractionalLeftPadding] and [fractionalRightPadding]
+/// with a spring simulation.
 class SimulatedPadding extends StatefulWidget {
-  final EdgeInsets padding;
   final RK4SpringDescription springDescription;
+  final double fractionalLeftPadding;
+  final double fractionalRightPadding;
+  final double width;
   final Widget child;
 
   SimulatedPadding({
     Key key,
-    this.padding,
+    this.fractionalLeftPadding,
+    this.fractionalRightPadding,
+    this.width,
     this.springDescription: _kDefaultSimulationDesc,
     this.child,
   })
@@ -35,11 +40,11 @@ class SimulatedPaddingState extends TickingState<SimulatedPadding> {
   void initState() {
     super.initState();
     _leftSimulation = new RK4SpringSimulation(
-      initValue: config.padding.left,
+      initValue: config.fractionalLeftPadding,
       desc: config.springDescription,
     );
     _rightSimulation = new RK4SpringSimulation(
-      initValue: config.padding.right,
+      initValue: config.fractionalRightPadding,
       desc: config.springDescription,
     );
   }
@@ -47,16 +52,18 @@ class SimulatedPaddingState extends TickingState<SimulatedPadding> {
   @override
   void didUpdateConfig(SimulatedPadding oldConfig) {
     super.didUpdateConfig(oldConfig);
-    _leftSimulation.target = config.padding.left;
-    _rightSimulation.target = config.padding.right;
+    _leftSimulation.target = config.fractionalLeftPadding;
+    _rightSimulation.target = config.fractionalRightPadding;
     startTicking();
   }
 
   @override
   Widget build(BuildContext context) => new Padding(
         padding: new EdgeInsets.only(
-          left: _leftSimulation.value.clamp(0.0, double.INFINITY),
-          right: _rightSimulation.value.clamp(0.0, double.INFINITY),
+          left:
+              config.width * _leftSimulation.value.clamp(0.0, double.INFINITY),
+          right:
+              config.width * _rightSimulation.value.clamp(0.0, double.INFINITY),
         ),
         child: config.child,
       );
