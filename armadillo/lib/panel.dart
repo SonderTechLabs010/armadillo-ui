@@ -7,10 +7,10 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 
 /// The minimum dp width a panel should have.
-const double _kMinPanelWidth = 320.0;
+const double _kMinPanelWidth = 360.0;
 
 /// The minimum dp height a panel should have.
-const double _kMinPanelHeight = 320.0;
+const double _kMinPanelHeight = 360.0;
 
 /// The number of grid lines the grid should have in either direction.
 /// TODO(apwilson): This should be calculated from size rather than being a
