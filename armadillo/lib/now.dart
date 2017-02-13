@@ -180,9 +180,12 @@ class NowState extends TickingState<Now> {
   @override
   Widget build(BuildContext context) => new ScopedStoryDragTransitionWidget(
         builder: (BuildContext context, Widget child, double progress) =>
-            new Opacity(
-              opacity: lerpDouble(1.0, 0.0, progress),
-              child: child,
+            new Offstage(
+              offstage: progress == 1.0,
+              child: new Opacity(
+                opacity: lerpDouble(1.0, 0.0, progress),
+                child: child,
+              ),
             ),
         child: _buildNow(context),
       );
