@@ -17,11 +17,8 @@ enum DisplayMode { tabs, panels }
 /// A data model representing a list of [Story]s.
 class StoryCluster {
   final StoryClusterId id;
-  final DateTime lastInteraction;
-  final Duration cumulativeInteractionDuration;
   final List<Story> _stories;
   final String title;
-  final GlobalKey clusterDraggableKey;
   final GlobalKey clusterDragTargetsKey;
   final GlobalKey panelsKey;
   final GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey;
@@ -40,66 +37,51 @@ class StoryCluster {
   /// the inline preview timeout occurs.
   final GlobalKey<SimulationBuilderState> inlinePreviewHintScaleSimulationKey;
 
-  DisplayMode _displayMode;
-  DisplayMode _previewDisplayMode;
   final Set<VoidCallback> _storyListListeners;
   final Set<VoidCallback> _panelListeners;
+
+  DateTime _lastInteraction;
+  Duration _cumulativeInteractionDuration;
+  GlobalKey clusterDraggableKey;
+  DisplayMode _displayMode;
   StoryId _focusedStoryId;
   StoryLayout storyLayout;
 
   StoryCluster({
     StoryClusterId id,
     GlobalKey clusterDraggableKey,
-    GlobalKey clusterDragTargetsKey,
-    GlobalKey panelsKey,
-    GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey,
-    GlobalKey<SimulationBuilderState> focusSimulationKey,
-    GlobalKey<SimulationBuilderState> inlinePreviewScaleSimulationKey,
-    GlobalKey<SimulationBuilderState> inlinePreviewHintScaleSimulationKey,
     List<Story> stories,
-    Set<VoidCallback> storyListListeners,
-    Set<VoidCallback> panelListeners,
-    DisplayMode displayMode,
-    DisplayMode previewDisplayMode,
-    StoryId focusedStoryId,
     this.storyLayout,
   })
       : this._stories = stories,
         this.title = _getClusterTitle(stories),
-        this.lastInteraction = _getClusterLastInteraction(stories),
-        this.cumulativeInteractionDuration =
+        this._lastInteraction = _getClusterLastInteraction(stories),
+        this._cumulativeInteractionDuration =
             _getClusterCumulativeInteractionDuration(stories),
         this.id = id ?? new StoryClusterId(),
         this.clusterDraggableKey = clusterDraggableKey ?? new GlobalKey(),
-        this.clusterDragTargetsKey = clusterDragTargetsKey ?? new GlobalKey(),
-        this.panelsKey = panelsKey ?? new GlobalKey(),
-        this.dragFeedbackKey =
-            dragFeedbackKey ?? new GlobalKey<StoryClusterDragFeedbackState>(),
-        this.focusSimulationKey =
-            focusSimulationKey ?? new GlobalKey<SimulationBuilderState>(),
+        this.clusterDragTargetsKey = new GlobalKey(),
+        this.panelsKey = new GlobalKey(),
+        this.dragFeedbackKey = new GlobalKey<StoryClusterDragFeedbackState>(),
+        this.focusSimulationKey = new GlobalKey<SimulationBuilderState>(),
         this.inlinePreviewScaleSimulationKey =
-            inlinePreviewScaleSimulationKey ??
-                new GlobalKey<SimulationBuilderState>(),
+            new GlobalKey<SimulationBuilderState>(),
         this.inlinePreviewHintScaleSimulationKey =
-            inlinePreviewHintScaleSimulationKey ??
-                new GlobalKey<SimulationBuilderState>(),
-        this._displayMode = displayMode ?? DisplayMode.panels,
-        this._previewDisplayMode = previewDisplayMode ?? DisplayMode.panels,
-        this._storyListListeners =
-            storyListListeners ?? new Set<VoidCallback>(),
-        this._panelListeners = panelListeners ?? new Set<VoidCallback>(),
-        this._focusedStoryId = focusedStoryId ?? stories[0].id;
+            new GlobalKey<SimulationBuilderState>(),
+        this._displayMode = DisplayMode.panels,
+        this._storyListListeners = new Set<VoidCallback>(),
+        this._panelListeners = new Set<VoidCallback>(),
+        this._focusedStoryId = stories[0].id;
 
-  factory StoryCluster.fromStory(Story story) => new StoryCluster(
-        id: story.clusterId,
-        clusterDraggableKey: story.clusterDraggableKey,
-        stories: <Story>[
-          story.copyWith(
-            panel: new Panel(),
-            positionedKey: new GlobalKey(),
-          ),
-        ],
-      );
+  factory StoryCluster.fromStory(Story story) {
+    story.panel = new Panel();
+    story.positionedKey = new GlobalKey();
+    return new StoryCluster(
+      id: story.clusterId,
+      clusterDraggableKey: story.clusterDraggableKey,
+      stories: <Story>[story],
+    );
+  }
 
   /// The list of stories in this cluster including both 'real' stories and
   /// place holder stories.
@@ -148,37 +130,29 @@ class StoryCluster {
     _panelListeners.forEach((VoidCallback listener) => listener());
   }
 
-  StoryCluster copyWith({
-    DateTime lastInteraction,
-    Duration cumulativeInteractionDuration,
-    bool inactive,
-    GlobalKey clusterDraggableId,
-  }) =>
-      new StoryCluster(
-        id: this.id,
-        clusterDraggableKey: clusterDraggableId ?? this.clusterDraggableKey,
-        clusterDragTargetsKey: this.clusterDragTargetsKey,
-        panelsKey: this.panelsKey,
-        dragFeedbackKey: this.dragFeedbackKey,
-        focusSimulationKey: this.focusSimulationKey,
-        inlinePreviewScaleSimulationKey: this.inlinePreviewScaleSimulationKey,
-        inlinePreviewHintScaleSimulationKey:
-            this.inlinePreviewHintScaleSimulationKey,
-        stories: new List<Story>.generate(
-          _stories.length,
-          (int index) => _stories[index].copyWith(
-                lastInteraction: lastInteraction,
-                cumulativeInteractionDuration: cumulativeInteractionDuration,
-                inactive: inactive,
-              ),
-        ),
-        displayMode: this._displayMode,
-        previewDisplayMode: this._previewDisplayMode,
-        storyListListeners: this._storyListListeners,
-        panelListeners: this._panelListeners,
-        focusedStoryId: this._focusedStoryId,
-        storyLayout: this.storyLayout,
-      );
+  set inactive(bool inactive) {
+    _stories.forEach((Story story) {
+      story.inactive = inactive;
+    });
+  }
+
+  set lastInteraction(DateTime lastInteraction) {
+    this._lastInteraction = lastInteraction;
+    _stories.forEach((Story story) {
+      story.lastInteraction = lastInteraction;
+    });
+  }
+
+  DateTime get lastInteraction => _lastInteraction;
+
+  set cumulativeInteractionDuration(Duration cumulativeInteractionDuration) {
+    this._cumulativeInteractionDuration = cumulativeInteractionDuration;
+    _stories.forEach((Story story) {
+      story.cumulativeInteractionDuration = cumulativeInteractionDuration;
+    });
+  }
+
+  Duration get cumulativeInteractionDuration => _cumulativeInteractionDuration;
 
   @override
   int get hashCode => id.hashCode;
@@ -212,7 +186,7 @@ class StoryCluster {
         <StoryId, PlaceHolderStory>{};
     _stories.toList().forEach((Story story) {
       if (story is PlaceHolderStory) {
-        absorb(_stories.where((Story s) => story.id == s.id).single);
+        absorb(story);
         storiesRemoved[story.associatedStoryId] = story;
       }
     });
@@ -298,10 +272,11 @@ class StoryCluster {
 
   /// Adds the [story] to [stories] with a [Panel] of [withPanel].
   void add({Story story, Panel withPanel, int atIndex}) {
+    story.panel = withPanel;
     if (atIndex == null) {
-      _stories.add(story.copyWith(panel: withPanel));
+      _stories.add(story);
     } else {
-      _stories.insert(atIndex, story.copyWith(panel: withPanel));
+      _stories.insert(atIndex, story);
     }
     _notifyStoryListListeners();
   }
@@ -309,22 +284,13 @@ class StoryCluster {
   /// Replaces the [Story.panel] of the story with [panel] with [withPanel]/
   void replace({Panel panel, Panel withPanel}) {
     Story story = _stories.where((Story story) => story.panel == panel).single;
-    _replaceStory(story: story, withPanel: withPanel);
+    story.panel = withPanel;
   }
 
   /// Replaces the [Story.panel] of the story with [storyId] with [withPanel]/
   void replaceStoryPanel({StoryId storyId, Panel withPanel}) {
     Story story = _stories.where((Story story) => story.id == storyId).single;
-    _replaceStory(story: story, withPanel: withPanel);
-  }
-
-  void _replaceStory({Story story, Panel withPanel}) {
-    int storyIndex = _stories.indexOf(story);
-    _stories.remove(story);
-    _stories.insert(
-      storyIndex,
-      story.copyWith(panel: withPanel),
-    );
+    story.panel = withPanel;
   }
 
   void absorb(Story story) {
@@ -341,12 +307,12 @@ class StoryCluster {
     Story absorbingStory;
     do {
       remainingSize = remainingAreaToAbsorb.sizeFactor;
-      absorbingStory = _stories
+      absorbingStory = stories
           .where((Story story) => story.panel.canAbsorb(remainingAreaToAbsorb))
           .first;
       absorbingStory.panel.absorb(remainingAreaToAbsorb,
           (Panel absorbed, Panel remainder) {
-        _replaceStory(story: absorbingStory, withPanel: absorbed);
+        absorbingStory.panel = absorbed;
         remainingAreaToAbsorb = remainder;
       });
     } while (remainingAreaToAbsorb.sizeFactor < remainingSize &&

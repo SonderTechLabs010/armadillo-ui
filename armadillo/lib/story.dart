@@ -26,19 +26,20 @@ class Story {
   final List<OpacityBuilder> icons;
   final OpacityBuilder avatar;
   final String title;
-  final DateTime lastInteraction;
-  final Duration cumulativeInteractionDuration;
   final Color themeColor;
-  final bool inactive;
   final StoryClusterId clusterId;
   final GlobalKey<StoryBarState> storyBarKey;
   final GlobalKey storyBarPaddingKey;
   final GlobalKey clusterDraggableKey;
-  final GlobalKey<SimulatedFractionalState> positionedKey;
   final GlobalKey<SimulatedFractionalState> shadowPositionedKey;
   final GlobalKey containerKey;
   final GlobalKey<SimulatedFractionallySizedBoxState> tabSizerKey;
-  final Panel panel;
+
+  DateTime lastInteraction;
+  Duration cumulativeInteractionDuration;
+  bool inactive;
+  GlobalKey<SimulatedFractionalState> positionedKey;
+  Panel panel;
 
   Story({
     this.id,
@@ -50,57 +51,16 @@ class Story {
     this.cumulativeInteractionDuration,
     this.themeColor,
     this.inactive: false,
-    StoryClusterId clusterId,
-    GlobalKey<StoryBarState> storyBarKey,
-    GlobalKey storyBarPaddingKey,
-    GlobalKey clusterDraggableKey,
-    GlobalKey positionedKey,
-    GlobalKey shadowPositionedKey,
-    GlobalKey containerKey,
-    GlobalKey<SimulatedFractionallySizedBoxState> tabSizerKey,
-    Panel panel,
   })
-      : this.clusterId = clusterId ?? new StoryClusterId(),
-        this.storyBarKey = storyBarKey ?? new GlobalKey<StoryBarState>(),
-        this.storyBarPaddingKey = storyBarPaddingKey ?? new GlobalKey(),
-        this.clusterDraggableKey = clusterDraggableKey ?? new GlobalKey(),
-        this.positionedKey = positionedKey ?? new GlobalKey(),
-        this.shadowPositionedKey = shadowPositionedKey ?? new GlobalKey(),
-        this.containerKey = containerKey ?? new GlobalKey(),
-        this.tabSizerKey =
-            tabSizerKey ?? new GlobalKey<SimulatedFractionallySizedBoxState>(),
-        this.panel = panel ?? new Panel();
-
-  Story copyWith({
-    DateTime lastInteraction,
-    Duration cumulativeInteractionDuration,
-    bool inactive,
-    Panel panel,
-    GlobalKey clusterDraggableKey,
-    GlobalKey positionedKey,
-    GlobalKey shadowPositionedKey,
-  }) =>
-      new Story(
-        id: this.id,
-        builder: this.builder,
-        lastInteraction: lastInteraction ?? this.lastInteraction,
-        cumulativeInteractionDuration:
-            cumulativeInteractionDuration ?? this.cumulativeInteractionDuration,
-        themeColor: this.themeColor,
-        icons: new List<OpacityBuilder>.from(this.icons),
-        avatar: this.avatar,
-        title: this.title,
-        inactive: inactive ?? this.inactive,
-        clusterId: this.clusterId,
-        storyBarKey: this.storyBarKey,
-        storyBarPaddingKey: this.storyBarPaddingKey,
-        clusterDraggableKey: this.clusterDraggableKey,
-        positionedKey: positionedKey ?? this.positionedKey,
-        shadowPositionedKey: shadowPositionedKey ?? this.shadowPositionedKey,
-        containerKey: this.containerKey,
-        tabSizerKey: this.tabSizerKey,
-        panel: panel ?? this.panel,
-      );
+      : this.clusterId = new StoryClusterId(),
+        this.storyBarKey = new GlobalKey<StoryBarState>(),
+        this.storyBarPaddingKey = new GlobalKey(),
+        this.clusterDraggableKey = new GlobalKey(),
+        this.positionedKey = new GlobalKey(),
+        this.shadowPositionedKey = new GlobalKey(),
+        this.containerKey = new GlobalKey(),
+        this.tabSizerKey = new GlobalKey<SimulatedFractionallySizedBoxState>(),
+        this.panel = new Panel();
 
   /// Returns true if the [Story] has no content and should just take up empty
   /// space.

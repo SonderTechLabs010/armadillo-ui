@@ -91,13 +91,10 @@ class StoryModel extends Model {
   /// This method is to be called whenever a [Story]'s [Story.builder] [Widget]
   /// comes into focus.
   void interactionStarted(StoryCluster storyCluster) {
-    _storyClusters.removeWhere((StoryCluster s) => s.id == storyCluster.id);
-    _storyClusters.add(
-      storyCluster.copyWith(
-        lastInteraction: new DateTime.now(),
-        inactive: false,
-      ),
-    );
+    _storyClusters.remove(storyCluster);
+    _storyClusters.add(storyCluster);
+    storyCluster.lastInteraction = new DateTime.now();
+    storyCluster.inactive = false;
     updateLayouts(_lastLayoutSize);
     notifyListeners();
     suggestionModel.storyClusterFocusChanged(storyCluster);
@@ -113,26 +110,14 @@ class StoryModel extends Model {
   void randomizeStoryTimes() {
     math.Random random = new math.Random();
     DateTime storyInteractionTime = new DateTime.now();
-    _storyClusters =
-        new List<StoryCluster>.generate(_storyClusters.length, (int index) {
+    _storyClusters.forEach((StoryCluster storyCluster) {
       storyInteractionTime = storyInteractionTime.subtract(
           new Duration(minutes: math.max(0, random.nextInt(100) - 70)));
       Duration interaction = new Duration(minutes: random.nextInt(60));
-      StoryCluster storyCluster = _storyClusters[index].copyWith(
-        lastInteraction: storyInteractionTime,
-        cumulativeInteractionDuration: interaction,
-      );
+      storyCluster.lastInteraction = storyInteractionTime;
+      storyCluster.cumulativeInteractionDuration = interaction;
       storyInteractionTime = storyInteractionTime.subtract(interaction);
-      return storyCluster;
     });
-    updateLayouts(_lastLayoutSize);
-    notifyListeners();
-  }
-
-  /// Adds [storyCluster] to the list of story clusters.
-
-  void _add({StoryCluster storyCluster}) {
-    _storyClusters.add(storyCluster);
     updateLayouts(_lastLayoutSize);
     notifyListeners();
   }
@@ -157,9 +142,12 @@ class StoryModel extends Model {
 
     // We need to update the draggable id as in some cases this id could
     // be used by one of the cluster's stories.
-    remove(storyClusterId: source.id);
-    remove(storyClusterId: target.id);
-    _add(storyCluster: target.copyWith(clusterDraggableId: new GlobalKey()));
+    _storyClusters.remove(source);
+    _storyClusters.remove(target);
+    _storyClusters.add(target);
+    target.clusterDraggableKey = new GlobalKey();
+    updateLayouts(_lastLayoutSize);
+    notifyListeners();
   }
 
   /// Removes [storyClusterId] from the list of story clusters.
@@ -177,9 +165,11 @@ class StoryModel extends Model {
 
     from.absorb(storyToSplit);
 
-    _add(storyCluster: new StoryCluster.fromStory(storyToSplit));
-    _storyClusters.removeWhere((StoryCluster s) => s.id == from.id);
-    _add(storyCluster: from.copyWith());
+    _storyClusters.add(new StoryCluster.fromStory(storyToSplit));
+    _storyClusters.remove(from);
+    _storyClusters.add(from);
+    updateLayouts(_lastLayoutSize);
+    notifyListeners();
   }
 
   // Determines the max number of rows and columns based on [size] and either

@@ -422,8 +422,6 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           config.storyCluster.displayMode = _originalDisplayMode;
           config.storyCluster.focusedStoryId = _originalFocusedStoryId;
         }
-
-        _updateDragFeedback(storyCluster);
       }
     });
 
@@ -1388,6 +1386,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
 
     // 3. Resize all panels in the dragging story cluster with the placeholders
+    //    in this story cluster.
     config.storyCluster.previewStories.forEach((Story story) {
       PlaceHolderStory placeHolderStory = story;
       draggingStoryCluster.replace(
@@ -1399,9 +1398,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           withPanel: placeHolderStory.panel);
     });
 
-    //    in this story cluster.
     // 4. Update displaymode.
     draggingStoryCluster.displayMode = displayMode;
+
+    // 5. Normalize sizes.
+    draggingStoryCluster.normalizeSizes();
   }
 
   void _normalizeSizes() => config.storyCluster.normalizeSizes();
