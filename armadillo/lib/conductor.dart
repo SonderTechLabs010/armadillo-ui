@@ -492,6 +492,7 @@ class Conductor extends StatelessWidget {
     _defocus(storyModel);
     _nowKey.currentState.maximize();
     storyModel.interactionStopped();
+    storyModel.clearPlaceHolderStoryClusters();
   }
 
   /// Called to request the conductor focus on the cluster with [storyId].

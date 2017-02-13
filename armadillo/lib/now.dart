@@ -523,8 +523,7 @@ class NowState extends TickingState<Now> {
   bool get _revealingQuickSettings =>
       _quickSettingsSimulation.target == _kQuickSettingsSimulationTarget;
 
-  bool get _buttonTapDisabled =>
-      _minimizationProgress < (1.0 - _kFallAwayDurationFraction);
+  bool get _buttonTapDisabled => _minimizationProgress < 1.0;
 
   double get _nowHeight => math.max(
       config.minHeight,

@@ -1331,7 +1331,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     //   c) Causing a setState while building is a big Flutter no-no.
     scheduleMicrotask(() {
       if (!preview) {
-        StoryModel.of(context).remove(storyClusterId: storyCluster.id);
+        StoryModel.of(context).remove(storyCluster);
       }
     });
   }

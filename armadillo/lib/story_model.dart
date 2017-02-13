@@ -91,8 +91,6 @@ class StoryModel extends Model {
   /// This method is to be called whenever a [Story]'s [Story.builder] [Widget]
   /// comes into focus.
   void interactionStarted(StoryCluster storyCluster) {
-    _storyClusters.remove(storyCluster);
-    _storyClusters.add(storyCluster);
     storyCluster.lastInteraction = new DateTime.now();
     storyCluster.inactive = false;
     updateLayouts(_lastLayoutSize);
@@ -142,17 +140,15 @@ class StoryModel extends Model {
 
     // We need to update the draggable id as in some cases this id could
     // be used by one of the cluster's stories.
-    _storyClusters.remove(source);
-    _storyClusters.remove(target);
-    _storyClusters.add(target);
+    source.becomePlaceholder();
     target.clusterDraggableKey = new GlobalKey();
     updateLayouts(_lastLayoutSize);
     notifyListeners();
   }
 
-  /// Removes [storyClusterId] from the list of story clusters.
-  void remove({StoryClusterId storyClusterId}) {
-    _storyClusters.removeWhere((StoryCluster s) => (s.id == storyClusterId));
+  /// Removes [storyCluster] from the list of story clusters.
+  void remove(StoryCluster storyCluster) {
+    storyCluster.becomePlaceholder();
     updateLayouts(_lastLayoutSize);
     notifyListeners();
   }
@@ -165,9 +161,8 @@ class StoryModel extends Model {
 
     from.absorb(storyToSplit);
 
+    clearPlaceHolderStoryClusters();
     _storyClusters.add(new StoryCluster.fromStory(storyToSplit));
-    _storyClusters.remove(from);
-    _storyClusters.add(from);
     updateLayouts(_lastLayoutSize);
     notifyListeners();
   }
@@ -184,6 +179,14 @@ class StoryModel extends Model {
   StoryCluster getStoryCluster(StoryClusterId storyClusterId) => _storyClusters
       .where((StoryCluster storyCluster) => storyCluster.id == storyClusterId)
       .single;
+
+  void clearPlaceHolderStoryClusters() {
+    _storyClusters.removeWhere(
+      (StoryCluster storyCluster) => storyCluster.realStories.isEmpty,
+    );
+    updateLayouts(_lastLayoutSize);
+    notifyListeners();
+  }
 
   Story _getLargestStory(List<Story> stories) {
     double largestSize = -0.0;

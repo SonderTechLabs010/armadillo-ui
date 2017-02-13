@@ -280,17 +280,22 @@ class StoryPanelsState extends State<StoryPanels> {
                         });
                       }
                     },
-                    child: _getStoryBarDraggableWrapper(
-                      context: context,
-                      story: story,
-                      child: new StoryBar(
-                        key: story.storyBarKey,
+                    child: new ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxHeight: _kStoryBarMaximizedHeight,
+                      ),
+                      child: _getStoryBarDraggableWrapper(
+                        context: context,
                         story: story,
-                        minimizedHeight: _kStoryBarMinimizedHeight,
-                        maximizedHeight: _kStoryBarMaximizedHeight,
-                        focused: (config.storyCluster.displayMode ==
-                                DisplayMode.panels) ||
-                            (config.storyCluster.focusedStoryId == story.id),
+                        child: new StoryBar(
+                          key: story.storyBarKey,
+                          story: story,
+                          minimizedHeight: _kStoryBarMinimizedHeight,
+                          maximizedHeight: _kStoryBarMaximizedHeight,
+                          focused: (config.storyCluster.displayMode ==
+                                  DisplayMode.panels) ||
+                              (config.storyCluster.focusedStoryId == story.id),
+                        ),
                       ),
                     ),
                   ),

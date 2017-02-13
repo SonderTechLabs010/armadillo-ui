@@ -53,13 +53,18 @@ class Story {
     this.inactive: false,
   })
       : this.clusterId = new StoryClusterId(),
-        this.storyBarKey = new GlobalKey<StoryBarState>(),
-        this.storyBarPaddingKey = new GlobalKey(),
-        this.clusterDraggableKey = new GlobalKey(),
-        this.positionedKey = new GlobalKey(),
-        this.shadowPositionedKey = new GlobalKey(),
-        this.containerKey = new GlobalKey(),
-        this.tabSizerKey = new GlobalKey<SimulatedFractionallySizedBoxState>(),
+        this.storyBarKey =
+            new GlobalKey<StoryBarState>(debugLabel: '$id storyBarKey'),
+        this.storyBarPaddingKey =
+            new GlobalKey(debugLabel: '$id storyBarPaddingKey'),
+        this.clusterDraggableKey =
+            new GlobalKey(debugLabel: '$id clusterDraggableKey'),
+        this.positionedKey = new GlobalKey(debugLabel: '$id positionedKey'),
+        this.shadowPositionedKey =
+            new GlobalKey(debugLabel: '$id shadowPositionedKey'),
+        this.containerKey = new GlobalKey(debugLabel: '$id containerKey'),
+        this.tabSizerKey = new GlobalKey<SimulatedFractionallySizedBoxState>(
+            debugLabel: '$id tabSizerKey'),
         this.panel = new Panel();
 
   /// Returns true if the [Story] has no content and should just take up empty

@@ -18,7 +18,6 @@ enum DisplayMode { tabs, panels }
 class StoryCluster {
   final StoryClusterId id;
   final List<Story> _stories;
-  final String title;
   final GlobalKey clusterDragTargetsKey;
   final GlobalKey panelsKey;
   final GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey;
@@ -40,6 +39,12 @@ class StoryCluster {
   final Set<VoidCallback> _storyListListeners;
   final Set<VoidCallback> _panelListeners;
 
+  /// The title of a cluster is currently generated via
+  /// [_getClusterTitle] whenever the list of stories in this cluster changes.
+  /// [_getClusterTitle] currently just concatenates the titles of the stories
+  /// within the cluster.
+  String title;
+
   DateTime _lastInteraction;
   Duration _cumulativeInteractionDuration;
   GlobalKey clusterDraggableKey;
@@ -59,15 +64,21 @@ class StoryCluster {
         this._cumulativeInteractionDuration =
             _getClusterCumulativeInteractionDuration(stories),
         this.id = id ?? new StoryClusterId(),
-        this.clusterDraggableKey = clusterDraggableKey ?? new GlobalKey(),
-        this.clusterDragTargetsKey = new GlobalKey(),
-        this.panelsKey = new GlobalKey(),
-        this.dragFeedbackKey = new GlobalKey<StoryClusterDragFeedbackState>(),
-        this.focusSimulationKey = new GlobalKey<SimulationBuilderState>(),
+        this.clusterDraggableKey = clusterDraggableKey ??
+            new GlobalKey(debugLabel: 'clusterDraggableKey'),
+        this.clusterDragTargetsKey =
+            new GlobalKey(debugLabel: 'clusterDragTargetsKey'),
+        this.panelsKey = new GlobalKey(debugLabel: 'panelsKey'),
+        this.dragFeedbackKey = new GlobalKey<StoryClusterDragFeedbackState>(
+            debugLabel: 'dragFeedbackKey'),
+        this.focusSimulationKey = new GlobalKey<SimulationBuilderState>(
+            debugLabel: 'focusSimulationKey'),
         this.inlinePreviewScaleSimulationKey =
-            new GlobalKey<SimulationBuilderState>(),
+            new GlobalKey<SimulationBuilderState>(
+                debugLabel: 'inlinePreviewScaleSimulationKey'),
         this.inlinePreviewHintScaleSimulationKey =
-            new GlobalKey<SimulationBuilderState>(),
+            new GlobalKey<SimulationBuilderState>(
+                debugLabel: 'inlinePreviewHintScaleSimulationKey'),
         this._displayMode = DisplayMode.panels,
         this._storyListListeners = new Set<VoidCallback>(),
         this._panelListeners = new Set<VoidCallback>(),
@@ -75,7 +86,8 @@ class StoryCluster {
 
   factory StoryCluster.fromStory(Story story) {
     story.panel = new Panel();
-    story.positionedKey = new GlobalKey();
+    story.positionedKey =
+        new GlobalKey(debugLabel: '${story.id} positionedKey');
     return new StoryCluster(
       id: story.clusterId,
       clusterDraggableKey: story.clusterDraggableKey,
@@ -115,6 +127,7 @@ class StoryCluster {
   }
 
   void _notifyStoryListListeners() {
+    title = _getClusterTitle(realStories);
     _storyListListeners.forEach((VoidCallback listener) => listener());
   }
 
@@ -291,6 +304,12 @@ class StoryCluster {
   void replaceStoryPanel({StoryId storyId, Panel withPanel}) {
     Story story = _stories.where((Story story) => story.id == storyId).single;
     story.panel = withPanel;
+  }
+
+  void becomePlaceholder() {
+    _stories.clear();
+    _stories.add(new PlaceHolderStory(transparent: true));
+    _notifyStoryListListeners();
   }
 
   void absorb(Story story) {
