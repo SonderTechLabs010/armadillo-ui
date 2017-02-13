@@ -40,6 +40,7 @@ const Color _kStoryEdgeTargetColor = const Color(0xFF0000FF);
 const Color _kTargetBackgroundColor = const Color.fromARGB(128, 153, 234, 216);
 
 const String _kStoryBarTargetName = 'Story Bar target';
+const Duration _kMinLockDuration = const Duration(milliseconds: 750);
 
 /// Set to true to draw target lines.
 const bool _kDrawTargetLines = false;
@@ -106,6 +107,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       <StoryCluster, Point>{};
   final Map<StoryCluster, LineSegment> _closestTargets =
       <StoryCluster, LineSegment>{};
+  final Map<StoryCluster, DateTime> _closestTargetTimestamps =
+      <StoryCluster, DateTime>{};
   final RK4SpringSimulation _scaleSimulation = new RK4SpringSimulation(
     initValue: 1.0,
     desc: _kScaleSimulationDesc,
@@ -440,12 +443,19 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         _closestTargets[storyCluster] == null,
       );
 
-      // ... lock to its closest line if it's an existing candidate whose
-      // closest line has changed and we've moved past the sticky distance for
-      // its lock point.
+      // ... lock to line closest to the candidate if the candidate:
+      // 1) is new, or
+      // 2) is old, and
+      //    a) the closest line to the candidate has changed,
+      //    b) we've moved past the sticky distance from the candidate's lock
+      //       point, and
+      //    c) the candidate's closest line hasn't changed recently.
       if (_closestTargets[storyCluster] == null ||
           (_closestTargets[storyCluster].name != closestLine.name &&
-              ((lockPoint - storyClusterPoint).distance > _kStickyDistance))) {
+              ((lockPoint - storyClusterPoint).distance > _kStickyDistance) &&
+              (new DateTime.now().subtract(_kMinLockDuration).isAfter(
+                    _closestTargetTimestamps[storyCluster],
+                  )))) {
         _lockClosestTarget(
           storyCluster: storyCluster,
           point: storyClusterPoint,
@@ -460,6 +470,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     Point point,
     LineSegment closestLine,
   }) {
+    _closestTargetTimestamps[storyCluster] = new DateTime.now();
     _closestTargetLockPoints[storyCluster] = point;
     _closestTargets[storyCluster] = closestLine;
     _verticalEdgeHoverTimer?.cancel();
