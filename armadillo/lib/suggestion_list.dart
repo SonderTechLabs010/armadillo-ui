@@ -16,7 +16,7 @@ typedef void OnSuggestionSelected(Suggestion suggestion, Rect globalBounds);
 typedef void OnAskTextChanged(String text);
 
 class SuggestionList extends StatefulWidget {
-  final Key scrollableKey;
+  final ScrollController scrollController;
   final VoidCallback onAskingStarted;
   final VoidCallback onAskingEnded;
   final OnSuggestionSelected onSuggestionSelected;
@@ -25,7 +25,7 @@ class SuggestionList extends StatefulWidget {
 
   SuggestionList({
     Key key,
-    this.scrollableKey,
+    this.scrollController,
     this.onAskingStarted,
     this.onAskingEnded,
     this.onSuggestionSelected,
@@ -173,8 +173,8 @@ class SuggestionListState extends State<SuggestionList> {
         padding: const EdgeInsets.symmetric(
           horizontal: 8.0,
         ),
-        child: new Block(
-          scrollableKey: config.scrollableKey,
+        child: new ListView(
+          controller: config.scrollController,
           children: SuggestionModel
               .of(context, rebuildOnChange: true)
               .suggestions
@@ -203,25 +203,23 @@ class SuggestionListState extends State<SuggestionList> {
       alignment: FractionalOffset.topCenter,
       child: new ConstrainedBox(
         constraints: new BoxConstraints(maxWidth: 960.0),
-        child: new Block(
-          scrollableKey: config.scrollableKey,
-          children: new List<Widget>.generate(
-            leftSuggestions.length,
-            (int index) => new Row(
-                  children: <Widget>[
-                    new Container(height: 0.0, width: 24.0),
-                    new Expanded(
-                        child: _createSuggestion(leftSuggestions[index])),
-                    new Container(height: 0.0, width: 24.0),
-                    new Expanded(
-                      child: index < rightSuggestions.length
-                          ? _createSuggestion(rightSuggestions[index])
-                          : new Offstage(offstage: true),
-                    ),
-                    new Container(height: 0.0, width: 24.0),
-                  ],
-                ),
-          ),
+        child: new ListView.builder(
+          controller: config.scrollController,
+          itemCount: leftSuggestions.length,
+          itemBuilder: (BuildContext context, int index) => new Row(
+                children: <Widget>[
+                  new Container(height: 0.0, width: 24.0),
+                  new Expanded(
+                      child: _createSuggestion(leftSuggestions[index])),
+                  new Container(height: 0.0, width: 24.0),
+                  new Expanded(
+                    child: index < rightSuggestions.length
+                        ? _createSuggestion(rightSuggestions[index])
+                        : new Offstage(offstage: true),
+                  ),
+                  new Container(height: 0.0, width: 24.0),
+                ],
+              ),
         ),
       ),
     );
@@ -250,32 +248,30 @@ class SuggestionListState extends State<SuggestionList> {
       alignment: FractionalOffset.topCenter,
       child: new ConstrainedBox(
         constraints: new BoxConstraints(maxWidth: 1440.0),
-        child: new Block(
-          scrollableKey: config.scrollableKey,
-          children: new List<Widget>.generate(
-            leftSuggestions.length,
-            (int index) => new Row(
-                  children: <Widget>[
-                    new Container(height: 0.0, width: 24.0),
-                    new Expanded(
-                      child: _createSuggestion(leftSuggestions[index]),
-                    ),
-                    new Container(height: 0.0, width: 24.0),
-                    new Expanded(
-                      child: index < middleSuggestions.length
-                          ? _createSuggestion(middleSuggestions[index])
-                          : new Offstage(offstage: true),
-                    ),
-                    new Container(height: 0.0, width: 24.0),
-                    new Expanded(
-                      child: index < rightSuggestions.length
-                          ? _createSuggestion(rightSuggestions[index])
-                          : new Offstage(offstage: true),
-                    ),
-                    new Container(height: 0.0, width: 24.0),
-                  ],
-                ),
-          ),
+        child: new ListView.builder(
+          controller: config.scrollController,
+          itemCount: leftSuggestions.length,
+          itemBuilder: (BuildContext context, int index) => new Row(
+                children: <Widget>[
+                  new Container(height: 0.0, width: 24.0),
+                  new Expanded(
+                    child: _createSuggestion(leftSuggestions[index]),
+                  ),
+                  new Container(height: 0.0, width: 24.0),
+                  new Expanded(
+                    child: index < middleSuggestions.length
+                        ? _createSuggestion(middleSuggestions[index])
+                        : new Offstage(offstage: true),
+                  ),
+                  new Container(height: 0.0, width: 24.0),
+                  new Expanded(
+                    child: index < rightSuggestions.length
+                        ? _createSuggestion(rightSuggestions[index])
+                        : new Offstage(offstage: true),
+                  ),
+                  new Container(height: 0.0, width: 24.0),
+                ],
+              ),
         ),
       ),
     );

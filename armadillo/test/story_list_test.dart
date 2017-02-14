@@ -24,7 +24,7 @@ void main() {
   testWidgets('Single Column StoryList children extend to fit parent',
       (WidgetTester tester) async {
     GlobalKey storyListKey = new GlobalKey();
-    GlobalKey scrollableKey = new GlobalKey();
+    ScrollController scrollController = new ScrollController();
 
     List<GlobalKey> storyKeys =
         new List<GlobalKey>.generate(4, (int index) => new GlobalKey());
@@ -32,7 +32,7 @@ void main() {
     StoryList storyList = new StoryList(
       key: storyListKey,
       sizeModel: new SizeModel(new Size(_kWidthSingleColumn, _kHeight)),
-      scrollableKey: scrollableKey,
+      scrollController: scrollController,
       multiColumn: false,
       quickSettingsHeightBump: 200.0,
     );
@@ -68,7 +68,7 @@ void main() {
       'Multicolumn StoryList children do not extend to fit parent and are instead 16/9 aspect ratio',
       (WidgetTester tester) async {
     GlobalKey storyListKey = new GlobalKey();
-    GlobalKey scrollableKey = new GlobalKey();
+    ScrollController scrollController = new ScrollController();
 
     List<GlobalKey> storyKeys =
         new List<GlobalKey>.generate(4, (int index) => new GlobalKey());
@@ -76,7 +76,7 @@ void main() {
     StoryList storyList = new StoryList(
       key: storyListKey,
       sizeModel: new SizeModel(new Size(_kWidthMultiColumn, _kHeight)),
-      scrollableKey: scrollableKey,
+      scrollController: scrollController,
       multiColumn: true,
       quickSettingsHeightBump: 200.0,
     );

@@ -35,20 +35,20 @@ const RK4SpringDescription _kInlinePreviewSimulationDesc =
 typedef void OnStoryClusterFocusCompleted(StoryCluster storyCluster);
 
 class StoryList extends StatelessWidget {
-  final ScrollListener onScroll;
+  final ValueChanged<double> onScroll;
   final VoidCallback onStoryClusterFocusStarted;
   final OnStoryClusterFocusCompleted onStoryClusterFocusCompleted;
   final double bottomPadding;
   final double quickSettingsHeightBump;
   final bool multiColumn;
-  final Key scrollableKey;
+  final ScrollController scrollController;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
   final SizeModel sizeModel;
   final VoidCallback onStoryClusterVerticalEdgeHover;
 
   StoryList({
     Key key,
-    this.scrollableKey,
+    this.scrollController,
     this.overlayKey,
     this.bottomPadding,
     this.onScroll,
@@ -108,7 +108,7 @@ class StoryList extends StatelessWidget {
 
     stackChildren.add(
       new StoryListBlock(
-        scrollableKey: scrollableKey,
+        scrollController: scrollController,
         bottomPadding: bottomPadding,
         onScroll: onScroll,
         listHeight: storyModel.listHeight,
@@ -232,65 +232,69 @@ class StoryList extends StatelessWidget {
   }
 }
 
-class StoryListBlock extends Block {
+class StoryListBlock extends StatelessWidget {
   final double bottomPadding;
   final double listHeight;
+  final ValueChanged<double> onScroll;
+  final ScrollController scrollController;
+  final List<Widget> children;
+
   StoryListBlock({
     Key key,
-    List<Widget> children,
+    this.children,
     this.bottomPadding,
-    ScrollListener onScroll,
-    Key scrollableKey,
+    this.onScroll,
+    this.scrollController,
     this.listHeight,
   })
       : super(
           key: key,
-          children: children,
-          scrollDirection: Axis.vertical,
-          scrollAnchor: ViewportAnchor.end,
-          onScroll: onScroll,
-          scrollableKey: scrollableKey,
         ) {
     assert(children != null);
     assert(!children.any((Widget child) => child == null));
   }
 
   @override
-  Widget build(BuildContext context) => new ScrollableViewport(
-        scrollableKey: scrollableKey,
-        initialScrollOffset: initialScrollOffset,
-        scrollDirection: scrollDirection,
-        scrollAnchor: scrollAnchor,
-        onScrollStart: onScrollStart,
-        onScroll: onScroll,
-        onScrollEnd: onScrollEnd,
-        child: new StoryListBlockBody(
-          children: children,
-          listHeight: listHeight,
-          scrollableKey: scrollableKey,
-          bottomPadding: bottomPadding,
+  Widget build(BuildContext context) =>
+      new NotificationListener<ScrollNotification2>(
+        onNotification: (ScrollNotification2 notification) {
+          if (notification is ScrollUpdateNotification &&
+              notification.depth == 0) {
+            onScroll?.call(notification.metrics.extentBefore);
+          }
+          return false;
+        },
+        child: new SingleChildScrollView(
+          reverse: true,
+          controller: scrollController,
+          child: new StoryListBlockBody(
+            children: children,
+            listHeight: listHeight,
+            scrollController: scrollController,
+            bottomPadding: bottomPadding,
+          ),
         ),
       );
 }
 
-class StoryListBlockBody extends BlockBody {
-  final Key scrollableKey;
+class StoryListBlockBody extends MultiChildRenderObjectWidget {
+  final ScrollController scrollController;
   final double bottomPadding;
   final double listHeight;
   StoryListBlockBody({
     Key key,
     List<Widget> children,
-    this.scrollableKey,
+    this.scrollController,
     this.bottomPadding,
     this.listHeight,
   })
-      : super(key: key, mainAxis: Axis.vertical, children: children);
+      : super(key: key, children: children);
 
   @override
   StoryListRenderBlock createRenderObject(BuildContext context) =>
       new StoryListRenderBlock(
         parentSize: SizeModel.of(context, rebuildOnChange: true).size,
-        scrollableKey: scrollableKey,
+        scrollController: scrollController,
         bottomPadding: bottomPadding,
         listHeight: listHeight,
         scrimColor: StoryRearrangementScrimModel
@@ -306,10 +310,10 @@ class StoryListBlockBody extends BlockBody {
   @override
   void updateRenderObject(BuildContext context, RenderBlock renderObject) {
     StoryListRenderBlock storyListRenderBlock = renderObject;
-    storyListRenderBlock.mainAxis = mainAxis;
+    storyListRenderBlock.mainAxis = Axis.vertical;
     storyListRenderBlock.parentSize =
         SizeModel.of(context, rebuildOnChange: true).size;
-    storyListRenderBlock.scrollableKey = scrollableKey;
+    storyListRenderBlock.scrollController = scrollController;
     storyListRenderBlock.bottomPadding = bottomPadding;
     storyListRenderBlock.listHeight = listHeight;
     storyListRenderBlock.scrimColor = StoryRearrangementScrimModel

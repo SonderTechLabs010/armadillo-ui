@@ -63,8 +63,7 @@ const double _kSuggestionOverlayScrollFactor = 1.2;
 
 final GlobalKey<SuggestionListState> _suggestionListKey =
     new GlobalKey<SuggestionListState>();
-final GlobalKey<ScrollableState> _suggestionListScrollableKey =
-    new GlobalKey<ScrollableState>();
+final ScrollController _suggestionListScrollController = new ScrollController();
 final GlobalKey<NowState> _nowKey = new GlobalKey<NowState>();
 final GlobalKey<QuickSettingsOverlayState> _quickSettingsOverlayKey =
     new GlobalKey<QuickSettingsOverlayState>();
@@ -80,8 +79,7 @@ final GlobalKey<KeyboardState> _keyboardKey = new GlobalKey<KeyboardState>();
 final GlobalKey<VerticalShifterState> _verticalShifterKey =
     new GlobalKey<VerticalShifterState>();
 
-final GlobalKey<ScrollableState> _scrollableKey =
-    new GlobalKey<ScrollableState>();
+final ScrollController _scrollController = new ScrollController();
 final GlobalKey<ScrollLockerState> _scrollLockerKey =
     new GlobalKey<ScrollLockerState>();
 final GlobalKey<EdgeScrollDragTargetState> _edgeScrollDragTargetKey =
@@ -200,7 +198,7 @@ class Conductor extends StatelessWidget {
                 bottom: 0.0,
                 child: new EdgeScrollDragTarget(
                   key: _edgeScrollDragTargetKey,
-                  scrollableKey: _scrollableKey,
+                  scrollController: _scrollController,
                 ),
               ),
 
@@ -258,7 +256,7 @@ class Conductor extends StatelessWidget {
           child: new ScopedStoryDragTransitionWidget(
             builder: (BuildContext context, Widget child, double progress) =>
                 new StoryList(
-                  scrollableKey: _scrollableKey,
+                  scrollController: _scrollController,
                   overlayKey: _overlayKey,
                   multiColumn: maxWidth > _kStoryListMultiColumnWidthThreshold,
                   quickSettingsHeightBump: _kQuickSettingsHeightBump,
@@ -322,7 +320,7 @@ class Conductor extends StatelessWidget {
               _quickSettingsOverlayKey.currentState.show(),
           onQuickSettingsMaximized: () {
             // When quick settings starts being shown, scroll to 0.0.
-            _scrollableKey.currentState.scrollTo(
+            _scrollController.animateTo(
               0.0,
               duration: const Duration(milliseconds: 500),
               curve: Curves.fastOutSlowIn,
@@ -359,11 +357,13 @@ class Conductor extends StatelessWidget {
           if (useSoftKeyboard) {
             _keyboardDeviceExtensionKey.currentState?.hide();
           }
-          _suggestionListScrollableKey.currentState?.scrollTo(
-            0.0,
-            duration: const Duration(milliseconds: 1000),
-            curve: Curves.fastOutSlowIn,
-          );
+          if (_suggestionListScrollController.hasClients) {
+            _suggestionListScrollController.animateTo(
+              0.0,
+              duration: const Duration(milliseconds: 1000),
+              curve: Curves.fastOutSlowIn,
+            );
+          }
           _suggestionListKey.currentState?.clear();
           _suggestionListKey.currentState?.stopAsking();
         },
@@ -372,7 +372,7 @@ class Conductor extends StatelessWidget {
         },
         child: new SuggestionList(
           key: _suggestionListKey,
-          scrollableKey: _suggestionListScrollableKey,
+          scrollController: _suggestionListScrollController,
           columnCount: maxWidth > _kSuggestionListThreeColumnWidthThreshold
               ? 3
               : maxWidth > _kSuggestionListTwoColumnWidthThreshold ? 2 : 1,
@@ -444,7 +444,7 @@ class Conductor extends StatelessWidget {
     // Unlock scrolling.
     _scrollLockerKey.currentState.unlock();
     _edgeScrollDragTargetKey.currentState.enable();
-    _scrollableKey.currentState.scrollTo(
+    _scrollController.animateTo(
       0.0,
       duration: const Duration(milliseconds: 500),
       curve: Curves.fastOutSlowIn,
@@ -475,7 +475,7 @@ class Conductor extends StatelessWidget {
     // to 0.0 we will inadvertently maximize now and peek the suggestion
     // overlay.
     _ignoreNextScrollOffsetChange = true;
-    _scrollableKey.currentState.scrollTo(0.0);
+    _scrollController.jumpTo(0.0);
 
     _scrollLockerKey.currentState.lock();
     _edgeScrollDragTargetKey.currentState.disable();

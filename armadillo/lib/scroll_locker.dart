@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter/widgets.dart';
 
 /// Locks and unlocks scrolling in its [child] and its decendants.
@@ -20,8 +20,8 @@ class ScrollLockerState extends State<ScrollLocker> {
   bool _lockScrolling = false;
 
   @override
-  Widget build(BuildContext context) => new ScrollConfiguration(
-        delegate: new LockingScrollConfigurationDelegate(lock: _lockScrolling),
+  Widget build(BuildContext context) => new ScrollConfiguration2(
+        behavior: new LockingScrollBehavior(lock: _lockScrolling),
         child: config.child,
       );
 
@@ -38,38 +38,36 @@ class ScrollLockerState extends State<ScrollLocker> {
   }
 }
 
-class LockingScrollConfigurationDelegate extends ScrollConfigurationDelegate {
+class LockingScrollBehavior extends ScrollBehavior2 {
   final bool lock;
-  const LockingScrollConfigurationDelegate({this.lock: false});
+  const LockingScrollBehavior({this.lock: false});
 
   @override
-  TargetPlatform get platform => defaultTargetPlatform;
+  ScrollPhysics getScrollPhysics(BuildContext context) => lock
+      ? const LockedScrollPhysics(parent: const BouncingScrollPhysics())
+      : const BouncingScrollPhysics();
 
   @override
-  ExtentScrollBehavior createScrollBehavior() {
-    return lock
-        ? new LockedUnboundedBehavior(platform: platform)
-        : new OverscrollWhenScrollableBehavior(platform: platform);
-  }
-
-  @override
-  bool updateShouldNotify(LockingScrollConfigurationDelegate old) {
+  bool shouldNotify(LockingScrollBehavior old) {
     return lock != old.lock;
   }
 }
 
-class LockedUnboundedBehavior extends UnboundedBehavior {
-  LockedUnboundedBehavior({
-    double contentExtent: double.INFINITY,
-    double containerExtent: 0.0,
-    TargetPlatform platform,
-  })
-      : super(
-          contentExtent: contentExtent,
-          containerExtent: containerExtent,
-          platform: platform,
-        );
+class LockedScrollPhysics extends ScrollPhysics {
+  const LockedScrollPhysics({ScrollPhysics parent}) : super(parent);
 
   @override
-  bool get isScrollable => false;
+  LockedScrollPhysics applyTo(ScrollPhysics parent) =>
+      new LockedScrollPhysics(parent: parent);
+
+  @override
+  Simulation createBallisticSimulation(
+    ScrollPosition position,
+    double velocity,
+  ) =>
+      null;
+
+  @override
+  double applyPhysicsToUserOffset(ScrollPosition position, double offset) =>
+      0.0;
 }

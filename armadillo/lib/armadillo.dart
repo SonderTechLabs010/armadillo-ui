@@ -12,6 +12,7 @@ import 'package:meta/meta.dart';
 import 'conductor.dart';
 import 'now_model.dart';
 import 'rounded_corner_decoration.dart';
+import 'default_scroll_configuration.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_drag_transition_model.dart';
 import 'story_model.dart';
@@ -72,7 +73,9 @@ class Armadillo extends StatelessWidget {
                   model: storyRearrangementScrimModel,
                   child: new ScopedModel<StoryDragTransitionModel>(
                     model: storyDragTransitionModel,
-                    child: conductor,
+                    child: new DefaultScrollConfiguration(
+                      child: conductor,
+                    ),
                   ),
                 ),
               ),

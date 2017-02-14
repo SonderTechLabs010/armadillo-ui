@@ -20,12 +20,12 @@ const Color _kNoDraggableHoverColor = const Color(0x00FFFF00);
 /// built.
 typedef void _BuildCallback(bool hasDraggableAbove, List<Point> points);
 
-/// The drag targets which cause the given [scrollableKey]'s [Scrollable] to
-/// scroll when a draggable hovers over them.
+/// The drag targets which cause the given [ScrollController] to scroll when a
+/// draggable hovers over them.
 class EdgeScrollDragTarget extends StatefulWidget {
-  final GlobalKey<ScrollableState> scrollableKey;
+  final ScrollController scrollController;
 
-  EdgeScrollDragTarget({Key key, this.scrollableKey}) : super(key: key);
+  EdgeScrollDragTarget({Key key, this.scrollController}) : super(key: key);
 
   @override
   EdgeScrollDragTargetState createState() => new EdgeScrollDragTargetState();
@@ -94,11 +94,10 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
       return false;
     }
 
-    double minScrollOffset =
-        config.scrollableKey.currentState.scrollBehavior.minScrollOffset;
-    double maxScrollOffset =
-        config.scrollableKey.currentState.scrollBehavior.maxScrollOffset;
-    double currentScrollOffset = config.scrollableKey.currentState.scrollOffset;
+    ScrollPosition position = config.scrollController.position;
+    double minScrollExtent = position.minScrollExtent;
+    double maxScrollExtent = position.maxScrollExtent;
+    double currentScrollOffset = position.pixels;
 
     double cumulativeScrollDelta = 0.0;
     double secondsRemaining = seconds;
@@ -109,10 +108,10 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
       cumulativeScrollDelta += _kenichiEdgeScrolling.getScrollDelta(stepSize);
       secondsRemaining -= _kMaxStepSize;
     }
-    config.scrollableKey.currentState.scrollTo(
+    config.scrollController.jumpTo(
       (currentScrollOffset + cumulativeScrollDelta).clamp(
-        minScrollOffset,
-        maxScrollOffset,
+        minScrollExtent,
+        maxScrollExtent,
       ),
     );
     return true;

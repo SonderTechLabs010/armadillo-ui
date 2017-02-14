@@ -41,15 +41,14 @@ class StoryListRenderBlock extends RenderBlock {
   StoryListRenderBlock({
     List<RenderBox> children,
     Size parentSize,
-    Key scrollableKey,
+    ScrollController scrollController,
     double bottomPadding,
     double listHeight,
     Color scrimColor,
     double liftScale,
   })
       : _parentSize = parentSize,
-        _scrollableKey =
-            scrollableKey is GlobalKey<ScrollableState> ? scrollableKey : null,
+        _scrollController = scrollController,
         _bottomPadding = bottomPadding ?? 0.0,
         _listHeight = listHeight ?? 0.0,
         _scrimColor = scrimColor ?? new Color(0x00000000),
@@ -74,11 +73,11 @@ class StoryListRenderBlock extends RenderBlock {
     }
   }
 
-  GlobalKey<ScrollableState> get scrollableKey => _scrollableKey;
-  GlobalKey<ScrollableState> _scrollableKey;
-  set scrollableKey(Key value) {
-    if (_scrollableKey != value && value is GlobalKey<ScrollableState>) {
-      _scrollableKey = value;
+  ScrollController get scrollController => _scrollController;
+  ScrollController _scrollController;
+  set scrollController(ScrollController value) {
+    if (_scrollController != value) {
+      _scrollController = value;
       markNeedsLayout();
     }
   }
@@ -209,7 +208,7 @@ class StoryListRenderBlock extends RenderBlock {
   void performLayout() {
     assert(!constraints.hasBoundedHeight);
     assert(constraints.hasBoundedWidth);
-    double scrollOffset = _scrollableKey.currentState?.scrollOffset ?? 0.0;
+    double scrollOffset = _scrollController?.offset ?? 0.0;
     double maxFocusProgress = 0.0;
     double inlinePreviewScale = getInlinePreviewScale(parentSize);
     double inlinePreviewTranslateToParentCenterRatio = math.min(

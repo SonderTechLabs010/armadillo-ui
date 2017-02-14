@@ -7,6 +7,7 @@ import 'package:email_session_store/email_session_store_mock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'default_scroll_configuration.dart';
 import 'story.dart';
 
 void _createMockEmailSessionStore() {
@@ -40,7 +41,7 @@ Story storyBuilder(Map<String, dynamic> story) {
   List<String> icons = story['icons'];
   return new Story(
     id: new StoryId(story['id']),
-    builder: (_) => new ScrollConfiguration(
+    builder: (_) => new DefaultScrollConfiguration(
           child: _widgetBuilder(story['module'], state),
         ),
     title: story['title'],
