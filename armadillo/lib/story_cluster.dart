@@ -21,7 +21,6 @@ class StoryCluster {
   final Duration cumulativeInteractionDuration;
   final List<Story> _stories;
   final String title;
-  final GlobalKey carouselKey;
   final GlobalKey clusterDraggableKey;
   final GlobalKey clusterDragTargetsKey;
   final GlobalKey panelsKey;
@@ -50,7 +49,6 @@ class StoryCluster {
 
   StoryCluster({
     StoryClusterId id,
-    GlobalKey carouselKey,
     GlobalKey clusterDraggableKey,
     GlobalKey clusterDragTargetsKey,
     GlobalKey panelsKey,
@@ -72,7 +70,6 @@ class StoryCluster {
         this.cumulativeInteractionDuration =
             _getClusterCumulativeInteractionDuration(stories),
         this.id = id ?? new StoryClusterId(),
-        this.carouselKey = carouselKey ?? new GlobalKey(),
         this.clusterDraggableKey = clusterDraggableKey ?? new GlobalKey(),
         this.clusterDragTargetsKey = clusterDragTargetsKey ?? new GlobalKey(),
         this.panelsKey = panelsKey ?? new GlobalKey(),
@@ -159,7 +156,6 @@ class StoryCluster {
   }) =>
       new StoryCluster(
         id: this.id,
-        carouselKey: this.carouselKey,
         clusterDraggableKey: clusterDraggableId ?? this.clusterDraggableKey,
         clusterDragTargetsKey: this.clusterDragTargetsKey,
         panelsKey: this.panelsKey,

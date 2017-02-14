@@ -14,7 +14,6 @@ import 'nothing.dart';
 import 'optional_wrapper.dart';
 import 'panel_drag_targets.dart';
 import 'story.dart';
-import 'story_carousel.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_drag_state_model.dart';
@@ -52,9 +51,6 @@ const double _kStoryInlineTitleHeight = 20.0;
 const double _kDraggedStoryRadius = 75.0;
 const int _kMaxStories = 4;
 const Color _kTargetOverlayColor = const Color.fromARGB(128, 153, 234, 216);
-
-/// Set to true to use a carousel in single column mode.
-const bool _kUseCarousel = false;
 
 const double _kDragScale = 0.8;
 
@@ -158,36 +154,30 @@ class StoryClusterWidget extends StatelessWidget {
       );
 
   /// The Story including its StoryBar.
-  Widget _getStoryCluster(BuildContext context) => multiColumn || !_kUseCarousel
-      ? new LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            Size currentSize = new Size(
-              constraints.maxWidth,
-              constraints.maxHeight,
-            );
-            return new PanelDragTargets(
-              key: storyCluster.clusterDragTargetsKey,
-              scale: _kDragScale,
-              focusProgress: focusProgress,
-              currentSize: currentSize,
+  Widget _getStoryCluster(BuildContext context) => new LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          Size currentSize = new Size(
+            constraints.maxWidth,
+            constraints.maxHeight,
+          );
+          return new PanelDragTargets(
+            key: storyCluster.clusterDragTargetsKey,
+            scale: _kDragScale,
+            focusProgress: focusProgress,
+            currentSize: currentSize,
+            storyCluster: storyCluster,
+            onAccept: onAccept,
+            onVerticalEdgeHover: onVerticalEdgeHover,
+            child: new StoryPanels(
+              key: storyCluster.panelsKey,
               storyCluster: storyCluster,
-              onAccept: onAccept,
-              onVerticalEdgeHover: onVerticalEdgeHover,
-              child: new StoryPanels(
-                key: storyCluster.panelsKey,
-                storyCluster: storyCluster,
-                focusProgress: focusProgress,
-                overlayKey: overlayKey,
-                storyWidgets: storyWidgets,
-              ),
-            );
-          },
-        )
-      : new StoryCarousel(
-          key: storyCluster.carouselKey,
-          stories: storyCluster.stories,
-          focusProgress: focusProgress,
-        );
+              focusProgress: focusProgress,
+              overlayKey: overlayKey,
+              storyWidgets: storyWidgets,
+            ),
+          );
+        },
+      );
 
   Widget get _focusOnTap => new Positioned(
         left: 0.0,
