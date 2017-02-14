@@ -40,6 +40,7 @@ class StoryPanels extends StatefulWidget {
   final GlobalKey<ArmadilloOverlayState> overlayKey;
   final Map<StoryId, Widget> storyWidgets;
   final bool paintShadows;
+  final Size currentSize;
 
   StoryPanels({
     Key key,
@@ -48,6 +49,7 @@ class StoryPanels extends StatefulWidget {
     this.overlayKey,
     this.storyWidgets,
     this.paintShadows: false,
+    this.currentSize,
   })
       : super(key: key) {
     assert(() {
@@ -97,89 +99,84 @@ class StoryPanelsState extends State<StoryPanels> {
       );
 
   @override
-  Widget build(BuildContext context) => new LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-        Size currentSize = new Size(
-          constraints.maxWidth,
-          constraints.maxHeight,
-        );
+  Widget build(BuildContext context) {
+    /// Move placeholders to the beginning of the list when putting them in
+    /// the stack to ensure they are behind the real stories in paint order.
+    List<Story> sortedStories =
+        new List<Story>.from(config.storyCluster.stories);
+    sortedStories.sort(
+      (Story a, Story b) => a.isPlaceHolder && !b.isPlaceHolder
+          ? -1
+          : !a.isPlaceHolder && b.isPlaceHolder ? 1 : 0,
+    );
 
-        /// Move placeholders to the beginning of the list when putting them in
-        /// the stack to ensure they are behind the real stories in paint order.
-        List<Story> sortedStories =
-            new List<Story>.from(config.storyCluster.stories);
-        sortedStories.sort(
-          (Story a, Story b) => a.isPlaceHolder && !b.isPlaceHolder
-              ? -1
-              : !a.isPlaceHolder && b.isPlaceHolder ? 1 : 0,
-        );
+    List<Widget> stackChildren = <Widget>[];
 
-        List<Widget> stackChildren = <Widget>[];
-
-        if (config.paintShadows) {
-          stackChildren.addAll(
-            config.storyCluster.realStories.map(
-              (Story story) => new StoryPositioned(
-                    storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
-                    focusProgress: config.focusProgress,
-                    displayMode: config.storyCluster.displayMode,
-                    isFocused: (config.storyCluster.focusedStoryId == story.id),
-                    panel: story.panel,
-                    currentSize: currentSize,
-                    clip: false,
-                    child: new SimulatedTransform(
-                      initOpacity: 0.0,
-                      targetOpacity: 1.0,
-                      child: new Container(
-                        decoration: new BoxDecoration(
-                          boxShadow: kElevationToShadow[12],
-                          borderRadius: new BorderRadius.all(
-                            new Radius.circular(
-                              lerpDouble(
-                                _kUnfocusedCornerRadius,
-                                _kFocusedCornerRadius,
-                                config.focusProgress,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-            ),
-          );
-        }
-
-        stackChildren.addAll(
-          sortedStories.map(
-            (Story story) {
-              List<double> fractionalPadding = _getStoryBarPadding(
-                story: story,
-                width: currentSize.width,
-              );
-
-              return new StoryPositioned(
+    if (config.paintShadows) {
+      stackChildren.addAll(
+        config.storyCluster.realStories.map(
+          (Story story) => new StoryPositioned(
                 storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
                 focusProgress: config.focusProgress,
                 displayMode: config.storyCluster.displayMode,
                 isFocused: (config.storyCluster.focusedStoryId == story.id),
                 panel: story.panel,
-                currentSize: currentSize,
-                childContainerKey: story.positionedKey,
-                child: _getStory(
-                  context,
-                  story,
-                  fractionalPadding[0],
-                  fractionalPadding[1],
-                  currentSize,
+                currentSize: config.currentSize,
+                clip: false,
+                childContainerKey: story.shadowPositionedKey,
+                child: new SimulatedTransform(
+                  initOpacity: 0.0,
+                  targetOpacity: 1.0,
+                  child: new Container(
+                    decoration: new BoxDecoration(
+                      boxShadow: kElevationToShadow[12],
+                      borderRadius: new BorderRadius.all(
+                        new Radius.circular(
+                          lerpDouble(
+                            _kUnfocusedCornerRadius,
+                            _kFocusedCornerRadius,
+                            config.focusProgress,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              );
-            },
-          ),
-        );
+              ),
+        ),
+      );
+    }
 
-        return new Stack(overflow: Overflow.visible, children: stackChildren);
-      });
+    stackChildren.addAll(
+      sortedStories.map(
+        (Story story) {
+          List<double> fractionalPadding = _getStoryBarPadding(
+            story: story,
+            width: config.currentSize.width,
+          );
+
+          return new StoryPositioned(
+            storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
+            focusProgress: config.focusProgress,
+            displayMode: config.storyCluster.displayMode,
+            isFocused: (config.storyCluster.focusedStoryId == story.id),
+            panel: story.panel,
+            currentSize: config.currentSize,
+            childContainerKey: story.positionedKey,
+            child: _getStory(
+              context,
+              story,
+              fractionalPadding[0],
+              fractionalPadding[1],
+              config.currentSize,
+            ),
+          );
+        },
+      ),
+    );
+
+    return new Stack(overflow: Overflow.visible, children: stackChildren);
+  }
 
   Widget _getStoryBarDraggableWrapper({
     BuildContext context,
@@ -188,6 +185,7 @@ class StoryPanelsState extends State<StoryPanels> {
   }) {
     final Widget storyWidget = config.storyWidgets[story.id];
     Rect initialBoundsOnDrag;
+    double initialDxOnDrag;
     return new OptionalWrapper(
       // Don't allow dragging if we're the only story.
       useWrapper: config.storyCluster.realStories.length > 1,
@@ -209,6 +207,16 @@ class StoryPanelsState extends State<StoryPanels> {
                 boxBottomRight.x,
                 boxBottomRight.y,
               );
+
+              RenderBox storyBarBox =
+                  story.storyBarKey.currentContext.findRenderObject();
+              Point storyBarBoxTopLeft =
+                  storyBarBox.localToGlobal(Point.origin);
+              initialDxOnDrag =
+                  (config.storyCluster.displayMode == DisplayMode.tabs)
+                      ? -storyBarBoxTopLeft.x
+                      : 0.0;
+
               StoryModel.of(context).split(
                     storyToSplit: story,
                     from: config.storyCluster,
@@ -227,13 +235,15 @@ class StoryPanelsState extends State<StoryPanels> {
             feedbackBuilder: (Point localDragStartPoint) {
               StoryCluster storyCluster =
                   StoryModel.of(context).getStoryCluster(story.clusterId);
+
               return new StoryClusterDragFeedback(
                 key: storyCluster.dragFeedbackKey,
                 storyCluster: storyCluster,
                 storyWidgets: <StoryId, Widget>{story.id: storyWidget},
                 localDragStartPoint: localDragStartPoint,
                 initialBounds: initialBoundsOnDrag,
-                showTitle: false,
+                focusProgress: config.focusProgress,
+                initDx: initialDxOnDrag,
               );
             },
             child: child,
@@ -333,7 +343,7 @@ class StoryPanelsState extends State<StoryPanels> {
           panel: story.panel,
           containerKey: story.containerKey,
           storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
-          child: config.storyWidgets[story.id],
+          child: config.storyWidgets[story.id] ?? story.builder(context),
         ),
       );
 

@@ -26,7 +26,9 @@ class StoryFullSizeSimulatedSizedBox extends StatelessWidget {
     this.containerKey,
     this.storyBarMaximizedHeight,
     this.child,
-  });
+  }) {
+    assert(child != null);
+  }
 
   @override
   Widget build(BuildContext context) {

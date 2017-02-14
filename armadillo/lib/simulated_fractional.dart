@@ -145,4 +145,11 @@ class SimulatedFractionalState extends TickingState<SimulatedFractional> {
       desc: config.springDescription,
     );
   }
+
+  @override
+  String toString() =>
+      'SimulatedFractionalState(top: $_fractionalTopSimulation, '
+      'left: $_fractionalLeftSimulation, '
+      'width: $_fractionalWidthSimulation, '
+      'height: $_fractionalHeightSimulation)';
 }

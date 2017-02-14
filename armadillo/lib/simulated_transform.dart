@@ -65,15 +65,17 @@ class SimulatedTranslationTransformState
   void initState() {
     super.initState();
     _dxSimulation = new RK4SpringSimulation(
-      initValue: config.initDx ?? config.targetDx,
+      initValue: config.initDx,
       desc: config.springDescription,
     );
+    _dxSimulation.target = config.targetDx;
     _dySimulation = new RK4SpringSimulation(
-      initValue: config.initDy ?? config.targetDy,
+      initValue: config.initDy,
       desc: config.springDescription,
     );
+    _dySimulation.target = config.targetDy;
     _scaleSimulation = new RK4SpringSimulation(
-      initValue: config.initScale ?? config.targetScale,
+      initValue: config.initScale,
       desc: config.springDescription,
     );
     _scaleSimulation.target = config.targetScale;

@@ -31,8 +31,8 @@ class StoryClusterDragFeedback extends StatefulWidget {
   final Map<StoryId, Widget> storyWidgets;
   final Point localDragStartPoint;
   final Rect initialBounds;
-  final bool showTitle;
-  final bool focused;
+  final double focusProgress;
+  final double initDx;
 
   StoryClusterDragFeedback({
     Key key,
@@ -41,8 +41,8 @@ class StoryClusterDragFeedback extends StatefulWidget {
     this.storyWidgets,
     this.localDragStartPoint,
     this.initialBounds,
-    this.showTitle: false,
-    this.focused: true,
+    this.focusProgress,
+    this.initDx: 0.0,
   })
       : super(key: key);
 
@@ -52,7 +52,8 @@ class StoryClusterDragFeedback extends StatefulWidget {
 }
 
 class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
-  final GlobalKey _childKey = new GlobalKey();
+  final GlobalKey<SimulatedSizedBoxState> _childKey =
+      new GlobalKey<SimulatedSizedBoxState>();
   StoryClusterDragStateModel _storyClusterDragStateModel;
   List<Story> _originalStories;
   DisplayMode _originalDisplayMode;
@@ -137,9 +138,6 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     double width;
     double height;
     double childScale;
-    double focusProgress = config.showTitle
-        ? config.storyCluster.focusSimulationKey.currentState?.progress ?? 0.0
-        : 1.0;
     double inlinePreviewScale = StoryListRenderBlock.getInlinePreviewScale(
       sizeModel.size,
     );
@@ -153,7 +151,7 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     if (isAcceptable && config.storyCluster.previewStories.isNotEmpty) {
       width = sizeModel.size.width;
       height = sizeModel.size.height;
-      childScale = lerpDouble(inlinePreviewScale, 0.7, focusProgress);
+      childScale = lerpDouble(inlinePreviewScale, 0.7, config.focusProgress);
     } else {
       width = config.storyCluster.storyLayout.size.width;
       height = config.storyCluster.storyLayout.size.height;
@@ -210,13 +208,23 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                 targetHeight * realStoriesFractionalCenterY
         : 0.0;
 
+    Size simulatedSizedBoxCurrentSize = _childKey.currentState?.size;
+    Size panelsCurrentSize = simulatedSizedBoxCurrentSize == null
+        ? new Size(targetWidth, targetHeight)
+        : new Size(
+            simulatedSizedBoxCurrentSize.width,
+            simulatedSizedBoxCurrentSize.height -
+                InlineStoryTitle.getHeight(config.focusProgress),
+          );
+
     return new SimulatedTransform(
+      initDx: config.initDx,
       targetDx: newDx,
       targetDy: newDy,
       child: new SimulatedSizedBox(
         key: _childKey,
         width: targetWidth,
-        height: targetHeight + InlineStoryTitle.getHeight(focusProgress),
+        height: targetHeight + InlineStoryTitle.getHeight(config.focusProgress),
         child: new Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -229,10 +237,11 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                 overlayKey: config.overlayKey,
                 storyWidgets: config.storyWidgets,
                 paintShadows: true,
+                currentSize: panelsCurrentSize,
               ),
             ),
             new InlineStoryTitle(
-              focusProgress: focusProgress,
+              focusProgress: config.focusProgress,
               storyCluster: config.storyCluster,
             ),
           ],

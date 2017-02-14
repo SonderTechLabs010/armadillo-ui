@@ -152,4 +152,7 @@ class RK4SpringSimulation {
 
   double _accelerateX(double x, {double vel}) =>
       (-desc.tension * x - desc.friction * vel) * _accelerationMultipler;
+
+  @override
+  String toString() => 'RK4($value => $target)';
 }

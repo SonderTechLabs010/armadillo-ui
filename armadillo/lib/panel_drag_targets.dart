@@ -200,6 +200,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     if (!_inTimeline &&
         velocity.pixelsPerSecond.dy.abs() >
             _kVerticalFlingToDiscardSpeedThreshold) {
+      storyCluster.removePreviews();
       storyCluster.stories.forEach((Story story) {
         story.storyBarKey.currentState?.minimize();
       });
@@ -231,13 +232,13 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // focused we do accept it.  If we're in the timeline we need to wait for
     // the validity timer to go off before accepting it.
     if (storyClusterIdCandidates.isEmpty) {
-      StoryClusterDragStateModel
-          .of(context)
-          .removeAcceptance(config.storyCluster.id);
+      StoryClusterDragStateModel.of(context).removeAcceptance(
+            config.storyCluster.id,
+          );
     } else if (!_inTimeline) {
-      StoryClusterDragStateModel
-          .of(context)
-          .addAcceptance(config.storyCluster.id);
+      StoryClusterDragStateModel.of(context).addAcceptance(
+            config.storyCluster.id,
+          );
     }
 
     if (_inTimeline) {
@@ -346,7 +347,14 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     stories.forEach((Story story) {
       // Get the Story's current global bounds...
       RenderBox storyBox =
-          story.positionedKey.currentContext.findRenderObject();
+          story.positionedKey.currentContext?.findRenderObject();
+
+      // If the Story's positioned widget hasn't been built yet there's nothing
+      // to transpose so do nothing.
+      if (storyBox == null) {
+        return;
+      }
+
       Point storyTopLeft = storyBox.localToGlobal(Point.origin);
       Point storyBottomRight = storyBox.localToGlobal(
         new Point(storyBox.size.width, storyBox.size.height),

@@ -79,4 +79,9 @@ class SimulatedSizedBoxState extends TickingState<SimulatedSizedBox> {
       desc: config.springDescription,
     );
   }
+
+  Size get size => new Size(
+        _widthSimulation.value.clamp(0.0, double.INFINITY),
+        _heightSimulation.value.clamp(0.0, double.INFINITY),
+      );
 }

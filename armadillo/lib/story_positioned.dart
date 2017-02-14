@@ -40,7 +40,9 @@ class StoryPositioned extends StatelessWidget {
     this.childContainerKey,
     this.clip: true,
     this.child,
-  });
+  }) {
+    assert(child != null);
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -124,8 +124,7 @@ class StoryClusterWidget extends StatelessWidget {
                   storyWidgets: storyWidgets,
                   localDragStartPoint: localDragStartPoint,
                   initialBounds: initialBoundsOnDrag,
-                  showTitle: true,
-                  focused: false,
+                  focusProgress: 0.0,
                 ),
             child: child,
           ),
@@ -174,6 +173,7 @@ class StoryClusterWidget extends StatelessWidget {
               focusProgress: focusProgress,
               overlayKey: overlayKey,
               storyWidgets: storyWidgets,
+              currentSize: currentSize,
             ),
           );
         },

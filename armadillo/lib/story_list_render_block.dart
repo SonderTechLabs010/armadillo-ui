@@ -192,13 +192,40 @@ class StoryListRenderBlock extends RenderBlock {
   bool hitTestChildren(HitTestResult result, {Point position}) {
     final List<RenderBox> children =
         _childrenSortedByFocusProgress.reversed.toList();
-    for (int i = 0; i < children.length; i++) {
-      final RenderBox child = children[i];
-      final StoryListRenderBlockParentData childParentData = child.parentData;
-      Point transformed = new Point(position.x - childParentData.offset.dx,
-          position.y - childParentData.offset.dy);
-      if (child.hitTest(result, position: transformed)) {
-        return true;
+    if (children.isNotEmpty) {
+      final RenderBox mostFocusedChild = children.first;
+      final StoryListRenderBlockParentData mostFocusedChildParentData =
+          mostFocusedChild.parentData;
+      double mostFocusedProgress = mostFocusedChildParentData.focusProgress;
+
+      // Only hit the most focused child if it has some progress focusing.
+      // This effectively prevents all of the most focused child's siblings
+      // from being tapped, dragged over, or otherwise interacted with.
+      if (mostFocusedProgress > 0.0) {
+        Point transformed = new Point(
+          position.x - mostFocusedChildParentData.offset.dx,
+          position.y - mostFocusedChildParentData.offset.dy,
+        );
+        if (mostFocusedChild.hitTest(result, position: transformed)) {
+          return true;
+        }
+      } else {
+        // Return the first child that passes the hit test.  Note, this doesn't
+        // mean that's the only child that was hit (it's possible to hit
+        // multiple children (for example a translucent child will add itself to
+        // the HitTestResult but will return false for its hitTest)).
+        for (int i = 0; i < children.length; i++) {
+          final RenderBox child = children[i];
+          final StoryListRenderBlockParentData childParentData =
+              child.parentData;
+          Point transformed = new Point(
+            position.x - childParentData.offset.dx,
+            position.y - childParentData.offset.dy,
+          );
+          if (child.hitTest(result, position: transformed)) {
+            return true;
+          }
+        }
       }
     }
     return false;
