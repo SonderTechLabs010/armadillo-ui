@@ -52,7 +52,7 @@ class ScrollableInputTextState extends State<ScrollableInputText> {
     return new ListView(
       scrollDirection: Axis.horizontal,
       reverse: true,
-      children: blockChildren.reversed,
+      children: blockChildren.reversed.toList(),
     );
   }
 
