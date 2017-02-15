@@ -49,10 +49,11 @@ class ScrollableInputTextState extends State<ScrollableInputText> {
               duration: const Duration(milliseconds: 500))));
     }
 
-    return new Block(
-        scrollDirection: Axis.horizontal,
-        scrollAnchor: ViewportAnchor.end,
-        children: blockChildren);
+    return new ListView(
+      scrollDirection: Axis.horizontal,
+      reverse: true,
+      children: blockChildren.reversed,
+    );
   }
 
   /// Returns the current text value of the [ScrollableInputTextState].
