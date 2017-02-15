@@ -195,7 +195,6 @@ class StoryList extends StatelessWidget {
           overlayKey: overlayKey,
           focusProgress: progress,
           storyCluster: storyCluster,
-          multiColumn: multiColumn,
           onAccept: () {
             if (!_inFocus(storyCluster)) {
               _onGainFocus(storyClusters, storyCluster);

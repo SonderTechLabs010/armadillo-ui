@@ -12,6 +12,7 @@ import 'armadillo_drag_target.dart';
 import 'armadillo_overlay.dart';
 import 'nothing.dart';
 import 'optional_wrapper.dart';
+import 'panel.dart' as panel;
 import 'panel_drag_targets.dart';
 import 'story.dart';
 import 'story_cluster.dart';
@@ -24,23 +25,6 @@ import 'story_panels.dart';
 import 'story_rearrangement_scrim_model.dart';
 import 'story_title.dart';
 
-/// The minimum story height.
-const double _kMinimumStoryHeight = 200.0;
-
-/// In multicolumn mode, the distance from the parent's edge the largest story
-/// will be.
-const double _kMultiColumnMargin = 64.0;
-
-/// In multicolumn mode, the aspect ratio of a story.
-const double _kWidthToHeightRatio = 16.0 / 9.0;
-
-/// In single column mode, the distance from a story and other UI elements.
-const double _kSingleColumnStoryMargin = 8.0;
-
-/// In multicolumn mode, the minimum distance from a story and other UI
-/// elements.
-const double _kMultiColumnMinimumStoryMargin = 8.0;
-
 /// The height of the vertical gesture detector used to reveal the story bar in
 /// full screen mode.
 /// TODO(apwilson): Reduce the height of this.  It's large for now for ease of
@@ -48,9 +32,6 @@ const double _kMultiColumnMinimumStoryMargin = 8.0;
 const double _kVerticalGestureDetectorHeight = 32.0;
 
 const double _kStoryInlineTitleHeight = 20.0;
-const double _kDraggedStoryRadius = 75.0;
-const int _kMaxStories = 4;
-const Color _kTargetOverlayColor = const Color.fromARGB(128, 153, 234, 216);
 
 const double _kDragScale = 0.8;
 
@@ -59,7 +40,6 @@ const double _kDragScale = 0.8;
 /// are intended to be children of [StoryList].
 class StoryClusterWidget extends StatelessWidget {
   final StoryCluster storyCluster;
-  final bool multiColumn;
   final double focusProgress;
   final VoidCallback onAccept;
   final VoidCallback onTap;
@@ -70,7 +50,6 @@ class StoryClusterWidget extends StatelessWidget {
   StoryClusterWidget({
     Key key,
     this.storyCluster,
-    this.multiColumn,
     this.focusProgress,
     this.onAccept,
     this.onTap,
@@ -159,21 +138,52 @@ class StoryClusterWidget extends StatelessWidget {
             constraints.maxWidth,
             constraints.maxHeight,
           );
-          return new PanelDragTargets(
-            key: storyCluster.clusterDragTargetsKey,
-            scale: _kDragScale,
-            focusProgress: focusProgress,
-            currentSize: currentSize,
-            storyCluster: storyCluster,
-            onAccept: onAccept,
-            onVerticalEdgeHover: onVerticalEdgeHover,
-            child: new StoryPanels(
-              key: storyCluster.panelsKey,
-              storyCluster: storyCluster,
+          // If the current size is too small to support paneling (only one row
+          // and one column is supported) we want to hide the story bars when
+          // we're in focus and the user starts to interact with the story.
+          // A drag down from the top will bring back the story bars in this
+          // situation.
+          return new OptionalWrapper(
+            useWrapper: panel.maxRows(currentSize) == 1 &&
+                panel.maxColumns(currentSize) == 1 &&
+                _isFocused,
+            builder: (BuildContext context, Widget child) => new Listener(
+                  behavior: HitTestBehavior.translucent,
+                  onPointerDown: (PointerDownEvent event) =>
+                      storyCluster.hideStoryBars(),
+                  child: new Stack(
+                    children: <Widget>[
+                      new Positioned.fill(child: child),
+                      new Positioned(
+                        top: 0.0,
+                        left: 0.0,
+                        right: 0.0,
+                        height: _kVerticalGestureDetectorHeight,
+                        child: new GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onVerticalDragUpdate: (DragUpdateDetails details) =>
+                              storyCluster.showStoryBars(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            child: new PanelDragTargets(
+              key: storyCluster.clusterDragTargetsKey,
+              scale: _kDragScale,
               focusProgress: focusProgress,
-              overlayKey: overlayKey,
-              storyWidgets: storyWidgets,
               currentSize: currentSize,
+              storyCluster: storyCluster,
+              onAccept: onAccept,
+              onVerticalEdgeHover: onVerticalEdgeHover,
+              child: new StoryPanels(
+                key: storyCluster.panelsKey,
+                storyCluster: storyCluster,
+                focusProgress: focusProgress,
+                overlayKey: overlayKey,
+                storyWidgets: storyWidgets,
+                currentSize: currentSize,
+              ),
             ),
           );
         },
@@ -194,6 +204,7 @@ class StoryClusterWidget extends StatelessWidget {
       );
 
   bool get _isUnfocused => focusProgress == 0.0;
+  bool get _isFocused => focusProgress == 1.0;
 }
 
 /// The Story Title that hovers below the story itself.

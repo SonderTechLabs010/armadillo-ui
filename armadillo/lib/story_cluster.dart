@@ -370,6 +370,18 @@ class StoryCluster {
     });
   }
 
+  void hideStoryBars() {
+    stories.forEach((Story story) {
+      story.storyBarKey.currentState?.hide();
+    });
+  }
+
+  void showStoryBars() {
+    stories.forEach((Story story) {
+      story.storyBarKey.currentState?.show();
+    });
+  }
+
   static String _getClusterTitle(List<Story> stories) {
     String title = '';
     stories.where((Story story) => !story.isPlaceHolder).forEach((Story story) {
