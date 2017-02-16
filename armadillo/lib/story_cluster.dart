@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 
 import 'panel.dart';
@@ -129,6 +131,7 @@ class StoryCluster {
   void _notifyStoryListListeners() {
     title = _getClusterTitle(realStories);
     _storyListListeners.forEach((VoidCallback listener) => listener());
+    notifyPanelListeners();
   }
 
   void addPanelListener(VoidCallback listener) {
@@ -139,7 +142,7 @@ class StoryCluster {
     _panelListeners.remove(listener);
   }
 
-  void _notifyPanelListeners() {
+  void notifyPanelListeners() {
     _panelListeners.forEach((VoidCallback listener) => listener());
   }
 
@@ -189,7 +192,7 @@ class StoryCluster {
   set displayMode(DisplayMode displayMode) {
     if (_displayMode != displayMode) {
       _displayMode = displayMode;
-      _notifyPanelListeners();
+      notifyPanelListeners();
     }
   }
 
@@ -280,7 +283,7 @@ class StoryCluster {
         );
       },
     );
-    _notifyPanelListeners();
+    notifyPanelListeners();
   }
 
   /// Adds the [story] to [stories] with a [Panel] of [withPanel].
@@ -298,12 +301,14 @@ class StoryCluster {
   void replace({Panel panel, Panel withPanel}) {
     Story story = _stories.where((Story story) => story.panel == panel).single;
     story.panel = withPanel;
+    notifyPanelListeners();
   }
 
   /// Replaces the [Story.panel] of the story with [storyId] with [withPanel]/
   void replaceStoryPanel({StoryId storyId, Panel withPanel}) {
     Story story = _stories.where((Story story) => story.id == storyId).single;
     story.panel = withPanel;
+    notifyPanelListeners();
   }
 
   void becomePlaceholder() {
@@ -357,7 +362,7 @@ class StoryCluster {
   set focusedStoryId(StoryId storyId) {
     if (storyId != _focusedStoryId) {
       _focusedStoryId = storyId;
-      _notifyPanelListeners();
+      notifyPanelListeners();
     }
   }
 
@@ -413,4 +418,56 @@ class StoryCluster {
     });
     return largestDuration;
   }
+}
+
+typedef Widget StoryClusterPanelListenerBuilder(
+    BuildContext context, StoryCluster storyCluster);
+
+/// Rebuilds with [builder] when [storyCluster]'s panels change.
+class StoryClusterPanelListener extends StatefulWidget {
+  final StoryCluster storyCluster;
+  final StoryClusterPanelListenerBuilder builder;
+
+  StoryClusterPanelListener({this.storyCluster, this.builder});
+
+  @override
+  _StoryClusterPanelListenerState createState() =>
+      new _StoryClusterPanelListenerState();
+}
+
+class _StoryClusterPanelListenerState extends State<StoryClusterPanelListener> {
+  @override
+  void initState() {
+    super.initState();
+    config.storyCluster.addPanelListener(_onPanelsChanged);
+  }
+
+  @override
+  void didUpdateConfig(StoryClusterPanelListener oldConfig) {
+    super.didUpdateConfig(oldConfig);
+    if (oldConfig.storyCluster.id != config.storyCluster.id) {
+      oldConfig.storyCluster.removePanelListener(_onPanelsChanged);
+      config.storyCluster.addPanelListener(_onPanelsChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    config.storyCluster.removePanelListener(_onPanelsChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => config.builder(
+        context,
+        config.storyCluster,
+      );
+
+  void _onPanelsChanged() => scheduleMicrotask(
+        () {
+          if (mounted) {
+            setState(() {});
+          }
+        },
+      );
 }

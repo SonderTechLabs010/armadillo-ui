@@ -15,7 +15,7 @@ const double _kMinPanelHeight = 360.0;
 /// The number of grid lines the grid should have in either direction.
 /// TODO(apwilson): This should be calculated from size rather than being a
 /// constant.
-const double _kGridLines = 1000.0;
+const double _kGridLines = 10000.0;
 
 /// Returns the maximum rows the panel grid should have given [size].
 int maxRows(Size size) => math.max(
@@ -71,9 +71,9 @@ typedef void PanelAbsorbedResultCallback(Panel combined, Panel remainder);
 /// We represent the bounds of a panel in these dimensionless [0.0, 1.0] values
 /// because a given [Panel] may need to be applied more than one 'real' size.
 class Panel {
-  final FractionalOffset _origin;
-  final double _heightFactor;
-  final double _widthFactor;
+  FractionalOffset _origin;
+  double _heightFactor;
+  double _widthFactor;
 
   /// [Panel]s top left is specified by [origin] and its
   /// width and height by [widthFactor] and [heightFactor] respectively.
@@ -105,6 +105,44 @@ class Panel {
         widthFactor: right - left,
         heightFactor: bottom - top,
       );
+
+  bool canAdjustRight(double deltaRight, double width) =>
+      toGridValue(_widthFactor + deltaRight) >= smallestWidthFactor(width);
+
+  bool canAdjustBottom(double deltaBottom, double height) =>
+      toGridValue(_heightFactor + deltaBottom) >= smallestHeightFactor(height);
+
+  bool canAdjustLeft(double deltaLeft, double width) =>
+      toGridValue(_widthFactor - deltaLeft) >= smallestWidthFactor(width);
+
+  bool canAdjustTop(double deltaTop, double height) =>
+      toGridValue(_heightFactor - deltaTop) >= smallestHeightFactor(height);
+
+  void adjustRight(double deltaRight) {
+    _widthFactor = toGridValue(_widthFactor + deltaRight);
+  }
+
+  void adjustBottom(double deltaBottom) {
+    _heightFactor = toGridValue(_heightFactor + deltaBottom);
+  }
+
+  void adjustLeft(double deltaLeft) {
+    double deltaLeftGridAligned = toGridValue(deltaLeft);
+    _origin = new FractionalOffset(
+      toGridValue(_origin.dx + deltaLeftGridAligned),
+      _origin.dy,
+    );
+    _widthFactor = toGridValue(_widthFactor - deltaLeftGridAligned);
+  }
+
+  void adjustTop(double deltaTop) {
+    double deltaTopGridAligned = toGridValue(deltaTop);
+    _origin = new FractionalOffset(
+      _origin.dx,
+      toGridValue(_origin.dy + deltaTopGridAligned),
+    );
+    _heightFactor = toGridValue(_heightFactor - deltaTopGridAligned);
+  }
 
   double get left => _origin.dx;
   double get right => toGridValue(_origin.dx + _widthFactor);

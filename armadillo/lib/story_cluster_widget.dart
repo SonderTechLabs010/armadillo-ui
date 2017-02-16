@@ -14,6 +14,7 @@ import 'nothing.dart';
 import 'optional_wrapper.dart';
 import 'panel.dart' as panel;
 import 'panel_drag_targets.dart';
+import 'panel_resizing_overlay.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
@@ -176,13 +177,22 @@ class StoryClusterWidget extends StatelessWidget {
               storyCluster: storyCluster,
               onAccept: onAccept,
               onVerticalEdgeHover: onVerticalEdgeHover,
-              child: new StoryPanels(
-                key: storyCluster.panelsKey,
+              child: new StoryClusterPanelListener(
                 storyCluster: storyCluster,
-                focusProgress: focusProgress,
-                overlayKey: overlayKey,
-                storyWidgets: storyWidgets,
-                currentSize: currentSize,
+                builder: (BuildContext context, StoryCluster storyCluster) =>
+                    new PanelResizingOverlay(
+                      panels: storyCluster.panels.toList(),
+                      onPanelsChanged: () =>
+                          storyCluster.notifyPanelListeners(),
+                      child: new StoryPanels(
+                        key: storyCluster.panelsKey,
+                        storyCluster: storyCluster,
+                        focusProgress: focusProgress,
+                        overlayKey: overlayKey,
+                        storyWidgets: storyWidgets,
+                        currentSize: currentSize,
+                      ),
+                    ),
               ),
             ),
           );
