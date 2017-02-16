@@ -221,7 +221,7 @@ class StoryPanelsState extends State<StoryPanels> {
                     storyToSplit: story,
                     from: config.storyCluster,
                   );
-              story.storyBarKey.currentState?.minimize();
+              story.minimizeStoryBar();
               StoryClusterDragStateModel.of(context).addDragging(
                     story.clusterId,
                   );

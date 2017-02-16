@@ -223,9 +223,7 @@ class StoryList extends StatelessWidget {
     // Bring tapped story into focus.
     storyCluster.focusSimulationKey.currentState?.target = 1.0;
 
-    storyCluster.stories.forEach((Story story) {
-      story.storyBarKey.currentState?.maximize();
-    });
+    storyCluster.maximizeStoryBars();
 
     onStoryClusterFocusStarted?.call();
   }

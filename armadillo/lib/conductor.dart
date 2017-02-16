@@ -539,9 +539,7 @@ class Conductor extends StatelessWidget {
       targetStoryClusters[0].focusSimulationKey.currentState?.jump(1.0);
 
       // Ensure the focused story's story bar is full open.
-      targetStoryClusters[0].stories.forEach((Story story) {
-        story.storyBarKey.currentState?.maximize(jumpToFinish: jumpToFinish);
-      });
+      targetStoryClusters[0].maximizeStoryBars(jumpToFinish: jumpToFinish);
 
       // Focus on the story cluster.
       _focusStoryCluster(storyModel, targetStoryClusters[0]);

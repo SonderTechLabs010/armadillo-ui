@@ -110,13 +110,9 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
 
     if (StoryClusterDragStateModel.of(context).isAcceptable &&
         config.storyCluster.previewStories.isNotEmpty) {
-      config.storyCluster.stories.forEach((Story story) {
-        story.storyBarKey.currentState?.maximize();
-      });
+      config.storyCluster.maximizeStoryBars();
     } else {
-      config.storyCluster.stories.forEach((Story story) {
-        story.storyBarKey.currentState?.minimize();
-      });
+      config.storyCluster..minimizeStoryBars();
 
       // Revert to initial story locations and display state.
       config.storyCluster.removePreviews();

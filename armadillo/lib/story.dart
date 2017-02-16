@@ -71,6 +71,15 @@ class Story {
   /// space.
   bool get isPlaceHolder => false;
 
+  void maximizeStoryBar({bool jumpToFinish: false}) =>
+      storyBarKey.currentState?.maximize(jumpToFinish: jumpToFinish);
+
+  void minimizeStoryBar() => storyBarKey.currentState?.minimize();
+
+  void hideStoryBar() => storyBarKey.currentState?.hide();
+
+  void showStoryBar() => storyBarKey.currentState?.show();
+
   @override
   int get hashCode => id.hashCode;
 

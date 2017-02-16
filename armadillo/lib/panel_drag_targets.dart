@@ -201,9 +201,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         velocity.pixelsPerSecond.dy.abs() >
             _kVerticalFlingToDiscardSpeedThreshold) {
       storyCluster.removePreviews();
-      storyCluster.stories.forEach((Story story) {
-        story.storyBarKey.currentState?.minimize();
-      });
+      storyCluster.minimizeStoryBars();
       return;
     }
 
@@ -331,13 +329,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
 
     if (hasCandidates) {
-      config.storyCluster.stories.forEach((Story story) {
-        story.storyBarKey.currentState?.maximize();
-      });
+      config.storyCluster.maximizeStoryBars();
     } else {
-      config.storyCluster.stories.forEach((Story story) {
-        story.storyBarKey.currentState?.minimize();
-      });
+      config.storyCluster.minimizeStoryBars();
     }
   }
 
@@ -916,9 +910,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           target: config.storyCluster,
         );
 
-    storyCluster.realStories.forEach((Story story) {
-      story.storyBarKey.currentState?.maximize();
-    });
+    config.storyCluster.maximizeStoryBars();
   }
 
   /// Adds the stories of [storyCluster] to the left, spanning the full height.
@@ -1457,7 +1449,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ),
       );
       dx += _kAddedStorySpan;
-      story.storyBarKey.currentState?.maximize();
+      story.maximizeStoryBar();
     });
   }
 
@@ -1480,7 +1472,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ),
       );
       dy += _kAddedStorySpan;
-      story.storyBarKey.currentState?.maximize();
+      story.maximizeStoryBar();
     });
   }
 

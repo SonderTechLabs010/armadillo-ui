@@ -370,22 +370,24 @@ class StoryCluster {
 
   void unFocus() {
     focusSimulationKey.currentState?.target = 0.0;
-    stories.forEach((Story story) {
-      story.storyBarKey.currentState?.minimize();
-    });
+    minimizeStoryBars();
   }
 
-  void hideStoryBars() {
-    stories.forEach((Story story) {
-      story.storyBarKey.currentState?.hide();
-    });
-  }
+  void maximizeStoryBars({
+    bool jumpToFinish: false,
+  }) =>
+      stories.forEach(
+        (Story story) => story.maximizeStoryBar(jumpToFinish: jumpToFinish),
+      );
 
-  void showStoryBars() {
-    stories.forEach((Story story) {
-      story.storyBarKey.currentState?.show();
-    });
-  }
+  void minimizeStoryBars() =>
+      stories.forEach((Story story) => story.minimizeStoryBar());
+
+  void hideStoryBars() =>
+      stories.forEach((Story story) => story.hideStoryBar());
+
+  void showStoryBars() =>
+      stories.forEach((Story story) => story.showStoryBar());
 
   static String _getClusterTitle(List<Story> stories) {
     String title = '';
