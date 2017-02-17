@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
 
 import 'conductor.dart';
+import 'debug_model.dart';
 import 'now_model.dart';
 import 'rounded_corner_decoration.dart';
 import 'default_scroll_configuration.dart';
@@ -31,6 +32,7 @@ class Armadillo extends StatelessWidget {
   final StoryClusterDragStateModel storyClusterDragStateModel;
   final StoryRearrangementScrimModel storyRearrangementScrimModel;
   final StoryDragTransitionModel storyDragTransitionModel;
+  final DebugModel debugModel;
   final Conductor conductor;
 
   Armadillo({
@@ -40,6 +42,7 @@ class Armadillo extends StatelessWidget {
     @required this.storyClusterDragStateModel,
     @required this.storyRearrangementScrimModel,
     @required this.storyDragTransitionModel,
+    @required this.debugModel,
     @required this.conductor,
   });
 
@@ -73,8 +76,11 @@ class Armadillo extends StatelessWidget {
                   model: storyRearrangementScrimModel,
                   child: new ScopedModel<StoryDragTransitionModel>(
                     model: storyDragTransitionModel,
-                    child: new DefaultScrollConfiguration(
-                      child: conductor,
+                    child: new ScopedModel<DebugModel>(
+                      model: debugModel,
+                      child: new DefaultScrollConfiguration(
+                        child: conductor,
+                      ),
                     ),
                   ),
                 ),

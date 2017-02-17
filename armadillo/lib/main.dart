@@ -13,6 +13,8 @@ import 'armadillo.dart';
 import 'child_constraints_changer.dart';
 import 'conductor.dart';
 import 'constraints_model.dart';
+import 'debug_enabler.dart';
+import 'debug_model.dart';
 import 'json_story_generator.dart';
 import 'json_suggestion_model.dart';
 import 'now_model.dart';
@@ -45,6 +47,7 @@ Future<Null> main() async {
     storyGenerator: jsonStoryGenerator,
   );
   NowModel nowModel = new NowModel();
+  DebugModel debugModel = new DebugModel();
   ConstraintsModel constraintsModel = new ConstraintsModel();
   StoryClusterDragStateModel storyClusterDragStateModel =
       new StoryClusterDragStateModel();
@@ -65,6 +68,7 @@ Future<Null> main() async {
     storyClusterDragStateModel: storyClusterDragStateModel,
     storyRearrangementScrimModel: storyRearrangementScrimModel,
     storyDragTransitionModel: storyDragTransitionModel,
+    debugModel: debugModel,
   );
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
@@ -83,23 +87,28 @@ Widget _buildApp({
   StoryClusterDragStateModel storyClusterDragStateModel,
   StoryRearrangementScrimModel storyRearrangementScrimModel,
   StoryDragTransitionModel storyDragTransitionModel,
+  DebugModel debugModel,
 }) =>
     new CheckedModeBanner(
       child: new StoryTimeRandomizer(
         storyModel: storyModel,
         child: new ChildConstraintsChanger(
           constraintsModel: constraintsModel,
-          child: new DefaultAssetBundle(
-            bundle: defaultBundle,
-            child: new Armadillo(
-              storyModel: storyModel,
-              suggestionModel: suggestionModel,
-              nowModel: nowModel,
-              storyClusterDragStateModel: storyClusterDragStateModel,
-              storyRearrangementScrimModel: storyRearrangementScrimModel,
-              storyDragTransitionModel: storyDragTransitionModel,
-              conductor: new Conductor(
+          child: new DebugEnabler(
+            debugModel: debugModel,
+            child: new DefaultAssetBundle(
+              bundle: defaultBundle,
+              child: new Armadillo(
+                storyModel: storyModel,
+                suggestionModel: suggestionModel,
+                nowModel: nowModel,
                 storyClusterDragStateModel: storyClusterDragStateModel,
+                storyRearrangementScrimModel: storyRearrangementScrimModel,
+                storyDragTransitionModel: storyDragTransitionModel,
+                debugModel: debugModel,
+                conductor: new Conductor(
+                  storyClusterDragStateModel: storyClusterDragStateModel,
+                ),
               ),
             ),
           ),

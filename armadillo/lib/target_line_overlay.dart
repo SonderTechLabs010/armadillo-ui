@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'line_segment.dart';
 import 'story_cluster.dart';
 
-/// When [drawTargetLines] is true, this widget draws the given [targetLines]
+/// When [enabled] is true, this widget draws the given [targetLines]
 /// that will accept [storyClusterCandidates] overlaid on top of [child].  The
 /// current [Point]s of the [storyClusterCandidates] along with those of the
 /// [closestTargetLockPoints] are also drawn on top of [child].
@@ -18,10 +18,10 @@ class TargetLineOverlay extends StatelessWidget {
   final Map<StoryCluster, Point> storyClusterCandidates;
 
   /// Set to true to draw target lines.
-  final bool drawTargetLines;
+  final bool enabled;
 
   TargetLineOverlay({
-    this.drawTargetLines,
+    this.enabled,
     this.targetLines,
     this.closestTargetLockPoints,
     this.storyClusterCandidates,
@@ -33,7 +33,7 @@ class TargetLineOverlay extends StatelessWidget {
     List<Widget> stackChildren = <Widget>[new Positioned.fill(child: child)];
 
     // When we have a candidate, show the target lines.
-    if (drawTargetLines && storyClusterCandidates.isNotEmpty) {
+    if (enabled && storyClusterCandidates.isNotEmpty) {
       // Add all the lines.
       targetLines
           .where(

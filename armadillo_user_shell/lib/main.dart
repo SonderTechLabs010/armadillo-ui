@@ -11,6 +11,8 @@ import 'package:armadillo/armadillo_drag_target.dart';
 import 'package:armadillo/child_constraints_changer.dart';
 import 'package:armadillo/conductor.dart';
 import 'package:armadillo/constraints_model.dart';
+import 'package:armadillo/debug_enabler.dart';
+import 'package:armadillo/debug_model.dart';
 import 'package:armadillo/now_model.dart';
 import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_cluster_drag_state_model.dart';
@@ -124,12 +126,14 @@ Future<Null> main() async {
   );
 
   NowModel nowModel = new NowModel();
+  DebugModel debugModel = new DebugModel();
   ConstraintsModel constraintsModel = new ConstraintsModel();
 
   Widget app = _buildApp(
     storyModel: storyModel,
     storyProviderStoryGenerator: storyProviderStoryGenerator,
     constraintsModel: constraintsModel,
+    debugModel: debugModel,
     armadillo: new Armadillo(
       storyModel: storyModel,
       suggestionModel: suggestionProviderSuggestionModel,
@@ -137,6 +141,7 @@ Future<Null> main() async {
       storyClusterDragStateModel: storyClusterDragStateModel,
       storyRearrangementScrimModel: storyRearrangementScrimModel,
       storyDragTransitionModel: storyDragTransitionModel,
+      debugModel: debugModel,
       conductor: conductor,
     ),
     hitTestModel: hitTestModel,
@@ -151,6 +156,7 @@ Widget _buildApp({
   StoryModel storyModel,
   StoryProviderStoryGenerator storyProviderStoryGenerator,
   ConstraintsModel constraintsModel,
+  DebugModel debugModel,
   Armadillo armadillo,
   HitTestModel hitTestModel,
 }) =>
@@ -158,34 +164,37 @@ Widget _buildApp({
       storyModel: storyModel,
       child: new ChildConstraintsChanger(
         constraintsModel: constraintsModel,
-        child: new DefaultAssetBundle(
-          bundle: defaultBundle,
-          child: new Stack(children: <Widget>[
-            new ScopedModel<HitTestModel>(
-              model: hitTestModel,
-              child: armadillo,
-            ),
-            new Positioned(
-              left: 0.0,
-              top: 0.0,
-              bottom: 0.0,
-              width: 100.0,
-              child: _buildDiscardDragTarget(
-                storyModel: storyModel,
-                storyProviderStoryGenerator: storyProviderStoryGenerator,
+        child: new DebugEnabler(
+          debugModel: debugModel,
+          child: new DefaultAssetBundle(
+            bundle: defaultBundle,
+            child: new Stack(children: <Widget>[
+              new ScopedModel<HitTestModel>(
+                model: hitTestModel,
+                child: armadillo,
               ),
-            ),
-            new Positioned(
-              right: 0.0,
-              top: 0.0,
-              bottom: 0.0,
-              width: 100.0,
-              child: _buildDiscardDragTarget(
-                storyModel: storyModel,
-                storyProviderStoryGenerator: storyProviderStoryGenerator,
+              new Positioned(
+                left: 0.0,
+                top: 0.0,
+                bottom: 0.0,
+                width: 100.0,
+                child: _buildDiscardDragTarget(
+                  storyModel: storyModel,
+                  storyProviderStoryGenerator: storyProviderStoryGenerator,
+                ),
               ),
-            ),
-          ]),
+              new Positioned(
+                right: 0.0,
+                top: 0.0,
+                bottom: 0.0,
+                width: 100.0,
+                child: _buildDiscardDragTarget(
+                  storyModel: storyModel,
+                  storyProviderStoryGenerator: storyProviderStoryGenerator,
+                ),
+              ),
+            ]),
+          ),
         ),
       ),
     );

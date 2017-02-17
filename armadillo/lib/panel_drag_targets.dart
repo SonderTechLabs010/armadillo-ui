@@ -10,6 +10,7 @@ import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
 import 'armadillo_drag_target.dart';
+import 'debug_model.dart';
 import 'line_segment.dart';
 import 'panel.dart';
 import 'place_holder_story.dart';
@@ -52,12 +53,6 @@ const Color _kTargetBackgroundColor = const Color.fromARGB(128, 153, 234, 216);
 
 const String _kStoryBarTargetName = 'Story Bar target';
 const Duration _kMinLockDuration = const Duration(milliseconds: 750);
-
-/// Set to true to draw target lines.
-const bool _kDrawTargetLines = true;
-
-/// Set to true to draw target influence.
-const bool _kDrawTargetInfluence = true;
 
 /// Once a drag target is chosen, this is the distance a draggable must travel
 /// before new drag targets are considered.
@@ -325,20 +320,24 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // and we have a candidate being dragged over us.
     _scale = hasCandidates && !_inTimeline ? config.scale : 1.0;
 
-    return new TargetLineInfluenceOverlay(
-      enabled: _kDrawTargetInfluence,
-      targetLines: _targetLines,
-      storyClusterCandidates: storyClusterCandidates,
-      child: new TargetLineOverlay(
-        drawTargetLines: _kDrawTargetLines,
-        targetLines: _targetLines,
-        closestTargetLockPoints: _closestTargetLockPoints,
-        storyClusterCandidates: storyClusterCandidates,
-        child: new Transform(
-          transform: new Matrix4.identity().scaled(_scale, _scale),
-          alignment: FractionalOffset.center,
-          child: config.child,
-        ),
+    return new ScopedDebugWidget(
+      builder: (BuildContext context, Widget child, DebugModel debugModel) =>
+          new TargetLineInfluenceOverlay(
+            enabled: debugModel.showTargetLineInfluenceOverlay,
+            targetLines: _targetLines,
+            storyClusterCandidates: storyClusterCandidates,
+            child: new TargetLineOverlay(
+              enabled: debugModel.showTargetLineOverlay,
+              targetLines: _targetLines,
+              closestTargetLockPoints: _closestTargetLockPoints,
+              storyClusterCandidates: storyClusterCandidates,
+              child: child,
+            ),
+          ),
+      child: new Transform(
+        transform: new Matrix4.identity().scaled(_scale, _scale),
+        alignment: FractionalOffset.center,
+        child: config.child,
       ),
     );
   }
