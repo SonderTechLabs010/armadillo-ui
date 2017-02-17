@@ -106,6 +106,9 @@ class Panel {
         heightFactor: bottom - top,
       );
 
+  factory Panel.from(Panel panel) =>
+      new Panel.fromLTRB(panel.left, panel.top, panel.right, panel.bottom);
+
   bool canAdjustRight(double deltaRight, double width) =>
       toGridValue(_widthFactor + deltaRight) >= smallestWidthFactor(width);
 

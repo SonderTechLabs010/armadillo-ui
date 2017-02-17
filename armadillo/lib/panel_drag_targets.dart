@@ -22,11 +22,14 @@ import 'story_cluster_id.dart';
 import 'story_model.dart';
 import 'target_line_overlay.dart';
 
-const double _kTopEdgeTargetYOffset = 64.0;
+const double _kGapBetweenTopTargets = 48.0;
+const double _kStoryBarTargetYOffset = 64.0;
+const double _kTopEdgeTargetYOffset =
+    _kStoryBarTargetYOffset + _kGapBetweenTopTargets;
+const double _kStoryTopEdgeTargetYOffset =
+    _kTopEdgeTargetYOffset + _kGapBetweenTopTargets;
 const double _kDiscardTargetTopEdgeYOffset = -48.0;
 const double _kBringToFrontTargetBottomEdgeYOffset = 48.0;
-const double _kStoryBarTargetYOffset = 16.0;
-const double _kStoryTopEdgeTargetYOffset = 112.0;
 const double _kStoryEdgeTargetInset = 48.0;
 const double _kUnfocusedCornerRadius = 4.0;
 const double _kFocusedCornerRadius = 8.0;
@@ -43,7 +46,7 @@ const String _kStoryBarTargetName = 'Story Bar target';
 const Duration _kMinLockDuration = const Duration(milliseconds: 750);
 
 /// Set to true to draw target lines.
-const bool _kDrawTargetLines = false;
+const bool _kDrawTargetLines = true;
 
 /// Once a drag target is chosen, this is the distance a draggable must travel
 /// before new drag targets are considered.
@@ -120,7 +123,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   /// candidates leave without being dropped we store off the original story
   /// list, the original focus story ID, and the original display mode..
   StoryId _originalFocusedStoryId;
-  List<Story> _originalStories;
+  Map<StoryId, Panel> _originalStoryIdToPanelMap = <StoryId, Panel>{};
   DisplayMode _originalDisplayMode;
 
   bool _hadCandidates = false;
@@ -140,9 +143,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   @override
   void initState() {
     super.initState();
-    config.storyCluster.addStoryListListener(_populateTargetLines);
+    config.storyCluster.addStoryListListener(_onStoryListChanged);
     _originalFocusedStoryId = config.storyCluster.focusedStoryId;
-    _originalStories = config.storyCluster.stories;
+    config.storyCluster.stories.forEach((Story story) {
+      _originalStoryIdToPanelMap[story.id] = new Panel.from(story.panel);
+    });
     _originalDisplayMode = config.storyCluster.displayMode;
     _populateTargetLines();
   }
@@ -151,10 +156,13 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   void didUpdateConfig(PanelDragTargets oldConfig) {
     super.didUpdateConfig(oldConfig);
     if (oldConfig.storyCluster.id != config.storyCluster.id) {
-      oldConfig.storyCluster.removeStoryListListener(_populateTargetLines);
-      config.storyCluster.addStoryListListener(_populateTargetLines);
+      oldConfig.storyCluster.removeStoryListListener(_onStoryListChanged);
+      config.storyCluster.addStoryListListener(_onStoryListChanged);
       _originalFocusedStoryId = config.storyCluster.focusedStoryId;
-      _originalStories = config.storyCluster.stories;
+      _originalStoryIdToPanelMap.clear();
+      config.storyCluster.stories.forEach((Story story) {
+        _originalStoryIdToPanelMap[story.id] = new Panel.from(story.panel);
+      });
       _originalDisplayMode = config.storyCluster.displayMode;
     }
     if (oldConfig.focusProgress != config.focusProgress ||
@@ -165,9 +173,11 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
   @override
   void dispose() {
-    config.storyCluster.removeStoryListListener(_populateTargetLines);
+    config.storyCluster.removeStoryListListener(_onStoryListChanged);
     super.dispose();
   }
+
+  void _onStoryListChanged() => _populateTargetLines();
 
   @override
   Widget build(BuildContext context) => new ArmadilloDragTarget<StoryClusterId>(
@@ -282,7 +292,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     bool hasCandidates = storyClusterIdCandidates.isNotEmpty;
     if (hasCandidates && !_hadCandidates) {
       _originalFocusedStoryId = config.storyCluster.focusedStoryId;
-      _originalStories = config.storyCluster.stories;
+      _originalStoryIdToPanelMap.clear();
+      config.storyCluster.stories.forEach((Story story) {
+        _originalStoryIdToPanelMap[story.id] = new Panel.from(story.panel);
+      });
       _originalDisplayMode = config.storyCluster.displayMode;
       _populateTargetLines();
     }
@@ -414,11 +427,12 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
         // If no stories have changed, and a candidate was removed we need
         // to revert back to our original layout.
-        if (_originalStories.length == config.storyCluster.stories.length) {
-          _originalStories.forEach((Story story) {
+        if (_originalStoryIdToPanelMap.keys.length ==
+            config.storyCluster.stories.length) {
+          _originalStoryIdToPanelMap.keys.forEach((StoryId storyId) {
             config.storyCluster.replaceStoryPanel(
-              storyId: story.id,
-              withPanel: story.panel,
+              storyId: storyId,
+              withPanel: _originalStoryIdToPanelMap[storyId],
             );
           });
           config.storyCluster.displayMode = _originalDisplayMode;
@@ -522,8 +536,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     double verticalMargin = (1.0 - config.scale) / 2.0 * sizeModel.size.height;
     double horizontalMargin = (1.0 - config.scale) / 2.0 * sizeModel.size.width;
 
-    List<Panel> panels =
-        _originalStories.map((Story story) => story.panel).toList();
+    List<Panel> panels = _originalStoryIdToPanelMap.values.toList();
     int availableRows = maxRows(sizeModel.size) -
         _getCurrentRows(
           panels: panels,
@@ -588,7 +601,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         new LineSegment.vertical(
           name: 'Left edge target',
           x: horizontalMargin,
-          top: verticalMargin,
+          top: verticalMargin + _kTopEdgeTargetYOffset + _kStoryEdgeTargetInset,
           bottom:
               sizeModel.size.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
@@ -612,7 +625,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         new LineSegment.vertical(
           name: 'Right edge target',
           x: sizeModel.size.width - horizontalMargin,
-          top: verticalMargin,
+          top: verticalMargin + _kTopEdgeTargetYOffset + _kStoryEdgeTargetInset,
           bottom:
               sizeModel.size.height - verticalMargin - _kStoryEdgeTargetInset,
           color: _kEdgeTargetColor,
@@ -637,8 +650,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       new LineSegment.horizontal(
         name: _kStoryBarTargetName,
         y: verticalMargin + _kStoryBarTargetYOffset,
-        left: horizontalMargin + _kStoryEdgeTargetInset,
-        right: sizeModel.size.width - horizontalMargin - _kStoryEdgeTargetInset,
+        left: horizontalMargin,
+        right: sizeModel.size.width - horizontalMargin,
         color: _kStoryBarTargetColor,
         validityDistance: verticalMargin + _kStoryBarTargetYOffset,
         maxStoriesCanAccept:
@@ -712,12 +725,17 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       sizeModel.size.width / 2.0,
       sizeModel.size.height / 2.0,
     );
-    _originalStories.forEach((Story story) {
-      Rect bounds = _transform(story.panel, center, sizeModel.size);
+    _originalStoryIdToPanelMap.keys.forEach((StoryId storyId) {
+      Panel storyPanel = _originalStoryIdToPanelMap[storyId];
+      Rect bounds = _transform(
+        storyPanel,
+        center,
+        sizeModel.size,
+      );
 
       // If we can split vertically add vertical targets on left and right.
       int verticalSplits = _getVerticalSplitCount(
-        story.panel,
+        storyPanel,
         sizeModel.size,
         panels,
       );
@@ -726,7 +744,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         double right = bounds.right - _kStoryEdgeTargetInset;
         double top = bounds.top +
             _kStoryEdgeTargetInset +
-            (story.panel.top == 0.0
+            (storyPanel.top == 0.0
                 ? _kStoryTopEdgeTargetYOffset
                 : 2.0 * _kStoryEdgeTargetInset);
         double bottom =
@@ -735,7 +753,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add left target.
         _targetLines.add(
           new LineSegment.vertical(
-            name: 'Add left target ${story.id}',
+            name: 'Add left target $storyId',
             x: left,
             top: top,
             bottom: bottom,
@@ -745,14 +763,14 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
                 _addClusterToLeftOfPanel(
                   context: context,
                   storyCluster: storyCluster,
-                  storyId: story.id,
+                  storyId: storyId,
                   preview: true,
                 ),
             onDrop: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToLeftOfPanel(
                   context: context,
                   storyCluster: storyCluster,
-                  storyId: story.id,
+                  storyId: storyId,
                 ),
           ),
         );
@@ -760,7 +778,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add right target.
         _targetLines.add(
           new LineSegment.vertical(
-            name: 'Add right target ${story.id}',
+            name: 'Add right target $storyId',
             x: right,
             top: top,
             bottom: bottom,
@@ -770,14 +788,14 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
                 _addClusterToRightOfPanel(
                   context: context,
                   storyCluster: storyCluster,
-                  storyId: story.id,
+                  storyId: storyId,
                   preview: true,
                 ),
             onDrop: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToRightOfPanel(
                   context: context,
                   storyCluster: storyCluster,
-                  storyId: story.id,
+                  storyId: storyId,
                 ),
           ),
         );
@@ -785,13 +803,13 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
       // If we can split horizontally add horizontal targets on top and bottom.
       int horizontalSplits = _getHorizontalSplitCount(
-        story.panel,
+        storyPanel,
         sizeModel.size,
         panels,
       );
       if (horizontalSplits > 0) {
         double top = bounds.top +
-            (story.panel.top == 0.0
+            (storyPanel.top == 0.0
                 ? _kStoryTopEdgeTargetYOffset
                 : _kStoryEdgeTargetInset);
         double left =
@@ -803,7 +821,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add top target.
         _targetLines.add(
           new LineSegment.horizontal(
-            name: 'Add top target ${story.id}',
+            name: 'Add top target $storyId',
             y: top,
             left: left,
             right: right,
@@ -813,14 +831,14 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
                 _addClusterAbovePanel(
                   context: context,
                   storyCluster: storyCluster,
-                  storyId: story.id,
+                  storyId: storyId,
                   preview: true,
                 ),
             onDrop: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterAbovePanel(
                   context: context,
                   storyCluster: storyCluster,
-                  storyId: story.id,
+                  storyId: storyId,
                 ),
           ),
         );
@@ -828,7 +846,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // Add bottom target.
         _targetLines.add(
           new LineSegment.horizontal(
-            name: 'Add bottom target ${story.id}',
+            name: 'Add bottom target $storyId',
             y: bottom,
             left: left,
             right: right,
@@ -838,14 +856,14 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
                 _addClusterBelowPanel(
                   context: context,
                   storyCluster: storyCluster,
-                  storyId: story.id,
+                  storyId: storyId,
                   preview: true,
                 ),
             onDrop: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterBelowPanel(
                   context: context,
                   storyCluster: storyCluster,
-                  storyId: story.id,
+                  storyId: storyId,
                 ),
           ),
         );
