@@ -24,14 +24,15 @@ import 'target_line_overlay.dart';
 import 'target_line_influence_overlay.dart';
 
 const double _kGapBetweenTopTargets = 48.0;
-const double _kStoryBarTargetYOffset = 64.0;
+const double _kStoryBarTargetYOffset = 48.0;
 const double _kTopEdgeTargetYOffset =
-    _kStoryBarTargetYOffset + _kGapBetweenTopTargets;
+    _kStoryBarTargetYOffset + _kGapBetweenTopTargets + 16.0;
 const double _kStoryTopEdgeTargetYOffset =
     _kTopEdgeTargetYOffset + _kGapBetweenTopTargets;
 const double _kDiscardTargetTopEdgeYOffset = -48.0;
 const double _kBringToFrontTargetBottomEdgeYOffset = 48.0;
 const double _kStoryEdgeTargetInset = 48.0;
+const double _kStoryEdgeTargetInsetMinDistance = 8.0;
 const double _kUnfocusedCornerRadius = 4.0;
 const double _kFocusedCornerRadius = 8.0;
 const int _kMaxStoriesPerCluster = 100;
@@ -562,9 +563,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         new LineSegment.horizontal(
           name: 'Top edge target',
           y: verticalMargin + _kTopEdgeTargetYOffset,
-          left: horizontalMargin + _kStoryEdgeTargetInset,
-          right:
-              sizeModel.size.width - horizontalMargin - _kStoryEdgeTargetInset,
+          left: horizontalMargin + _kStoryEdgeTargetInsetMinDistance,
+          right: sizeModel.size.width -
+              horizontalMargin -
+              _kStoryEdgeTargetInsetMinDistance,
           color: _kTopEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
@@ -586,9 +588,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         new LineSegment.horizontal(
           name: 'Bottom edge target',
           y: sizeModel.size.height - verticalMargin,
-          left: horizontalMargin + _kStoryEdgeTargetInset,
-          right:
-              sizeModel.size.width - horizontalMargin - _kStoryEdgeTargetInset,
+          left: horizontalMargin + _kStoryEdgeTargetInsetMinDistance,
+          right: sizeModel.size.width -
+              horizontalMargin -
+              _kStoryEdgeTargetInsetMinDistance,
           color: _kBottomEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
@@ -616,9 +619,12 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         new LineSegment.vertical(
           name: 'Left edge target',
           x: horizontalMargin,
-          top: verticalMargin + _kTopEdgeTargetYOffset + _kStoryEdgeTargetInset,
-          bottom:
-              sizeModel.size.height - verticalMargin - _kStoryEdgeTargetInset,
+          top: verticalMargin +
+              _kTopEdgeTargetYOffset +
+              _kStoryEdgeTargetInsetMinDistance,
+          bottom: sizeModel.size.height -
+              verticalMargin -
+              _kStoryEdgeTargetInsetMinDistance,
           color: _kLeftEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
@@ -640,9 +646,12 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         new LineSegment.vertical(
           name: 'Right edge target',
           x: sizeModel.size.width - horizontalMargin,
-          top: verticalMargin + _kTopEdgeTargetYOffset + _kStoryEdgeTargetInset,
-          bottom:
-              sizeModel.size.height - verticalMargin - _kStoryEdgeTargetInset,
+          top: verticalMargin +
+              _kTopEdgeTargetYOffset +
+              _kStoryEdgeTargetInsetMinDistance,
+          bottom: sizeModel.size.height -
+              verticalMargin -
+              _kStoryEdgeTargetInsetMinDistance,
           color: _kRightEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
@@ -665,8 +674,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       new LineSegment.horizontal(
         name: _kStoryBarTargetName,
         y: verticalMargin + _kStoryBarTargetYOffset,
-        left: horizontalMargin,
-        right: sizeModel.size.width - horizontalMargin,
+        left: 0.0,
+        right: sizeModel.size.width,
         color: _kStoryBarTargetColor,
         validityDistance: verticalMargin + _kStoryBarTargetYOffset,
         maxStoriesCanAccept:
@@ -683,8 +692,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           name: 'Top discard target',
           initiallyTargetable: false,
           y: verticalMargin + _kDiscardTargetTopEdgeYOffset,
-          left: horizontalMargin * 3.0,
-          right: sizeModel.size.width - 3.0 * horizontalMargin,
+          left: 0.0,
+          right: sizeModel.size.width,
           color: _kDiscardTargetColor,
           validityDistance: verticalMargin + _kDiscardTargetTopEdgeYOffset,
           maxStoriesCanAccept: _kMaxStoriesPerCluster,
@@ -712,8 +721,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           y: sizeModel.size.height -
               verticalMargin +
               _kBringToFrontTargetBottomEdgeYOffset,
-          left: horizontalMargin * 3.0,
-          right: sizeModel.size.width - 3.0 * horizontalMargin,
+          left: 0.0,
+          right: sizeModel.size.width,
           color: _kBringToFrontTargetColor,
           validityDistance:
               verticalMargin - _kBringToFrontTargetBottomEdgeYOffset,
@@ -758,12 +767,13 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         double left = bounds.left + _kStoryEdgeTargetInset;
         double right = bounds.right - _kStoryEdgeTargetInset;
         double top = bounds.top +
-            _kStoryEdgeTargetInset +
+            _kStoryEdgeTargetInsetMinDistance +
             (storyPanel.top == 0.0
                 ? _kStoryTopEdgeTargetYOffset
                 : 2.0 * _kStoryEdgeTargetInset);
-        double bottom =
-            bounds.bottom - _kStoryEdgeTargetInset - _kStoryEdgeTargetInset;
+        double bottom = bounds.bottom -
+            _kStoryEdgeTargetInsetMinDistance -
+            _kStoryEdgeTargetInset;
 
         // Add left target.
         _targetLines.add(
@@ -827,10 +837,12 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             (storyPanel.top == 0.0
                 ? _kStoryTopEdgeTargetYOffset
                 : _kStoryEdgeTargetInset);
-        double left =
-            bounds.left + _kStoryEdgeTargetInset + _kStoryEdgeTargetInset;
-        double right =
-            bounds.right - _kStoryEdgeTargetInset - _kStoryEdgeTargetInset;
+        double left = bounds.left +
+            _kStoryEdgeTargetInsetMinDistance +
+            _kStoryEdgeTargetInset;
+        double right = bounds.right -
+            _kStoryEdgeTargetInsetMinDistance -
+            _kStoryEdgeTargetInset;
         double bottom = bounds.bottom - _kStoryEdgeTargetInset;
 
         // Add top target.

@@ -64,8 +64,8 @@ class InfluencePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    int xSteps = (size.width / _kStepSize).round();
-    int ySteps = (size.height / _kStepSize).round();
+    int xSteps = (size.width / _kStepSize).round() - 1;
+    int ySteps = (size.height / _kStepSize).round() - 1;
     List<List<LineSegment>> lines = new List<List<LineSegment>>.generate(
       xSteps,
       (int xStep) => new List<LineSegment>.generate(
