@@ -20,7 +20,7 @@ class ScrollLockerState extends State<ScrollLocker> {
   bool _lockScrolling = false;
 
   @override
-  Widget build(BuildContext context) => new ScrollConfiguration2(
+  Widget build(BuildContext context) => new ScrollConfiguration(
         behavior: new LockingScrollBehavior(lock: _lockScrolling),
         child: config.child,
       );
@@ -38,7 +38,7 @@ class ScrollLockerState extends State<ScrollLocker> {
   }
 }
 
-class LockingScrollBehavior extends ScrollBehavior2 {
+class LockingScrollBehavior extends ScrollBehavior {
   final bool lock;
   const LockingScrollBehavior({this.lock: false});
 

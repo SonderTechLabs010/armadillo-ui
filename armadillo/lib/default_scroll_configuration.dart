@@ -10,13 +10,13 @@ class DefaultScrollConfiguration extends StatelessWidget {
   DefaultScrollConfiguration({Key key, this.child}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => new ScrollConfiguration2(
+  Widget build(BuildContext context) => new ScrollConfiguration(
         behavior: const _BouncingScrollBehavior(),
         child: child,
       );
 }
 
-class _BouncingScrollBehavior extends ScrollBehavior2 {
+class _BouncingScrollBehavior extends ScrollBehavior {
   const _BouncingScrollBehavior();
 
   @override

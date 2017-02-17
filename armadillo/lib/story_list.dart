@@ -255,8 +255,8 @@ class StoryListBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      new NotificationListener<ScrollNotification2>(
-        onNotification: (ScrollNotification2 notification) {
+      new NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification notification) {
           if (notification is ScrollUpdateNotification &&
               notification.depth == 0) {
             onScroll?.call(notification.metrics.extentBefore);
