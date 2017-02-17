@@ -23,7 +23,7 @@ class StoryTimeRandomizer extends StatelessWidget {
             width: 50.0,
             height: 50.0,
             child: new GestureDetector(
-              behavior: HitTestBehavior.opaque,
+              behavior: HitTestBehavior.translucent,
               onTap: storyModel.randomizeStoryTimes,
             ),
           ),
