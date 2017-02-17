@@ -21,6 +21,7 @@ import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
 import 'story_model.dart';
 import 'target_line_overlay.dart';
+import 'target_line_influence_overlay.dart';
 
 const double _kGapBetweenTopTargets = 48.0;
 const double _kStoryBarTargetYOffset = 64.0;
@@ -35,11 +36,17 @@ const double _kUnfocusedCornerRadius = 4.0;
 const double _kFocusedCornerRadius = 8.0;
 const int _kMaxStoriesPerCluster = 100;
 const double _kAddedStorySpan = 0.01;
-const Color _kEdgeTargetColor = const Color(0xFFFFFF00);
-const Color _kStoryBarTargetColor = const Color(0xFF00FFFF);
-const Color _kDiscardTargetColor = const Color(0xFFFF0000);
-const Color _kBringToFrontTargetColor = const Color(0xFF00FF00);
-const Color _kStoryEdgeTargetColor = const Color(0xFF0000FF);
+final Color _kTopEdgeTargetColor = Colors.yellow[700];
+final Color _kLeftEdgeTargetColor = Colors.yellow[500];
+final Color _kBottomEdgeTargetColor = Colors.yellow[700];
+final Color _kRightEdgeTargetColor = Colors.yellow[500];
+final Color _kStoryBarTargetColor = Colors.grey[500];
+final Color _kDiscardTargetColor = Colors.red[700];
+final Color _kBringToFrontTargetColor = Colors.green[700];
+final Color _kTopStoryEdgeTargetColor = Colors.blue[100];
+final Color _kLeftStoryEdgeTargetColor = Colors.blue[300];
+final Color _kBottomStoryEdgeTargetColor = Colors.blue[500];
+final Color _kRightStoryEdgeTargetColor = Colors.blue[700];
 const Color _kTargetBackgroundColor = const Color.fromARGB(128, 153, 234, 216);
 
 const String _kStoryBarTargetName = 'Story Bar target';
@@ -47,6 +54,9 @@ const Duration _kMinLockDuration = const Duration(milliseconds: 750);
 
 /// Set to true to draw target lines.
 const bool _kDrawTargetLines = true;
+
+/// Set to true to draw target influence.
+const bool _kDrawTargetInfluence = true;
 
 /// Once a drag target is chosen, this is the distance a draggable must travel
 /// before new drag targets are considered.
@@ -314,15 +324,20 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // and we have a candidate being dragged over us.
     _scale = hasCandidates && !_inTimeline ? config.scale : 1.0;
 
-    return new TargetLineOverlay(
-      drawTargetLines: _kDrawTargetLines,
+    return new TargetLineInfluenceOverlay(
+      enabled: _kDrawTargetInfluence,
       targetLines: _targetLines,
-      closestTargetLockPoints: _closestTargetLockPoints,
       storyClusterCandidates: storyClusterCandidates,
-      child: new Transform(
-        transform: new Matrix4.identity().scaled(_scale, _scale),
-        alignment: FractionalOffset.center,
-        child: config.child,
+      child: new TargetLineOverlay(
+        drawTargetLines: _kDrawTargetLines,
+        targetLines: _targetLines,
+        closestTargetLockPoints: _closestTargetLockPoints,
+        storyClusterCandidates: storyClusterCandidates,
+        child: new Transform(
+          transform: new Matrix4.identity().scaled(_scale, _scale),
+          alignment: FractionalOffset.center,
+          child: config.child,
+        ),
       ),
     );
   }
@@ -550,7 +565,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           left: horizontalMargin + _kStoryEdgeTargetInset,
           right:
               sizeModel.size.width - horizontalMargin - _kStoryEdgeTargetInset,
-          color: _kEdgeTargetColor,
+          color: _kTopEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterAbovePanels(
@@ -574,7 +589,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           left: horizontalMargin + _kStoryEdgeTargetInset,
           right:
               sizeModel.size.width - horizontalMargin - _kStoryEdgeTargetInset,
-          color: _kEdgeTargetColor,
+          color: _kBottomEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterBelowPanels(
@@ -604,7 +619,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           top: verticalMargin + _kTopEdgeTargetYOffset + _kStoryEdgeTargetInset,
           bottom:
               sizeModel.size.height - verticalMargin - _kStoryEdgeTargetInset,
-          color: _kEdgeTargetColor,
+          color: _kLeftEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToLeftOfPanels(
@@ -628,7 +643,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           top: verticalMargin + _kTopEdgeTargetYOffset + _kStoryEdgeTargetInset,
           bottom:
               sizeModel.size.height - verticalMargin - _kStoryEdgeTargetInset,
-          color: _kEdgeTargetColor,
+          color: _kRightEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToRightOfPanels(
@@ -757,7 +772,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             x: left,
             top: top,
             bottom: bottom,
-            color: _kStoryEdgeTargetColor,
+            color: _kLeftStoryEdgeTargetColor,
             maxStoriesCanAccept: verticalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToLeftOfPanel(
@@ -782,7 +797,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             x: right,
             top: top,
             bottom: bottom,
-            color: _kStoryEdgeTargetColor,
+            color: _kRightStoryEdgeTargetColor,
             maxStoriesCanAccept: verticalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToRightOfPanel(
@@ -825,7 +840,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             y: top,
             left: left,
             right: right,
-            color: _kStoryEdgeTargetColor,
+            color: _kTopStoryEdgeTargetColor,
             maxStoriesCanAccept: horizontalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterAbovePanel(
@@ -850,7 +865,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             y: bottom,
             left: left,
             right: right,
-            color: _kStoryEdgeTargetColor,
+            color: _kBottomStoryEdgeTargetColor,
             maxStoriesCanAccept: horizontalSplits,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterBelowPanel(
