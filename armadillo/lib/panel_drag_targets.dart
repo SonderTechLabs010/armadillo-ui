@@ -480,7 +480,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       //       point, and
       //    c) the candidate's closest line hasn't changed recently.
       if (_closestTargets[storyCluster] == null ||
-          (_closestTargets[storyCluster].name != closestLine.name &&
+          (closestLine != null &&
+              _closestTargets[storyCluster].name != closestLine.name &&
               ((lockPoint - storyClusterPoint).distance > _kStickyDistance) &&
               (new DateTime.now().subtract(_kMinLockDuration).isAfter(
                     _closestTargetTimestamps[storyCluster],
@@ -527,7 +528,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         closestLine = line;
       }
     });
-    if (closestLine == null) {
+    if (closestLine == null && initialTarget) {
       closestLine = _targetLines
           .where((LineSegment line) => line.name == _kStoryBarTargetName)
           .single;
@@ -568,6 +569,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               _kStoryEdgeTargetInsetMinDistance,
           color: _kTopEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
+          validityDistance: kMinPanelHeight / 2.0,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterAbovePanels(
                 context: context,
@@ -593,6 +595,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               _kStoryEdgeTargetInsetMinDistance,
           color: _kBottomEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
+          validityDistance: kMinPanelHeight / 2.0,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterBelowPanels(
                 context: context,
@@ -626,6 +629,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               _kStoryEdgeTargetInsetMinDistance,
           color: _kLeftEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
+          validityDistance: kMinPanelWidth / 2.0,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToLeftOfPanels(
                 context: context,
@@ -653,6 +657,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               _kStoryEdgeTargetInsetMinDistance,
           color: _kRightEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
+          validityDistance: kMinPanelWidth / 2.0,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToRightOfPanels(
                 context: context,
@@ -750,11 +755,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     );
     _originalStoryIdToPanelMap.keys.forEach((StoryId storyId) {
       Panel storyPanel = _originalStoryIdToPanelMap[storyId];
-      Rect bounds = _transform(
-        storyPanel,
-        center,
-        sizeModel.size,
-      );
+      Rect bounds = _transform(storyPanel, center, sizeModel.size);
 
       // If we can split vertically add vertical targets on left and right.
       int verticalSplits = _getVerticalSplitCount(
@@ -783,6 +784,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             bottom: bottom,
             color: _kLeftStoryEdgeTargetColor,
             maxStoriesCanAccept: verticalSplits,
+            validityDistance: kMinPanelWidth / 2.0,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToLeftOfPanel(
                   context: context,
@@ -808,6 +810,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             bottom: bottom,
             color: _kRightStoryEdgeTargetColor,
             maxStoriesCanAccept: verticalSplits,
+            validityDistance: kMinPanelWidth / 2.0,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToRightOfPanel(
                   context: context,
@@ -853,6 +856,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             right: right,
             color: _kTopStoryEdgeTargetColor,
             maxStoriesCanAccept: horizontalSplits,
+            validityDistance: kMinPanelHeight / 2.0,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterAbovePanel(
                   context: context,
@@ -878,6 +882,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             right: right,
             color: _kBottomStoryEdgeTargetColor,
             maxStoriesCanAccept: horizontalSplits,
+            validityDistance: kMinPanelHeight / 2.0,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterBelowPanel(
                   context: context,
@@ -922,7 +927,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
                   validityDistance: lerpDouble(
                     0.0,
                     lineSegment.validityDistance,
-                    verticalScale,
+                    lineSegment.isHorizontal ? verticalScale : horizontalScale,
                   ),
                 ),
           )

@@ -7,10 +7,10 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 
 /// The minimum dp width a panel should have.
-const double _kMinPanelWidth = 360.0;
+const double kMinPanelWidth = 360.0;
 
 /// The minimum dp height a panel should have.
-const double _kMinPanelHeight = 360.0;
+const double kMinPanelHeight = 360.0;
 
 /// The number of grid lines the grid should have in either direction.
 /// TODO(apwilson): This should be calculated from size rather than being a
@@ -21,7 +21,7 @@ const double _kGridLines = 10000.0;
 int maxRows(Size size) => math.max(
       1,
       math.min(
-        (size.height / _kMinPanelHeight).floor(),
+        (size.height / kMinPanelHeight).floor(),
         size.height > size.width ? 3 : 2,
       ),
     );
@@ -30,18 +30,18 @@ int maxRows(Size size) => math.max(
 int maxColumns(Size size) => math.max(
       1,
       math.min(
-        (size.width / _kMinPanelWidth).floor(),
+        (size.width / kMinPanelWidth).floor(),
         size.height > size.width ? 2 : 3,
       ),
     );
 
 /// Assuming the 1.0 x 1.0 grid is mapped to a width of [width], returns the
 /// minimum [0.0, 1.0] widthFactor a panel should have.
-double smallestWidthFactor(double width) => _kMinPanelWidth / width;
+double smallestWidthFactor(double width) => kMinPanelWidth / width;
 
 /// Assuming the 1.0 x 1.0 grid is mapped to a height of [height], returns the
 /// minimum [0.0, 1.0] heightFactor a panel should have.
-double smallestHeightFactor(double height) => _kMinPanelHeight / height;
+double smallestHeightFactor(double height) => kMinPanelHeight / height;
 
 /// Rounds [value] to the nearest grid line.
 double toGridValue(double value) => (value * _kGridLines).round() / _kGridLines;
