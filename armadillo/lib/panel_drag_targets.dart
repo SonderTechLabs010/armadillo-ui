@@ -55,7 +55,7 @@ final Color _kRightStoryEdgeTargetColor = Colors.blue[700];
 const Color _kTargetBackgroundColor = const Color.fromARGB(128, 153, 234, 216);
 
 const String _kStoryBarTargetName = 'Story Bar target';
-const Duration _kMinLockDuration = const Duration(milliseconds: 750);
+const Duration _kMinLockDuration = const Duration(milliseconds: 500);
 
 /// Once a drag target is chosen, this is the distance a draggable must travel
 /// before new drag targets are considered.
