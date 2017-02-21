@@ -42,7 +42,10 @@ final Color _kTopEdgeTargetColor = Colors.yellow[700];
 final Color _kLeftEdgeTargetColor = Colors.yellow[500];
 final Color _kBottomEdgeTargetColor = Colors.yellow[700];
 final Color _kRightEdgeTargetColor = Colors.yellow[500];
-final Color _kStoryBarTargetColor = Colors.grey[500];
+final List<Color> _kStoryBarTargetColor = <Color>[
+  Colors.grey[500],
+  Colors.grey[700]
+];
 final Color _kDiscardTargetColor = Colors.red[700];
 final Color _kBringToFrontTargetColor = Colors.green[700];
 final Color _kTopStoryEdgeTargetColor = Colors.blue[100];
@@ -530,8 +533,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     });
     if (closestLine == null && initialTarget) {
       closestLine = _targetLines
-          .where((LineSegment line) => line.name == _kStoryBarTargetName)
-          .single;
+          .where(
+            (LineSegment line) => line.name.startsWith(_kStoryBarTargetName),
+          )
+          .last;
     }
     return closestLine;
   }
@@ -673,22 +678,6 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       );
     }
 
-    // Story Bar target.
-    _targetLines.add(
-      new LineSegment.horizontal(
-        name: _kStoryBarTargetName,
-        y: verticalMargin + _kStoryBarTargetYOffset,
-        left: 0.0,
-        right: sizeModel.size.width,
-        color: _kStoryBarTargetColor,
-        validityDistance: verticalMargin + _kStoryBarTargetYOffset,
-        maxStoriesCanAccept:
-            _kMaxStoriesPerCluster - config.storyCluster.stories.length,
-        onHover: _onStoryBarHover,
-        onDrop: _onStoryBarDrop,
-      ),
-    );
-
     if (!_inTimeline) {
       // Top discard target.
       _targetLines.add(
@@ -746,6 +735,33 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
           },
         ),
       );
+    }
+
+    // Story Bar targets.
+    int storyBarTargets = _originalStoryIdToPanelMap.keys.length + 1;
+    double storyBarTargetLeft = 0.0;
+    final double storyBarTargetWidth =
+        (sizeModel.size.width - 2.0 * horizontalMargin) / storyBarTargets;
+    for (int i = 0; i < storyBarTargets; i++) {
+      double lineWidth = storyBarTargetWidth +
+          ((i == 0 || i == storyBarTargets - 1) ? horizontalMargin : 0.0);
+      _targetLines.add(
+        new LineSegment.horizontal(
+          name: '$_kStoryBarTargetName for index $i',
+          y: verticalMargin + _kStoryBarTargetYOffset,
+          left: storyBarTargetLeft,
+          right: storyBarTargetLeft + lineWidth,
+          color: _kStoryBarTargetColor[i % _kStoryBarTargetColor.length],
+          validityDistance: verticalMargin + _kStoryBarTargetYOffset,
+          maxStoriesCanAccept:
+              _kMaxStoriesPerCluster - config.storyCluster.stories.length,
+          onHover: (BuildContext context, StoryCluster storyCluster) =>
+              _onStoryBarHover(context, storyCluster, i),
+          onDrop: (BuildContext context, StoryCluster storyCluster) =>
+              _onStoryBarDrop(context, storyCluster, i),
+        ),
+      );
+      storyBarTargetLeft += lineWidth;
     }
 
     // Story edge targets.
@@ -937,16 +953,35 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
   }
 
-  void _onStoryBarHover(BuildContext context, StoryCluster storyCluster) {
+  void _onStoryBarHover(
+    BuildContext context,
+    StoryCluster storyCluster,
+    int targetIndex,
+  ) {
     _addClusterToRightOfPanels(
       context: context,
       storyCluster: storyCluster,
       preview: true,
       displayMode: DisplayMode.tabs,
     );
+
+    // Update tab positions in target cluster.
+    config.storyCluster.movePlaceholderStoriesToIndex(
+      storyCluster.realStories,
+      targetIndex,
+    );
+
+    // Update tab positions in dragged candidate cluster.
+    storyCluster.mirrorStoryOrder(config.storyCluster.stories);
   }
 
-  void _onStoryBarDrop(BuildContext context, StoryCluster storyCluster) {
+  void _onStoryBarDrop(
+    BuildContext context,
+    StoryCluster storyCluster, [
+    int targetIndex = -1,
+  ]) {
+    targetIndex =
+        (targetIndex == -1) ? config.storyCluster.stories.length : targetIndex;
     config.storyCluster.removePreviews();
     storyCluster.removePreviews();
     _cleanup(context: context, preview: true);
@@ -954,12 +989,16 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     config.storyCluster.displayMode = DisplayMode.tabs;
     config.storyCluster.focusedStoryId = storyCluster.focusedStoryId;
 
+    final List<Story> storiesToMove = storyCluster.realStories;
+
     StoryModel.of(context).combine(
           source: storyCluster,
           target: config.storyCluster,
         );
 
     config.storyCluster.maximizeStoryBars();
+
+    config.storyCluster.moveStoriesToIndex(storiesToMove, targetIndex);
   }
 
   /// Adds the stories of [storyCluster] to the left, spanning the full height.

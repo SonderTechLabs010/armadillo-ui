@@ -389,6 +389,66 @@ class StoryCluster {
   void showStoryBars() =>
       stories.forEach((Story story) => story.showStoryBar());
 
+  void moveStoriesToIndex(List<Story> storiesToMove, int targetIndex) {
+    List<Story> removedStories = <Story>[];
+    storiesToMove.forEach((Story storyToMove) {
+      Story story =
+          stories.where((Story story) => story.id == storyToMove.id).single;
+      _stories.remove(story);
+      removedStories.add(story);
+    });
+    removedStories.reversed.forEach((Story removedStory) {
+      _stories.insert(targetIndex, removedStory);
+    });
+    _notifyStoryListListeners();
+  }
+
+  void movePlaceholderStoriesToIndex(
+    List<Story> storiesToMove,
+    int targetIndex,
+  ) {
+    List<Story> removedStories = <Story>[];
+    storiesToMove.forEach((Story storyToMove) {
+      Story story = previewStories
+          .where((PlaceHolderStory story) =>
+              story.associatedStoryId == storyToMove.id)
+          .single;
+      _stories.remove(story);
+      removedStories.add(story);
+    });
+    removedStories.reversed.forEach((Story removedStory) {
+      _stories.insert(targetIndex, removedStory);
+    });
+    _notifyStoryListListeners();
+  }
+
+  /// Mirrors the order of [stories] to match the given [storiesToMirror].
+  /// Note in this case the stories in [storiesToMirror] are expected to have
+  /// the opposite 'realness' as those in [stories] (ie. A placeholder story in
+  /// [storiesToMirror] corresponds to a non-placeholder story in [stories] and
+  /// vice versa).
+  void mirrorStoryOrder(List<Story> storiesToMirror) {
+    for (int i = 0; i < storiesToMirror.length; i++) {
+      if (storiesToMirror[i].isPlaceHolder) {
+        PlaceHolderStory placeHolderMirror = storiesToMirror[i];
+        Story story = stories
+            .where((Story story) =>
+                story.id == placeHolderMirror.associatedStoryId)
+            .single;
+        _stories.remove(story);
+        _stories.insert(i, story);
+      } else {
+        Story realMirror = storiesToMirror[i];
+        Story story = previewStories
+            .where((PlaceHolderStory story) =>
+                story.associatedStoryId == realMirror.id)
+            .single;
+        _stories.remove(story);
+        _stories.insert(i, story);
+      }
+    }
+  }
+
   static String _getClusterTitle(List<Story> stories) {
     String title = '';
     stories.where((Story story) => !story.isPlaceHolder).forEach((Story story) {

@@ -186,17 +186,33 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
         (realStoriesFractionalBottom - realStoriesFractionalTop) / 2.0;
     double realStoriesFractionalTopY = realStoriesFractionalTop;
 
+    List<Story> stories = config.storyCluster.stories;
+    int realTabStartingIndex = 0;
+    for (int i = 0; i < stories.length; i++) {
+      if (!stories[i].isPlaceHolder) {
+        break;
+      }
+      realTabStartingIndex++;
+    }
+    int totalTabs = stories.length;
+    int realStories = config.storyCluster.realStories.length;
+    double realStoriesOffset = realStories / totalTabs / 2.0;
+    double tabFractionalXOffset =
+        realTabStartingIndex / totalTabs + realStoriesOffset;
+
     // Since the user begins the drag at config.localDragStartPoint and we want
     // to move the story to a better visual position when previewing we animate
     // its translation when isAcceptable is true.
     // In tab mode we center on the story's story bar.
     // In panel mode we center on the story itself.
-    double newDx = isAcceptable || config.localDragStartPoint.x > targetWidth
-        ? config.localDragStartPoint.x -
-            targetWidth * realStoriesFractionalCenterX
+    double newDx = (isAcceptable || config.localDragStartPoint.x > targetWidth)
+        ? (config.storyCluster.displayMode == DisplayMode.tabs)
+            ? config.localDragStartPoint.x - targetWidth * tabFractionalXOffset
+            : config.localDragStartPoint.x -
+                targetWidth * realStoriesFractionalCenterX
         : 0.0;
-    double newDy = isAcceptable || config.localDragStartPoint.y > targetHeight
-        ? config.storyCluster.displayMode == DisplayMode.tabs
+    double newDy = (isAcceptable || config.localDragStartPoint.y > targetHeight)
+        ? (config.storyCluster.displayMode == DisplayMode.tabs)
             ? config.localDragStartPoint.y -
                 targetHeight * realStoriesFractionalTopY -
                 childScale * _kStoryBarMaximizedHeight
