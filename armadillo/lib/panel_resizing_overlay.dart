@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import 'long_press_gesture_detector.dart';
@@ -11,7 +12,7 @@ import 'story.dart';
 import 'story_cluster.dart';
 import 'story_positioned.dart';
 
-const double _kDragTargetSize = 32.0;
+const double _kDragTargetSize = 24.0;
 
 const Color _kGestureDetectorColor = const Color(0x00800080);
 
@@ -293,6 +294,23 @@ class VerticalSeam {
                 onPanelsChanged();
               }
             },
+            child: new ScopedPanelResizingWidget(
+              child: new Center(
+                child: new Container(
+                  width: 2.0,
+                  height: 32.0,
+                  decoration: new BoxDecoration(
+                    backgroundColor: Colors.grey[200],
+                  ),
+                ),
+              ),
+              builder: (BuildContext context, Widget child,
+                      PanelResizingModel panelResizingModel) =>
+                  new Opacity(
+                    opacity: panelResizingModel.progress,
+                    child: child,
+                  ),
+            ),
           ),
         ),
       );
@@ -404,6 +422,23 @@ class HorizontalSeam {
                 onPanelsChanged();
               }
             },
+            child: new ScopedPanelResizingWidget(
+              child: new Center(
+                child: new Container(
+                  width: 32.0,
+                  height: 2.0,
+                  decoration: new BoxDecoration(
+                    backgroundColor: Colors.grey[200],
+                  ),
+                ),
+              ),
+              builder: (BuildContext context, Widget child,
+                      PanelResizingModel panelResizingModel) =>
+                  new Opacity(
+                    opacity: panelResizingModel.progress,
+                    child: child,
+                  ),
+            ),
           ),
         ),
       );
