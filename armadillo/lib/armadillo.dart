@@ -12,6 +12,7 @@ import 'package:meta/meta.dart';
 import 'conductor.dart';
 import 'debug_model.dart';
 import 'now_model.dart';
+import 'panel_resizing_model.dart';
 import 'rounded_corner_decoration.dart';
 import 'default_scroll_configuration.dart';
 import 'story_cluster_drag_state_model.dart';
@@ -33,6 +34,7 @@ class Armadillo extends StatelessWidget {
   final StoryRearrangementScrimModel storyRearrangementScrimModel;
   final StoryDragTransitionModel storyDragTransitionModel;
   final DebugModel debugModel;
+  final PanelResizingModel panelResizingModel;
   final Conductor conductor;
 
   Armadillo({
@@ -43,6 +45,7 @@ class Armadillo extends StatelessWidget {
     @required this.storyRearrangementScrimModel,
     @required this.storyDragTransitionModel,
     @required this.debugModel,
+    @required this.panelResizingModel,
     @required this.conductor,
   });
 
@@ -77,11 +80,13 @@ class Armadillo extends StatelessWidget {
                   child: new ScopedModel<StoryDragTransitionModel>(
                     model: storyDragTransitionModel,
                     child: new ScopedModel<DebugModel>(
-                      model: debugModel,
-                      child: new DefaultScrollConfiguration(
-                        child: conductor,
-                      ),
-                    ),
+                        model: debugModel,
+                        child: new ScopedModel<PanelResizingModel>(
+                          model: panelResizingModel,
+                          child: new DefaultScrollConfiguration(
+                            child: conductor,
+                          ),
+                        )),
                   ),
                 ),
               ),

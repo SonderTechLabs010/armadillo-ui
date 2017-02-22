@@ -14,6 +14,7 @@ import 'package:armadillo/constraints_model.dart';
 import 'package:armadillo/debug_enabler.dart';
 import 'package:armadillo/debug_model.dart';
 import 'package:armadillo/now_model.dart';
+import 'package:armadillo/panel_resizing_model.dart';
 import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_cluster_drag_state_model.dart';
 import 'package:armadillo/story_cluster_id.dart';
@@ -127,6 +128,7 @@ Future<Null> main() async {
 
   NowModel nowModel = new NowModel();
   DebugModel debugModel = new DebugModel();
+  PanelResizingModel panelResizingModel = new PanelResizingModel();
   ConstraintsModel constraintsModel = new ConstraintsModel();
 
   Widget app = _buildApp(
@@ -142,6 +144,7 @@ Future<Null> main() async {
       storyRearrangementScrimModel: storyRearrangementScrimModel,
       storyDragTransitionModel: storyDragTransitionModel,
       debugModel: debugModel,
+      panelResizingModel: panelResizingModel,
       conductor: conductor,
     ),
     hitTestModel: hitTestModel,

@@ -18,6 +18,7 @@ import 'debug_model.dart';
 import 'json_story_generator.dart';
 import 'json_suggestion_model.dart';
 import 'now_model.dart';
+import 'panel_resizing_model.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_drag_transition_model.dart';
 import 'story_model.dart';
@@ -48,6 +49,7 @@ Future<Null> main() async {
   );
   NowModel nowModel = new NowModel();
   DebugModel debugModel = new DebugModel();
+  PanelResizingModel panelResizingModel = new PanelResizingModel();
   ConstraintsModel constraintsModel = new ConstraintsModel();
   StoryClusterDragStateModel storyClusterDragStateModel =
       new StoryClusterDragStateModel();
@@ -69,6 +71,7 @@ Future<Null> main() async {
     storyRearrangementScrimModel: storyRearrangementScrimModel,
     storyDragTransitionModel: storyDragTransitionModel,
     debugModel: debugModel,
+    panelResizingModel: panelResizingModel,
   );
 
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
@@ -88,6 +91,7 @@ Widget _buildApp({
   StoryRearrangementScrimModel storyRearrangementScrimModel,
   StoryDragTransitionModel storyDragTransitionModel,
   DebugModel debugModel,
+  PanelResizingModel panelResizingModel,
 }) =>
     new CheckedModeBanner(
       child: new StoryTimeRandomizer(
@@ -106,6 +110,7 @@ Widget _buildApp({
                 storyRearrangementScrimModel: storyRearrangementScrimModel,
                 storyDragTransitionModel: storyDragTransitionModel,
                 debugModel: debugModel,
+                panelResizingModel: panelResizingModel,
                 conductor: new Conductor(
                   storyClusterDragStateModel: storyClusterDragStateModel,
                 ),

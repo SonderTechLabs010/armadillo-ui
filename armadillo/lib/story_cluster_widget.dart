@@ -181,7 +181,8 @@ class StoryClusterWidget extends StatelessWidget {
                 storyCluster: storyCluster,
                 builder: (BuildContext context, StoryCluster storyCluster) =>
                     new PanelResizingOverlay(
-                      panels: storyCluster.panels.toList(),
+                      storyCluster: storyCluster,
+                      currentSize: currentSize,
                       onPanelsChanged: () =>
                           storyCluster.notifyPanelListeners(),
                       child: new StoryPanels(

@@ -146,6 +146,41 @@ class SimulatedFractionalState extends TickingState<SimulatedFractional> {
     );
   }
 
+  void jumpToValues({
+    double fractionalTop,
+    double fractionalLeft,
+    double fractionalWidth,
+    double fractionalHeight,
+  }) {
+    if (fractionalTop != null) {
+      _fractionalTopSimulation = new RK4SpringSimulation(
+        initValue: fractionalTop,
+        desc: config.springDescription,
+      );
+    }
+
+    if (fractionalLeft != null) {
+      _fractionalLeftSimulation = new RK4SpringSimulation(
+        initValue: fractionalLeft,
+        desc: config.springDescription,
+      );
+    }
+
+    if (fractionalWidth != null) {
+      _fractionalWidthSimulation = new RK4SpringSimulation(
+        initValue: fractionalWidth,
+        desc: config.springDescription,
+      );
+    }
+
+    if (fractionalHeight != null) {
+      _fractionalHeightSimulation = new RK4SpringSimulation(
+        initValue: fractionalHeight,
+        desc: config.springDescription,
+      );
+    }
+  }
+
   @override
   String toString() =>
       'SimulatedFractionalState(top: $_fractionalTopSimulation, '

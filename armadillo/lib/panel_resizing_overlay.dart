@@ -4,26 +4,33 @@
 
 import 'package:flutter/widgets.dart';
 
+import 'long_press_gesture_detector.dart';
 import 'panel.dart';
+import 'panel_resizing_model.dart';
+import 'story.dart';
+import 'story_cluster.dart';
+import 'story_positioned.dart';
 
 const double _kDragTargetSize = 32.0;
 
 const Color _kGestureDetectorColor = const Color(0x00800080);
 
-/// Adds gesture detectors between [panels] to allow them to be resized with a
-/// horizontal or vertical drag.  These gesture detectors are overlayed on top
-/// of [child].
+/// Adds gesture detectors between [storyCluster]'s panels to allow them to be
+/// resized with a horizontal or vertical drag.  These gesture detectors are
+/// overlayed on top of [child].
 /// Once a resizing has occurred [onPanelsChanged] will be called.
 class PanelResizingOverlay extends StatelessWidget {
-  final List<Panel> panels;
+  final StoryCluster storyCluster;
   final Widget child;
   final VoidCallback onPanelsChanged;
+  final Size currentSize;
 
   PanelResizingOverlay({
     Key key,
-    this.panels,
+    this.storyCluster,
     this.child,
     this.onPanelsChanged,
+    this.currentSize,
   })
       : super(key: key);
 
@@ -33,7 +40,7 @@ class PanelResizingOverlay extends StatelessWidget {
     // panels on the other side of that edge.  If 1:many or many:1
     Set<double> rights = new Set<double>();
     Set<double> bottoms = new Set<double>();
-    panels.forEach((Panel panel) {
+    storyCluster.panels.forEach((Panel panel) {
       if (panel.right != 1.0) {
         rights.add(panel.right);
       }
@@ -46,7 +53,7 @@ class PanelResizingOverlay extends StatelessWidget {
     List<Widget> stackChildren = <Widget>[child];
 
     // Create draggables for each vertical seam.
-    List<VerticalSeam> verticalSeams = _getVerticalSeams(rights);
+    List<VerticalSeam> verticalSeams = _getVerticalSeams(context, rights);
     stackChildren.addAll(
       verticalSeams.map(
         (VerticalSeam verticalSeam) => new Positioned.fill(
@@ -56,7 +63,8 @@ class PanelResizingOverlay extends StatelessWidget {
     );
 
     // Create draggables for each horizontal seam.
-    List<HorizontalSeam> horizontalSeams = _getHorizontalSeams(bottoms);
+    List<HorizontalSeam> horizontalSeams =
+        _getHorizontalSeams(context, bottoms);
     stackChildren.addAll(
       horizontalSeams.map(
         (HorizontalSeam horizontalSeam) => new Positioned.fill(
@@ -72,10 +80,11 @@ class PanelResizingOverlay extends StatelessWidget {
   /// element with their right or left and create a [VerticalSeam] from them.
   /// There can be multiple [VerticalSeam]s for a right if the panels on the
   /// left and right don't overlap contiguously.
-  List<VerticalSeam> _getVerticalSeams(Set<double> rights) {
+  List<VerticalSeam> _getVerticalSeams(
+      BuildContext context, Set<double> rights) {
     List<VerticalSeam> verticalSeams = <VerticalSeam>[];
     rights.forEach((double right) {
-      List<Panel> touchingPanels = panels
+      List<Panel> touchingPanels = storyCluster.panels
           .where((Panel panel) => panel.left == right || panel.right == right)
           .toList();
       touchingPanels.sort(
@@ -100,7 +109,7 @@ class PanelResizingOverlay extends StatelessWidget {
               bottom: bottom,
               panelsToLeft: panelsToLeft,
               panelsToRight: panelsToRight,
-              onPanelsChanged: onPanelsChanged,
+              onPanelsChanged: () => _onPanelsChanged(context),
             ),
           );
 
@@ -123,7 +132,7 @@ class PanelResizingOverlay extends StatelessWidget {
           bottom: bottom,
           panelsToLeft: panelsToLeft,
           panelsToRight: panelsToRight,
-          onPanelsChanged: onPanelsChanged,
+          onPanelsChanged: () => _onPanelsChanged(context),
         ),
       );
     });
@@ -134,10 +143,11 @@ class PanelResizingOverlay extends StatelessWidget {
   /// element with their top or bottom and create a [HorizontalSeam] from them.
   /// There can be multiple [HorizontalSeam]s for a bottom if the panels on the
   /// top and bottom don't overlap contiguously.
-  List<HorizontalSeam> _getHorizontalSeams(Set<double> bottoms) {
+  List<HorizontalSeam> _getHorizontalSeams(
+      BuildContext context, Set<double> bottoms) {
     List<HorizontalSeam> horizontalSeams = <HorizontalSeam>[];
     bottoms.forEach((double bottom) {
-      List<Panel> touchingPanels = panels
+      List<Panel> touchingPanels = storyCluster.panels
           .where((Panel panel) => panel.top == bottom || panel.bottom == bottom)
           .toList();
       touchingPanels.sort(
@@ -162,7 +172,7 @@ class PanelResizingOverlay extends StatelessWidget {
               right: right,
               panelsAbove: panelsAbove,
               panelsBelow: panelsBelow,
-              onPanelsChanged: onPanelsChanged,
+              onPanelsChanged: () => _onPanelsChanged(context),
             ),
           );
 
@@ -185,11 +195,29 @@ class PanelResizingOverlay extends StatelessWidget {
           right: right,
           panelsAbove: panelsAbove,
           panelsBelow: panelsBelow,
-          onPanelsChanged: onPanelsChanged,
+          onPanelsChanged: () => _onPanelsChanged(context),
         ),
       );
     });
     return horizontalSeams;
+  }
+
+  void _onPanelsChanged(BuildContext context) {
+    storyCluster.stories.forEach((Story story) {
+      EdgeInsets margins = StoryPositioned.getFractionalMargins(
+        story.panel,
+        currentSize,
+        1.0,
+        PanelResizingModel.of(context).progress,
+      );
+      story.positionedKey.currentState.jumpToValues(
+        fractionalTop: story.panel.top + margins.top,
+        fractionalLeft: story.panel.left + margins.left,
+        fractionalWidth: story.panel.width - (margins.left + margins.right),
+        fractionalHeight: story.panel.height - (margins.top + margins.bottom),
+      );
+    });
+    onPanelsChanged();
   }
 }
 
@@ -229,11 +257,20 @@ class VerticalSeam {
           decoration: new BoxDecoration(
             backgroundColor: _kGestureDetectorColor,
           ),
-          child: new GestureDetector(
-            onHorizontalDragUpdate: (DragUpdateDetails details) {
+          child: new LongPressGestureDetector(
+            onDragStart: (DragStartDetails details) {
+              PanelResizingModel.of(context).resizeBegin();
+            },
+            onDragEnd: (DragEndDetails details) {
+              PanelResizingModel.of(context).resizeEnd();
+            },
+            onDragCancel: () {
+              PanelResizingModel.of(context).resizeEnd();
+            },
+            onDragUpdate: (DragUpdateDetails details) {
+              double deltaX = details.delta.dx;
               RenderBox box = context.findRenderObject();
-              double fractionalDelta =
-                  toGridValue(details.primaryDelta / box.size.width);
+              double fractionalDelta = toGridValue(deltaX / box.size.width);
 
               if (panelsToLeft.every(
                     (Panel panel) => panel.canAdjustRight(
@@ -330,12 +367,21 @@ class HorizontalSeam {
           decoration: new BoxDecoration(
             backgroundColor: _kGestureDetectorColor,
           ),
-          child: new GestureDetector(
-            onVerticalDragUpdate: (DragUpdateDetails details) {
+          child: new LongPressGestureDetector(
+            onDragStart: (DragStartDetails details) {
+              PanelResizingModel.of(context).resizeBegin();
+            },
+            onDragEnd: (DragEndDetails details) {
+              PanelResizingModel.of(context).resizeEnd();
+            },
+            onDragCancel: () {
+              PanelResizingModel.of(context).resizeEnd();
+            },
+            onDragUpdate: (DragUpdateDetails details) {
+              double deltaY = details.delta.dy;
               RenderBox box = context.findRenderObject();
 
-              double fractionalDelta =
-                  toGridValue(details.primaryDelta / box.size.height);
+              double fractionalDelta = toGridValue(deltaY / box.size.height);
 
               if (panelsAbove.every(
                     (Panel panel) => panel.canAdjustBottom(
