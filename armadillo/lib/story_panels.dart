@@ -188,7 +188,8 @@ class StoryPanelsState extends State<StoryPanels> {
     double initialDxOnDrag;
     return new OptionalWrapper(
       // Don't allow dragging if we're the only story.
-      useWrapper: config.storyCluster.realStories.length > 1,
+      useWrapper: config.storyCluster.realStories.length > 1 &&
+          config.focusProgress == 1.0,
       builder: (BuildContext context, Widget child) =>
           new ArmadilloLongPressDraggable<StoryClusterId>(
             key: story.clusterDraggableKey,

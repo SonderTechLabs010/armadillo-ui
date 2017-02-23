@@ -180,11 +180,17 @@ class StoryClusterWidget extends StatelessWidget {
               child: new StoryClusterPanelListener(
                 storyCluster: storyCluster,
                 builder: (BuildContext context, StoryCluster storyCluster) =>
-                    new PanelResizingOverlay(
-                      storyCluster: storyCluster,
-                      currentSize: currentSize,
-                      onPanelsChanged: () =>
-                          storyCluster.notifyPanelListeners(),
+                    new OptionalWrapper(
+                      useWrapper: _isFocused &&
+                          storyCluster.displayMode == DisplayMode.panels,
+                      builder: (BuildContext context, Widget child) =>
+                          new PanelResizingOverlay(
+                            storyCluster: storyCluster,
+                            currentSize: currentSize,
+                            onPanelsChanged: () =>
+                                storyCluster.notifyPanelListeners(),
+                            child: child,
+                          ),
                       child: new StoryPanels(
                         key: storyCluster.panelsKey,
                         storyCluster: storyCluster,

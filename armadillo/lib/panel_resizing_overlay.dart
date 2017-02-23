@@ -294,23 +294,6 @@ class VerticalSeam {
                 onPanelsChanged();
               }
             },
-            child: new ScopedPanelResizingWidget(
-              child: new Center(
-                child: new Container(
-                  width: 2.0,
-                  height: 32.0,
-                  decoration: new BoxDecoration(
-                    backgroundColor: Colors.grey[200],
-                  ),
-                ),
-              ),
-              builder: (BuildContext context, Widget child,
-                      PanelResizingModel panelResizingModel) =>
-                  new Opacity(
-                    opacity: panelResizingModel.progress,
-                    child: child,
-                  ),
-            ),
           ),
         ),
       );
@@ -422,23 +405,6 @@ class HorizontalSeam {
                 onPanelsChanged();
               }
             },
-            child: new ScopedPanelResizingWidget(
-              child: new Center(
-                child: new Container(
-                  width: 32.0,
-                  height: 2.0,
-                  decoration: new BoxDecoration(
-                    backgroundColor: Colors.grey[200],
-                  ),
-                ),
-              ),
-              builder: (BuildContext context, Widget child,
-                      PanelResizingModel panelResizingModel) =>
-                  new Opacity(
-                    opacity: panelResizingModel.progress,
-                    child: child,
-                  ),
-            ),
           ),
         ),
       );
