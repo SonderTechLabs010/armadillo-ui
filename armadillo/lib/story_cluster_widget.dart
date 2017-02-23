@@ -70,10 +70,10 @@ class StoryClusterWidget extends StatelessWidget {
     return new OptionalWrapper(
       useWrapper: _isUnfocused,
       builder: (BuildContext context, Widget child) =>
-          new ArmadilloLongPressDraggable<StoryClusterId>(
+          new ArmadilloLongPressDraggable<DraggedStoryClusterData>(
             key: storyCluster.clusterDraggableKey,
             overlayKey: overlayKey,
-            data: storyCluster.id,
+            data: new DraggedStoryClusterData(id: storyCluster.id),
             childWhenDragging: Nothing.widget,
             onDragStarted: () {
               RenderBox box =

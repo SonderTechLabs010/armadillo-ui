@@ -57,6 +57,7 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
   StoryClusterDragStateModel _storyClusterDragStateModel;
   List<Story> _originalStories;
   DisplayMode _originalDisplayMode;
+  bool _wasAcceptable = false;
 
   @override
   void initState() {
@@ -112,8 +113,11 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
         config.storyCluster.previewStories.isNotEmpty) {
       config.storyCluster.maximizeStoryBars();
     } else {
-      config.storyCluster..minimizeStoryBars();
+      config.storyCluster.minimizeStoryBars();
+    }
 
+    if (_wasAcceptable &&
+        !StoryClusterDragStateModel.of(context).isAcceptable) {
       // Revert to initial story locations and display state.
       config.storyCluster.removePreviews();
       _originalStories.forEach((Story story) {
@@ -124,6 +128,7 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       });
       config.storyCluster.displayMode = _originalDisplayMode;
     }
+    _wasAcceptable = StoryClusterDragStateModel.of(context).isAcceptable;
   }
 
   @override

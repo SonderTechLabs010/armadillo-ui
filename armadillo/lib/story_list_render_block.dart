@@ -235,6 +235,7 @@ class StoryListRenderBlock extends RenderBlock {
   void performLayout() {
     assert(!constraints.hasBoundedHeight);
     assert(constraints.hasBoundedWidth);
+
     double scrollOffset = _scrollController?.offset ?? 0.0;
     double maxFocusProgress = 0.0;
     double inlinePreviewScale = getInlinePreviewScale(parentSize);

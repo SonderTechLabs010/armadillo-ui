@@ -12,6 +12,7 @@ import 'armadillo_overlay.dart';
 import 'nothing.dart';
 import 'optional_wrapper.dart';
 import 'panel.dart';
+import 'place_holder_story.dart';
 import 'simulated_fractionally_sized_box.dart';
 import 'simulated_padding.dart';
 import 'simulated_transform.dart';
@@ -186,15 +187,108 @@ class StoryPanelsState extends State<StoryPanels> {
     final Widget storyWidget = config.storyWidgets[story.id];
     Rect initialBoundsOnDrag;
     double initialDxOnDrag;
+    bool onFirstHoverCalled = false;
+    Map<StoryId, Panel> storyPanelsOnDrag = <StoryId, Panel>{};
+    List<StoryId> storyListOrderOnDrag = <StoryId>[];
+    DisplayMode displayModeOnDrag;
     return new OptionalWrapper(
       // Don't allow dragging if we're the only story.
       useWrapper: config.storyCluster.realStories.length > 1 &&
           config.focusProgress == 1.0,
       builder: (BuildContext context, Widget child) =>
-          new ArmadilloLongPressDraggable<StoryClusterId>(
+          new ArmadilloLongPressDraggable<DraggedStoryClusterData>(
             key: story.clusterDraggableKey,
             overlayKey: config.overlayKey,
-            data: story.clusterId,
+            data: new DraggedStoryClusterData(
+              id: story.clusterId,
+              // If a story bar is dragged such that the story is split from the
+              // cluster, we need to do some special work to make the drag
+              // feedback act as if we've hovered over a location which causes
+              // the original layout to be previewed.
+              onFirstHover: () {
+                if (!onFirstHoverCalled) {
+                  onFirstHoverCalled = true;
+
+                  // Reset cluster to original stories (using the saved off map
+                  // of story ids to panels in onDragStarted) with a place
+                  // holder for the split story.
+                  // Mirror drag feedback with this.
+
+                  // 1. Add a placeholder for the split story.
+                  config.storyCluster.add(
+                    story: new PlaceHolderStory(associatedStoryId: story.id),
+                    withPanel: storyPanelsOnDrag[story.id],
+                    atIndex: storyListOrderOnDrag.indexOf(story.id),
+                  );
+
+                  // 2. Resize all story panels to match original values.
+                  storyPanelsOnDrag.keys
+                      .where((StoryId storyId) => storyId != story.id)
+                      .forEach(
+                        (StoryId storyId) =>
+                            config.storyCluster.replaceStoryPanel(
+                              storyId: storyId,
+                              withPanel: storyPanelsOnDrag[storyId],
+                            ),
+                      );
+
+                  // 3. Add placeholders to feedback cluster.
+                  StoryCluster feedbackCluster =
+                      StoryModel.of(context).getStoryCluster(story.clusterId);
+                  storyPanelsOnDrag.keys.forEach((StoryId storyId) {
+                    if (storyId != story.id) {
+                      feedbackCluster.add(
+                        story: new PlaceHolderStory(
+                          associatedStoryId: storyId,
+                          transparent: true,
+                        ),
+                        withPanel: storyPanelsOnDrag[storyId],
+                      );
+                    }
+                  });
+
+                  // 4. Have feedback cluster mirror panels of cluster.
+                  feedbackCluster.replaceStoryPanel(
+                    storyId: story.id,
+                    withPanel: storyPanelsOnDrag[story.id],
+                  );
+
+                  // 5. Have feedback cluster mirror story order of cluster.
+                  feedbackCluster.mirrorStoryOrder(config.storyCluster.stories);
+
+                  // 6. Update feedback cluster display mode.
+                  feedbackCluster.displayMode = displayModeOnDrag;
+                }
+              },
+              onNoTarget: () {
+                // If we've no target we need to put everything back where it
+                // was when we started dragging.
+
+                // 1. Replace the place holder in this cluster with the original
+                //    story.
+                // 2. Restore story order.
+                config.storyCluster.removePreviews();
+                config.storyCluster.add(
+                  story: story,
+                  withPanel: storyPanelsOnDrag[story.id],
+                  atIndex: storyListOrderOnDrag.indexOf(story.id),
+                );
+
+                // 3. Restore panels.
+                storyPanelsOnDrag.keys.forEach(
+                  (StoryId storyId) => config.storyCluster.replaceStoryPanel(
+                        storyId: storyId,
+                        withPanel: storyPanelsOnDrag[storyId],
+                      ),
+                );
+
+                // 4. Remove the split story cluster from the cluster list.
+                StoryModel.of(context).remove(
+                      StoryModel.of(context).getStoryCluster(story.clusterId),
+                    );
+                StoryModel.of(context).clearPlaceHolderStoryClusters();
+              },
+            ),
             onDragStarted: () {
               RenderBox box =
                   story.positionedKey.currentContext.findRenderObject();
@@ -218,11 +312,19 @@ class StoryPanelsState extends State<StoryPanels> {
                       ? -storyBarBoxTopLeft.x
                       : 0.0;
 
+              // Store off panel configuration before splitting.
+              storyPanelsOnDrag.clear();
+              storyListOrderOnDrag.clear();
+              config.storyCluster.stories.forEach((Story story) {
+                storyPanelsOnDrag[story.id] = new Panel.from(story.panel);
+                storyListOrderOnDrag.add(story.id);
+              });
+              displayModeOnDrag = config.storyCluster.displayMode;
+
               StoryModel.of(context).split(
                     storyToSplit: story,
                     from: config.storyCluster,
                   );
-              story.minimizeStoryBar();
               StoryClusterDragStateModel.of(context).addDragging(
                     story.clusterId,
                   );

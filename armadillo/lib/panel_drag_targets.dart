@@ -189,20 +189,22 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   void _onStoryListChanged() => _populateTargetLines();
 
   @override
-  Widget build(BuildContext context) => new ArmadilloDragTarget<StoryClusterId>(
-        onWillAccept: (StoryClusterId storyClusterId, _) =>
-            config.storyCluster.id != storyClusterId,
-        onAccept: (StoryClusterId storyClusterId, _, Velocity velocity) =>
+  Widget build(BuildContext context) =>
+      new ArmadilloDragTarget<DraggedStoryClusterData>(
+        onWillAccept: (DraggedStoryClusterData draggedStoryClusterData, _) =>
+            config.storyCluster.id != draggedStoryClusterData.id,
+        onAccept: (DraggedStoryClusterData draggedStoryClusterData, _,
+                Velocity velocity) =>
             _onAccept(
-              StoryModel.of(context).getStoryCluster(storyClusterId),
+              draggedStoryClusterData,
               velocity,
             ),
         builder: (
           BuildContext context,
-          Map<StoryClusterId, Point> storyClusterIdCandidates,
+          Map<DraggedStoryClusterData, Point> draggedStoryClusterDataCandidates,
           Map<dynamic, Point> rejectedData,
         ) =>
-            _build(storyClusterIdCandidates),
+            _build(draggedStoryClusterDataCandidates),
       );
 
   @override
@@ -211,7 +213,14 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     return !_scaleSimulation.isDone;
   }
 
-  void _onAccept(StoryCluster storyCluster, Velocity velocity) {
+  void _onAccept(
+    DraggedStoryClusterData draggedStoryClusterData,
+    Velocity velocity,
+  ) {
+    StoryCluster storyCluster = StoryModel.of(context).getStoryCluster(
+          draggedStoryClusterData.id,
+        );
+
     // When focused, if the cluster has been flung, don't call the target
     // onDrop, instead just adjust the appropriate story bars.  Since a dragged
     // story cluster is already not a part of this cluster, not calling onDrop
@@ -231,24 +240,30 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // If a target hasn't been chosen yet, default to dropping on the story bar
     // target as that's always there.
     if (_closestTargets[storyCluster]?.onDrop != null) {
-      _closestTargets[storyCluster].onDrop.call(context, storyCluster);
+      _closestTargets[storyCluster].onDrop(context, storyCluster);
     } else {
-      _onStoryBarDrop(context, storyCluster);
+      if (!_inTimeline && draggedStoryClusterData.onNoTarget != null) {
+        draggedStoryClusterData.onNoTarget.call();
+      } else {
+        _onStoryBarDrop(context, storyCluster);
+      }
     }
     _updateFocusedStoryId(storyCluster);
   }
 
   bool get _inTimeline => config.focusProgress == 0.0;
 
-  /// [storyClusterIdCandidates] are the clusters that are currently
+  /// [draggedStoryClusterDataCandidates] are the clusters that are currently
   /// being dragged over this drag target with their associated local
   /// position.
-  Widget _build(Map<StoryClusterId, Point> storyClusterIdCandidates) {
+  Widget _build(
+    Map<DraggedStoryClusterData, Point> draggedStoryClusterDataCandidates,
+  ) {
     // Update the acceptance of a dragged StoryCluster.  If we have no
     // candidates we're not accepting it.  If we do have condidates and we're
     // focused we do accept it.  If we're in the timeline we need to wait for
     // the validity timer to go off before accepting it.
-    if (storyClusterIdCandidates.isEmpty) {
+    if (draggedStoryClusterDataCandidates.isEmpty) {
       StoryClusterDragStateModel.of(context).removeAcceptance(
             config.storyCluster.id,
           );
@@ -259,7 +274,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
 
     if (_inTimeline) {
-      if (storyClusterIdCandidates.isEmpty) {
+      if (draggedStoryClusterDataCandidates.isEmpty) {
         _candidateValidityTimer?.cancel();
         _candidateValidityTimer = null;
         _candidatesValid = false;
@@ -287,18 +302,18 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     return _buildWithConfirmedCandidates(
       !_inTimeline || _candidatesValid
-          ? storyClusterIdCandidates
-          : <StoryClusterId, Point>{},
+          ? draggedStoryClusterDataCandidates
+          : <DraggedStoryClusterData, Point>{},
     );
   }
 
-  /// [storyClusterIdCandidates] are the clusters that are currently
+  /// [draggedStoryClusterDataCandidates] are the clusters that are currently
   /// being dragged over this drag target for the prerequesite time period with
   /// their associated local position.
   Widget _buildWithConfirmedCandidates(
-    Map<StoryClusterId, Point> storyClusterIdCandidates,
+    Map<DraggedStoryClusterData, Point> draggedStoryClusterDataCandidates,
   ) {
-    bool hasCandidates = storyClusterIdCandidates.isNotEmpty;
+    bool hasCandidates = draggedStoryClusterDataCandidates.isNotEmpty;
     if (hasCandidates && !_hadCandidates) {
       _originalFocusedStoryId = config.storyCluster.focusedStoryId;
       _originalStoryIdToPanelMap.clear();
@@ -307,13 +322,19 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       });
       _originalDisplayMode = config.storyCluster.displayMode;
       _populateTargetLines();
+
+      // Invoke onFirstHover callbacks if they exist.
+      draggedStoryClusterDataCandidates.keys.forEach(
+        (DraggedStoryClusterData draggedStoryClusterData) =>
+            draggedStoryClusterData.onFirstHover?.call(),
+      );
     }
     _hadCandidates = hasCandidates;
 
     _updateInlinePreviewScalingSimulation(hasCandidates && _inTimeline);
 
     Map<StoryCluster, Point> storyClusterCandidates = _getStoryClusterMap(
-      storyClusterIdCandidates,
+      draggedStoryClusterDataCandidates,
     );
 
     _updateStoryBars(hasCandidates);
@@ -408,14 +429,15 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   }
 
   Map<StoryCluster, Point> _getStoryClusterMap(
-    Map<StoryClusterId, Point> storyClusterIdMap,
+    Map<DraggedStoryClusterData, Point> draggedStoryClusterDataMap,
   ) {
     Map<StoryCluster, Point> storyClusterMap = <StoryCluster, Point>{};
-    storyClusterIdMap.keys.forEach(
-      (StoryClusterId storyClusterId) {
-        Point storyClusterPoint = storyClusterIdMap[storyClusterId];
+    draggedStoryClusterDataMap.keys.forEach(
+      (DraggedStoryClusterData draggedStoryClusterData) {
+        Point storyClusterPoint =
+            draggedStoryClusterDataMap[draggedStoryClusterData];
         StoryCluster storyCluster =
-            StoryModel.of(context).getStoryCluster(storyClusterId);
+            StoryModel.of(context).getStoryCluster(draggedStoryClusterData.id);
         storyClusterMap[storyCluster] = storyClusterPoint;
       },
     );
@@ -482,13 +504,14 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       //    b) we've moved past the sticky distance from the candidate's lock
       //       point, and
       //    c) the candidate's closest line hasn't changed recently.
-      if (_closestTargets[storyCluster] == null ||
-          (closestLine != null &&
-              _closestTargets[storyCluster].name != closestLine.name &&
-              ((lockPoint - storyClusterPoint).distance > _kStickyDistance) &&
-              (new DateTime.now().subtract(_kMinLockDuration).isAfter(
+      if (closestLine != null &&
+          (_closestTargets[storyCluster] == null ||
+              (_closestTargets[storyCluster].name != closestLine.name)) &&
+          ((lockPoint - storyClusterPoint).distance > _kStickyDistance) &&
+          (_closestTargetTimestamps[storyCluster] == null ||
+              new DateTime.now().subtract(_kMinLockDuration).isAfter(
                     _closestTargetTimestamps[storyCluster],
-                  )))) {
+                  ))) {
         _lockClosestTarget(
           storyCluster: storyCluster,
           point: storyClusterPoint,
@@ -531,13 +554,6 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         closestLine = line;
       }
     });
-    if (closestLine == null && initialTarget) {
-      closestLine = _targetLines
-          .where(
-            (LineSegment line) => line.name.startsWith(_kStoryBarTargetName),
-          )
-          .last;
-    }
     return closestLine;
   }
 
