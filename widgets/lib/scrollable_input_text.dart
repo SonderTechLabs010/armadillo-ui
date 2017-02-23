@@ -53,6 +53,7 @@ class ScrollableInputTextState extends State<ScrollableInputText> {
       scrollDirection: Axis.horizontal,
       reverse: true,
       children: blockChildren.reversed.toList(),
+      shrinkWrap: true,
     );
   }
 
