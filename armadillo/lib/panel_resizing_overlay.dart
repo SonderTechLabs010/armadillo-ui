@@ -111,6 +111,7 @@ class PanelResizingOverlay extends StatelessWidget {
               panelsToLeft: panelsToLeft,
               panelsToRight: panelsToRight,
               onPanelsChanged: () => _onPanelsChanged(context),
+              panelResizingModel: PanelResizingModel.of(context),
             ),
           );
 
@@ -134,6 +135,7 @@ class PanelResizingOverlay extends StatelessWidget {
           panelsToLeft: panelsToLeft,
           panelsToRight: panelsToRight,
           onPanelsChanged: () => _onPanelsChanged(context),
+          panelResizingModel: PanelResizingModel.of(context),
         ),
       );
     });
@@ -174,6 +176,7 @@ class PanelResizingOverlay extends StatelessWidget {
               panelsAbove: panelsAbove,
               panelsBelow: panelsBelow,
               onPanelsChanged: () => _onPanelsChanged(context),
+              panelResizingModel: PanelResizingModel.of(context),
             ),
           );
 
@@ -197,6 +200,7 @@ class PanelResizingOverlay extends StatelessWidget {
           panelsAbove: panelsAbove,
           panelsBelow: panelsBelow,
           onPanelsChanged: () => _onPanelsChanged(context),
+          panelResizingModel: PanelResizingModel.of(context),
         ),
       );
     });
@@ -209,7 +213,7 @@ class PanelResizingOverlay extends StatelessWidget {
         story.panel,
         currentSize,
         1.0,
-        PanelResizingModel.of(context).progress,
+        PanelResizingModel.of(context),
       );
       story.positionedKey.currentState.jumpToValues(
         fractionalTop: story.panel.top + margins.top,
@@ -237,15 +241,28 @@ class VerticalSeam {
   final List<Panel> panelsToLeft;
   final List<Panel> panelsToRight;
   final VoidCallback onPanelsChanged;
+  final ResizingSimulation resizingSimulation;
 
   VerticalSeam({
     this.x,
     this.top,
     this.bottom,
-    this.panelsToLeft,
-    this.panelsToRight,
+    List<Panel> panelsToLeft,
+    List<Panel> panelsToRight,
     this.onPanelsChanged,
-  });
+    PanelResizingModel panelResizingModel,
+  })
+      : this.panelsToLeft = panelsToLeft,
+        this.panelsToRight = panelsToRight,
+        resizingSimulation =
+            panelResizingModel.getSimulation(<Side, List<Panel>>{
+                  Side.right: panelsToLeft,
+                  Side.left: panelsToRight,
+                }) ??
+                new ResizingSimulation(<Side, List<Panel>>{
+                  Side.right: panelsToLeft,
+                  Side.left: panelsToRight,
+                });
 
   /// Creates a [Widget] representing this seam which can be dragged.
   Widget build(BuildContext context) => new CustomSingleChildLayout(
@@ -260,13 +277,13 @@ class VerticalSeam {
           ),
           child: new LongPressGestureDetector(
             onDragStart: (DragStartDetails details) {
-              PanelResizingModel.of(context).resizeBegin();
+              PanelResizingModel.of(context).resizeBegin(resizingSimulation);
             },
             onDragEnd: (DragEndDetails details) {
-              PanelResizingModel.of(context).resizeEnd();
+              PanelResizingModel.of(context).resizeEnd(resizingSimulation);
             },
             onDragCancel: () {
-              PanelResizingModel.of(context).resizeEnd();
+              PanelResizingModel.of(context).resizeEnd(resizingSimulation);
             },
             onDragUpdate: (DragUpdateDetails details) {
               double deltaX = details.delta.dx;
@@ -347,15 +364,28 @@ class HorizontalSeam {
   final List<Panel> panelsAbove;
   final List<Panel> panelsBelow;
   final VoidCallback onPanelsChanged;
+  final ResizingSimulation resizingSimulation;
 
   HorizontalSeam({
     this.y,
     this.left,
     this.right,
-    this.panelsAbove,
-    this.panelsBelow,
+    List<Panel> panelsAbove,
+    List<Panel> panelsBelow,
     this.onPanelsChanged,
-  });
+    PanelResizingModel panelResizingModel,
+  })
+      : this.panelsAbove = panelsAbove,
+        this.panelsBelow = panelsBelow,
+        resizingSimulation =
+            panelResizingModel.getSimulation(<Side, List<Panel>>{
+                  Side.bottom: panelsAbove,
+                  Side.top: panelsBelow,
+                }) ??
+                new ResizingSimulation(<Side, List<Panel>>{
+                  Side.bottom: panelsAbove,
+                  Side.top: panelsBelow,
+                });
 
   /// Creates a [Widget] representing this seam which can be dragged.
   Widget build(BuildContext context) => new CustomSingleChildLayout(
@@ -370,13 +400,13 @@ class HorizontalSeam {
           ),
           child: new LongPressGestureDetector(
             onDragStart: (DragStartDetails details) {
-              PanelResizingModel.of(context).resizeBegin();
+              PanelResizingModel.of(context).resizeBegin(resizingSimulation);
             },
             onDragEnd: (DragEndDetails details) {
-              PanelResizingModel.of(context).resizeEnd();
+              PanelResizingModel.of(context).resizeEnd(resizingSimulation);
             },
             onDragCancel: () {
-              PanelResizingModel.of(context).resizeEnd();
+              PanelResizingModel.of(context).resizeEnd(resizingSimulation);
             },
             onDragUpdate: (DragUpdateDetails details) {
               double deltaY = details.delta.dy;

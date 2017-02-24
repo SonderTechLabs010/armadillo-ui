@@ -58,7 +58,7 @@ class StoryPositioned extends StatelessWidget {
           panel,
           currentSize,
           focusProgress,
-          panelResizingModel.progress,
+          panelResizingModel,
         );
 
         Widget fractionalChild = !clip
@@ -106,26 +106,47 @@ class StoryPositioned extends StatelessWidget {
     Panel panel,
     Size currentSize,
     double focusProgress,
-    double panelResizingProgress,
+    PanelResizingModel panelResizingModel,
   ) {
     double scale =
         lerpDouble(_kUnfocusedStoryMargin, _kStoryMargin, focusProgress) /
             _kStoryMargin;
-    double scaledMargin = lerpDouble(
+    double leftScaledMargin = lerpDouble(
           _kStoryMargin,
           _kStoryMarginWhenResizing,
-          panelResizingProgress,
+          panelResizingModel.getLeftProgress(panel),
+        ) /
+        2.0 *
+        scale;
+    double rightScaledMargin = lerpDouble(
+          _kStoryMargin,
+          _kStoryMarginWhenResizing,
+          panelResizingModel.getRightProgress(panel),
+        ) /
+        2.0 *
+        scale;
+    double topScaledMargin = lerpDouble(
+          _kStoryMargin,
+          _kStoryMarginWhenResizing,
+          panelResizingModel.getTopProgress(panel),
+        ) /
+        2.0 *
+        scale;
+    double bottomScaledMargin = lerpDouble(
+          _kStoryMargin,
+          _kStoryMarginWhenResizing,
+          panelResizingModel.getBottomProgress(panel),
         ) /
         2.0 *
         scale;
     double topMargin =
-        panel.top == 0.0 ? 0.0 : scaledMargin / currentSize.height;
+        panel.top == 0.0 ? 0.0 : topScaledMargin / currentSize.height;
     double leftMargin =
-        panel.left == 0.0 ? 0.0 : scaledMargin / currentSize.width;
+        panel.left == 0.0 ? 0.0 : leftScaledMargin / currentSize.width;
     double bottomMargin =
-        panel.bottom == 1.0 ? 0.0 : scaledMargin / currentSize.height;
+        panel.bottom == 1.0 ? 0.0 : bottomScaledMargin / currentSize.height;
     double rightMargin =
-        panel.right == 1.0 ? 0.0 : scaledMargin / currentSize.width;
+        panel.right == 1.0 ? 0.0 : rightScaledMargin / currentSize.width;
     return new EdgeInsets.only(
         top: topMargin,
         left: leftMargin,
