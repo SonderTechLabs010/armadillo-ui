@@ -34,6 +34,7 @@ class LongPressGestureDetector extends StatefulWidget {
 
 class _LongPressGestureDetectorState extends State<LongPressGestureDetector> {
   GestureRecognizer _recognizer;
+  bool _active = false;
 
   @override
   void initState() {
@@ -49,8 +50,14 @@ class _LongPressGestureDetectorState extends State<LongPressGestureDetector> {
             HapticFeedback.vibrate();
             return new _LongPressGestureDetectorDrag(
               onDragUpdate: config.onDragUpdate,
-              onDragEnd: config.onDragEnd,
-              onDragCancel: config.onDragCancel,
+              onDragEnd: (DragEndDetails details) {
+                _active = false;
+                config.onDragEnd(details);
+              },
+              onDragCancel: () {
+                _active = false;
+                config.onDragCancel();
+              },
             );
           };
   }
@@ -63,7 +70,12 @@ class _LongPressGestureDetectorState extends State<LongPressGestureDetector> {
 
   @override
   Widget build(BuildContext context) => new Listener(
-        onPointerDown: (PointerEvent event) => _recognizer.addPointer(event),
+        onPointerDown: (PointerEvent event) {
+          if (!_active) {
+            _recognizer.addPointer(event);
+            _active = true;
+          }
+        },
         behavior: HitTestBehavior.opaque,
         child: config.child,
       );

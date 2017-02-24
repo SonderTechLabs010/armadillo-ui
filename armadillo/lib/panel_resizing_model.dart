@@ -25,6 +25,8 @@ class ResizingSimulation {
   /// This map defines what [Side]s of what [Panel]s will have their margins be
   /// resized based on the value of [simulation].
   final Map<Side, List<Panel>> sideToPanelsMap;
+  double dragDelta = 0.0;
+  double valueOnDrag = 0.0;
 
   ResizingSimulation(this.sideToPanelsMap);
 }
@@ -45,14 +47,12 @@ class PanelResizingModel extends TickingModel {
           .of(context, rebuildOnChange: rebuildOnChange);
 
   void resizeBegin(ResizingSimulation resizingSimulation) {
-    assert(!simulations.contains(resizingSimulation));
     simulations.add(resizingSimulation);
     resizingSimulation.simulation.target = 1.0;
     startTicking();
   }
 
   void resizeEnd(ResizingSimulation resizingSimulation) {
-    assert(simulations.contains(resizingSimulation));
     resizingSimulation.simulation.target = 0.0;
     startTicking();
   }

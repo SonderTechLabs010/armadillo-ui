@@ -277,6 +277,8 @@ class VerticalSeam {
           ),
           child: new LongPressGestureDetector(
             onDragStart: (DragStartDetails details) {
+              resizingSimulation.valueOnDrag = x;
+              resizingSimulation.dragDelta = 0.0;
               PanelResizingModel.of(context).resizeBegin(resizingSimulation);
             },
             onDragEnd: (DragEndDetails details) {
@@ -287,27 +289,29 @@ class VerticalSeam {
             },
             onDragUpdate: (DragUpdateDetails details) {
               double deltaX = details.delta.dx;
+              resizingSimulation.dragDelta += deltaX;
+
               RenderBox box = context.findRenderObject();
-              double fractionalDelta = toGridValue(deltaX / box.size.width);
+
+              double newX = toGridValue(
+                resizingSimulation.valueOnDrag +
+                    (resizingSimulation.dragDelta / box.size.width),
+              );
 
               if (panelsToLeft.every(
                     (Panel panel) => panel.canAdjustRight(
-                          fractionalDelta,
+                          newX,
                           box.size.width,
                         ),
                   ) &&
                   panelsToRight.every(
                     (Panel panel) => panel.canAdjustLeft(
-                          fractionalDelta,
+                          newX,
                           box.size.width,
                         ),
                   )) {
-                panelsToLeft.forEach((Panel panel) {
-                  panel.adjustRight(fractionalDelta);
-                });
-                panelsToRight.forEach((Panel panel) {
-                  panel.adjustLeft(fractionalDelta);
-                });
+                panelsToLeft.forEach((Panel panel) => panel.adjustRight(newX));
+                panelsToRight.forEach((Panel panel) => panel.adjustLeft(newX));
                 onPanelsChanged();
               }
             },
@@ -400,6 +404,8 @@ class HorizontalSeam {
           ),
           child: new LongPressGestureDetector(
             onDragStart: (DragStartDetails details) {
+              resizingSimulation.valueOnDrag = y;
+              resizingSimulation.dragDelta = 0.0;
               PanelResizingModel.of(context).resizeBegin(resizingSimulation);
             },
             onDragEnd: (DragEndDetails details) {
@@ -410,28 +416,28 @@ class HorizontalSeam {
             },
             onDragUpdate: (DragUpdateDetails details) {
               double deltaY = details.delta.dy;
+              resizingSimulation.dragDelta += deltaY;
               RenderBox box = context.findRenderObject();
 
-              double fractionalDelta = toGridValue(deltaY / box.size.height);
+              double newY = toGridValue(
+                resizingSimulation.valueOnDrag +
+                    (resizingSimulation.dragDelta / box.size.height),
+              );
 
               if (panelsAbove.every(
                     (Panel panel) => panel.canAdjustBottom(
-                          fractionalDelta,
+                          newY,
                           box.size.height,
                         ),
                   ) &&
                   panelsBelow.every(
                     (Panel panel) => panel.canAdjustTop(
-                          fractionalDelta,
+                          newY,
                           box.size.height,
                         ),
                   )) {
-                panelsAbove.forEach((Panel panel) {
-                  panel.adjustBottom(fractionalDelta);
-                });
-                panelsBelow.forEach((Panel panel) {
-                  panel.adjustTop(fractionalDelta);
-                });
+                panelsAbove.forEach((Panel panel) => panel.adjustBottom(newY));
+                panelsBelow.forEach((Panel panel) => panel.adjustTop(newY));
                 onPanelsChanged();
               }
             },

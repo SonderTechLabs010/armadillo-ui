@@ -109,42 +109,46 @@ class Panel {
   factory Panel.from(Panel panel) =>
       new Panel.fromLTRB(panel.left, panel.top, panel.right, panel.bottom);
 
-  bool canAdjustRight(double deltaRight, double width) =>
-      toGridValue(_widthFactor + deltaRight) >= smallestWidthFactor(width);
+  bool canAdjustRight(double newRight, double width) =>
+      toGridValue(newRight - left) >= smallestWidthFactor(width);
 
-  bool canAdjustBottom(double deltaBottom, double height) =>
-      toGridValue(_heightFactor + deltaBottom) >= smallestHeightFactor(height);
+  bool canAdjustBottom(double newBottom, double height) =>
+      toGridValue(newBottom - top) >= smallestHeightFactor(height);
 
-  bool canAdjustLeft(double deltaLeft, double width) =>
-      toGridValue(_widthFactor - deltaLeft) >= smallestWidthFactor(width);
+  bool canAdjustLeft(double newLeft, double width) =>
+      toGridValue(right - newLeft) >= smallestWidthFactor(width);
 
-  bool canAdjustTop(double deltaTop, double height) =>
-      toGridValue(_heightFactor - deltaTop) >= smallestHeightFactor(height);
+  bool canAdjustTop(double newTop, double height) =>
+      toGridValue(bottom - newTop) >= smallestHeightFactor(height);
 
-  void adjustRight(double deltaRight) {
-    _widthFactor = toGridValue(_widthFactor + deltaRight);
+  void adjustRight(double newRight) {
+    _widthFactor = toGridValue(newRight - left);
+    assert(right == newRight);
   }
 
-  void adjustBottom(double deltaBottom) {
-    _heightFactor = toGridValue(_heightFactor + deltaBottom);
+  void adjustBottom(double newBottom) {
+    _heightFactor = toGridValue(newBottom - top);
+    assert(bottom == newBottom);
   }
 
-  void adjustLeft(double deltaLeft) {
-    double deltaLeftGridAligned = toGridValue(deltaLeft);
+  void adjustLeft(double newLeft) {
+    double rightBefore = right;
     _origin = new FractionalOffset(
-      toGridValue(_origin.dx + deltaLeftGridAligned),
+      toGridValue(newLeft),
       _origin.dy,
     );
-    _widthFactor = toGridValue(_widthFactor - deltaLeftGridAligned);
+    _widthFactor = toGridValue(rightBefore - newLeft);
+    assert(rightBefore == right);
   }
 
-  void adjustTop(double deltaTop) {
-    double deltaTopGridAligned = toGridValue(deltaTop);
+  void adjustTop(double newTop) {
+    double bottomBefore = bottom;
     _origin = new FractionalOffset(
       _origin.dx,
-      toGridValue(_origin.dy + deltaTopGridAligned),
+      toGridValue(newTop),
     );
-    _heightFactor = toGridValue(_heightFactor - deltaTopGridAligned);
+    _heightFactor = toGridValue(bottomBefore - newTop);
+    assert(bottomBefore == bottom);
   }
 
   double get left => _origin.dx;
