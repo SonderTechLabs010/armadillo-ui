@@ -218,13 +218,15 @@ Widget _buildDiscardDragTarget({
   StoryModel storyModel,
   StoryProviderStoryGenerator storyProviderStoryGenerator,
 }) =>
-    new ArmadilloDragTarget<StoryClusterId>(
-      onWillAccept: (StoryClusterId storyClusterId, _) =>
+    new ArmadilloDragTarget<DraggedStoryClusterData>(
+      onWillAccept: (DraggedStoryClusterData draggedStoryClusterData, _) =>
           storyModel.storyClusters.every((StoryCluster storyCluster) =>
               storyCluster.focusSimulationKey.currentState.progress == 0.0),
-      onAccept: (StoryClusterId storyClusterId, _, __) =>
-          storyProviderStoryGenerator.removeStoryCluster(storyClusterId),
-      builder: (_, Map<StoryClusterId, Point> candidateData, __) =>
+      onAccept: (DraggedStoryClusterData draggedStoryClusterData, _, __) =>
+          storyProviderStoryGenerator.removeStoryCluster(
+            draggedStoryClusterData.id,
+          ),
+      builder: (_, Map<DraggedStoryClusterData, Point> candidateData, __) =>
           new IgnorePointer(
             child: new Container(
               decoration: new BoxDecoration(

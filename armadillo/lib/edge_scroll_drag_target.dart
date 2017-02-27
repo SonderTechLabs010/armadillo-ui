@@ -121,7 +121,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
     Key key,
     _BuildCallback onBuild,
   }) =>
-      new ArmadilloDragTarget<StoryClusterId>(
+      new ArmadilloDragTarget<DraggedStoryClusterData>(
         onWillAccept: (_, __) => false,
         onAccept: (_, __, ___) => null,
         builder: (_, __, Map<dynamic, Point> rejectedData) {
