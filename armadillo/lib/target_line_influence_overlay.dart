@@ -7,15 +7,19 @@ import 'package:flutter/widgets.dart';
 import 'line_segment.dart';
 import 'story_cluster.dart';
 
-const double _kStepSize = 5.0;
+const double _kStepSize = 50.0;
+const double _kTargetMargin = 2.0;
+
+typedef LineSegment ClosestLineGetter(Point point);
 
 /// When [enabled] is true, this widget draws the influence of the given
 /// [targetLines] by drawing a bunch of points that will accept
 /// [storyClusterCandidates] overlaid on top of [child].
 class TargetLineInfluenceOverlay extends StatelessWidget {
   final Widget child;
-  final Set<LineSegment> targetLines;
+  final List<LineSegment> targetLines;
   final Map<StoryCluster, Point> storyClusterCandidates;
+  final ClosestLineGetter closestLineGetter;
 
   /// Set to true to draw influence.
   final bool enabled;
@@ -24,6 +28,7 @@ class TargetLineInfluenceOverlay extends StatelessWidget {
     this.enabled,
     this.targetLines,
     this.storyClusterCandidates,
+    this.closestLineGetter,
     this.child,
   });
 
@@ -34,19 +39,13 @@ class TargetLineInfluenceOverlay extends StatelessWidget {
     // When we have a candidate, show the target lines.
     if (enabled && storyClusterCandidates.isNotEmpty) {
       // Add all the lines.
-      List<LineSegment> validTargetLines = targetLines
-          .where(
-            (LineSegment line) => !storyClusterCandidates.keys.every(
-                  (StoryCluster key) => !line.canAccept(key),
-                ),
-          )
-          .toList();
       stackChildren.add(
         new Positioned.fill(
           child: new RepaintBoundary(
             child: new CustomPaint(
               painter: new InfluencePainter(
-                lines: validTargetLines,
+                lines: targetLines,
+                closestLineGetter: closestLineGetter,
               ),
             ),
           ),
@@ -59,8 +58,9 @@ class TargetLineInfluenceOverlay extends StatelessWidget {
 
 class InfluencePainter extends CustomPainter {
   final List<LineSegment> lines;
+  final ClosestLineGetter closestLineGetter;
 
-  InfluencePainter({this.lines});
+  InfluencePainter({this.lines, this.closestLineGetter});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -70,7 +70,7 @@ class InfluencePainter extends CustomPainter {
       xSteps,
       (int xStep) => new List<LineSegment>.generate(
             ySteps,
-            (int yStep) => _getClosestLine(
+            (int yStep) => closestLineGetter(
                   new Point((xStep + 1) * _kStepSize, (yStep + 1) * _kStepSize),
                 ),
           ),
@@ -78,24 +78,27 @@ class InfluencePainter extends CustomPainter {
     for (int i = 0; i < xSteps; i++) {
       for (int j = 0; j < ySteps; j++) {
         double leftShift =
-            i > 0 && lines[i][j] != lines[i - 1][j] ? _kStepSize / 4.0 : 0.0;
+            i > 0 && lines[i][j] != lines[i - 1][j] ? _kTargetMargin : 0.0;
         double rightShift = (i < (xSteps - 1)) && lines[i][j] != lines[i + 1][j]
-            ? -_kStepSize / 4.0
+            ? -_kTargetMargin
             : 0.0;
         double topShift =
-            j > 0 && lines[i][j] != lines[i][j - 1] ? _kStepSize / 4.0 : 0.0;
+            j > 0 && lines[i][j] != lines[i][j - 1] ? _kTargetMargin : 0.0;
         double bottomShift =
             (j < (ySteps - 1)) && lines[i][j] != lines[i][j + 1]
-                ? -_kStepSize / 4.0
+                ? -_kTargetMargin
                 : 0.0;
-        canvas.drawOval(
+        canvas.drawRect(
           new Rect.fromLTRB(
             ((i + 1) * _kStepSize) - _kStepSize / 2.0 + leftShift,
             ((j + 1) * _kStepSize) - _kStepSize / 2.0 + topShift,
             ((i + 1) * _kStepSize) + _kStepSize / 2.0 + rightShift,
             ((j + 1) * _kStepSize) + _kStepSize / 2.0 + bottomShift,
           ),
-          new Paint()..color = lines[i][j]?.color ?? new Color(0x00000000),
+          new Paint()
+            ..color = (lines[i][j]?.color ?? new Color(0x00000000)).withOpacity(
+              0.75,
+            ),
         );
       }
     }
@@ -123,20 +126,4 @@ class InfluencePainter extends CustomPainter {
 
   @override
   bool hitTest(Point position) => false;
-
-  LineSegment _getClosestLine(Point point) {
-    LineSegment closestLine;
-    double minDistance = double.INFINITY;
-    lines
-        .where((LineSegment line) =>
-            line.distanceFrom(point) < line.validityDistance)
-        .forEach((LineSegment line) {
-      double targetLineDistance = line.distanceFrom(point);
-      if (targetLineDistance < minDistance) {
-        minDistance = targetLineDistance;
-        closestLine = line;
-      }
-    });
-    return closestLine;
-  }
 }

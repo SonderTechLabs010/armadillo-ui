@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:ui' show lerpDouble;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
@@ -33,11 +34,12 @@ const double _kStoryTopEdgeTargetYOffset =
 const double _kDiscardTargetTopEdgeYOffset = -48.0;
 const double _kBringToFrontTargetBottomEdgeYOffset = 48.0;
 const double _kStoryEdgeTargetInset = 48.0;
-const double _kStoryEdgeTargetInsetMinDistance = 8.0;
+const double _kStoryEdgeTargetInsetMinDistance = 0.0;
 const double _kUnfocusedCornerRadius = 4.0;
 const double _kFocusedCornerRadius = 8.0;
 const int _kMaxStoriesPerCluster = 100;
 const double _kAddedStorySpan = 0.01;
+const double _kDirectionMinSpeed = 10.0;
 final Color _kTopEdgeTargetColor = Colors.yellow[700];
 final Color _kLeftEdgeTargetColor = Colors.yellow[500];
 final Color _kBottomEdgeTargetColor = Colors.yellow[700];
@@ -59,7 +61,7 @@ const Duration _kMinLockDuration = const Duration(milliseconds: 500);
 
 /// Once a drag target is chosen, this is the distance a draggable must travel
 /// before new drag targets are considered.
-const double _kStickyDistance = 32.0;
+const double _kStickyDistance = 40.0;
 
 const RK4SpringDescription _kScaleSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
@@ -73,6 +75,8 @@ const Duration _kVerticalEdgeHoverDuration = const Duration(
 );
 
 const double _kVerticalFlingToDiscardSpeedThreshold = 2000.0;
+
+enum DragDirection { left, right, up, down, none }
 
 /// Wraps its [child] in an [ArmadilloDragTarget] which tracks any
 /// [ArmadilloLongPressDraggable]'s above it such that they can be dropped on
@@ -121,6 +125,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
       <StoryCluster, LineSegment>{};
   final Map<StoryCluster, DateTime> _closestTargetTimestamps =
       <StoryCluster, DateTime>{};
+  final Map<StoryClusterId, VelocityTracker> _velocityTrackers =
+      <StoryClusterId, VelocityTracker>{};
   final RK4SpringSimulation _scaleSimulation = new RK4SpringSimulation(
     initValue: 1.0,
     desc: _kScaleSimulationDesc,
@@ -259,6 +265,40 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   Widget _build(
     Map<DraggedStoryClusterData, Point> draggedStoryClusterDataCandidates,
   ) {
+    _velocityTrackers.keys.toList().forEach((StoryClusterId storyClusterId) {
+      List<DraggedStoryClusterData> draggedStoryClusterDatas =
+          draggedStoryClusterDataCandidates.keys
+              .where((DraggedStoryClusterData draggedStoryClusterData) =>
+                  draggedStoryClusterData.id == storyClusterId)
+              .toList();
+      if (draggedStoryClusterDatas.isEmpty) {
+        // Remove all velocity trackers that are no longer being dragged.
+        _velocityTrackers.remove(storyClusterId);
+      } else {
+        // Update all existing velocity trackers that are already being dragged.
+        _velocityTrackers[storyClusterId].addPosition(
+          new Duration(
+            milliseconds: new DateTime.now().millisecondsSinceEpoch,
+          ),
+          draggedStoryClusterDataCandidates[draggedStoryClusterDatas.first],
+        );
+      }
+    });
+
+    // Add new velocity trackers for new drags.
+    draggedStoryClusterDataCandidates.keys
+        .where((DraggedStoryClusterData draggedStoryClusterData) =>
+            _velocityTrackers[draggedStoryClusterData.id] == null)
+        .forEach((DraggedStoryClusterData draggedStoryClusterData) {
+      _velocityTrackers[draggedStoryClusterData.id] = new VelocityTracker();
+      _velocityTrackers[draggedStoryClusterData.id].addPosition(
+        new Duration(
+          milliseconds: new DateTime.now().millisecondsSinceEpoch,
+        ),
+        draggedStoryClusterDataCandidates[draggedStoryClusterData],
+      );
+    });
+
     // Update the acceptance of a dragged StoryCluster.  If we have no
     // candidates we're not accepting it.  If we do have condidates and we're
     // focused we do accept it.  If we're in the timeline we need to wait for
@@ -307,6 +347,30 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     );
   }
 
+  DragDirection _getDragDirection(VelocityTracker velocityTracker) {
+    Velocity velocity = velocityTracker?.getVelocity();
+    if (velocity == null) {
+      return DragDirection.none;
+    } else if (velocity.pixelsPerSecond.dx.abs() >
+        velocity.pixelsPerSecond.dy.abs()) {
+      if (velocity.pixelsPerSecond.dx > _kDirectionMinSpeed) {
+        return DragDirection.right;
+      } else if (velocity.pixelsPerSecond.dx < -_kDirectionMinSpeed) {
+        return DragDirection.left;
+      } else {
+        return DragDirection.none;
+      }
+    } else {
+      if (velocity.pixelsPerSecond.dy > _kDirectionMinSpeed) {
+        return DragDirection.down;
+      } else if (velocity.pixelsPerSecond.dy < -_kDirectionMinSpeed) {
+        return DragDirection.up;
+      } else {
+        return DragDirection.none;
+      }
+    }
+  }
+
   /// [draggedStoryClusterDataCandidates] are the clusters that are currently
   /// being dragged over this drag target for the prerequesite time period with
   /// their associated local position.
@@ -344,15 +408,35 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // and we have a candidate being dragged over us.
     _scale = hasCandidates && !_inTimeline ? config.scale : 1.0;
 
+    List<LineSegment> validTargetLines = _targetLines
+        .where(
+          (LineSegment line) => !storyClusterCandidates.keys.every(
+                (StoryCluster key) =>
+                    !line.canAccept(key) ||
+                    !line.isInDirectionFromPoint(
+                      _getDragDirection(_velocityTrackers[key.id]),
+                      storyClusterCandidates[key],
+                    ),
+              ),
+        )
+        .toList();
+
     return new ScopedDebugWidget(
       builder: (BuildContext context, Widget child, DebugModel debugModel) =>
           new TargetLineInfluenceOverlay(
             enabled: debugModel.showTargetLineInfluenceOverlay,
-            targetLines: _targetLines,
+            targetLines: validTargetLines,
             storyClusterCandidates: storyClusterCandidates,
+            closestLineGetter: (Point point) => _getClosestLine(
+                  point,
+                  storyClusterCandidates.keys.isNotEmpty
+                      ? storyClusterCandidates.keys.first
+                      : null,
+                  false,
+                ),
             child: new TargetLineOverlay(
               enabled: debugModel.showTargetLineOverlay,
-              targetLines: _targetLines,
+              targetLines: validTargetLines,
               closestTargetLockPoints: _closestTargetLockPoints,
               storyClusterCandidates: storyClusterCandidates,
               child: child,
@@ -540,10 +624,16 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     StoryCluster storyCluster,
     bool initialTarget,
   ) {
+    DragDirection dragDirection = storyCluster == null
+        ? DragDirection.none
+        : _getDragDirection(_velocityTrackers[storyCluster.id]);
     double minDistance = double.INFINITY;
     LineSegment closestLine;
     _targetLines
-        .where((LineSegment line) => line.canAccept(storyCluster))
+        .where((LineSegment line) =>
+            storyCluster == null ? true : line.canAccept(storyCluster))
+        .where((LineSegment line) =>
+            line.isInDirectionFromPoint(dragDirection, point))
         .where((LineSegment line) =>
             line.distanceFrom(point) < line.validityDistance)
         .forEach((LineSegment line) {
@@ -590,7 +680,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               _kStoryEdgeTargetInsetMinDistance,
           color: _kTopEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
-          validityDistance: kMinPanelHeight / 2.0,
+          validityDistance: kMinPanelHeight,
+          directionallyTargetable: true,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterAbovePanels(
                 context: context,
@@ -616,7 +707,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               _kStoryEdgeTargetInsetMinDistance,
           color: _kBottomEdgeTargetColor,
           maxStoriesCanAccept: availableRows,
-          validityDistance: kMinPanelHeight / 2.0,
+          validityDistance: kMinPanelHeight,
+          directionallyTargetable: true,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterBelowPanels(
                 context: context,
@@ -650,7 +742,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               _kStoryEdgeTargetInsetMinDistance,
           color: _kLeftEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
-          validityDistance: kMinPanelWidth / 2.0,
+          validityDistance: kMinPanelWidth,
+          directionallyTargetable: true,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToLeftOfPanels(
                 context: context,
@@ -678,7 +771,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
               _kStoryEdgeTargetInsetMinDistance,
           color: _kRightEdgeTargetColor,
           maxStoriesCanAccept: availableColumns,
-          validityDistance: kMinPanelWidth / 2.0,
+          validityDistance: kMinPanelWidth,
+          directionallyTargetable: true,
           onHover: (BuildContext context, StoryCluster storyCluster) =>
               _addClusterToRightOfPanels(
                 context: context,
@@ -816,7 +910,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             bottom: bottom,
             color: _kLeftStoryEdgeTargetColor,
             maxStoriesCanAccept: verticalSplits,
-            validityDistance: kMinPanelWidth / 2.0,
+            validityDistance: kMinPanelWidth,
+            directionallyTargetable: true,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToLeftOfPanel(
                   context: context,
@@ -842,7 +937,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             bottom: bottom,
             color: _kRightStoryEdgeTargetColor,
             maxStoriesCanAccept: verticalSplits,
-            validityDistance: kMinPanelWidth / 2.0,
+            validityDistance: kMinPanelWidth,
+            directionallyTargetable: true,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterToRightOfPanel(
                   context: context,
@@ -888,7 +984,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             right: right,
             color: _kTopStoryEdgeTargetColor,
             maxStoriesCanAccept: horizontalSplits,
-            validityDistance: kMinPanelHeight / 2.0,
+            validityDistance: kMinPanelHeight,
+            directionallyTargetable: true,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterAbovePanel(
                   context: context,
@@ -914,7 +1011,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
             right: right,
             color: _kBottomStoryEdgeTargetColor,
             maxStoriesCanAccept: horizontalSplits,
-            validityDistance: kMinPanelHeight / 2.0,
+            validityDistance: kMinPanelHeight,
+            directionallyTargetable: true,
             onHover: (BuildContext context, StoryCluster storyCluster) =>
                 _addClusterBelowPanel(
                   context: context,
@@ -956,6 +1054,8 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
                   onHover: lineSegment.onHover,
                   onDrop: lineSegment.onDrop,
                   maxStoriesCanAccept: lineSegment.maxStoriesCanAccept,
+                  initiallyTargetable: lineSegment.initiallyTargetable,
+                  directionallyTargetable: lineSegment.directionallyTargetable,
                   validityDistance: lerpDouble(
                     0.0,
                     lineSegment.validityDistance,

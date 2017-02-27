@@ -13,7 +13,7 @@ import 'story_cluster.dart';
 /// [closestTargetLockPoints] are also drawn on top of [child].
 class TargetLineOverlay extends StatelessWidget {
   final Widget child;
-  final Set<LineSegment> targetLines;
+  final List<LineSegment> targetLines;
   final Map<StoryCluster, Point> closestTargetLockPoints;
   final Map<StoryCluster, Point> storyClusterCandidates;
 
@@ -35,17 +35,11 @@ class TargetLineOverlay extends StatelessWidget {
     // When we have a candidate, show the target lines.
     if (enabled && storyClusterCandidates.isNotEmpty) {
       // Add all the lines.
-      targetLines
-          .where(
-            (LineSegment line) => !storyClusterCandidates.keys.every(
-                  (StoryCluster key) => !line.canAccept(key),
-                ),
-          )
-          .forEach(
-            (LineSegment line) => stackChildren.addAll(
-                  line.buildStackChildren(),
-                ),
-          );
+      targetLines.forEach(
+        (LineSegment line) => stackChildren.addAll(
+              line.buildStackChildren(),
+            ),
+      );
 
       // Add candidate points
       stackChildren.addAll(

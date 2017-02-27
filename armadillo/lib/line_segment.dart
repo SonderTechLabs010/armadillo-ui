@@ -35,6 +35,7 @@ class LineSegment {
   final int maxStoriesCanAccept;
   final String name;
   final bool initiallyTargetable;
+  final bool directionallyTargetable;
 
   /// A [LineSegment] is considered a valid target for accepting stories if
   /// the [distanceFrom] [Point] of the stories in question is within the
@@ -50,6 +51,7 @@ class LineSegment {
     this.maxStoriesCanAccept: 1,
     this.name,
     this.initiallyTargetable: true,
+    this.directionallyTargetable: false,
     this.validityDistance: double.INFINITY,
   })
       : this.a = (a.x < b.x || a.y < b.y) ? a : b,
@@ -68,6 +70,7 @@ class LineSegment {
     int maxStoriesCanAccept: 1,
     String name,
     bool initiallyTargetable: true,
+    bool directionallyTargetable: false,
     double validityDistance: double.INFINITY,
   }) =>
       new LineSegment(
@@ -79,6 +82,7 @@ class LineSegment {
         maxStoriesCanAccept: maxStoriesCanAccept,
         name: name,
         initiallyTargetable: initiallyTargetable,
+        directionallyTargetable: directionallyTargetable,
         validityDistance: validityDistance,
       );
 
@@ -92,6 +96,7 @@ class LineSegment {
     int maxStoriesCanAccept: 1,
     String name,
     bool initiallyTargetable: true,
+    bool directionallyTargetable: false,
     double validityDistance: double.INFINITY,
   }) =>
       new LineSegment(
@@ -103,6 +108,7 @@ class LineSegment {
         maxStoriesCanAccept: maxStoriesCanAccept,
         name: name,
         initiallyTargetable: initiallyTargetable,
+        directionallyTargetable: directionallyTargetable,
         validityDistance: validityDistance,
       );
 
@@ -110,6 +116,46 @@ class LineSegment {
   bool get isVertical => !isHorizontal;
   bool canAccept(StoryCluster storyCluster) =>
       storyCluster.realStories.length <= maxStoriesCanAccept;
+
+  bool isInDirectionFromPoint(DragDirection dragDirection, Point point) {
+    if (!directionallyTargetable) {
+      return true;
+    }
+    switch (dragDirection) {
+      case DragDirection.left:
+        if (isHorizontal) {
+          return false;
+        } else if (a.x > point.x) {
+          return false;
+        }
+        break;
+      case DragDirection.right:
+        if (isHorizontal) {
+          return false;
+        } else if (a.x < point.x) {
+          return false;
+        }
+        break;
+      case DragDirection.up:
+        if (isVertical) {
+          return false;
+        } else if (a.y > point.y) {
+          return false;
+        }
+        break;
+      case DragDirection.down:
+        if (isVertical) {
+          return false;
+        } else if (a.y < point.y) {
+          return false;
+        }
+        break;
+      case DragDirection.none:
+      default:
+        break;
+    }
+    return true;
+  }
 
   double distanceFrom(Point p) {
     if (isHorizontal) {
