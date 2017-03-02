@@ -66,7 +66,6 @@ class StoryClusterWidget extends StatelessWidget {
       : _getStoryClusterWithInlineStoryTitle(context);
 
   Widget _getUnfocusedDragTargetChild(BuildContext context) {
-    Rect initialBoundsOnDrag;
     return new OptionalWrapper(
       useWrapper: _isUnfocused,
       builder: (BuildContext context, Widget child) =>
@@ -82,7 +81,7 @@ class StoryClusterWidget extends StatelessWidget {
               Point boxBottomRight = box.localToGlobal(
                 new Point(box.size.width, box.size.height),
               );
-              initialBoundsOnDrag = new Rect.fromLTRB(
+              Rect initialBoundsOnDrag = new Rect.fromLTRB(
                 boxTopLeft.x,
                 boxTopLeft.y,
                 boxBottomRight.x,
@@ -91,15 +90,20 @@ class StoryClusterWidget extends StatelessWidget {
               StoryClusterDragStateModel.of(context).addDragging(
                     storyCluster.id,
                   );
+              return initialBoundsOnDrag;
             },
             onDragEnded: () {
               StoryClusterDragStateModel.of(context).removeDragging(
                     storyCluster.id,
                   );
             },
-            feedbackBuilder: (Point localDragStartPoint) =>
+            feedbackBuilder: (
+              Point localDragStartPoint,
+              Rect initialBoundsOnDrag,
+            ) =>
                 new StoryClusterDragFeedback(
                   key: storyCluster.dragFeedbackKey,
+                  overlayKey: overlayKey,
                   storyCluster: storyCluster,
                   storyWidgets: storyWidgets,
                   localDragStartPoint: localDragStartPoint,

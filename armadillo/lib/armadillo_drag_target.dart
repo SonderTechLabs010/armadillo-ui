@@ -7,6 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
+import 'package:meta/meta.dart';
+import 'package:sysui_widgets/rk4_spring_simulation.dart';
+import 'package:sysui_widgets/ticking_state.dart';
 
 import 'armadillo_overlay.dart';
 
@@ -52,7 +55,12 @@ typedef void ArmadilloDragTargetAccept<T>(
 /// [ArmadilloLongPressDraggable] is being dragged.
 /// [localDragStartPoint] indicates where the drag started in the draggable's
 /// local coordinate space.
-typedef Widget FeedbackBuilder(Point localDragStartPoint);
+typedef Widget FeedbackBuilder(
+  Point localDragStartPoint,
+  Rect initialBoundsOnDrag,
+);
+
+typedef Rect OnDragStarted();
 
 /// A widget that can be dragged from to a [ArmadilloDragTarget] starting from long press.
 ///
@@ -71,17 +79,16 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
   /// The [child] and [feedbackBuilder] arguments must not be null.
   ArmadilloLongPressDraggable({
     Key key,
-    this.overlayKey,
-    this.child,
-    this.feedbackBuilder,
-    this.data,
+    @required this.overlayKey,
+    @required this.child,
+    @required this.feedbackBuilder,
+    @required this.data,
     this.childWhenDragging,
     this.onDragStarted,
     this.onDragEnded,
-    this.onAcceptable,
-    this.onUnacceptable,
   })
       : super(key: key) {
+    assert(overlayKey != null);
     assert(child != null);
     assert(feedbackBuilder != null);
   }
@@ -102,10 +109,8 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
   /// The widget to show under the pointer when a drag is under way.
   final FeedbackBuilder feedbackBuilder;
 
-  final VoidCallback onDragStarted;
+  final OnDragStarted onDragStarted;
   final VoidCallback onDragEnded;
-  final VoidCallback onAcceptable;
-  final VoidCallback onUnacceptable;
 
   final GlobalKey<ArmadilloOverlayState> overlayKey;
 
@@ -128,7 +133,15 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
   _DraggableState<T> createState() => new _DraggableState<T>();
 }
 
-class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
+const RK4SpringDescription _kDefaultSimulationDesc =
+    const RK4SpringDescription(tension: 450.0, friction: 50.0);
+
+class _DraggableState<T> extends TickingState<ArmadilloLongPressDraggable<T>> {
+  RK4SpringSimulation _returnSimulation;
+  GestureRecognizer _recognizer;
+  VoidCallback _onReturnSimulationDone;
+  int _activeCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -141,8 +154,15 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
     super.dispose();
   }
 
-  GestureRecognizer _recognizer;
-  int _activeCount = 0;
+  @override
+  bool handleTick(double elapsedSeconds) {
+    _returnSimulation?.elapseTime(elapsedSeconds);
+    if (_returnSimulation?.isDone ?? false) {
+      _onReturnSimulationDone();
+    }
+    config.overlayKey.currentState.update();
+    return !(_returnSimulation?.isDone ?? true);
+  }
 
   bool get _canDrag =>
       (_activeCount < 1) &&
@@ -158,37 +178,87 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
     if (!_canDrag) {
       return null;
     }
-    config.onDragStarted?.call();
+    final Rect initialBoundsOnDrag = config.onDragStarted?.call();
+    final RenderBox box = context.findRenderObject();
+    final Point dragStart = box.globalToLocal(position);
     setState(() {
       _activeCount += 1;
     });
-    final RenderBox box = context.findRenderObject();
-    return new _DragAvatar<T>(
-        overlayKey: config.overlayKey,
-        data: config.data,
-        initialPosition: position,
-        dragStartPoint: box.globalToLocal(position),
-        feedbackBuilder: config.feedbackBuilder,
-        onAcceptable: config.onAcceptable,
-        onUnacceptable: config.onUnacceptable,
-        onDragEnd: (bool wasAccepted) {
-          setState(() {
-            _activeCount -= 1;
-            if (!wasAccepted) {
-              // TODO(apwilson): Animate back to original position.
-            }
-          });
-          config.onDragEnded?.call();
+    WidgetBuilder builder;
+    _DragAvatar<T> dragAvatar = new _DragAvatar<T>(
+      data: config.data,
+      onDragUpdate: () {
+        config.overlayKey.currentState.update();
+      },
+      onDragEnd: (bool wasAccepted) {
+        setState(() {
+          _activeCount -= 1;
+          if (!wasAccepted) {
+            _returnSimulation = new RK4SpringSimulation(
+              initValue: 0.0,
+              desc: _kDefaultSimulationDesc,
+            );
+            _returnSimulation.target = 1.0;
+            startTicking();
+            _onReturnSimulationDone =
+                () => config.overlayKey.currentState.removeBuilder(builder);
+          } else {
+            config.overlayKey.currentState.removeBuilder(builder);
+          }
         });
+        config.onDragEnded?.call();
+      },
+    );
+    builder = (BuildContext context) => _build(
+          context,
+          dragAvatar.position,
+          dragStart,
+          initialBoundsOnDrag,
+        );
+    config.overlayKey.currentState.addBuilder(builder);
+    dragAvatar.position = position;
+    return dragAvatar;
   }
 
   @override
   Widget build(BuildContext context) {
     final bool showChild =
-        _activeCount == 0 || config.childWhenDragging == null;
+        (_activeCount == 0 || config.childWhenDragging == null) &&
+            (_returnSimulation?.isDone ?? true);
     return new Listener(
-        onPointerDown: _routePointer,
-        child: showChild ? config.child : config.childWhenDragging);
+      onPointerDown: _routePointer,
+      child: showChild ? config.child : config.childWhenDragging,
+    );
+  }
+
+  Widget _build(
+    BuildContext context,
+    Point position,
+    Point dragStartPoint,
+    Rect initialBoundsOnDrag,
+  ) {
+    RenderBox overlayBox = config.overlayKey.currentContext.findRenderObject();
+    Point overlayTopLeft = overlayBox.localToGlobal(Point.origin);
+    Offset localOffset = position - dragStartPoint;
+    final double opacity = 1.0 -
+        ((_returnSimulation?.isDone ?? true) ? 0.0 : _returnSimulation.value);
+    return new Stack(
+      children: <Widget>[
+        new Positioned(
+          left: localOffset.dx - overlayTopLeft.x,
+          top: localOffset.dy - overlayTopLeft.y,
+          child: new IgnorePointer(
+            child: new Opacity(
+              opacity: opacity,
+              child: config.feedbackBuilder(
+                dragStartPoint,
+                initialBoundsOnDrag,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -209,11 +279,9 @@ class ArmadilloDragTarget<T> extends StatefulWidget {
   /// The [builder] argument must not be null.
   ArmadilloDragTarget({
     Key key,
-    this.builder,
+    @required this.builder,
     this.onWillAccept,
     this.onAccept,
-    this.onCandidates,
-    this.onNoCandidates,
   })
       : super(key: key) {
     assert(builder != null);
@@ -232,9 +300,6 @@ class ArmadilloDragTarget<T> extends StatefulWidget {
   /// Called when an acceptable piece of data was dropped over this drag target.
   final ArmadilloDragTargetAccept<T> onAccept;
 
-  final VoidCallback onCandidates;
-  final VoidCallback onNoCandidates;
-
   @override
   _DragTargetState<T> createState() => new _DragTargetState<T>();
 }
@@ -249,10 +314,6 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
     if (data is T &&
         (config.onWillAccept == null ||
             config.onWillAccept(data, localPosition))) {
-      // If we're adding our first candidate call [config.onCandidates].
-      if (_candidateData.isEmpty) {
-        config.onCandidates?.call();
-      }
       setState(() {
         _candidateData[data] = localPosition;
       });
@@ -281,10 +342,7 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
       return;
     }
     setState(() {
-      // If we've removed the last candidate call [config.onNoCandidates].
-      if (_candidateData.remove(data) != null && _candidateData.isEmpty) {
-        config.onNoCandidates?.call();
-      }
+      _candidateData.remove(data);
       _rejectedData.remove(data);
     });
   }
@@ -294,10 +352,8 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
     if (mounted) {
       Point point = _candidateData[data];
       setState(() {
-        // If we've removed the last candidate call [config.onNoCandidates].
-        if (_candidateData.remove(data) != null && _candidateData.isEmpty) {
-          config.onNoCandidates?.call();
-        }
+        _candidateData.remove(data);
+        _rejectedData.remove(data);
       });
       config.onAccept?.call(data, point, velocity);
     }
@@ -320,109 +376,80 @@ typedef void _OnDragEnd(bool wasAccepted);
 // This will probably need to be changed once we have more experience with using
 // this widget.
 class _DragAvatar<T> extends Drag {
-  _DragAvatar({
-    this.overlayKey,
-    this.data,
-    Point initialPosition,
-    this.dragStartPoint,
-    this.feedbackBuilder,
-    this.onAcceptable,
-    this.onUnacceptable,
-    this.onDragEnd,
-  }) {
-    assert(overlayKey.currentState != null);
-    assert(dragStartPoint != null);
-    overlayKey.currentState.addBuilder(_build);
-    _position = initialPosition;
-    updateDrag(initialPosition);
-  }
-
   final T data;
-  final Point dragStartPoint;
-  final FeedbackBuilder feedbackBuilder;
+  final VoidCallback onDragUpdate;
   final _OnDragEnd onDragEnd;
-  final VoidCallback onAcceptable;
-  final VoidCallback onUnacceptable;
-  final GlobalKey<ArmadilloOverlayState> overlayKey;
 
   List<_DragTargetState<T>> _activeTargets = <_DragTargetState<T>>[];
   List<_DragTargetState<T>> _enteredTargets = <_DragTargetState<T>>[];
   Point _position;
 
+  _DragAvatar({this.data, this.onDragUpdate, this.onDragEnd});
+
+  set position(Point newPosition) {
+    _position = newPosition;
+    _updateDrag(newPosition);
+  }
+
+  Point get position => _position;
+
   // Drag API
   @override
   void update(DragUpdateDetails details) {
-    _position += details.delta;
-    updateDrag(_position);
+    position = _position + details.delta;
   }
 
   @override
   void end(DragEndDetails details) {
-    finishDrag(_DragEndKind.dropped, details.velocity);
+    _finishDrag(_DragEndKind.dropped, details.velocity);
   }
 
   @override
-  void cancel() {
-    finishDrag(_DragEndKind.canceled);
-  }
+  void cancel() => _finishDrag(_DragEndKind.canceled);
 
-  void updateDrag(Point globalPosition) {
-    overlayKey.currentState.update();
+  void _updateDrag(Point globalPosition) {
+    onDragUpdate?.call();
 
-    HitTestResult result = new HitTestResult();
-    WidgetsBinding.instance.hitTest(result, globalPosition);
-
-    List<_DragTargetState<T>> targets = _getDragTargets(result.path).toList();
-    bool listsMatch = false;
-    if (targets.length == _enteredTargets.length) {
-      listsMatch = true;
-      Iterator<_DragTargetState<T>> iterator = targets.iterator;
-      for (int i = 0; i < _enteredTargets.length; i += 1) {
-        iterator.moveNext();
-        if (iterator.current != _enteredTargets[i]) {
-          listsMatch = false;
-          break;
-        }
-      }
-    }
+    Iterable<_DragTargetState<T>> targets = _getDragTargets(globalPosition);
 
     // If everything's the same, bail early.
-    if (!listsMatch) {
+    if (!_match(targets, _enteredTargets)) {
       // Leave old targets.
       _leaveAllEntered();
+      _enteredTargets.addAll(targets);
 
       // Enter new targets.
-      List<_DragTargetState<T>> newTargets =
-          targets.where((_DragTargetState<T> target) {
-        _enteredTargets.add(target);
-        RenderBox box = target.context.findRenderObject();
-        Point localPosition = box.globalToLocal(globalPosition);
-        return target.didEnter(data, localPosition);
-      }).toList();
-
-      if (_activeTargets.isEmpty && newTargets.isNotEmpty) {
-        onAcceptable?.call();
-      } else if (_activeTargets.isNotEmpty && newTargets.isEmpty) {
-        onUnacceptable?.call();
-      }
-      _activeTargets = newTargets;
+      _activeTargets = targets
+          .where(
+            (_DragTargetState<T> target) => target.didEnter(
+                  data,
+                  _globalToLocal(target, globalPosition),
+                ),
+          )
+          .toList();
     }
 
     // Update positions
-    _enteredTargets.forEach((_DragTargetState<T> target) {
-      RenderBox box = target.context.findRenderObject();
-      Point localPosition = box.globalToLocal(globalPosition);
-      target.updatePosition(
-        data,
-        localPosition,
-      );
-    });
+    _enteredTargets.forEach(
+      (_DragTargetState<T> target) => _updatePosition(target, globalPosition),
+    );
   }
 
-  Iterable<_DragTargetState<T>> _getDragTargets(List<HitTestEntry> path) sync* {
+  Point _globalToLocal(_DragTargetState<T> target, Point globalPosition) {
+    RenderBox box = target.context.findRenderObject();
+    return box.globalToLocal(globalPosition);
+  }
+
+  void _updatePosition(_DragTargetState<T> target, Point globalPosition) =>
+      target.updatePosition(data, _globalToLocal(target, globalPosition));
+
+  Iterable<_DragTargetState<T>> _getDragTargets(Point globalPosition) sync* {
+    HitTestResult result = new HitTestResult();
+    WidgetsBinding.instance.hitTest(result, globalPosition);
+
     // Look for the RenderBoxes that corresponds to the hit target (the hit target
     // widgets build RenderMetaData boxes for us for this purpose).
-    for (HitTestEntry entry in path) {
+    for (HitTestEntry entry in result.path) {
       if (entry.target is RenderMetaData) {
         RenderMetaData renderMetaData = entry.target;
         if (renderMetaData.metaData is _DragTargetState<T>) {
@@ -432,14 +459,32 @@ class _DragAvatar<T> extends Drag {
     }
   }
 
-  void _leaveAllEntered() {
-    for (int i = 0; i < _enteredTargets.length; i += 1) {
-      _enteredTargets[i].didLeave(data);
+  bool _match(Iterable<dynamic> a, Iterable<dynamic> b) {
+    bool listsMatch = false;
+    if (a.length == b.length) {
+      listsMatch = true;
+      Iterator<dynamic> aIterator = a.iterator;
+      Iterator<dynamic> bIterator = b.iterator;
+      for (int i = 0; i < b.length; i += 1) {
+        aIterator.moveNext();
+        bIterator.moveNext();
+        if (aIterator.current != bIterator.current) {
+          listsMatch = false;
+          break;
+        }
+      }
     }
+    return listsMatch;
+  }
+
+  void _leaveAllEntered() {
+    _enteredTargets.forEach(
+      (_DragTargetState<T> target) => target.didLeave(data),
+    );
     _enteredTargets.clear();
   }
 
-  void finishDrag(_DragEndKind endKind, [Velocity velocity]) {
+  void _finishDrag(_DragEndKind endKind, [Velocity velocity]) {
     bool wasAccepted = false;
     if (endKind == _DragEndKind.dropped && _activeTargets.isNotEmpty) {
       _activeTargets.forEach((_DragTargetState<T> activeTarget) {
@@ -449,33 +494,8 @@ class _DragAvatar<T> extends Drag {
       wasAccepted = true;
     }
     _leaveAllEntered();
-    if (wasAccepted) {
-      onUnacceptable?.call();
-    }
     _activeTargets = <_DragTargetState<T>>[];
-    overlayKey.currentState.removeBuilder(_build);
     // TODO(ianh): consider passing _entry as well so the client can perform an animation.
-    if (onDragEnd != null) {
-      onDragEnd(wasAccepted);
-    }
-  }
-
-  Widget _build(BuildContext context) {
-    RenderBox overlayBox = overlayKey.currentContext.findRenderObject();
-    Point overlayTopLeft = overlayBox.localToGlobal(Point.origin);
-    Offset localOffset = _position - dragStartPoint;
-    return new Stack(
-      children: <Widget>[
-        new Positioned(
-          left: localOffset.dx - overlayTopLeft.x,
-          top: localOffset.dy - overlayTopLeft.y,
-          child: new IgnorePointer(
-            child: feedbackBuilder(
-              dragStartPoint,
-            ),
-          ),
-        ),
-      ],
-    );
+    onDragEnd?.call(wasAccepted);
   }
 }

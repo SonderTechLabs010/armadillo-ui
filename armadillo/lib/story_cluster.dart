@@ -319,6 +319,10 @@ class StoryCluster {
 
   void absorb(Story story) {
     List<Story> stories = new List<Story>.from(_stories);
+    // We can't absorb the story if it's the only story.
+    if (stories.length <= 1) {
+      return;
+    }
     stories.remove(story);
     stories.sort(
       (Story a, Story b) => a.panel.sizeFactor > b.panel.sizeFactor

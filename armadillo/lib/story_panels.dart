@@ -185,7 +185,6 @@ class StoryPanelsState extends State<StoryPanels> {
     Widget child,
   }) {
     final Widget storyWidget = config.storyWidgets[story.id];
-    Rect initialBoundsOnDrag;
     double initialDxOnDrag;
     bool onFirstHoverCalled = false;
     Map<StoryId, Panel> storyPanelsOnDrag = <StoryId, Panel>{};
@@ -296,7 +295,7 @@ class StoryPanelsState extends State<StoryPanels> {
               Point boxBottomRight = box.localToGlobal(
                 new Point(box.size.width, box.size.height),
               );
-              initialBoundsOnDrag = new Rect.fromLTRB(
+              Rect initialBoundsOnDrag = new Rect.fromLTRB(
                 boxTopLeft.x,
                 boxTopLeft.y,
                 boxBottomRight.x,
@@ -328,6 +327,7 @@ class StoryPanelsState extends State<StoryPanels> {
               StoryClusterDragStateModel.of(context).addDragging(
                     story.clusterId,
                   );
+              return initialBoundsOnDrag;
             },
             onDragEnded: () {
               StoryClusterDragStateModel.of(context).removeDragging(
@@ -335,12 +335,16 @@ class StoryPanelsState extends State<StoryPanels> {
                   );
             },
             childWhenDragging: Nothing.widget,
-            feedbackBuilder: (Point localDragStartPoint) {
+            feedbackBuilder: (
+              Point localDragStartPoint,
+              Rect initialBoundsOnDrag,
+            ) {
               StoryCluster storyCluster =
                   StoryModel.of(context).getStoryCluster(story.clusterId);
 
               return new StoryClusterDragFeedback(
                 key: storyCluster.dragFeedbackKey,
+                overlayKey: config.overlayKey,
                 storyCluster: storyCluster,
                 storyWidgets: <StoryId, Widget>{story.id: storyWidget},
                 localDragStartPoint: localDragStartPoint,

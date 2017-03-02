@@ -44,7 +44,14 @@ class StoryClusterDragFeedback extends StatefulWidget {
     this.focusProgress,
     this.initDx: 0.0,
   })
-      : super(key: key);
+      : super(key: key) {
+    assert(overlayKey != null);
+    assert(storyCluster != null);
+    assert(storyWidgets != null);
+    assert(localDragStartPoint != null);
+    assert(initialBounds != null);
+    assert(focusProgress != null);
+  }
 
   @override
   StoryClusterDragFeedbackState createState() =>
