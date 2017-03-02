@@ -70,7 +70,6 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
           if (config.onTextCommitted != null && text.isNotEmpty) {
             config.onTextCommitted(text);
           }
-          clear();
         } else if (data.keyCode == keyCodeBackspace) {
           if (textState?.backspace() ?? false) {
             _notifyTextChanged();
@@ -99,7 +98,6 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
           if (config.onTextCommitted != null && text.isNotEmpty) {
             config.onTextCommitted(text);
           }
-          clear();
         } else if (data.hidUsage == 42) {
           if (textState?.backspace() ?? false) {
             _notifyTextChanged();
