@@ -11,12 +11,12 @@ class KenichiEdgeScrolling {
   static final double c = 1.5;
   static final double d = 0.02;
   static final double e = 2.0;
-  static final double th = 120.0;
-  static final double th2 = 40.0;
+  static final double thMultiplier = 120.0 / 900.0;
+  static final double th2Multiplier = 40.0 / 900.0;
 
   double _velocity = 0.0;
-  double _screenH = 2.0 * th;
-  double _p = th;
+  double _screenH = 2.0 * 120.0;
+  double _p = 120.0;
 
   /// [p] is the y position of the finger on the screen.
   /// [screenH] the height of the screen.
@@ -65,6 +65,8 @@ class KenichiEdgeScrolling {
   bool get shouldScrollUp => _p < th;
   bool get shouldScrollDown => _p > _screenH - th;
   bool get isDone => !shouldScrollUp && !shouldScrollDown && _velocity == 0.0;
+  double get th => thMultiplier * _screenH;
+  double get th2 => th2Multiplier * _screenH;
 
   static double _smoothstep(double a, double b, double n) {
     double t = (n - a) / (b - a) * 12 - 6;
