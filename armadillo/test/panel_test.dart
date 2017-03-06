@@ -90,7 +90,7 @@ void main() {
   test('toGridValue', () {
     expect(toGridValue(1.0), 1.0);
     expect(toGridValue(0.567), 0.567);
-    expect(toGridValue(0.56734566645), 0.567);
+    expect(toGridValue(0.56734566645), 0.5673);
     expect(toGridValue(0.7899988866), 0.790);
     expect(toGridValue(0.0), 0.0);
   });
@@ -211,9 +211,9 @@ void main() {
     expect(getSpanSpan(1.0, 1, 2), 0.5);
   });
   test('getSpanSpan returns proper values for triple span', () {
-    expect(getSpanSpan(1.0, 0, 3), 0.334);
-    expect(getSpanSpan(1.0, 1, 3), 0.333);
-    expect(getSpanSpan(1.0, 2, 3), 0.333);
+    expect(getSpanSpan(1.0, 0, 3), 0.3334);
+    expect(getSpanSpan(1.0, 1, 3), 0.3333);
+    expect(getSpanSpan(1.0, 2, 3), 0.3333);
   });
   test('getSpanSpan returns proper values for 4 span', () {
     expect(getSpanSpan(1.0, 0, 4), 0.25);
@@ -229,21 +229,21 @@ void main() {
     expect(getSpanSpan(1.0, 4, 5), 0.2);
   });
   test('getSpanSpan returns proper values for 6 span', () {
-    expect(getSpanSpan(1.0, 0, 6), 0.166);
-    expect(getSpanSpan(1.0, 1, 6), 0.166);
-    expect(getSpanSpan(1.0, 2, 6), 0.167);
-    expect(getSpanSpan(1.0, 3, 6), 0.167);
-    expect(getSpanSpan(1.0, 4, 6), 0.167);
-    expect(getSpanSpan(1.0, 5, 6), 0.167);
+    expect(getSpanSpan(1.0, 0, 6), 0.1666);
+    expect(getSpanSpan(1.0, 1, 6), 0.1666);
+    expect(getSpanSpan(1.0, 2, 6), 0.1667);
+    expect(getSpanSpan(1.0, 3, 6), 0.1667);
+    expect(getSpanSpan(1.0, 4, 6), 0.1667);
+    expect(getSpanSpan(1.0, 5, 6), 0.1667);
   });
   test('getSpanSpan returns proper values for 7 span', () {
-    expect(getSpanSpan(1.0, 0, 7), 0.142);
-    expect(getSpanSpan(1.0, 1, 7), 0.143);
-    expect(getSpanSpan(1.0, 2, 7), 0.143);
-    expect(getSpanSpan(1.0, 3, 7), 0.143);
-    expect(getSpanSpan(1.0, 4, 7), 0.143);
-    expect(getSpanSpan(1.0, 5, 7), 0.143);
-    expect(getSpanSpan(1.0, 6, 7), 0.143);
+    expect(getSpanSpan(1.0, 0, 7), 0.1428);
+    expect(getSpanSpan(1.0, 1, 7), 0.1428);
+    expect(getSpanSpan(1.0, 2, 7), 0.1428);
+    expect(getSpanSpan(1.0, 3, 7), 0.1429);
+    expect(getSpanSpan(1.0, 4, 7), 0.1429);
+    expect(getSpanSpan(1.0, 5, 7), 0.1429);
+    expect(getSpanSpan(1.0, 6, 7), 0.1429);
   });
   test('getSpanSpan returns proper values for 8 span', () {
     expect(getSpanSpan(1.0, 0, 8), 0.125);
@@ -256,15 +256,15 @@ void main() {
     expect(getSpanSpan(1.0, 7, 8), 0.125);
   });
   test('getSpanSpan returns proper values for 9 span', () {
-    expect(getSpanSpan(1.0, 0, 9), 0.112);
-    expect(getSpanSpan(1.0, 1, 9), 0.111);
-    expect(getSpanSpan(1.0, 2, 9), 0.111);
-    expect(getSpanSpan(1.0, 3, 9), 0.111);
-    expect(getSpanSpan(1.0, 4, 9), 0.111);
-    expect(getSpanSpan(1.0, 5, 9), 0.111);
-    expect(getSpanSpan(1.0, 8, 9), 0.111);
-    expect(getSpanSpan(1.0, 6, 9), 0.111);
-    expect(getSpanSpan(1.0, 7, 9), 0.111);
+    expect(getSpanSpan(1.0, 0, 9), 0.1112);
+    expect(getSpanSpan(1.0, 1, 9), 0.1111);
+    expect(getSpanSpan(1.0, 2, 9), 0.1111);
+    expect(getSpanSpan(1.0, 3, 9), 0.1111);
+    expect(getSpanSpan(1.0, 4, 9), 0.1111);
+    expect(getSpanSpan(1.0, 5, 9), 0.1111);
+    expect(getSpanSpan(1.0, 8, 9), 0.1111);
+    expect(getSpanSpan(1.0, 6, 9), 0.1111);
+    expect(getSpanSpan(1.0, 7, 9), 0.1111);
   });
   test('getSpanSpan returns proper values for 10 span', () {
     expect(getSpanSpan(1.0, 0, 10), 0.1);

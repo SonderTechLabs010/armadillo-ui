@@ -54,12 +54,17 @@ Future<Null> main() async {
   StoryClusterDragStateModel storyClusterDragStateModel =
       new StoryClusterDragStateModel();
   StoryRearrangementScrimModel storyRearrangementScrimModel =
-      new StoryRearrangementScrimModel(
-    storyClusterDragStateModel: storyClusterDragStateModel,
+      new StoryRearrangementScrimModel();
+  storyClusterDragStateModel.addListener(
+    () => storyRearrangementScrimModel
+        .onDragAcceptableStateChanged(storyClusterDragStateModel.isAcceptable),
   );
+
   StoryDragTransitionModel storyDragTransitionModel =
-      new StoryDragTransitionModel(
-    storyClusterDragStateModel: storyClusterDragStateModel,
+      new StoryDragTransitionModel();
+  storyClusterDragStateModel.addListener(
+    () => storyDragTransitionModel
+        .onDragStateChanged(storyClusterDragStateModel.isDragging),
   );
 
   Widget app = _buildApp(

@@ -21,14 +21,9 @@ class StoryRearrangementScrimModel extends TickingModel {
     desc: _kSimulationDesc,
   );
 
-  StoryRearrangementScrimModel({
-    StoryClusterDragStateModel storyClusterDragStateModel,
-  }) {
-    storyClusterDragStateModel.addListener(() {
-      _opacitySimulation.target =
-          storyClusterDragStateModel.isAcceptable ? 0.6 : 0.0;
-      startTicking();
-    });
+  void onDragAcceptableStateChanged(bool isAcceptable) {
+    _opacitySimulation.target = isAcceptable ? 0.6 : 0.0;
+    startTicking();
   }
 
   Color get scrimColor => Colors.black.withOpacity(_opacitySimulation.value);

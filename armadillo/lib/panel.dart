@@ -53,10 +53,12 @@ double getSpanSpan(double initialSpan, int index, int count) {
   double optimalSpan = toGridValue(initialSpan / count);
   double optimalDelta = toGridValue(initialSpan - optimalSpan * count);
   int optimalGridDelta = (optimalDelta * _kGridLines).round();
-  return optimalSpan +
-      ((index < optimalGridDelta.abs())
-          ? (optimalGridDelta > 0.0 ? 1.0 / _kGridLines : -1.0 / _kGridLines)
-          : 0.0);
+  return toGridValue(
+    optimalSpan +
+        ((index < optimalGridDelta.abs())
+            ? (optimalGridDelta > 0.0 ? 1.0 / _kGridLines : -1.0 / _kGridLines)
+            : 0.0),
+  );
 }
 
 /// Returns the results of [Panel.split]

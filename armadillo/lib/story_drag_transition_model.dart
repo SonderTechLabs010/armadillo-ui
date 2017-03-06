@@ -25,13 +25,9 @@ class StoryDragTransitionModel extends TickingModel {
     desc: _kSimulationDesc,
   );
 
-  StoryDragTransitionModel(
-      {StoryClusterDragStateModel storyClusterDragStateModel}) {
-    storyClusterDragStateModel.addListener(() {
-      _transitionSimulation.target =
-          storyClusterDragStateModel.isDragging ? 1.0 : 0.0;
-      startTicking();
-    });
+  void onDragStateChanged(bool isDragging) {
+    _transitionSimulation.target = isDragging ? 1.0 : 0.0;
+    startTicking();
   }
 
   double get progress => _transitionSimulation.value;
