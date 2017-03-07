@@ -16,10 +16,11 @@ import 'package:lib.fidl.dart/bindings.dart' as bindings;
 
 import 'debug.dart';
 import 'hit_test_model.dart';
-import 'initial_story_generator.dart';
 import 'story_provider_watcher_impl.dart';
 
 const String _kUserImage = 'packages/armadillo/res/User.png';
+
+typedef void OnNoStories(StoryProviderProxy storyProvider);
 
 /// Creates a list of stories for the StoryList using
 /// modular's [StoryProvider].
@@ -34,6 +35,10 @@ class StoryProviderStoryGenerator extends StoryGenerator {
   final Map<String, StoryControllerProxy> _storyControllerMap =
       <String, StoryControllerProxy>{};
   StoryProviderWatcherImpl _storyProviderWatcher;
+
+  final OnNoStories onNoStories;
+
+  StoryProviderStoryGenerator({this.onNoStories});
 
   set storyProvider(StoryProviderProxy storyProvider) {
     _storyProvider = storyProvider;
@@ -79,7 +84,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
     _storyProvider.previousStories((List<String> storyIds) {
       if (storyIds.isEmpty && storyClusters.isEmpty) {
         // We have no previous stories, so create some!
-        InitialStoryGenerator.createStories(_storyProvider);
+        onNoStories?.call(_storyProvider);
       } else {
         // Remove any stories that aren't in the previous story list.
         _currentStories

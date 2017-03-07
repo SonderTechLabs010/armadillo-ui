@@ -31,6 +31,7 @@ import 'package:sysui_widgets/default_bundle.dart';
 
 import 'focus_controller_impl.dart';
 import 'hit_test_model.dart';
+import 'initial_story_generator.dart';
 import 'story_provider_story_generator.dart';
 import 'suggestion_provider_suggestion_model.dart';
 import 'user_shell_impl.dart';
@@ -57,8 +58,11 @@ Future<Null> main() async {
   }
 
   HitTestModel hitTestModel = new HitTestModel();
+  InitialStoryGenerator initialStoryGenerator = new InitialStoryGenerator();
   StoryProviderStoryGenerator storyProviderStoryGenerator =
-      new StoryProviderStoryGenerator();
+      new StoryProviderStoryGenerator(
+    onNoStories: initialStoryGenerator.createStories,
+  );
   StoryClusterDragStateModel storyClusterDragStateModel =
       new StoryClusterDragStateModel();
   StoryRearrangementScrimModel storyRearrangementScrimModel =
@@ -157,6 +161,7 @@ Future<Null> main() async {
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
 
   constraintsModel.load(defaultBundle);
+  initialStoryGenerator.load(defaultBundle);
 }
 
 Widget _buildApp({

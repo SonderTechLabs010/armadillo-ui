@@ -40,6 +40,7 @@ flutter:
     - packages/armadillo/res/ic_signal_cellular_connected_no_internet_0_bar_grey600_24dp.png
     - packages/armadillo/res/ic_signal_wifi_3_bar_grey600_24dp.png
     - packages/armadillo/res/ic_volume_up_grey600.png
+    - packages/armadillo/res/initial_story_generator_config.json
     - packages/armadillo/res/logo_googleg_24dpx4.png
     - packages/armadillo/res/placeholder_grid.png
     - packages/armadillo/res/screen_config.json
