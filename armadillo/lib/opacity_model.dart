@@ -16,12 +16,6 @@ class OpacityModel extends Model {
 
   OpacityModel(double opacity) : _opacity = opacity ?? 1.0;
 
-  /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
-  /// details.
-  static OpacityModel of(BuildContext context, {bool rebuildOnChange: false}) =>
-      new ModelFinder<OpacityModel>()
-          .of(context, rebuildOnChange: rebuildOnChange);
-
   double get opacity => _opacity;
 
   set opacity(double opacity) {
@@ -30,23 +24,4 @@ class OpacityModel extends Model {
       notifyListeners();
     }
   }
-}
-
-typedef Widget ScopedOpacityWidgetBuilder(
-  BuildContext context,
-  Widget child,
-  double opacity,
-);
-
-class ScopedOpacityWidget extends StatelessWidget {
-  final ScopedOpacityWidgetBuilder builder;
-  final Widget child;
-  ScopedOpacityWidget({this.builder, this.child});
-
-  @override
-  Widget build(BuildContext context) => builder(
-        context,
-        child,
-        OpacityModel.of(context, rebuildOnChange: true).opacity,
-      );
 }

@@ -40,8 +40,8 @@ class NowModel extends Model {
 
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
-  static NowModel of(BuildContext context, {bool rebuildOnChange: false}) =>
-      new ModelFinder<NowModel>().of(context, rebuildOnChange: rebuildOnChange);
+  static NowModel of(BuildContext context) =>
+      const ModelFinder<NowModel>().of(context);
 
   @override
   void addListener(VoidCallback listener) {
@@ -87,9 +87,14 @@ class NowModel extends Model {
   Widget get userContextMinimized => new Padding(
         padding: const EdgeInsets.only(left: 8.0),
         child: new RepaintBoundary(
-          child: new ScopedOpacityWidget(
-            builder: (_, Widget child, double opacity) => new Opacity(
-                  opacity: opacity,
+          child: new ScopedModelDecendant<OpacityModel>(
+            builder: (
+              BuildContext context,
+              Widget child,
+              OpacityModel opacityModel,
+            ) =>
+                new Opacity(
+                  opacity: opacityModel.opacity,
                   child: child,
                 ),
             child: new Text('${_timeStringer.shortString}'),
@@ -215,9 +220,14 @@ class NowModel extends Model {
           new Padding(
             padding: const EdgeInsets.only(top: 4.0, right: 4.0),
             child: new RepaintBoundary(
-              child: new ScopedOpacityWidget(
-                builder: (_, Widget child, double opacity) => new Opacity(
-                      opacity: opacity,
+              child: new ScopedModelDecendant<OpacityModel>(
+                builder: (
+                  BuildContext context,
+                  Widget child,
+                  OpacityModel opacityModel,
+                ) =>
+                    new Opacity(
+                      opacity: opacityModel.opacity,
                       child: child,
                     ),
                 child: new Text('89%'),
@@ -225,10 +235,15 @@ class NowModel extends Model {
             ),
           ),
           new RepaintBoundary(
-            child: new ScopedOpacityWidget(
-              builder: (_, __, double opacity) => new Image.asset(
+            child: new ScopedModelDecendant<OpacityModel>(
+              builder: (
+                BuildContext context,
+                Widget child,
+                OpacityModel opacityModel,
+              ) =>
+                  new Image.asset(
                     _kBatteryImageWhite,
-                    color: Colors.white.withOpacity(opacity),
+                    color: Colors.white.withOpacity(opacityModel.opacity),
                     fit: ImageFit.cover,
                   ),
             ),

@@ -91,9 +91,14 @@ Future<Null> main() async {
   );
 
   StoryModel storyModel = new StoryModel(
-    suggestionModel: suggestionProviderSuggestionModel,
-    storyGenerator: storyProviderStoryGenerator,
+    onFocusChanged: suggestionProviderSuggestionModel.storyClusterFocusChanged,
   );
+  storyProviderStoryGenerator.addListener(
+    () => storyModel.onStoryClustersChanged(
+          storyProviderStoryGenerator.storyClusters,
+        ),
+  );
+
   suggestionProviderSuggestionModel.storyModel = storyModel;
   suggestionProviderSuggestionModel.addOnFocusLossListener(() {
     conductor.goToOrigin(storyModel);

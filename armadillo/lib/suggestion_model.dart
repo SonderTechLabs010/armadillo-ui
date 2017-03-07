@@ -8,16 +8,14 @@ import 'model.dart';
 import 'story_cluster.dart';
 import 'suggestion.dart';
 
-export 'model.dart' show ScopedModel, Model;
+export 'model.dart' show ScopedModel, Model, ScopedModelDecendant;
 
 /// The base class for suggestion models.
 abstract class SuggestionModel extends Model {
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
-  static SuggestionModel of(BuildContext context,
-          {bool rebuildOnChange: false}) =>
-      new ModelFinder<SuggestionModel>()
-          .of(context, rebuildOnChange: rebuildOnChange);
+  static SuggestionModel of(BuildContext context) =>
+      const ModelFinder<SuggestionModel>().of(context);
 
   List<Suggestion> get suggestions;
 

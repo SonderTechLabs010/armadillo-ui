@@ -47,18 +47,12 @@ class ModelFinder<T extends Model> {
   ///
   /// [Widget]s who call [of] with a [rebuildOnChange] of true will be rebuilt
   /// whenever there's a change to the returned model.
-  T of(
-    BuildContext context, {
-    bool rebuildOnChange: false,
-  }) {
+  T of(BuildContext context, {bool rebuildOnChange: false}) {
     final Type type = new _InheritedModel<T>.forRuntimeType().runtimeType;
     Widget widget = rebuildOnChange
         ? context.inheritFromWidgetOfExactType(type)
         : context.ancestorWidgetOfExactType(type);
-    if (widget is _InheritedModel<T>) {
-      return widget.model;
-    }
-    return null;
+    return (widget is _InheritedModel<T>) ? widget.model : null;
   }
 }
 
@@ -116,9 +110,7 @@ class _ModelListenerState extends State<_ModelListener> {
   @override
   Widget build(BuildContext context) => config.builder(context);
 
-  void _onChange() {
-    setState(() {});
-  }
+  void _onChange() => setState(() {});
 }
 
 /// Provides [model] to its [child] [Widget] tree via [InheritedWidget].  When
@@ -141,4 +133,24 @@ class _InheritedModel<T extends Model> extends InheritedWidget {
   @override
   bool updateShouldNotify(_InheritedModel<T> oldWidget) =>
       (oldWidget.version != version);
+}
+
+typedef Widget ScopedModelDecendantBuilder<T extends Model>(
+  BuildContext context,
+  Widget child,
+  T model,
+);
+
+class ScopedModelDecendant<T extends Model> extends StatelessWidget {
+  final ScopedModelDecendantBuilder<T> builder;
+  final Widget child;
+
+  ScopedModelDecendant({this.builder, this.child});
+
+  @override
+  Widget build(BuildContext context) => builder(
+        context,
+        child,
+        const ModelFinder<T>().of(context, rebuildOnChange: true),
+      );
 }

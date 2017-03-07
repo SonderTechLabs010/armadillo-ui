@@ -31,17 +31,19 @@ class StoryFullSizeSimulatedSizedBox extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    Size fullSize = SizeModel.of(context, rebuildOnChange: true).size;
-    return new SimulatedFractional(
-      key: containerKey,
-      fractionalWidth: displayMode == DisplayMode.panels ? panel.width : 1.0,
-      fractionalHeight:
-          ((displayMode == DisplayMode.panels ? panel.height : 1.0) -
-                  (storyBarMaximizedHeight / fullSize.height))
-              .clamp(0.0, double.INFINITY),
-      size: fullSize,
-      child: child,
-    );
-  }
+  Widget build(BuildContext context) => new ScopedModelDecendant<SizeModel>(
+        builder: (BuildContext context, Widget child, SizeModel sizeModel) =>
+            new SimulatedFractional(
+              key: containerKey,
+              fractionalWidth:
+                  displayMode == DisplayMode.panels ? panel.width : 1.0,
+              fractionalHeight:
+                  ((displayMode == DisplayMode.panels ? panel.height : 1.0) -
+                          (storyBarMaximizedHeight / sizeModel.size.height))
+                      .clamp(0.0, double.INFINITY),
+              size: sizeModel.size,
+              child: child,
+            ),
+        child: child,
+      );
 }

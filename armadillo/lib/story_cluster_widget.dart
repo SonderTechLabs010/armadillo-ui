@@ -239,16 +239,26 @@ class InlineStoryTitle extends StatelessWidget {
       lerpDouble(_kStoryInlineTitleHeight, 0.0, focusProgress);
 
   @override
-  Widget build(BuildContext context) => new ScopedStoryDragTransitionWidget(
-        builder: (BuildContext context, Widget child, double progress) =>
-            new Opacity(
-              opacity: lerpDouble(
-                lerpDouble(1.0, 0.5, progress),
-                0.0,
-                StoryRearrangementScrimModel
-                    .of(context, rebuildOnChange: true)
-                    .progress,
-              ),
+  Widget build(BuildContext context) =>
+      new ScopedModelDecendant<StoryDragTransitionModel>(
+        builder: (
+          BuildContext context,
+          Widget child,
+          StoryDragTransitionModel storyDragTransitionModel,
+        ) =>
+            new ScopedModelDecendant<StoryRearrangementScrimModel>(
+              builder: (
+                BuildContext context,
+                Widget child,
+                StoryRearrangementScrimModel storyRearrangementScrimModel,
+              ) =>
+                  new Opacity(
+                    opacity: lerpDouble(
+                      lerpDouble(1.0, 0.5, storyDragTransitionModel.progress),
+                      0.0,
+                      storyRearrangementScrimModel.progress,
+                    ),
+                  ),
               child: child,
             ),
         child: new Container(

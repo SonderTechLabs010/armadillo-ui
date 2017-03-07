@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 
 import 'model.dart';
 
-export 'model.dart' show ScopedModel, Model;
+export 'model.dart' show ScopedModel, Model, ScopedModelDecendant;
 
 /// Tracks the [Size] of something, notifying listeners when it changes.
 /// Using a [SizeModel] allows the [Size] it tracks to be passed down the
@@ -18,9 +18,8 @@ class SizeModel extends Model {
 
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
-  static SizeModel of(BuildContext context, {bool rebuildOnChange: false}) =>
-      new ModelFinder<SizeModel>()
-          .of(context, rebuildOnChange: rebuildOnChange);
+  static SizeModel of(BuildContext context) =>
+      const ModelFinder<SizeModel>().of(context);
 
   Size get size => _size;
 

@@ -9,7 +9,6 @@ import 'package:armadillo/story.dart';
 import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_cluster_drag_state_model.dart';
 import 'package:armadillo/story_drag_transition_model.dart';
-import 'package:armadillo/story_generator.dart';
 import 'package:armadillo/story_list.dart';
 import 'package:armadillo/story_list_layout.dart';
 import 'package:armadillo/story_model.dart';
@@ -56,10 +55,7 @@ void main() {
       ),
     );
     expect(find.byKey(storyListKey), isNotNull);
-    expect(
-      tester.getSize(find.byKey(storyListKey)).width,
-      _kWidthSingleColumn,
-    );
+    expect(tester.getSize(find.byKey(storyListKey)).width, _kWidthSingleColumn);
     storyKeys.forEach((GlobalKey key) {
       final Finder finder = find.byKey(key);
       expect(finder, isNotNull);
@@ -100,10 +96,7 @@ void main() {
       ),
     );
     expect(find.byKey(storyListKey), isNotNull);
-    expect(
-      tester.getSize(find.byKey(storyListKey)).width,
-      _kWidthMultiColumn,
-    );
+    expect(tester.getSize(find.byKey(storyListKey)).width, _kWidthMultiColumn);
     storyKeys.forEach((GlobalKey key) {
       final Finder finder = find.byKey(key);
       expect(finder, isNotNull);
@@ -114,24 +107,10 @@ void main() {
   });
 }
 
-class DummyStoryGenerator extends StoryGenerator {
-  @override
-  void addListener(VoidCallback listener) => null;
-
-  @override
-  void removeListener(VoidCallback listener) => null;
-
-  @override
-  List<StoryCluster> get storyClusters => null;
-}
-
 class DummyStoryModel extends StoryModel {
   final List<GlobalKey> storyKeys;
 
-  DummyStoryModel({this.storyKeys})
-      : super(
-          storyGenerator: new DummyStoryGenerator(),
-        );
+  DummyStoryModel({this.storyKeys});
 
   @override
   List<StoryCluster> get storyClusters => new List<StoryCluster>.generate(

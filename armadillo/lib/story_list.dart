@@ -62,77 +62,82 @@ class StoryList extends StatelessWidget {
       : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    StoryModel storyModel = StoryModel.of(context, rebuildOnChange: true);
+  Widget build(BuildContext context) => new ScopedModelDecendant<StoryModel>(
+        builder: (
+          BuildContext context,
+          Widget child,
+          StoryModel storyModel,
+        ) {
+          // IMPORTANT:  In order for activation of inactive stories from suggestions
+          // to work we must have them in the widget tree.
+          List<Widget> stackChildren = new List<Widget>.from(
+            storyModel.inactiveStoryClusters.map(
+              (StoryCluster storyCluster) => new Positioned(
+                    width: 0.0,
+                    height: 0.0,
+                    child: new SimulationBuilder(
+                      key: storyCluster.focusSimulationKey,
+                      initValue: 0.0,
+                      targetValue: 1.0,
+                      builder: (BuildContext context, double progress) =>
+                          _createStoryCluster(
+                            storyModel.activeSortedStoryClusters,
+                            storyCluster,
+                            0.0,
+                            storyCluster.buildStoryWidgets(context),
+                          ),
+                    ),
+                  ),
+            ),
+          );
 
-    // IMPORTANT:  In order for activation of inactive stories from suggestions
-    // to work we must have them in the widget tree.
-    List<Widget> stackChildren = new List<Widget>.from(
-      storyModel.inactiveStoryClusters.map(
-        (StoryCluster storyCluster) => new Positioned(
-              width: 0.0,
-              height: 0.0,
-              child: new SimulationBuilder(
-                key: storyCluster.focusSimulationKey,
-                initValue: 0.0,
-                targetValue: 1.0,
-                builder: (BuildContext context, double progress) =>
-                    _createStoryCluster(
+          stackChildren.add(
+            new Positioned(
+              top: 0.0,
+              left: 0.0,
+              bottom: 0.0,
+              right: 0.0,
+              child: new LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  sizeModel.size = new Size(
+                    constraints.maxWidth,
+                    constraints.maxHeight,
+                  );
+                  return Nothing.widget;
+                },
+              ),
+            ),
+          );
+
+          stackChildren.add(
+            new StoryListBlock(
+              scrollController: scrollController,
+              bottomPadding: bottomPadding,
+              onScroll: onScroll,
+              listHeight: storyModel.listHeight,
+              children: new List<Widget>.generate(
+                storyModel.activeSortedStoryClusters.length,
+                (int index) => _createFocusableStoryCluster(
+                      context,
                       storyModel.activeSortedStoryClusters,
-                      storyCluster,
-                      0.0,
-                      storyCluster.buildStoryWidgets(context),
+                      storyModel.activeSortedStoryClusters[index],
+                      storyModel.activeSortedStoryClusters[index]
+                          .buildStoryWidgets(
+                        context,
+                      ),
                     ),
               ),
             ),
-      ),
-    );
+          );
 
-    stackChildren.add(
-      new Positioned(
-        top: 0.0,
-        left: 0.0,
-        bottom: 0.0,
-        right: 0.0,
-        child: new LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            sizeModel.size = new Size(
-              constraints.maxWidth,
-              constraints.maxHeight,
-            );
-            return Nothing.widget;
-          },
-        ),
-      ),
-    );
+          stackChildren.add(new ArmadilloOverlay(key: overlayKey));
 
-    stackChildren.add(
-      new StoryListBlock(
-        scrollController: scrollController,
-        bottomPadding: bottomPadding,
-        onScroll: onScroll,
-        listHeight: storyModel.listHeight,
-        children: new List<Widget>.generate(
-          storyModel.activeSortedStoryClusters.length,
-          (int index) => _createFocusableStoryCluster(
-                context,
-                storyModel.activeSortedStoryClusters,
-                storyModel.activeSortedStoryClusters[index],
-                storyModel.activeSortedStoryClusters[index].buildStoryWidgets(
-                  context,
-                ),
-              ),
-        ),
-      ),
-    );
-
-    stackChildren.add(new ArmadilloOverlay(key: overlayKey));
-
-    return new ScopedModel<SizeModel>(
-      model: sizeModel,
-      child: new Stack(children: stackChildren),
-    );
-  }
+          return new ScopedModel<SizeModel>(
+            model: sizeModel,
+            child: new Stack(children: stackChildren),
+          );
+        },
+      );
 
   Widget _createFocusableStoryCluster(
     BuildContext context,
@@ -262,15 +267,40 @@ class StoryListBlock extends StatelessWidget {
           return false;
         },
         child: new SingleChildScrollView(
-          reverse: true,
-          controller: scrollController,
-          child: new StoryListBlockBody(
-            children: children,
-            listHeight: listHeight,
-            scrollController: scrollController,
-            bottomPadding: bottomPadding,
-          ),
-        ),
+            reverse: true,
+            controller: scrollController,
+            child: new ScopedModelDecendant<SizeModel>(
+              builder: (
+                BuildContext context,
+                Widget child,
+                SizeModel sizeModel,
+              ) =>
+                  new ScopedModelDecendant<StoryRearrangementScrimModel>(
+                    builder: (
+                      BuildContext context,
+                      Widget child,
+                      StoryRearrangementScrimModel storyRearrangementScrimModel,
+                    ) =>
+                        new ScopedModelDecendant<StoryDragTransitionModel>(
+                          builder: (
+                            BuildContext context,
+                            Widget child,
+                            StoryDragTransitionModel storyDragTransitionModel,
+                          ) =>
+                              new StoryListBlockBody(
+                                children: children,
+                                listHeight: listHeight,
+                                scrollController: scrollController,
+                                bottomPadding: bottomPadding,
+                                parentSize: sizeModel.size,
+                                scrimColor:
+                                    storyRearrangementScrimModel.scrimColor,
+                                storyDragTransitionModelProgress:
+                                    storyDragTransitionModel.progress,
+                              ),
+                        ),
+                  ),
+            )),
       );
 }
 
@@ -278,29 +308,33 @@ class StoryListBlockBody extends MultiChildRenderObjectWidget {
   final ScrollController scrollController;
   final double bottomPadding;
   final double listHeight;
+  final Size parentSize;
+  final Color scrimColor;
+  final double storyDragTransitionModelProgress;
   StoryListBlockBody({
     Key key,
     List<Widget> children,
     this.scrollController,
     this.bottomPadding,
     this.listHeight,
+    this.parentSize,
+    this.scrimColor,
+    this.storyDragTransitionModelProgress,
   })
       : super(key: key, children: children);
 
   @override
   StoryListRenderBlock createRenderObject(BuildContext context) =>
       new StoryListRenderBlock(
-        parentSize: SizeModel.of(context, rebuildOnChange: true).size,
+        parentSize: parentSize,
         scrollController: scrollController,
         bottomPadding: bottomPadding,
         listHeight: listHeight,
-        scrimColor: StoryRearrangementScrimModel
-            .of(context, rebuildOnChange: true)
-            .scrimColor,
+        scrimColor: scrimColor,
         liftScale: lerpDouble(
           1.0,
           0.9,
-          StoryDragTransitionModel.of(context, rebuildOnChange: true).progress,
+          storyDragTransitionModelProgress,
         ),
       );
 
@@ -308,18 +342,15 @@ class StoryListBlockBody extends MultiChildRenderObjectWidget {
   void updateRenderObject(BuildContext context, RenderBlock renderObject) {
     StoryListRenderBlock storyListRenderBlock = renderObject;
     storyListRenderBlock.mainAxis = Axis.vertical;
-    storyListRenderBlock.parentSize =
-        SizeModel.of(context, rebuildOnChange: true).size;
+    storyListRenderBlock.parentSize = parentSize;
     storyListRenderBlock.scrollController = scrollController;
     storyListRenderBlock.bottomPadding = bottomPadding;
     storyListRenderBlock.listHeight = listHeight;
-    storyListRenderBlock.scrimColor = StoryRearrangementScrimModel
-        .of(context, rebuildOnChange: true)
-        .scrimColor;
+    storyListRenderBlock.scrimColor = scrimColor;
     storyListRenderBlock.liftScale = lerpDouble(
       1.0,
       0.9,
-      StoryDragTransitionModel.of(context, rebuildOnChange: true).progress,
+      storyDragTransitionModelProgress,
     );
   }
 }

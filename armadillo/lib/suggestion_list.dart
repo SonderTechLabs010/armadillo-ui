@@ -160,33 +160,36 @@ class SuggestionListState extends State<SuggestionList> {
             left: 0.0,
             right: 0.0,
             bottom: 0.0,
-            child: config.columnCount == 3
-                ? _createThreeColumnBlock(context)
-                : config.columnCount == 2
-                    ? _createTwoColumnBlock(context)
-                    : _createSingleColumnBlock(context),
+            child: new ScopedModelDecendant<SuggestionModel>(
+              builder: (
+                BuildContext context,
+                Widget child,
+                SuggestionModel suggestionModel,
+              ) =>
+                  config.columnCount == 3
+                      ? _createThreeColumnBlock(suggestionModel.suggestions)
+                      : config.columnCount == 2
+                          ? _createTwoColumnBlock(suggestionModel.suggestions)
+                          : _createSingleColumnBlock(
+                              suggestionModel.suggestions),
+            ),
           ),
         ],
       );
 
-  Widget _createSingleColumnBlock(BuildContext context) => new Padding(
+  Widget _createSingleColumnBlock(List<Suggestion> suggestions) => new Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: 8.0,
         ),
         child: new ListView(
           controller: config.scrollController,
-          children: SuggestionModel
-              .of(context, rebuildOnChange: true)
-              .suggestions
+          children: suggestions
               .map((Suggestion suggestion) => _createSuggestion(suggestion))
               .toList(),
         ),
       );
 
-  Widget _createTwoColumnBlock(BuildContext context) {
-    List<Suggestion> suggestions =
-        SuggestionModel.of(context, rebuildOnChange: true).suggestions;
-
+  Widget _createTwoColumnBlock(List<Suggestion> suggestions) {
     int minSuggestionsPerColumn = (suggestions.length / 2).floor();
     int additionalLeftSuggestions = suggestions.length % 2;
     int additionalRightSuggestions =
@@ -225,10 +228,7 @@ class SuggestionListState extends State<SuggestionList> {
     );
   }
 
-  Widget _createThreeColumnBlock(BuildContext context) {
-    List<Suggestion> suggestions =
-        SuggestionModel.of(context, rebuildOnChange: true).suggestions;
-
+  Widget _createThreeColumnBlock(List<Suggestion> suggestions) {
     int minSuggestionsPerColumn = (suggestions.length / 3).floor();
     int additionalLeftSuggestions = suggestions.length % 3 > 0 ? 1 : 0;
     int additionalMiddleSuggestions = suggestions.length % 3 > 1 ? 1 : 0;

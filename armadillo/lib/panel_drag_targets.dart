@@ -421,7 +421,7 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
         )
         .toList();
 
-    return new ScopedDebugWidget(
+    return new ScopedModelDecendant<DebugModel>(
       builder: (BuildContext context, Widget child, DebugModel debugModel) =>
           new TargetLineInfluenceOverlay(
             enabled: debugModel.showTargetLineInfluenceOverlay,

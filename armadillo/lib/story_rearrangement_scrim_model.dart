@@ -34,15 +34,4 @@ class StoryRearrangementScrimModel extends TickingModel {
     _opacitySimulation.elapseTime(elapsedSeconds);
     return !_opacitySimulation.isDone;
   }
-
-  /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
-  /// details.
-  static StoryRearrangementScrimModel of(
-    BuildContext context, {
-    bool rebuildOnChange: false,
-  }) =>
-      new ModelFinder<StoryRearrangementScrimModel>().of(
-        context,
-        rebuildOnChange: rebuildOnChange,
-      );
 }

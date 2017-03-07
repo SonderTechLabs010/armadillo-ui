@@ -9,7 +9,7 @@ import 'model.dart';
 import 'panel.dart';
 import 'ticking_model.dart';
 
-export 'model.dart' show ScopedModel, Model;
+export 'model.dart' show ScopedModel, Model, ScopedModelDecendant;
 
 const RK4SpringDescription _kSimulationDesc =
     const RK4SpringDescription(tension: 750.0, friction: 50.0);
@@ -39,12 +39,8 @@ class PanelResizingModel extends TickingModel {
 
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
-  static PanelResizingModel of(
-    BuildContext context, {
-    bool rebuildOnChange: false,
-  }) =>
-      new ModelFinder<PanelResizingModel>()
-          .of(context, rebuildOnChange: rebuildOnChange);
+  static PanelResizingModel of(BuildContext context) =>
+      const ModelFinder<PanelResizingModel>().of(context);
 
   void resizeBegin(ResizingSimulation resizingSimulation) {
     simulations.add(resizingSimulation);
@@ -124,23 +120,4 @@ class PanelResizingModel extends TickingModel {
     });
     return !done;
   }
-}
-
-typedef Widget ScopedPanelResizingWidgetBuilder(
-  BuildContext context,
-  Widget child,
-  PanelResizingModel panelResizingModel,
-);
-
-class ScopedPanelResizingWidget extends StatelessWidget {
-  final ScopedPanelResizingWidgetBuilder builder;
-  final Widget child;
-  ScopedPanelResizingWidget({this.builder, this.child});
-
-  @override
-  Widget build(BuildContext context) => builder(
-        context,
-        child,
-        PanelResizingModel.of(context, rebuildOnChange: true),
-      );
 }

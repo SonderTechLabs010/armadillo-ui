@@ -208,16 +208,18 @@ class StoryProviderStoryGenerator extends StoryGenerator {
           {StoryInfo storyInfo, ChildViewConnection childViewConnection}) =>
       new Story(
         id: new StoryId(storyInfo.id),
-        builder: (BuildContext context) {
-          bool hitTestable = HitTestModel
-              .of(context, rebuildOnChange: true)
-              .isStoryHitTestable(storyInfo.id);
-
-          return new ChildView(
-            hitTestable: hitTestable,
-            connection: childViewConnection,
-          );
-        },
+        builder: (BuildContext context) =>
+            new ScopedModelDecendant<HitTestModel>(
+              builder: (
+                BuildContext context,
+                Widget child,
+                HitTestModel hitTestModel,
+              ) =>
+                  new ChildView(
+                    hitTestable: hitTestModel.isStoryHitTestable(storyInfo.id),
+                    connection: childViewConnection,
+                  ),
+            ),
         // TODO(apwilson): Improve title.
         title:
             '[${Uri.parse(storyInfo.url).pathSegments[Uri.parse(storyInfo.url).pathSegments.length-1]} // ${storyInfo.id}]',

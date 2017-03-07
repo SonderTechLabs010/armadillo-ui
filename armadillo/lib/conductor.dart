@@ -141,11 +141,11 @@ class Conductor extends StatelessWidget {
           Widget stack = new Stack(
             children: <Widget>[
               /// Story List.
-              new ScopedStoryDragTransitionWidget(
+              new ScopedModelDecendant<StoryDragTransitionModel>(
                 builder: (
                   BuildContext context,
                   Widget child,
-                  double progress,
+                  StoryDragTransitionModel storyDragTransitionModel,
                 ) =>
                     new Positioned(
                       left: 0.0,
@@ -154,7 +154,7 @@ class Conductor extends StatelessWidget {
                       bottom: lerpDouble(
                         _kMinimizedNowHeight,
                         0.0,
-                        progress,
+                        storyDragTransitionModel.progress,
                       ),
                       child: child,
                     ),
@@ -253,8 +253,12 @@ class Conductor extends StatelessWidget {
         verticalShift: _kQuickSettingsHeightBump,
         child: new ScrollLocker(
           key: _scrollLockerKey,
-          child: new ScopedStoryDragTransitionWidget(
-            builder: (BuildContext context, Widget child, double progress) =>
+          child: new ScopedModelDecendant<StoryDragTransitionModel>(
+            builder: (
+              BuildContext context,
+              Widget child,
+              StoryDragTransitionModel storyDragTransitionModel,
+            ) =>
                 new StoryList(
                   scrollController: _scrollController,
                   overlayKey: _overlayKey,
@@ -264,7 +268,7 @@ class Conductor extends StatelessWidget {
                       lerpDouble(
                         0.0,
                         _kMinimizedNowHeight,
-                        progress,
+                        storyDragTransitionModel.progress,
                       ),
                   onScroll: (double scrollOffset) {
                     if (_ignoreNextScrollOffsetChange) {

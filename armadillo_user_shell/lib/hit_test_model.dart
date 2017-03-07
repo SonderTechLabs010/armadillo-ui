@@ -5,15 +5,15 @@
 import 'package:armadillo/model.dart';
 import 'package:flutter/widgets.dart';
 
-export 'package:armadillo/model.dart' show ScopedModel, Model;
+export 'package:armadillo/model.dart'
+    show ScopedModel, Model, ScopedModelDecendant;
 
 /// Determines which stories can be hit testable.
 class HitTestModel extends Model {
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
-  static HitTestModel of(BuildContext context, {bool rebuildOnChange: false}) =>
-      new ModelFinder<HitTestModel>()
-          .of(context, rebuildOnChange: rebuildOnChange);
+  static HitTestModel of(BuildContext context) =>
+      new ModelFinder<HitTestModel>().of(context);
 
   List<String> _focusedStoryIds = <String>[];
   bool _storiesObscuredBySuggestionOverlay = false;

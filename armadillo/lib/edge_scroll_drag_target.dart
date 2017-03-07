@@ -52,40 +52,45 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    bool clusterBeingDragged = StoryClusterDragStateModel
-        .of(context, rebuildOnChange: true)
-        .isDragging;
-    if (!_enabled || !clusterBeingDragged) {
-      _kenichiEdgeScrolling.onNoDrag();
-    }
-    return !_enabled || !clusterBeingDragged
-        ? Nothing.widget
-        : new Stack(
-            children: <Widget>[
-              new Positioned(
-                top: 0.0,
-                left: 0.0,
-                right: 0.0,
-                bottom: 0.0,
-                child: _buildDragTarget(
-                  onBuild: (bool hasDraggableAbove, List<Point> points) {
-                    RenderBox box = context.findRenderObject();
-                    double height = box.size.height;
-                    double y = height;
-                    points.forEach((Point point) {
-                      y = math.min(y, point.y);
-                    });
-                    _kenichiEdgeScrolling.update(y, height);
-                    if (!_kenichiEdgeScrolling.isDone) {
-                      startTicking();
-                    }
-                  },
-                ),
+  Widget build(BuildContext context) =>
+      new ScopedModelDecendant<StoryClusterDragStateModel>(
+        builder: (
+          BuildContext context,
+          Widget child,
+          StoryClusterDragStateModel storyClusterDragStateModel,
+        ) {
+          bool isNotDragging =
+              !_enabled || !storyClusterDragStateModel.isDragging;
+          if (isNotDragging) {
+            _kenichiEdgeScrolling.onNoDrag();
+          }
+          return isNotDragging ? Nothing.widget : child;
+        },
+        child: new Stack(
+          children: <Widget>[
+            new Positioned(
+              top: 0.0,
+              left: 0.0,
+              right: 0.0,
+              bottom: 0.0,
+              child: _buildDragTarget(
+                onBuild: (bool hasDraggableAbove, List<Point> points) {
+                  RenderBox box = context.findRenderObject();
+                  double height = box.size.height;
+                  double y = height;
+                  points.forEach((Point point) {
+                    y = math.min(y, point.y);
+                  });
+                  _kenichiEdgeScrolling.update(y, height);
+                  if (!_kenichiEdgeScrolling.isDone) {
+                    startTicking();
+                  }
+                },
               ),
-            ],
-          );
-  }
+            ),
+          ],
+        ),
+      );
 
   @override
   bool handleTick(double seconds) {

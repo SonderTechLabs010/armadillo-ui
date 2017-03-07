@@ -44,9 +44,12 @@ Future<Null> main() async {
   JsonSuggestionModel jsonSuggestionModel = new JsonSuggestionModel();
   JsonStoryGenerator jsonStoryGenerator = new JsonStoryGenerator();
   StoryModel storyModel = new StoryModel(
-    suggestionModel: jsonSuggestionModel,
-    storyGenerator: jsonStoryGenerator,
+    onFocusChanged: jsonSuggestionModel.storyClusterFocusChanged,
   );
+  jsonStoryGenerator.addListener(
+    () => storyModel.onStoryClustersChanged(jsonStoryGenerator.storyClusters),
+  );
+
   NowModel nowModel = new NowModel();
   DebugModel debugModel = new DebugModel();
   PanelResizingModel panelResizingModel = new PanelResizingModel();

@@ -12,35 +12,28 @@ import 'panel.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_id.dart';
-import 'story_generator.dart';
 import 'story_list_layout.dart';
-import 'suggestion_model.dart';
 
 export 'model.dart' show ScopedModel, Model;
 
-/// A simple story model that gets its stories from [storyGenerator] and
-/// reorders them with user interaction.
+typedef void OnFocusChanged(StoryCluster storyCluster);
+
+/// A simple story model that gets its stories from calls
+/// [onStoryClustersChanged] and  reorders them with user interaction.
 class StoryModel extends Model {
-  final SuggestionModel suggestionModel;
-  final StoryGenerator storyGenerator;
+  final OnFocusChanged onFocusChanged;
   List<StoryCluster> _storyClusters = const <StoryCluster>[];
   List<StoryCluster> _activeSortedStoryClusters = const <StoryCluster>[];
   List<StoryCluster> _inactiveStoryClusters = const <StoryCluster>[];
   Size _lastLayoutSize = Size.zero;
   double _listHeight = 0.0;
 
-  StoryModel({this.suggestionModel, this.storyGenerator}) {
-    storyGenerator.addListener(() {
-      _storyClusters = storyGenerator.storyClusters;
-      updateLayouts(_lastLayoutSize);
-      notifyListeners();
-    });
-  }
+  StoryModel({this.onFocusChanged});
 
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
   static StoryModel of(BuildContext context, {bool rebuildOnChange: false}) =>
-      new ModelFinder<StoryModel>()
+      const ModelFinder<StoryModel>()
           .of(context, rebuildOnChange: rebuildOnChange);
 
   List<StoryCluster> get storyClusters => _storyClusters;
@@ -48,6 +41,12 @@ class StoryModel extends Model {
       _activeSortedStoryClusters;
   List<StoryCluster> get inactiveStoryClusters => _inactiveStoryClusters;
   double get listHeight => _listHeight;
+
+  void onStoryClustersChanged(List<StoryCluster> storyClusters) {
+    _storyClusters = storyClusters;
+    updateLayouts(_lastLayoutSize);
+    notifyListeners();
+  }
 
   void updateLayouts(Size size) {
     if (size.width == 0.0 || size.height == 0.0) {
@@ -95,13 +94,13 @@ class StoryModel extends Model {
     storyCluster.inactive = false;
     updateLayouts(_lastLayoutSize);
     notifyListeners();
-    suggestionModel.storyClusterFocusChanged(storyCluster);
+    onFocusChanged?.call(storyCluster);
   }
 
   /// Indicates the currently focused story cluster has been defocused.
   void interactionStopped() {
     notifyListeners();
-    suggestionModel.storyClusterFocusChanged(null);
+    onFocusChanged?.call(null);
   }
 
   /// Randomizes story interaction times within the story cluster.
