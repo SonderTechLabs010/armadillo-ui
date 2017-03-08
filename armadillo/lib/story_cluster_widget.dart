@@ -258,6 +258,7 @@ class InlineStoryTitle extends StatelessWidget {
                       0.0,
                       storyRearrangementScrimModel.progress,
                     ),
+                    child: child,
                   ),
               child: child,
             ),
