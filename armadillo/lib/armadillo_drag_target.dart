@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:ui' show lerpDouble;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -136,10 +138,11 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
 const RK4SpringDescription _kDefaultSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
 
-class _DraggableState<T> extends TickingState<ArmadilloLongPressDraggable<T>> {
-  RK4SpringSimulation _returnSimulation;
+class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
+  final GlobalKey<_DragAvatarWidgetState> _dragAvatarKey =
+      new GlobalKey<_DragAvatarWidgetState>();
+  final GlobalKey _nonDraggedChildKey = new GlobalKey();
   GestureRecognizer _recognizer;
-  VoidCallback _onReturnSimulationDone;
   int _activeCount = 0;
 
   @override
@@ -155,13 +158,15 @@ class _DraggableState<T> extends TickingState<ArmadilloLongPressDraggable<T>> {
   }
 
   @override
-  bool handleTick(double elapsedSeconds) {
-    _returnSimulation?.elapseTime(elapsedSeconds);
-    if (_returnSimulation?.isDone ?? false) {
-      _onReturnSimulationDone();
-    }
-    config.overlayKey.currentState.update();
-    return !(_returnSimulation?.isDone ?? true);
+  Widget build(BuildContext context) {
+    final bool showChild =
+        (_activeCount == 0 || config.childWhenDragging == null) &&
+            (_dragAvatarKey.currentState?.isDone ?? true);
+    return new Listener(
+      key: _nonDraggedChildKey,
+      onPointerDown: _routePointer,
+      child: showChild ? config.child : config.childWhenDragging,
+    );
   }
 
   bool get _canDrag =>
@@ -178,30 +183,39 @@ class _DraggableState<T> extends TickingState<ArmadilloLongPressDraggable<T>> {
     if (!_canDrag) {
       return null;
     }
-    final Rect initialBoundsOnDrag = config.onDragStarted?.call();
-    final RenderBox box = context.findRenderObject();
-    final Point dragStart = box.globalToLocal(position);
+
     setState(() {
       _activeCount += 1;
     });
-    WidgetBuilder builder;
+
+    final RenderBox box = context.findRenderObject();
+    final Point dragStartPoint = box.globalToLocal(position);
+    final Rect initialBoundsOnDrag = config.onDragStarted?.call();
+    final WidgetBuilder builder =
+        (BuildContext context) => new _DragAvatarWidget(
+              key: _dragAvatarKey,
+              returnTargetKey: _nonDraggedChildKey,
+              overlayKey: config.overlayKey,
+              initialPosition: position,
+              dragStartPoint: dragStartPoint,
+              initialBoundsOnDrag: initialBoundsOnDrag,
+              feedbackBuilder: config.feedbackBuilder,
+            );
+    config.overlayKey.currentState.addBuilder(builder);
+
     _DragAvatar<T> dragAvatar = new _DragAvatar<T>(
       data: config.data,
-      onDragUpdate: () {
-        config.overlayKey.currentState.update();
-      },
+      onDragUpdate: (Point position) =>
+          _dragAvatarKey.currentState?.updatePosition(position),
       onDragEnd: (bool wasAccepted) {
         setState(() {
           _activeCount -= 1;
           if (!wasAccepted) {
-            _returnSimulation = new RK4SpringSimulation(
-              initValue: 0.0,
-              desc: _kDefaultSimulationDesc,
+            _dragAvatarKey.currentState?.startReturnSimulation(
+              () => setState(
+                    () => config.overlayKey.currentState.removeBuilder(builder),
+                  ),
             );
-            _returnSimulation.target = 1.0;
-            startTicking();
-            _onReturnSimulationDone =
-                () => config.overlayKey.currentState.removeBuilder(builder);
           } else {
             config.overlayKey.currentState.removeBuilder(builder);
           }
@@ -209,56 +223,123 @@ class _DraggableState<T> extends TickingState<ArmadilloLongPressDraggable<T>> {
         config.onDragEnded?.call();
       },
     );
-    builder = (BuildContext context) => _build(
-          context,
-          dragAvatar.position,
-          dragStart,
-          initialBoundsOnDrag,
-        );
-    config.overlayKey.currentState.addBuilder(builder);
+
     dragAvatar.position = position;
+
     return dragAvatar;
+  }
+}
+
+/// This widget represents the Draggable's Avatar that follows the pointer
+/// around the overlay.  It encapsulates all the state necessary to animate
+/// the avatar back to the Draggable's original position when dragging first
+/// started.  These include: [initialPosition], [dragStartPoint], and
+/// [initialBoundsOnDrag].
+/// [overlayKey] is the key to the overlay this widget is a part of.  It's used
+/// to properly position this widget to follow the pointer.
+/// [feedbackBuilder] builds the widget that follows the pointer.
+///  [returnTargetKey] is the key of the widget this widget will animate to
+///  when it's dropped.
+class _DragAvatarWidget extends StatefulWidget {
+  final GlobalKey returnTargetKey;
+  final GlobalKey<ArmadilloOverlayState> overlayKey;
+  final Point initialPosition;
+  final Point dragStartPoint;
+  final Rect initialBoundsOnDrag;
+  final FeedbackBuilder feedbackBuilder;
+
+  _DragAvatarWidget({
+    Key key,
+    this.returnTargetKey,
+    this.overlayKey,
+    this.initialPosition,
+    this.dragStartPoint,
+    this.initialBoundsOnDrag,
+    this.feedbackBuilder,
+  })
+      : super(key: key);
+
+  @override
+  _DragAvatarWidgetState createState() => new _DragAvatarWidgetState();
+}
+
+class _DragAvatarWidgetState extends TickingState<_DragAvatarWidget> {
+  RK4SpringSimulation _returnSimulation;
+  VoidCallback _onReturnSimulationDone;
+  Point _position;
+
+  @override
+  void initState() {
+    super.initState();
+    _position = config.initialPosition;
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool showChild =
-        (_activeCount == 0 || config.childWhenDragging == null) &&
-            (_returnSimulation?.isDone ?? true);
-    return new Listener(
-      onPointerDown: _routePointer,
-      child: showChild ? config.child : config.childWhenDragging,
-    );
-  }
-
-  Widget _build(
-    BuildContext context,
-    Point position,
-    Point dragStartPoint,
-    Rect initialBoundsOnDrag,
-  ) {
     RenderBox overlayBox = config.overlayKey.currentContext.findRenderObject();
     Point overlayTopLeft = overlayBox.localToGlobal(Point.origin);
-    Offset localOffset = position - dragStartPoint;
-    final double opacity = 1.0 -
-        ((_returnSimulation?.isDone ?? true) ? 0.0 : _returnSimulation.value);
+    Offset localOffset = _position - config.dragStartPoint;
+    double left = localOffset.dx - overlayTopLeft.x;
+    double top = localOffset.dy - overlayTopLeft.y;
+
+    double returnProgress = _returnSimulation?.value ?? 0.0;
+    if (returnProgress > 0.0) {
+      final RenderBox returnTargetBox =
+          config.returnTargetKey.currentContext.findRenderObject();
+      final Point returnTargetTopLeft = returnTargetBox.localToGlobal(
+        Point.origin,
+      );
+      left = lerpDouble(
+        left,
+        returnTargetTopLeft.x - overlayTopLeft.x,
+        returnProgress,
+      );
+      top = lerpDouble(
+        top,
+        returnTargetTopLeft.y - overlayTopLeft.y,
+        returnProgress,
+      );
+    }
     return new Stack(
       children: <Widget>[
         new Positioned(
-          left: localOffset.dx - overlayTopLeft.x,
-          top: localOffset.dy - overlayTopLeft.y,
+          left: left,
+          top: top,
           child: new IgnorePointer(
-            child: new Opacity(
-              opacity: opacity,
-              child: config.feedbackBuilder(
-                dragStartPoint,
-                initialBoundsOnDrag,
-              ),
+            child: config.feedbackBuilder(
+              config.dragStartPoint,
+              config.initialBoundsOnDrag,
             ),
           ),
         ),
       ],
     );
+  }
+
+  @override
+  bool handleTick(double elapsedSeconds) {
+    _returnSimulation?.elapseTime(elapsedSeconds);
+    if (_returnSimulation?.isDone ?? false) {
+      _onReturnSimulationDone();
+    }
+    config.overlayKey.currentState.update();
+    return !(isDone);
+  }
+
+  void updatePosition(Point position) => setState(() {
+        _position = position;
+      });
+
+  bool get isDone => _returnSimulation?.isDone ?? true;
+
+  void startReturnSimulation(VoidCallback onReturnSimulationDone) {
+    _returnSimulation = new RK4SpringSimulation(
+      initValue: 0.0,
+      desc: _kDefaultSimulationDesc,
+    );
+    _returnSimulation.target = 1.0;
+    startTicking();
+    _onReturnSimulationDone = onReturnSimulationDone;
   }
 }
 
@@ -274,19 +355,6 @@ class _DraggableState<T> extends TickingState<ArmadilloLongPressDraggable<T>> {
 ///
 ///  * [ArmadilloLongPressDraggable]
 class ArmadilloDragTarget<T> extends StatefulWidget {
-  /// Creates a widget that receives drags.
-  ///
-  /// The [builder] argument must not be null.
-  ArmadilloDragTarget({
-    Key key,
-    @required this.builder,
-    this.onWillAccept,
-    this.onAccept,
-  })
-      : super(key: key) {
-    assert(builder != null);
-  }
-
   /// Called to build the contents of this widget.
   ///
   /// The builder can build different widgets depending on what is being dragged
@@ -300,6 +368,19 @@ class ArmadilloDragTarget<T> extends StatefulWidget {
   /// Called when an acceptable piece of data was dropped over this drag target.
   final ArmadilloDragTargetAccept<T> onAccept;
 
+  /// Creates a widget that receives drags.
+  ///
+  /// The [builder] argument must not be null.
+  ArmadilloDragTarget({
+    Key key,
+    @required this.builder,
+    this.onWillAccept,
+    this.onAccept,
+  })
+      : super(key: key) {
+    assert(builder != null);
+  }
+
   @override
   _DragTargetState<T> createState() => new _DragTargetState<T>();
 }
@@ -311,9 +392,7 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
   bool didEnter(dynamic data, Point localPosition) {
     assert(_candidateData[data] == null);
     assert(_rejectedData[data] == null);
-    if (data is T &&
-        (config.onWillAccept == null ||
-            config.onWillAccept(data, localPosition))) {
+    if (data is T && (config.onWillAccept?.call(data, localPosition) ?? true)) {
       setState(() {
         _candidateData[data] = localPosition;
       });
@@ -377,11 +456,11 @@ typedef void _OnDragEnd(bool wasAccepted);
 // this widget.
 class _DragAvatar<T> extends Drag {
   final T data;
-  final VoidCallback onDragUpdate;
+  final ValueChanged<Point> onDragUpdate;
   final _OnDragEnd onDragEnd;
+  final List<_DragTargetState<T>> _activeTargets = <_DragTargetState<T>>[];
+  final List<_DragTargetState<T>> _enteredTargets = <_DragTargetState<T>>[];
 
-  List<_DragTargetState<T>> _activeTargets = <_DragTargetState<T>>[];
-  List<_DragTargetState<T>> _enteredTargets = <_DragTargetState<T>>[];
   Point _position;
 
   _DragAvatar({this.data, this.onDragUpdate, this.onDragEnd});
@@ -391,8 +470,6 @@ class _DragAvatar<T> extends Drag {
     _updateDrag(newPosition);
   }
 
-  Point get position => _position;
-
   // Drag API
   @override
   void update(DragUpdateDetails details) {
@@ -400,15 +477,16 @@ class _DragAvatar<T> extends Drag {
   }
 
   @override
-  void end(DragEndDetails details) {
-    _finishDrag(_DragEndKind.dropped, details.velocity);
-  }
+  void end(DragEndDetails details) => _finishDrag(
+        _DragEndKind.dropped,
+        details.velocity,
+      );
 
   @override
   void cancel() => _finishDrag(_DragEndKind.canceled);
 
   void _updateDrag(Point globalPosition) {
-    onDragUpdate?.call();
+    onDragUpdate?.call(globalPosition);
 
     Iterable<_DragTargetState<T>> targets = _getDragTargets(globalPosition);
 
@@ -419,14 +497,15 @@ class _DragAvatar<T> extends Drag {
       _enteredTargets.addAll(targets);
 
       // Enter new targets.
-      _activeTargets = targets
-          .where(
-            (_DragTargetState<T> target) => target.didEnter(
-                  data,
-                  _globalToLocal(target, globalPosition),
-                ),
-          )
-          .toList();
+      _activeTargets.clear();
+      _activeTargets.addAll(
+        targets.where(
+          (_DragTargetState<T> target) => target.didEnter(
+                data,
+                _globalToLocal(target, globalPosition),
+              ),
+        ),
+      );
     }
 
     // Update positions
@@ -494,7 +573,7 @@ class _DragAvatar<T> extends Drag {
       wasAccepted = true;
     }
     _leaveAllEntered();
-    _activeTargets = <_DragTargetState<T>>[];
+    _activeTargets.clear();
     // TODO(ianh): consider passing _entry as well so the client can perform an animation.
     onDragEnd?.call(wasAccepted);
   }

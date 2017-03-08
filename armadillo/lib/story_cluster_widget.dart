@@ -92,11 +92,10 @@ class StoryClusterWidget extends StatelessWidget {
                   );
               return initialBoundsOnDrag;
             },
-            onDragEnded: () {
-              StoryClusterDragStateModel.of(context).removeDragging(
-                    storyCluster.id,
-                  );
-            },
+            onDragEnded: () =>
+                StoryClusterDragStateModel.of(context).removeDragging(
+                      storyCluster.id,
+                    ),
             feedbackBuilder: (
               Point localDragStartPoint,
               Rect initialBoundsOnDrag,

@@ -329,11 +329,10 @@ class StoryPanelsState extends State<StoryPanels> {
                   );
               return initialBoundsOnDrag;
             },
-            onDragEnded: () {
-              StoryClusterDragStateModel.of(context).removeDragging(
-                    story.clusterId,
-                  );
-            },
+            onDragEnded: () =>
+                StoryClusterDragStateModel.of(context).removeDragging(
+                      story.clusterId,
+                    ),
             childWhenDragging: Nothing.widget,
             feedbackBuilder: (
               Point localDragStartPoint,

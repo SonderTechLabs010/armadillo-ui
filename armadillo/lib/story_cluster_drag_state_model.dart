@@ -29,22 +29,34 @@ class StoryClusterDragStateModel extends Model {
   bool get isAcceptable => _acceptableStoryClusters.isNotEmpty;
 
   void addDragging(StoryClusterId storyClusterId) {
+    bool isDraggingBefore = isDragging;
     _draggingStoryClusters.add(storyClusterId);
-    notifyListeners();
+    if (isDragging != isDraggingBefore) {
+      notifyListeners();
+    }
   }
 
   void removeDragging(StoryClusterId storyClusterId) {
+    bool isDraggingBefore = isDragging;
     _draggingStoryClusters.remove(storyClusterId);
-    notifyListeners();
+    if (isDragging != isDraggingBefore) {
+      notifyListeners();
+    }
   }
 
   void addAcceptance(StoryClusterId storyClusterId) {
+    bool isAcceptableBefore = isAcceptable;
     _acceptableStoryClusters.add(storyClusterId);
-    notifyListeners();
+    if (isAcceptable != isAcceptableBefore) {
+      notifyListeners();
+    }
   }
 
   void removeAcceptance(StoryClusterId storyClusterId) {
+    bool isAcceptableBefore = isAcceptable;
     _acceptableStoryClusters.remove(storyClusterId);
-    notifyListeners();
+    if (isAcceptable != isAcceptableBefore) {
+      notifyListeners();
+    }
   }
 }
