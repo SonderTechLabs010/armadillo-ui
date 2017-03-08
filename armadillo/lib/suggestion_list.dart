@@ -88,9 +88,14 @@ class SuggestionListState extends State<SuggestionList> {
   }
 
   void stopAsking() {
+    if (!_asking) {
+      return;
+    }
     setState(() {
       _asking = false;
       SuggestionModel.of(context).asking = _asking;
+      clear();
+      config.onAskingEnded?.call();
     });
   }
 
@@ -112,17 +117,14 @@ class SuggestionListState extends State<SuggestionList> {
             child: new GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () {
-                _asking = !_asking;
-                SuggestionModel.of(context).asking = _asking;
                 if (_asking) {
-                  if (config.onAskingStarted != null) {
-                    config.onAskingStarted();
-                  }
-                } else {
-                  if (config.onAskingEnded != null) {
-                    config.onAskingEnded();
-                  }
+                  return;
                 }
+                setState(() {
+                  _asking = true;
+                });
+                SuggestionModel.of(context).asking = _asking;
+                config.onAskingStarted?.call();
               },
               child: new Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
