@@ -40,7 +40,7 @@ class PanelResizingModel extends TickingModel {
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
   static PanelResizingModel of(BuildContext context) =>
-      const ModelFinder<PanelResizingModel>().of(context);
+      new ModelFinder<PanelResizingModel>().of(context);
 
   void resizeBegin(ResizingSimulation resizingSimulation) {
     simulations.add(resizingSimulation);

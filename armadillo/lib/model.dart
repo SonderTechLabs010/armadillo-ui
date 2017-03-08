@@ -41,8 +41,6 @@ abstract class Model {
 /// Finds a [Model].  This class is necessary as templated classes are relified
 /// but static templated functions are not.
 class ModelFinder<T extends Model> {
-  const ModelFinder();
-
   /// Returns the [Model] of type [T] of the closest ancestor [ScopedModel].
   ///
   /// [Widget]s who call [of] with a [rebuildOnChange] of true will be rebuilt
@@ -151,6 +149,6 @@ class ScopedModelDecendant<T extends Model> extends StatelessWidget {
   Widget build(BuildContext context) => builder(
         context,
         child,
-        const ModelFinder<T>().of(context, rebuildOnChange: true),
+        new ModelFinder<T>().of(context, rebuildOnChange: true),
       );
 }

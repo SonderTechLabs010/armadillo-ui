@@ -19,7 +19,7 @@ class SizeModel extends Model {
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
   static SizeModel of(BuildContext context) =>
-      const ModelFinder<SizeModel>().of(context);
+      new ModelFinder<SizeModel>().of(context);
 
   Size get size => _size;
 

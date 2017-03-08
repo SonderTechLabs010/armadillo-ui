@@ -16,5 +16,5 @@ abstract class ScrimModel extends Model {
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
   static ScrimModel of(BuildContext context) =>
-      const ModelFinder<ScrimModel>().of(context);
+      new ModelFinder<ScrimModel>().of(context);
 }

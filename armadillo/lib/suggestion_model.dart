@@ -15,7 +15,7 @@ abstract class SuggestionModel extends Model {
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
   static SuggestionModel of(BuildContext context) =>
-      const ModelFinder<SuggestionModel>().of(context);
+      new ModelFinder<SuggestionModel>().of(context);
 
   List<Suggestion> get suggestions;
 

@@ -19,7 +19,7 @@ class StoryClusterDragStateModel extends Model {
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
   static StoryClusterDragStateModel of(BuildContext context) =>
-      const ModelFinder<StoryClusterDragStateModel>().of(context);
+      new ModelFinder<StoryClusterDragStateModel>().of(context);
 
   final Set<StoryClusterId> _draggingStoryClusters = new Set<StoryClusterId>();
   final Set<StoryClusterId> _acceptableStoryClusters =

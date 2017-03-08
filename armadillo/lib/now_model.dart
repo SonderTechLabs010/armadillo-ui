@@ -41,7 +41,7 @@ class NowModel extends Model {
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
   /// details.
   static NowModel of(BuildContext context) =>
-      const ModelFinder<NowModel>().of(context);
+      new ModelFinder<NowModel>().of(context);
 
   @override
   void addListener(VoidCallback listener) {
