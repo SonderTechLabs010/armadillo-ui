@@ -101,6 +101,7 @@ typedef void OnOverlayChanged(bool active);
 /// settings overlay.
 class Conductor extends StatelessWidget {
   final bool useSoftKeyboard;
+  final bool blurScrimmedChildren;
   final OnOverlayChanged onQuickSettingsOverlayChanged;
   final OnOverlayChanged onSuggestionsOverlayChanged;
   final _PeekManager _peekManager;
@@ -108,6 +109,7 @@ class Conductor extends StatelessWidget {
 
   Conductor({
     this.useSoftKeyboard: true,
+    this.blurScrimmedChildren,
     this.onQuickSettingsOverlayChanged,
     this.onSuggestionsOverlayChanged,
     StoryClusterDragStateModel storyClusterDragStateModel,
@@ -264,6 +266,7 @@ class Conductor extends StatelessWidget {
                   overlayKey: _overlayKey,
                   multiColumn: maxWidth > _kStoryListMultiColumnWidthThreshold,
                   quickSettingsHeightBump: _kQuickSettingsHeightBump,
+                  blurScrimmedChildren: blurScrimmedChildren,
                   bottomPadding: _kMaximizedNowHeight +
                       lerpDouble(
                         0.0,

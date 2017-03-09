@@ -46,6 +46,7 @@ class StoryListRenderBlock extends RenderBlock {
     double listHeight,
     Color scrimColor,
     double liftScale,
+    bool blurScrimmedChildren,
   })
       : _parentSize = parentSize,
         _scrollController = scrollController,
@@ -53,7 +54,17 @@ class StoryListRenderBlock extends RenderBlock {
         _listHeight = listHeight ?? 0.0,
         _scrimColor = scrimColor ?? new Color(0x00000000),
         _liftScale = liftScale ?? 1.0,
+        _blurScrimmedChildren = blurScrimmedChildren ?? _kBlurScrimmedChildren,
         super(children: children, mainAxis: Axis.vertical);
+
+  bool get blurScrimmedChildren => _blurScrimmedChildren;
+  bool _blurScrimmedChildren;
+  set blurScrimmedChildren(bool value) {
+    if (_blurScrimmedChildren != (value ?? _kBlurScrimmedChildren)) {
+      _blurScrimmedChildren = (value ?? _kBlurScrimmedChildren);
+      markNeedsPaint();
+    }
+  }
 
   Color get scrimColor => _scrimColor;
   Color _scrimColor;
@@ -141,7 +152,7 @@ class StoryListRenderBlock extends RenderBlock {
     });
 
     if (_scrimColor.alpha != 0) {
-      if (_kBlurScrimmedChildren) {
+      if (blurScrimmedChildren) {
         context.pushBackdropFilter(
           offset,
           new ImageFilter.blur(

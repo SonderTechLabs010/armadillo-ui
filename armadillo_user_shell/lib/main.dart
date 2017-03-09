@@ -80,6 +80,7 @@ Future<Null> main() async {
 
   Conductor conductor = new Conductor(
     useSoftKeyboard: false,
+    blurScrimmedChildren: false,
     onQuickSettingsOverlayChanged: hitTestModel.onQuickSettingsOverlayChanged,
     onSuggestionsOverlayChanged: hitTestModel.onSuggestionsOverlayChanged,
     storyClusterDragStateModel: storyClusterDragStateModel,

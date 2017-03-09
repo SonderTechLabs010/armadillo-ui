@@ -45,6 +45,7 @@ class StoryList extends StatelessWidget {
   final GlobalKey<ArmadilloOverlayState> overlayKey;
   final SizeModel sizeModel;
   final VoidCallback onStoryClusterVerticalEdgeHover;
+  final bool blurScrimmedChildren;
 
   StoryList({
     Key key,
@@ -58,6 +59,7 @@ class StoryList extends StatelessWidget {
     this.sizeModel,
     this.onStoryClusterVerticalEdgeHover,
     this.multiColumn: false,
+    this.blurScrimmedChildren,
   })
       : super(key: key);
 
@@ -115,6 +117,7 @@ class StoryList extends StatelessWidget {
               bottomPadding: bottomPadding,
               onScroll: onScroll,
               listHeight: storyModel.listHeight,
+              blurScrimmedChildren: blurScrimmedChildren,
               children: new List<Widget>.generate(
                 storyModel.activeSortedStoryClusters.length,
                 (int index) => _createFocusableStoryCluster(
@@ -240,6 +243,7 @@ class StoryListBlock extends StatelessWidget {
   final ValueChanged<double> onScroll;
   final ScrollController scrollController;
   final List<Widget> children;
+  final bool blurScrimmedChildren;
 
   StoryListBlock({
     Key key,
@@ -248,6 +252,7 @@ class StoryListBlock extends StatelessWidget {
     this.onScroll,
     this.scrollController,
     this.listHeight,
+    this.blurScrimmedChildren,
   })
       : super(
           key: key,
@@ -295,6 +300,7 @@ class StoryListBlock extends StatelessWidget {
                                 parentSize: sizeModel.size,
                                 scrimColor:
                                     storyRearrangementScrimModel.scrimColor,
+                                blurScrimmedChildren: blurScrimmedChildren,
                                 storyDragTransitionModelProgress:
                                     storyDragTransitionModel.progress,
                               ),
@@ -310,6 +316,7 @@ class StoryListBlockBody extends MultiChildRenderObjectWidget {
   final double listHeight;
   final Size parentSize;
   final Color scrimColor;
+  final bool blurScrimmedChildren;
   final double storyDragTransitionModelProgress;
   StoryListBlockBody({
     Key key,
@@ -319,6 +326,7 @@ class StoryListBlockBody extends MultiChildRenderObjectWidget {
     this.listHeight,
     this.parentSize,
     this.scrimColor,
+    this.blurScrimmedChildren,
     this.storyDragTransitionModelProgress,
   })
       : super(key: key, children: children);
@@ -331,6 +339,7 @@ class StoryListBlockBody extends MultiChildRenderObjectWidget {
         bottomPadding: bottomPadding,
         listHeight: listHeight,
         scrimColor: scrimColor,
+        blurScrimmedChildren: blurScrimmedChildren,
         liftScale: lerpDouble(
           1.0,
           0.9,
@@ -347,6 +356,7 @@ class StoryListBlockBody extends MultiChildRenderObjectWidget {
     storyListRenderBlock.bottomPadding = bottomPadding;
     storyListRenderBlock.listHeight = listHeight;
     storyListRenderBlock.scrimColor = scrimColor;
+    storyListRenderBlock.blurScrimmedChildren = blurScrimmedChildren;
     storyListRenderBlock.liftScale = lerpDouble(
       1.0,
       0.9,
