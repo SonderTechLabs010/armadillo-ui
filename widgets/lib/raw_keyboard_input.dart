@@ -62,7 +62,7 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
   bool backspace() => textState?.backspace();
 
   void _handleKey(RawKeyEvent event) {
-    if (event is RawKeyUpEvent) {
+    if (event is RawKeyDownEvent) {
       if (event.data is RawKeyEventDataAndroid) {
         RawKeyEventDataAndroid data = event.data;
         if (data.keyCode == keyCodeEnter) {
