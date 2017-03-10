@@ -19,7 +19,7 @@ if [[ "$command" == "help" ]]; then
   $echo "master    switch all projects to their master branch"
   $echo "local     list projects which are not currently on the master branch"
   $echo "delete    delete a branch in all projects"
-  $echo "status    list uncommitted changes"
+  $echo "status    see 'jiri status'"
   $echo "help      show this help message"
   exit
 fi
@@ -64,13 +64,7 @@ elif [[ "$command" == "delete" ]]; then
     git branch -D $branch
   fi
 elif [[ "$command" == "status" ]]; then
-  changes=`git status -s`
-  if [[ "$changes" != "" ]]; then
-    tput setaf 4
-    $echo "$project"
-    tput sgr0
-    $echo "$changes"
-  fi
+  $echo "Deprecated; use 'jiri status' instead"
 else
   $echo "Unknown command: $command"
   exit 314
