@@ -150,6 +150,15 @@ class SuggestionListState extends State<SuggestionList> {
                         onTextChanged: (String text) {
                           SuggestionModel.of(context).askText = text;
                         },
+                        onTextCommitted: (String text) {
+                          // Select the first suggestion on text commit (ie.
+                          // Pressing enter or tapping 'Go').
+                          List<Suggestion> suggestions =
+                              SuggestionModel.of(context).suggestions;
+                          if (suggestions.isNotEmpty) {
+                            _onSuggestionSelected(suggestions.first);
+                          }
+                        },
                       ),
                     ),
                   ),
