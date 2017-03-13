@@ -20,6 +20,7 @@ import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
+import 'story_cluster_panels_model.dart';
 import 'story_drag_transition_model.dart';
 import 'story_list.dart';
 import 'story_panels.dart';
@@ -61,9 +62,11 @@ class StoryClusterWidget extends StatelessWidget {
       : super(key: key);
 
   @override
-  Widget build(BuildContext context) => _isUnfocused
-      ? _getUnfocusedDragTargetChild(context)
-      : _getStoryClusterWithInlineStoryTitle(context);
+  Widget build(BuildContext context) => storyCluster.wrapWithModels(
+        child: _isUnfocused
+            ? _getUnfocusedDragTargetChild(context)
+            : _getStoryClusterWithInlineStoryTitle(context),
+      );
 
   Widget _getUnfocusedDragTargetChild(BuildContext context) {
     return new OptionalWrapper(
@@ -180,9 +183,12 @@ class StoryClusterWidget extends StatelessWidget {
               storyCluster: storyCluster,
               onAccept: onAccept,
               onVerticalEdgeHover: onVerticalEdgeHover,
-              child: new StoryClusterPanelListener(
-                storyCluster: storyCluster,
-                builder: (BuildContext context, StoryCluster storyCluster) =>
+              child: new ScopedModelDecendant<StoryClusterPanelsModel>(
+                builder: (
+                  BuildContext context,
+                  Widget child,
+                  StoryClusterPanelsModel storyClusterPanelsModel,
+                ) =>
                     new OptionalWrapper(
                       useWrapper: _isFocused &&
                           storyCluster.displayMode == DisplayMode.panels,

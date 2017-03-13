@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
@@ -15,6 +14,7 @@ import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_state_model.dart';
+import 'story_cluster_panels_model.dart';
 import 'story_cluster_widget.dart';
 import 'story_list_render_block.dart';
 import 'story_panels.dart';
@@ -77,36 +77,13 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     // display state.
     _originalStories = config.storyCluster.stories;
     _originalDisplayMode = config.storyCluster.displayMode;
-    config.storyCluster.addPanelListener(_onPanelsChanged);
-  }
-
-  @override
-  void didUpdateConfig(StoryClusterDragFeedback oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    if (oldConfig.storyCluster.id != config.storyCluster.id) {
-      oldConfig.storyCluster.removePanelListener(_onPanelsChanged);
-      config.storyCluster.addPanelListener(_onPanelsChanged);
-    }
   }
 
   @override
   void dispose() {
-    config.storyCluster.removePanelListener(_onPanelsChanged);
     _storyClusterDragStateModel.removeListener(_updateStoryBars);
     super.dispose();
   }
-
-  /// Since we shift the drag feedback based on [DisplayMode] of
-  /// [StoryClusterDragFeedback.storyCluster] we need to [setState] when that
-  /// change occurs.  [StoryClusterDragFeedback.storyCluster.addPanelListener]
-  /// with this function accomplishes this.
-  void _onPanelsChanged() => scheduleMicrotask(
-        () {
-          if (mounted) {
-            setState(() {});
-          }
-        },
-      );
 
   void _updateStoryBars() {
     if (!mounted) {
@@ -139,7 +116,18 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
   }
 
   @override
-  Widget build(BuildContext context) => new ScopedModelDecendant<SizeModel>(
+  Widget build(BuildContext context) =>
+      new ScopedModelDecendant<StoryClusterPanelsModel>(
+        builder: (
+          BuildContext context,
+          Widget child,
+          StoryClusterPanelsModel storyClusterPanelsModel,
+        ) =>
+            _buildWidget(context),
+      );
+
+  Widget _buildWidget(BuildContext context) =>
+      new ScopedModelDecendant<SizeModel>(
         builder: (BuildContext context, Widget child, SizeModel sizeModel) =>
             new ScopedModelDecendant<StoryClusterDragStateModel>(
               builder: (BuildContext context, Widget child,

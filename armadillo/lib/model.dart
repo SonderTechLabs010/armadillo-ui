@@ -9,7 +9,10 @@ import 'package:flutter/widgets.dart';
 /// Base class for classes that provide data via [InheritedWidget]s.
 abstract class Model {
   final Set<VoidCallback> _listeners = new Set<VoidCallback>();
-  int version = 0;
+  int _version = 0;
+  int _microtaskVersion = 0;
+
+  int get version => _version;
 
   /// [listener] will be notified when the model changes.
   void addListener(VoidCallback listener) {
@@ -31,10 +34,14 @@ abstract class Model {
     // for them to happen later.
     // TODO(apwilson): This is a bad-flutter-code-smell. Eliminate the need for
     // this scheduleMicrotask.
-    scheduleMicrotask(() {
-      version++;
-      _listeners.toList().forEach((VoidCallback listener) => listener());
-    });
+    if (_microtaskVersion == _version) {
+      _microtaskVersion++;
+      scheduleMicrotask(() {
+        _version++;
+        _microtaskVersion = _version;
+        _listeners.toList().forEach((VoidCallback listener) => listener());
+      });
+    }
   }
 }
 

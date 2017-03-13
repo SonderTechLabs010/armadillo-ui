@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
@@ -22,6 +21,7 @@ import 'story_cluster.dart';
 import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
+import 'story_cluster_panels_model.dart';
 import 'story_full_size_simulated_sized_box.dart';
 import 'story_model.dart';
 import 'story_positioned.dart';
@@ -35,7 +35,7 @@ const double _kFocusedCornerRadius = 8.0;
 const bool _kGrowFocusedTab = false;
 
 /// Displays up to four stories in a grid-like layout.
-class StoryPanels extends StatefulWidget {
+class StoryPanels extends StatelessWidget {
   final StoryCluster storyCluster;
   final double focusProgress;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
@@ -66,45 +66,20 @@ class StoryPanels extends StatefulWidget {
   }
 
   @override
-  StoryPanelsState createState() => new StoryPanelsState();
-}
-
-class StoryPanelsState extends State<StoryPanels> {
-  @override
-  void initState() {
-    super.initState();
-    config.storyCluster.addPanelListener(_onPanelsChanged);
-  }
-
-  @override
-  void didUpdateConfig(StoryPanels oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    if (oldConfig.storyCluster.id != config.storyCluster.id) {
-      oldConfig.storyCluster.removePanelListener(_onPanelsChanged);
-      config.storyCluster.addPanelListener(_onPanelsChanged);
-    }
-  }
-
-  @override
-  void dispose() {
-    config.storyCluster.removePanelListener(_onPanelsChanged);
-    super.dispose();
-  }
-
-  void _onPanelsChanged() => scheduleMicrotask(
-        () {
-          if (mounted) {
-            setState(() {});
-          }
-        },
+  Widget build(BuildContext context) =>
+      new ScopedModelDecendant<StoryClusterPanelsModel>(
+        builder: (
+          BuildContext context,
+          Widget child,
+          StoryClusterPanelsModel storyClusterPanelsModel,
+        ) =>
+            _buildWidget(context),
       );
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildWidget(BuildContext context) {
     /// Move placeholders to the beginning of the list when putting them in
     /// the stack to ensure they are behind the real stories in paint order.
-    List<Story> sortedStories =
-        new List<Story>.from(config.storyCluster.stories);
+    List<Story> sortedStories = new List<Story>.from(storyCluster.stories);
     sortedStories.sort(
       (Story a, Story b) => a.isPlaceHolder && !b.isPlaceHolder
           ? -1
@@ -113,16 +88,16 @@ class StoryPanelsState extends State<StoryPanels> {
 
     List<Widget> stackChildren = <Widget>[];
 
-    if (config.paintShadows) {
+    if (paintShadows) {
       stackChildren.addAll(
-        config.storyCluster.realStories.map(
+        storyCluster.realStories.map(
           (Story story) => new StoryPositioned(
                 storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
-                focusProgress: config.focusProgress,
-                displayMode: config.storyCluster.displayMode,
-                isFocused: (config.storyCluster.focusedStoryId == story.id),
+                focusProgress: focusProgress,
+                displayMode: storyCluster.displayMode,
+                isFocused: (storyCluster.focusedStoryId == story.id),
                 panel: story.panel,
-                currentSize: config.currentSize,
+                currentSize: currentSize,
                 clip: false,
                 childContainerKey: story.shadowPositionedKey,
                 child: new SimulatedTransform(
@@ -136,7 +111,7 @@ class StoryPanelsState extends State<StoryPanels> {
                           lerpDouble(
                             _kUnfocusedCornerRadius,
                             _kFocusedCornerRadius,
-                            config.focusProgress,
+                            focusProgress,
                           ),
                         ),
                       ),
@@ -153,23 +128,23 @@ class StoryPanelsState extends State<StoryPanels> {
         (Story story) {
           List<double> fractionalPadding = _getStoryBarPadding(
             story: story,
-            width: config.currentSize.width,
+            width: currentSize.width,
           );
 
           return new StoryPositioned(
             storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
-            focusProgress: config.focusProgress,
-            displayMode: config.storyCluster.displayMode,
-            isFocused: (config.storyCluster.focusedStoryId == story.id),
+            focusProgress: focusProgress,
+            displayMode: storyCluster.displayMode,
+            isFocused: (storyCluster.focusedStoryId == story.id),
             panel: story.panel,
-            currentSize: config.currentSize,
+            currentSize: currentSize,
             childContainerKey: story.positionedKey,
             child: _getStory(
               context,
               story,
               fractionalPadding[0],
               fractionalPadding[1],
-              config.currentSize,
+              currentSize,
             ),
           );
         },
@@ -184,7 +159,7 @@ class StoryPanelsState extends State<StoryPanels> {
     Story story,
     Widget child,
   }) {
-    final Widget storyWidget = config.storyWidgets[story.id];
+    final Widget storyWidget = storyWidgets[story.id];
     double initialDxOnDrag;
     bool onFirstHoverCalled = false;
     Map<StoryId, Panel> storyPanelsOnDrag = <StoryId, Panel>{};
@@ -192,12 +167,11 @@ class StoryPanelsState extends State<StoryPanels> {
     DisplayMode displayModeOnDrag;
     return new OptionalWrapper(
       // Don't allow dragging if we're the only story.
-      useWrapper: config.storyCluster.realStories.length > 1 &&
-          config.focusProgress == 1.0,
+      useWrapper: storyCluster.realStories.length > 1 && focusProgress == 1.0,
       builder: (BuildContext context, Widget child) =>
           new ArmadilloLongPressDraggable<DraggedStoryClusterData>(
             key: story.clusterDraggableKey,
-            overlayKey: config.overlayKey,
+            overlayKey: overlayKey,
             data: new DraggedStoryClusterData(
               id: story.clusterId,
               // If a story bar is dragged such that the story is split from the
@@ -214,7 +188,7 @@ class StoryPanelsState extends State<StoryPanels> {
                   // Mirror drag feedback with this.
 
                   // 1. Add a placeholder for the split story.
-                  config.storyCluster.add(
+                  storyCluster.add(
                     story: new PlaceHolderStory(associatedStoryId: story.id),
                     withPanel: storyPanelsOnDrag[story.id],
                     atIndex: storyListOrderOnDrag.indexOf(story.id),
@@ -224,8 +198,7 @@ class StoryPanelsState extends State<StoryPanels> {
                   storyPanelsOnDrag.keys
                       .where((StoryId storyId) => storyId != story.id)
                       .forEach(
-                        (StoryId storyId) =>
-                            config.storyCluster.replaceStoryPanel(
+                        (StoryId storyId) => storyCluster.replaceStoryPanel(
                               storyId: storyId,
                               withPanel: storyPanelsOnDrag[storyId],
                             ),
@@ -253,7 +226,7 @@ class StoryPanelsState extends State<StoryPanels> {
                   );
 
                   // 5. Have feedback cluster mirror story order of cluster.
-                  feedbackCluster.mirrorStoryOrder(config.storyCluster.stories);
+                  feedbackCluster.mirrorStoryOrder(storyCluster.stories);
 
                   // 6. Update feedback cluster display mode.
                   feedbackCluster.displayMode = displayModeOnDrag;
@@ -266,8 +239,8 @@ class StoryPanelsState extends State<StoryPanels> {
                 // 1. Replace the place holder in this cluster with the original
                 //    story.
                 // 2. Restore story order.
-                config.storyCluster.removePreviews();
-                config.storyCluster.add(
+                storyCluster.removePreviews();
+                storyCluster.add(
                   story: story,
                   withPanel: storyPanelsOnDrag[story.id],
                   atIndex: storyListOrderOnDrag.indexOf(story.id),
@@ -275,7 +248,7 @@ class StoryPanelsState extends State<StoryPanels> {
 
                 // 3. Restore panels.
                 storyPanelsOnDrag.keys.forEach(
-                  (StoryId storyId) => config.storyCluster.replaceStoryPanel(
+                  (StoryId storyId) => storyCluster.replaceStoryPanel(
                         storyId: storyId,
                         withPanel: storyPanelsOnDrag[storyId],
                       ),
@@ -306,23 +279,22 @@ class StoryPanelsState extends State<StoryPanels> {
                   story.storyBarKey.currentContext.findRenderObject();
               Point storyBarBoxTopLeft =
                   storyBarBox.localToGlobal(Point.origin);
-              initialDxOnDrag =
-                  (config.storyCluster.displayMode == DisplayMode.tabs)
-                      ? -storyBarBoxTopLeft.x
-                      : 0.0;
+              initialDxOnDrag = (storyCluster.displayMode == DisplayMode.tabs)
+                  ? -storyBarBoxTopLeft.x
+                  : 0.0;
 
               // Store off panel configuration before splitting.
               storyPanelsOnDrag.clear();
               storyListOrderOnDrag.clear();
-              config.storyCluster.stories.forEach((Story story) {
+              storyCluster.stories.forEach((Story story) {
                 storyPanelsOnDrag[story.id] = new Panel.from(story.panel);
                 storyListOrderOnDrag.add(story.id);
               });
-              displayModeOnDrag = config.storyCluster.displayMode;
+              displayModeOnDrag = storyCluster.displayMode;
 
               StoryModel.of(context).split(
                     storyToSplit: story,
-                    from: config.storyCluster,
+                    from: storyCluster,
                   );
               StoryClusterDragStateModel.of(context).addDragging(
                     story.clusterId,
@@ -343,12 +315,12 @@ class StoryPanelsState extends State<StoryPanels> {
 
               return new StoryClusterDragFeedback(
                 key: storyCluster.dragFeedbackKey,
-                overlayKey: config.overlayKey,
+                overlayKey: overlayKey,
                 storyCluster: storyCluster,
                 storyWidgets: <StoryId, Widget>{story.id: storyWidget},
                 localDragStartPoint: localDragStartPoint,
                 initialBounds: initialBoundsOnDrag,
-                focusProgress: config.focusProgress,
+                focusProgress: focusProgress,
                 initDx: initialDxOnDrag,
               );
             },
@@ -378,15 +350,14 @@ class StoryPanelsState extends State<StoryPanels> {
                   width: currentSize.width,
                   child: new GestureDetector(
                     onTap: () {
-                      config.storyCluster.focusedStoryId = story.id;
-                      _onPanelsChanged();
+                      storyCluster.focusedStoryId = story.id;
                       // If we're in tabbed mode we want to jump the newly
                       // focused story's size to full size instead of animating
                       // it.
-                      if (config.storyCluster.displayMode == DisplayMode.tabs) {
-                        config.storyCluster.stories.forEach((Story story) {
+                      if (storyCluster.displayMode == DisplayMode.tabs) {
+                        storyCluster.stories.forEach((Story story) {
                           bool storyFocused =
-                              (config.storyCluster.focusedStoryId == story.id);
+                              (storyCluster.focusedStoryId == story.id);
                           story.tabSizerKey.currentState
                               .jump(heightFactor: storyFocused ? 1.0 : 0.0);
                           if (storyFocused) {
@@ -408,9 +379,9 @@ class StoryPanelsState extends State<StoryPanels> {
                           story: story,
                           minimizedHeight: _kStoryBarMinimizedHeight,
                           maximizedHeight: _kStoryBarMaximizedHeight,
-                          focused: (config.storyCluster.displayMode ==
+                          focused: (storyCluster.displayMode ==
                                   DisplayMode.panels) ||
-                              (config.storyCluster.focusedStoryId == story.id),
+                              (storyCluster.focusedStoryId == story.id),
                         ),
                       ),
                     ),
@@ -422,12 +393,10 @@ class StoryPanelsState extends State<StoryPanels> {
                   child: new SimulatedFractionallySizedBox(
                     key: story.tabSizerKey,
                     alignment: FractionalOffset.topCenter,
-                    heightFactor:
-                        (config.storyCluster.focusedStoryId == story.id ||
-                                config.storyCluster.displayMode ==
-                                    DisplayMode.panels)
-                            ? 1.0
-                            : 0.0,
+                    heightFactor: (storyCluster.focusedStoryId == story.id ||
+                            storyCluster.displayMode == DisplayMode.panels)
+                        ? 1.0
+                        : 0.0,
                     child: new Container(
                       decoration: new BoxDecoration(
                         backgroundColor: story.themeColor,
@@ -445,11 +414,11 @@ class StoryPanelsState extends State<StoryPanels> {
         fit: ImageFit.cover,
         alignment: FractionalOffset.topCenter,
         child: new StoryFullSizeSimulatedSizedBox(
-          displayMode: config.storyCluster.displayMode,
+          displayMode: storyCluster.displayMode,
           panel: story.panel,
           containerKey: story.containerKey,
           storyBarMaximizedHeight: _kStoryBarMaximizedHeight,
-          child: config.storyWidgets[story.id] ?? story.builder(context),
+          child: storyWidgets[story.id] ?? story.builder(context),
         ),
       );
 
@@ -461,32 +430,31 @@ class StoryPanelsState extends State<StoryPanels> {
     double width,
     bool growFocused: _kGrowFocusedTab,
   }) {
-    if (config.storyCluster.displayMode == DisplayMode.panels) {
+    if (storyCluster.displayMode == DisplayMode.panels) {
       return <double>[0.0, 0.0];
     }
-    int storyBarGaps = config.storyCluster.stories.length - 1;
+    int storyBarGaps = storyCluster.stories.length - 1;
     int spaces = _kGrowFocusedTab
-        ? config.storyCluster.stories.length + 1
-        : config.storyCluster.stories.length;
+        ? storyCluster.stories.length + 1
+        : storyCluster.stories.length;
     double gapFractionalWidth = 4.0 / width;
     double fractionalWidthPerSpace =
         (1.0 - (storyBarGaps * gapFractionalWidth)) / spaces;
 
-    int index = config.storyCluster.stories.indexOf(story);
+    int index = storyCluster.stories.indexOf(story);
     double left = 0.0;
-    for (int i = 0; i < config.storyCluster.stories.length; i++) {
+    for (int i = 0; i < storyCluster.stories.length; i++) {
       if (i == index) {
         break;
       }
       left += fractionalWidthPerSpace + gapFractionalWidth;
       if (growFocused &&
-          config.storyCluster.stories[i].id ==
-              config.storyCluster.focusedStoryId) {
+          storyCluster.stories[i].id == storyCluster.focusedStoryId) {
         left += fractionalWidthPerSpace;
       }
     }
     double fractionalWidth =
-        growFocused && (story.id == config.storyCluster.focusedStoryId)
+        growFocused && (story.id == storyCluster.focusedStoryId)
             ? 2.0 * fractionalWidthPerSpace
             : fractionalWidthPerSpace;
     double right = 1.0 - left - fractionalWidth;

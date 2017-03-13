@@ -21,6 +21,7 @@ import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
+import 'story_cluster_stories_model.dart';
 import 'story_model.dart';
 import 'target_line_overlay.dart';
 import 'target_line_influence_overlay.dart';
@@ -158,7 +159,6 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   @override
   void initState() {
     super.initState();
-    config.storyCluster.addStoryListListener(_onStoryListChanged);
     _originalFocusedStoryId = config.storyCluster.focusedStoryId;
     config.storyCluster.stories.forEach((Story story) {
       _originalStoryIdToPanelMap[story.id] = new Panel.from(story.panel);
@@ -171,8 +171,6 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   void didUpdateConfig(PanelDragTargets oldConfig) {
     super.didUpdateConfig(oldConfig);
     if (oldConfig.storyCluster.id != config.storyCluster.id) {
-      oldConfig.storyCluster.removeStoryListListener(_onStoryListChanged);
-      config.storyCluster.addStoryListListener(_onStoryListChanged);
       _originalFocusedStoryId = config.storyCluster.focusedStoryId;
       _originalStoryIdToPanelMap.clear();
       config.storyCluster.stories.forEach((Story story) {
@@ -187,15 +185,19 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   }
 
   @override
-  void dispose() {
-    config.storyCluster.removeStoryListListener(_onStoryListChanged);
-    super.dispose();
-  }
-
-  void _onStoryListChanged() => _populateTargetLines();
-
-  @override
   Widget build(BuildContext context) =>
+      new ScopedModelDecendant<StoryClusterStoriesModel>(
+        builder: (
+          BuildContext context,
+          Widget child,
+          StoryClusterStoriesModel storyClusterStoriesModel,
+        ) {
+          _populateTargetLines();
+          return _buildWidget(context);
+        },
+      );
+
+  Widget _buildWidget(BuildContext context) =>
       new ArmadilloDragTarget<DraggedStoryClusterData>(
         onWillAccept: (DraggedStoryClusterData draggedStoryClusterData, _) =>
             config.storyCluster.id != draggedStoryClusterData.id,
