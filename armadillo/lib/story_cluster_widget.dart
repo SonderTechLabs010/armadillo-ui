@@ -67,7 +67,7 @@ class StoryClusterWidget extends StatelessWidget {
 
   Widget _getUnfocusedDragTargetChild(BuildContext context) {
     return new OptionalWrapper(
-      useWrapper: _isUnfocused,
+      useWrapper: _isUnfocused && !storyCluster.isPlaceholder,
       builder: (BuildContext context, Widget child) =>
           new ArmadilloLongPressDraggable<DraggedStoryClusterData>(
             key: storyCluster.clusterDraggableKey,

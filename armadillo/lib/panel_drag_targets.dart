@@ -531,12 +531,10 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
   /// If [activate] is true, start the inline preview scale simulation.  If
   /// false, reverse the simulation back to its beginning.
   void _updateInlinePreviewScalingSimulation(bool activate) {
-    scheduleMicrotask(() {
-      config.storyCluster.inlinePreviewScaleSimulationKey.currentState?.target =
-          activate ? 1.0 : 0.0;
-      config.storyCluster.inlinePreviewHintScaleSimulationKey.currentState
-          ?.target = (activate || _candidateValidityTimer != null) ? 1.0 : 0.0;
-    });
+    config.storyCluster.inlinePreviewScaleSimulationKey.currentState?.target =
+        activate ? 1.0 : 0.0;
+    config.storyCluster.inlinePreviewHintScaleSimulationKey.currentState
+        ?.target = (activate || _candidateValidityTimer != null) ? 1.0 : 0.0;
   }
 
   void _updateClosestTargets(Map<StoryCluster, Point> storyClusterCandidates) {
@@ -1528,16 +1526,9 @@ class PanelDragTargetsState extends TickingState<PanelDragTargets> {
     _normalizeSizes();
 
     // 2) Remove dropped cluster from story model.
-    // NOTE: We do this in a microtask because of the following:
-    //   a) Messing with the [StoryModel] could cause a setState call.
-    //   b) This function could be called while we're building (due to an
-    //      onHover callback).
-    //   c) Causing a setState while building is a big Flutter no-no.
-    scheduleMicrotask(() {
-      if (!preview) {
-        StoryModel.of(context).remove(storyCluster);
-      }
-    });
+    if (!preview) {
+      StoryModel.of(context).remove(storyCluster);
+    }
   }
 
   void _updateFocusedStoryId(StoryCluster storyCluster) {

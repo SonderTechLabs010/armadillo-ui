@@ -311,6 +311,8 @@ class StoryCluster {
     notifyPanelListeners();
   }
 
+  bool get isPlaceholder => stories.length == 1 && stories.first.isPlaceHolder;
+
   void becomePlaceholder() {
     _stories.clear();
     _stories.add(new PlaceHolderStory(transparent: true));
