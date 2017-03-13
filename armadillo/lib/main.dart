@@ -41,8 +41,10 @@ Future<Null> main() async {
             );
   }
 
-  JsonSuggestionModel jsonSuggestionModel = new JsonSuggestionModel();
-  JsonStoryGenerator jsonStoryGenerator = new JsonStoryGenerator();
+  JsonSuggestionModel jsonSuggestionModel = new JsonSuggestionModel()
+    ..load(defaultBundle);
+  JsonStoryGenerator jsonStoryGenerator = new JsonStoryGenerator()
+    ..load(defaultBundle);
   StoryModel storyModel = new StoryModel(
     onFocusChanged: jsonSuggestionModel.storyClusterFocusChanged,
   );
@@ -53,7 +55,8 @@ Future<Null> main() async {
   NowModel nowModel = new NowModel();
   DebugModel debugModel = new DebugModel();
   PanelResizingModel panelResizingModel = new PanelResizingModel();
-  ConstraintsModel constraintsModel = new ConstraintsModel();
+  ConstraintsModel constraintsModel = new ConstraintsModel()
+    ..load(defaultBundle);
   StoryClusterDragStateModel storyClusterDragStateModel =
       new StoryClusterDragStateModel();
   StoryRearrangementScrimModel storyRearrangementScrimModel =
@@ -85,9 +88,6 @@ Future<Null> main() async {
   runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
 
   await SystemChrome.setEnabledSystemUIOverlays(<SystemUiOverlay>[]);
-  jsonStoryGenerator.load(defaultBundle);
-  jsonSuggestionModel.load(defaultBundle);
-  constraintsModel.load(defaultBundle);
 }
 
 Widget _buildApp({

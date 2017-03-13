@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:application.lib.app.dart/app.dart';
-import 'package:apps.modular.services.user/user_shell.fidl.dart';
 import 'package:armadillo/armadillo.dart';
 import 'package:armadillo/armadillo_drag_target.dart';
 import 'package:armadillo/child_constraints_changer.dart';
@@ -26,7 +25,6 @@ import 'package:armadillo/story_time_randomizer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:lib.fidl.dart/bindings.dart';
 import 'package:sysui_widgets/default_bundle.dart';
 
 import 'focus_controller_impl.dart';
@@ -35,18 +33,13 @@ import 'initial_story_generator.dart';
 import 'story_provider_story_generator.dart';
 import 'suggestion_provider_suggestion_model.dart';
 import 'user_shell_impl.dart';
+import 'user_shell_widget.dart';
 
 /// Set to true to enable the performance overlay.
 const bool _kShowPerformanceOverlay = false;
 
 /// Set to true to enable dumping of all errors, not just the first one.
 const bool _kDumpAllErrors = false;
-
-/// This is global as we need it to be alive as long as we are.
-UserShellImpl _userShell;
-
-/// This is global as we need it to be alive as long as we are.
-ApplicationContext _applicationContext;
 
 Future<Null> main() async {
   if (_kDumpAllErrors) {
@@ -58,7 +51,8 @@ Future<Null> main() async {
   }
 
   HitTestModel hitTestModel = new HitTestModel();
-  InitialStoryGenerator initialStoryGenerator = new InitialStoryGenerator();
+  InitialStoryGenerator initialStoryGenerator = new InitialStoryGenerator()
+    ..load(defaultBundle);
   StoryProviderStoryGenerator storyProviderStoryGenerator =
       new StoryProviderStoryGenerator(
     onNoStories: initialStoryGenerator.createStories,
@@ -126,24 +120,11 @@ Future<Null> main() async {
     }
   });
 
-  _userShell = new UserShellImpl(
-    storyProviderStoryGenerator: storyProviderStoryGenerator,
-    suggestionProviderSuggestionModel: suggestionProviderSuggestionModel,
-    focusController: focusController,
-  );
-
-  _applicationContext = new ApplicationContext.fromStartupInfo();
-  _applicationContext.outgoingServices.addServiceForName(
-    (InterfaceRequest<UserShell> request) {
-      _userShell.bind(request);
-    },
-    UserShell.serviceName,
-  );
-
   NowModel nowModel = new NowModel();
   DebugModel debugModel = new DebugModel();
   PanelResizingModel panelResizingModel = new PanelResizingModel();
-  ConstraintsModel constraintsModel = new ConstraintsModel();
+  ConstraintsModel constraintsModel = new ConstraintsModel()
+    ..load(defaultBundle);
 
   Widget app = _buildApp(
     storyModel: storyModel,
@@ -164,10 +145,18 @@ Future<Null> main() async {
     hitTestModel: hitTestModel,
   );
 
-  runApp(_kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app);
+  UserShellWidget userShellWidget = new UserShellWidget(
+    applicationContext: new ApplicationContext.fromStartupInfo(),
+    userShell: new UserShellImpl(
+      storyProviderStoryGenerator: storyProviderStoryGenerator,
+      suggestionProviderSuggestionModel: suggestionProviderSuggestionModel,
+      focusController: focusController,
+    ),
+    child:
+        _kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app,
+  )..advertise();
 
-  constraintsModel.load(defaultBundle);
-  initialStoryGenerator.load(defaultBundle);
+  runApp(userShellWidget);
 }
 
 Widget _buildApp({
