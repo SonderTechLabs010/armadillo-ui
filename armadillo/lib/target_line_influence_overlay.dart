@@ -4,21 +4,21 @@
 
 import 'package:flutter/widgets.dart';
 
+import 'drag_direction.dart';
 import 'line_segment.dart';
-import 'story_cluster.dart';
 
-const double _kStepSize = 50.0;
-const double _kTargetMargin = 2.0;
+const double _kStepSize = 40.0;
+const double _kTargetMargin = 1.0;
 
 typedef LineSegment ClosestLineGetter(Point point);
 
 /// When [enabled] is true, this widget draws the influence of the given
 /// [targetLines] by drawing a bunch of points that will accept
-/// [storyClusterCandidates] overlaid on top of [child].
+/// candidates overlaid on top of [child].
 class TargetLineInfluenceOverlay extends StatelessWidget {
   final Widget child;
   final List<LineSegment> targetLines;
-  final Map<StoryCluster, Point> storyClusterCandidates;
+  final DragDirection dragDirection;
   final ClosestLineGetter closestLineGetter;
 
   /// Set to true to draw influence.
@@ -27,7 +27,7 @@ class TargetLineInfluenceOverlay extends StatelessWidget {
   TargetLineInfluenceOverlay({
     this.enabled,
     this.targetLines,
-    this.storyClusterCandidates,
+    this.dragDirection,
     this.closestLineGetter,
     this.child,
   });
@@ -36,14 +36,15 @@ class TargetLineInfluenceOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> stackChildren = <Widget>[new Positioned.fill(child: child)];
 
-    // When we have a candidate, show the target lines.
-    if (enabled && storyClusterCandidates.isNotEmpty) {
+    // When enabled, show the influence.
+    if (enabled) {
       // Add all the lines.
       stackChildren.add(
         new Positioned.fill(
           child: new RepaintBoundary(
             child: new CustomPaint(
               painter: new InfluencePainter(
+                dragDirection: dragDirection,
                 lines: targetLines,
                 closestLineGetter: closestLineGetter,
               ),
@@ -57,10 +58,11 @@ class TargetLineInfluenceOverlay extends StatelessWidget {
 }
 
 class InfluencePainter extends CustomPainter {
+  final DragDirection dragDirection;
   final List<LineSegment> lines;
   final ClosestLineGetter closestLineGetter;
 
-  InfluencePainter({this.lines, this.closestLineGetter});
+  InfluencePainter({this.dragDirection, this.lines, this.closestLineGetter});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -106,6 +108,9 @@ class InfluencePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(InfluencePainter oldDelegate) {
+    if (oldDelegate.dragDirection != dragDirection) {
+      return true;
+    }
     if (oldDelegate.lines.length != lines.length) {
       return true;
     }

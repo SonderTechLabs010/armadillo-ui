@@ -5,17 +5,16 @@
 import 'package:flutter/widgets.dart';
 
 import 'line_segment.dart';
-import 'story_cluster.dart';
 
 /// When [enabled] is true, this widget draws the given [targetLines]
-/// that will accept [storyClusterCandidates] overlaid on top of [child].  The
-/// current [Point]s of the [storyClusterCandidates] along with those of the
+/// that will accept [candidatePoints] overlaid on top of [child].  The
+/// current [Point]s of the [candidatePoints] along with those of the
 /// [closestTargetLockPoints] are also drawn on top of [child].
 class TargetLineOverlay extends StatelessWidget {
   final Widget child;
   final List<LineSegment> targetLines;
-  final Map<StoryCluster, Point> closestTargetLockPoints;
-  final Map<StoryCluster, Point> storyClusterCandidates;
+  final List<Point> closestTargetLockPoints;
+  final List<Point> candidatePoints;
 
   /// Set to true to draw target lines.
   final bool enabled;
@@ -24,7 +23,7 @@ class TargetLineOverlay extends StatelessWidget {
     this.enabled,
     this.targetLines,
     this.closestTargetLockPoints,
-    this.storyClusterCandidates,
+    this.candidatePoints,
     this.child,
   });
 
@@ -33,7 +32,7 @@ class TargetLineOverlay extends StatelessWidget {
     List<Widget> stackChildren = <Widget>[new Positioned.fill(child: child)];
 
     // When we have a candidate, show the target lines.
-    if (enabled && storyClusterCandidates.isNotEmpty) {
+    if (enabled && candidatePoints.isNotEmpty) {
       // Add all the lines.
       targetLines.forEach(
         (LineSegment line) => stackChildren.addAll(
@@ -43,7 +42,7 @@ class TargetLineOverlay extends StatelessWidget {
 
       // Add candidate points
       stackChildren.addAll(
-        storyClusterCandidates.values.map(
+        candidatePoints.map(
           (Point point) => new Positioned(
                 left: point.x - 5.0,
                 top: point.y - 5.0,
@@ -59,7 +58,7 @@ class TargetLineOverlay extends StatelessWidget {
       );
       // Add candidate lockpoints
       stackChildren.addAll(
-        closestTargetLockPoints.values.map(
+        closestTargetLockPoints.map(
           (Point point) => new Positioned(
                 left: point.x - 5.0,
                 top: point.y - 5.0,

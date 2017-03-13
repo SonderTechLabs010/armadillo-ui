@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/widgets.dart';
 
+import 'drag_direction.dart';
 import 'panel_drag_targets.dart';
 import 'story_cluster.dart';
 
@@ -114,8 +115,31 @@ class LineSegment {
 
   bool get isHorizontal => a.y == b.y;
   bool get isVertical => !isHorizontal;
-  bool canAccept(StoryCluster storyCluster) =>
-      storyCluster.realStories.length <= maxStoriesCanAccept;
+  bool canAccept(int storyCount) => storyCount <= maxStoriesCanAccept;
+
+  bool isValidInDirection(DragDirection dragDirection) {
+    if (!directionallyTargetable) {
+      return true;
+    }
+    switch (dragDirection) {
+      case DragDirection.left:
+      case DragDirection.right:
+        if (isHorizontal) {
+          return false;
+        }
+        break;
+      case DragDirection.up:
+      case DragDirection.down:
+        if (isVertical) {
+          return false;
+        }
+        break;
+      case DragDirection.none:
+      default:
+        break;
+    }
+    return true;
+  }
 
   bool isInDirectionFromPoint(DragDirection dragDirection, Point point) {
     if (!directionallyTargetable) {
