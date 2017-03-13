@@ -14,7 +14,6 @@ import 'story_provider_story_generator.dart';
 import 'suggestion_provider_suggestion_model.dart';
 
 class UserShellImpl extends UserShell {
-  final UserShellBinding _binding = new UserShellBinding();
   final StoryProviderStoryGenerator storyProviderStoryGenerator;
   final SuggestionProviderSuggestionModel suggestionProviderSuggestionModel;
   final FocusControllerImpl focusController;
@@ -28,10 +27,6 @@ class UserShellImpl extends UserShell {
     this.suggestionProviderSuggestionModel,
     this.focusController,
   });
-
-  void bind(InterfaceRequest<UserShell> request) {
-    _binding.bind(this, request);
-  }
 
   @override
   void initialize(
@@ -50,7 +45,5 @@ class UserShellImpl extends UserShell {
   }
 
   @override
-  void terminate(void done()) {
-    done();
-  }
+  void terminate(void done()) => done();
 }
