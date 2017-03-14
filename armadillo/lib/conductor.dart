@@ -344,6 +344,7 @@ class Conductor extends StatelessWidget {
               _suggestionOverlayKey.currentState.onVerticalDragEnd(details),
           onOverscrollThresholdRelease: () =>
               _suggestionOverlayKey.currentState.show(),
+          scrollController: _scrollController,
         ),
       );
 

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
@@ -78,6 +77,7 @@ class Now extends StatefulWidget {
   /// state.
   final GestureDragUpdateCallback onBarVerticalDragUpdate;
   final GestureDragEndCallback onBarVerticalDragEnd;
+  final ScrollController scrollController;
 
   Now({
     Key key,
@@ -94,6 +94,7 @@ class Now extends StatefulWidget {
     this.onBarVerticalDragUpdate,
     this.onBarVerticalDragEnd,
     this.onOverscrollThresholdRelease,
+    this.scrollController,
   })
       : super(key: key);
 
@@ -141,25 +142,21 @@ class NowState extends TickingState<Now> {
   double _pointerDownY;
 
   set scrollOffset(double scrollOffset) {
-    scheduleMicrotask(() {
-      if (scrollOffset > _kNowMinimizationScrollOffsetThreshold &&
-          _lastScrollOffset < scrollOffset) {
-        minimize();
-        hideQuickSettings();
-      } else if (scrollOffset < _kNowMinimizationScrollOffsetThreshold &&
-          _lastScrollOffset > scrollOffset) {
-        maximize();
-      }
-      // When we're past the quick settings threshold and are
-      // scrolling further, hide quick settings.
-      if (scrollOffset > _kNowQuickSettingsHideScrollOffsetThreshold &&
-          _lastScrollOffset < scrollOffset) {
-        hideQuickSettings();
-      }
-      setState(() {
-        _lastScrollOffset = scrollOffset;
-      });
-    });
+    if (scrollOffset > _kNowMinimizationScrollOffsetThreshold &&
+        _lastScrollOffset < scrollOffset) {
+      minimize();
+      hideQuickSettings();
+    } else if (scrollOffset < _kNowMinimizationScrollOffsetThreshold &&
+        _lastScrollOffset > scrollOffset) {
+      maximize();
+    }
+    // When we're past the quick settings threshold and are
+    // scrolling further, hide quick settings.
+    if (scrollOffset > _kNowQuickSettingsHideScrollOffsetThreshold &&
+        _lastScrollOffset < scrollOffset) {
+      hideQuickSettings();
+    }
+    _lastScrollOffset = scrollOffset;
   }
 
   @override
@@ -208,8 +205,10 @@ class NowState extends TickingState<Now> {
               // want to snap suggestions open.
               // We will do so if the overscroll is significant or if the user
               // lifted after dragging a certain distance.
-              if (_lastScrollOffset < _kOverscrollAutoSnapThreshold ||
-                  (_lastScrollOffset < _kOverscrollSnapDragThreshold &&
+              if (config.scrollController.offset <
+                      _kOverscrollAutoSnapThreshold ||
+                  (config.scrollController.offset <
+                          _kOverscrollSnapDragThreshold &&
                       _pointerDownY - event.position.y >
                           _kOverscrollSnapDragDistanceThreshold)) {
                 config.onOverscrollThresholdRelease?.call();
@@ -219,8 +218,12 @@ class NowState extends TickingState<Now> {
           ),
           new Align(
             alignment: FractionalOffset.bottomCenter,
-            child: new Container(
-              height: _nowHeight,
+            child: new AnimatedBuilder(
+              animation: config.scrollController,
+              builder: (BuildContext context, Widget child) => new Container(
+                    height: _getNowHeight(config.scrollController.offset),
+                    child: child,
+                  ),
               child: new ScopedModelDecendant<NowModel>(
                 builder: (
                   BuildContext context,
@@ -545,13 +548,13 @@ class NowState extends TickingState<Now> {
 
   bool get _buttonTapDisabled => _minimizationProgress < 1.0;
 
-  double get _nowHeight => math.max(
+  double _getNowHeight(double scrollOffset) => math.max(
       config.minHeight,
       config.minHeight +
           ((config.maxHeight - config.minHeight) *
               (1.0 - _minimizationProgress)) +
           _quickSettingsRaiseDistance +
-          _scrollOffsetHeightDelta);
+          _getScrollOffsetHeightDelta(scrollOffset));
 
   double get _userImageSize => lerpDouble(56.0, 12.0, _minimizationProgress);
 
@@ -599,16 +602,16 @@ class NowState extends TickingState<Now> {
   double get _quickSettingsRaiseDistance =>
       config.quickSettingsHeightBump * _quickSettingsProgress;
 
-  double get _scrollOffsetHeightDelta =>
+  double _getScrollOffsetHeightDelta(double scrollOffset) =>
       (math.max(
                   -_kRestingDistanceAboveLowestPoint,
-                  (_lastScrollOffset > -_kOverscrollDelayOffset &&
-                          _lastScrollOffset < 0.0)
+                  (scrollOffset > -_kOverscrollDelayOffset &&
+                          scrollOffset < 0.0)
                       ? 0.0
                       : (-1.0 *
-                              (_lastScrollOffset < 0.0
-                                  ? _lastScrollOffset + _kOverscrollDelayOffset
-                                  : _lastScrollOffset) *
+                              (scrollOffset < 0.0
+                                  ? scrollOffset + _kOverscrollDelayOffset
+                                  : scrollOffset) *
                               _kScrollFactor) *
                           (1.0 - _minimizationProgress) *
                           (1.0 - _quickSettingsProgress)) *
