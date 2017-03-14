@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
@@ -301,9 +300,7 @@ class Conductor extends StatelessWidget {
                     _focusStoryCluster(storyModel, storyCluster);
                   },
                   sizeModel: sizeModel,
-                  onStoryClusterVerticalEdgeHover: () => scheduleMicrotask(
-                        () => goToOrigin(storyModel),
-                      ),
+                  onStoryClusterVerticalEdgeHover: () => goToOrigin(storyModel),
                 ),
           ),
         ),
