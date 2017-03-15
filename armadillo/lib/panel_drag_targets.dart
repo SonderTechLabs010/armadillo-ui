@@ -12,6 +12,7 @@ import 'package:sysui_widgets/ticking_state.dart';
 
 import 'armadillo_drag_target.dart';
 import 'candidate_info.dart';
+import 'cluster_layout.dart';
 import 'debug_model.dart';
 import 'drag_direction.dart';
 import 'line_segment.dart';
@@ -121,10 +122,8 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   /// [PlaceHolderStory]s to the [StoryCluster] this target is representing.
   /// To ensure we can return to the original layout of the stories if the
   /// candidates leave without being dropped we store off the original story
-  /// list, the original focus story ID, and the original display mode..
-  StoryId _originalFocusedStoryId;
-  Map<StoryId, Panel> _originalStoryIdToPanelMap = <StoryId, Panel>{};
-  DisplayMode _originalDisplayMode;
+  /// list, the original focus story ID, and the original display mode.
+  ClusterLayout _originalClusterLayout;
 
   bool _hadCandidates = false;
 
@@ -143,11 +142,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   @override
   void initState() {
     super.initState();
-    _originalFocusedStoryId = config.storyCluster.focusedStoryId;
-    config.storyCluster.stories.forEach((Story story) {
-      _originalStoryIdToPanelMap[story.id] = new Panel.from(story.panel);
-    });
-    _originalDisplayMode = config.storyCluster.displayMode;
+    _originalClusterLayout = new ClusterLayout.from(config.storyCluster);
     _populateTargetLines();
   }
 
@@ -155,12 +150,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   void didUpdateConfig(PanelDragTargets oldConfig) {
     super.didUpdateConfig(oldConfig);
     if (oldConfig.storyCluster.id != config.storyCluster.id) {
-      _originalFocusedStoryId = config.storyCluster.focusedStoryId;
-      _originalStoryIdToPanelMap.clear();
-      config.storyCluster.stories.forEach((Story story) {
-        _originalStoryIdToPanelMap[story.id] = new Panel.from(story.panel);
-      });
-      _originalDisplayMode = config.storyCluster.displayMode;
+      _originalClusterLayout = new ClusterLayout.from(config.storyCluster);
     }
     if (oldConfig.focusProgress != config.focusProgress ||
         oldConfig.currentSize != config.currentSize) {
@@ -312,12 +302,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     bool hasCandidates = candidates.isNotEmpty;
     if (hasCandidates && !_hadCandidates) {
-      _originalFocusedStoryId = config.storyCluster.focusedStoryId;
-      _originalStoryIdToPanelMap.clear();
-      config.storyCluster.stories.forEach((Story story) {
-        _originalStoryIdToPanelMap[story.id] = new Panel.from(story.panel);
-      });
-      _originalDisplayMode = config.storyCluster.displayMode;
+      _originalClusterLayout = new ClusterLayout.from(config.storyCluster);
       _populateTargetLines();
 
       // Invoke onFirstHover callbacks if they exist.
@@ -487,16 +472,9 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
         // If no stories have changed, and a candidate was removed we need
         // to revert back to our original layout.
-        if (_originalStoryIdToPanelMap.keys.length ==
+        if (_originalClusterLayout.storyCount ==
             config.storyCluster.stories.length) {
-          _originalStoryIdToPanelMap.keys.forEach((StoryId storyId) {
-            config.storyCluster.replaceStoryPanel(
-              storyId: storyId,
-              withPanel: _originalStoryIdToPanelMap[storyId],
-            );
-          });
-          config.storyCluster.displayMode = _originalDisplayMode;
-          config.storyCluster.focusedStoryId = _originalFocusedStoryId;
+          _originalClusterLayout.restore(config.storyCluster);
         }
       }
     });
@@ -586,11 +564,9 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     double verticalMargin = (1.0 - config.scale) / 2.0 * sizeModel.size.height;
     double horizontalMargin = (1.0 - config.scale) / 2.0 * sizeModel.size.width;
 
-    List<Panel> panels = _originalStoryIdToPanelMap.values.toList();
-    int availableRows = maxRows(sizeModel.size) -
-        _getCurrentRows(
-          panels: panels,
-        );
+    List<Panel> panels = _originalClusterLayout.panels;
+    int availableRows =
+        maxRows(sizeModel.size) - _getCurrentRows(panels: panels);
     if (availableRows > 0) {
       // Top edge target.
       _targetLines.add(
@@ -648,10 +624,8 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
 
     // Left edge target.
-    int availableColumns = maxColumns(sizeModel.size) -
-        _getCurrentColumns(
-          panels: panels,
-        );
+    int availableColumns =
+        maxColumns(sizeModel.size) - _getCurrentColumns(panels: panels);
     if (availableColumns > 0) {
       _targetLines.add(
         new LineSegment.vertical(
@@ -771,7 +745,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
 
     // Story Bar targets.
-    int storyBarTargets = _originalStoryIdToPanelMap.keys.length + 1;
+    int storyBarTargets = _originalClusterLayout.storyCount + 1;
     double storyBarTargetLeft = 0.0;
     final double storyBarTargetWidth =
         (sizeModel.size.width - 2.0 * horizontalMargin) / storyBarTargets;
@@ -802,16 +776,12 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
       sizeModel.size.width / 2.0,
       sizeModel.size.height / 2.0,
     );
-    _originalStoryIdToPanelMap.keys.forEach((StoryId storyId) {
-      Panel storyPanel = _originalStoryIdToPanelMap[storyId];
+    _originalClusterLayout.visitStories((StoryId storyId, Panel storyPanel) {
       Rect bounds = _transform(storyPanel, center, sizeModel.size);
 
       // If we can split vertically add vertical targets on left and right.
-      int verticalSplits = _getVerticalSplitCount(
-        storyPanel,
-        sizeModel.size,
-        panels,
-      );
+      int verticalSplits =
+          _getVerticalSplitCount(storyPanel, sizeModel.size, panels);
       if (verticalSplits > 0) {
         double left = bounds.left + _kStoryEdgeTargetInset;
         double right = bounds.right - _kStoryEdgeTargetInset;
@@ -880,11 +850,8 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
       }
 
       // If we can split horizontally add horizontal targets on top and bottom.
-      int horizontalSplits = _getHorizontalSplitCount(
-        storyPanel,
-        sizeModel.size,
-        panels,
-      );
+      int horizontalSplits =
+          _getHorizontalSplitCount(storyPanel, sizeModel.size, panels);
       if (horizontalSplits > 0) {
         double top = bounds.top +
             (storyPanel.top == 0.0
@@ -1477,8 +1444,8 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
       return;
     }
 
-    // 3. _originalFocusedStoryId.
-    config.storyCluster.focusedStoryId = _originalFocusedStoryId;
+    // 3. Original focused story.
+    _originalClusterLayout.restoreFocus(config.storyCluster);
   }
 
   void _updateDragFeedback(
