@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:ui' show lerpDouble;
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
@@ -15,9 +13,10 @@ import 'candidate_info.dart';
 import 'cluster_layout.dart';
 import 'debug_model.dart';
 import 'drag_direction.dart';
-import 'line_segment.dart';
 import 'panel.dart';
 import 'panel_drag_target.dart';
+import 'panel_drag_target_generator.dart';
+import 'panel_event_handler.dart';
 import 'place_holder_story.dart';
 import 'simulated_fractional.dart';
 import 'size_model.dart';
@@ -30,43 +29,12 @@ import 'story_model.dart';
 import 'target_overlay.dart';
 import 'target_influence_overlay.dart';
 
-const double _kGapBetweenTopTargets = 48.0;
-const double _kStoryBarTargetYOffset = 48.0;
-const double _kTopEdgeTargetYOffset =
-    _kStoryBarTargetYOffset + _kGapBetweenTopTargets + 16.0;
-const double _kStoryTopEdgeTargetYOffset =
-    _kTopEdgeTargetYOffset + _kGapBetweenTopTargets;
-const double _kDiscardTargetTopEdgeYOffset = -48.0;
-const double _kBringToFrontTargetBottomEdgeYOffset = 48.0;
-const double _kStoryEdgeTargetInset = 48.0;
-const double _kStoryEdgeTargetInsetMinDistance = 0.0;
 const double _kUnfocusedCornerRadius = 4.0;
 const double _kFocusedCornerRadius = 8.0;
 const int _kMaxStoriesPerCluster = 100;
-const double _kAddedStorySpan = 0.01;
-final Color _kTopEdgeTargetColor = Colors.yellow[700];
-final Color _kLeftEdgeTargetColor = Colors.yellow[500];
-final Color _kBottomEdgeTargetColor = Colors.yellow[700];
-final Color _kRightEdgeTargetColor = Colors.yellow[500];
-final List<Color> _kStoryBarTargetColor = <Color>[
-  Colors.grey[500],
-  Colors.grey[700]
-];
-final Color _kDiscardTargetColor = Colors.red[700];
-final Color _kBringToFrontTargetColor = Colors.green[700];
-final Color _kTopStoryEdgeTargetColor = Colors.blue[100];
-final Color _kLeftStoryEdgeTargetColor = Colors.blue[300];
-final Color _kBottomStoryEdgeTargetColor = Colors.blue[500];
-final Color _kRightStoryEdgeTargetColor = Colors.blue[700];
-const Color _kTargetBackgroundColor = const Color.fromARGB(128, 153, 234, 216);
-
-const String _kStoryBarTargetName = 'Story Bar target';
 
 const RK4SpringDescription _kScaleSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
-
-const RK4SpringDescription _kOpacitySimulationDesc =
-    const RK4SpringDescription(tension: 900.0, friction: 50.0);
 
 const Duration _kHoverDuration = const Duration(milliseconds: 400);
 const Duration _kVerticalEdgeHoverDuration = const Duration(
@@ -109,6 +77,8 @@ class PanelDragTargets extends StatefulWidget {
 }
 
 class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
+  final PanelDragTargetGenerator _panelDragTargetGenerator =
+      new PanelDragTargetGenerator();
   final Set<PanelDragTarget> _targets = new Set<PanelDragTarget>();
 
   final Map<StoryClusterId, CandidateInfo> _trackedCandidates =
@@ -139,16 +109,20 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   /// [_kVerticalEdgeHoverDuration] elapses.
   Timer _verticalEdgeHoverTimer;
 
+  PanelEventHandler panelEventHandler;
+
   @override
   void initState() {
     super.initState();
     _originalClusterLayout = new ClusterLayout.from(config.storyCluster);
+    panelEventHandler = new PanelEventHandler(config.storyCluster);
     _populateTargets();
   }
 
   @override
   void didUpdateConfig(PanelDragTargets oldConfig) {
     super.didUpdateConfig(oldConfig);
+    panelEventHandler = new PanelEventHandler(config.storyCluster);
     if (oldConfig.storyCluster.id != config.storyCluster.id) {
       _originalClusterLayout = new ClusterLayout.from(config.storyCluster);
     }
@@ -224,7 +198,10 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
       if (!_inTimeline && data.onNoTarget != null) {
         data.onNoTarget.call();
       } else {
-        _onStoryBarDrop(context, storyCluster);
+        panelEventHandler.onStoryBarDrop(
+          context: context,
+          storyCluster: storyCluster,
+        );
       }
     }
     _updateFocusedStoryId(storyCluster);
@@ -467,8 +444,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
               draggedStoryClusterData.id != storyClusterId)) {
         _trackedCandidates.remove(storyClusterId);
 
-        config.storyCluster.removePreviews();
-        _normalizeSizes();
+        panelEventHandler.onCandidateRemoved();
 
         // If no stories have changed, and a candidate was removed we need
         // to revert back to our original layout.
@@ -548,883 +524,49 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     return closestTarget;
   }
 
-  /// Creates the targets for the configuration of panels represented by
-  /// the story cluster's stories.
-  ///
-  /// Typically this includes the following targets:
-  ///   1) Discard story target.
-  ///   2) Bring to front target.
-  ///   3) Convert to tabs target.
-  ///   4) Edge targets on top, bottom, left, and right of the cluster.
-  ///   5) Edge targets on top, bottom, left, and right of each panel.
   void _populateTargets() {
     _targets.clear();
-    _targets.addAll(_createTargets());
+    _targets.addAll(
+      _panelDragTargetGenerator.createTargets(
+        size: SizeModel.of(context).size,
+        currentSize: config.currentSize,
+        clusterLayout: _originalClusterLayout,
+        scale: config.scale,
+        inTimeline: _inTimeline,
+        maxStories: _kMaxStoriesPerCluster - config.storyCluster.stories.length,
+        onAddClusterAbovePanels: panelEventHandler.onAddClusterAbovePanels,
+        onAddClusterBelowPanels: panelEventHandler.onAddClusterBelowPanels,
+        onAddClusterToLeftOfPanels:
+            panelEventHandler.onAddClusterToLeftOfPanels,
+        onAddClusterToRightOfPanels:
+            panelEventHandler.onAddClusterToRightOfPanels,
+        onAddClusterAbovePanel: panelEventHandler.onAddClusterAbovePanel,
+        onAddClusterBelowPanel: panelEventHandler.onAddClusterBelowPanel,
+        onAddClusterToLeftOfPanel: panelEventHandler.onAddClusterToLeftOfPanel,
+        onAddClusterToRightOfPanel:
+            panelEventHandler.onAddClusterToRightOfPanel,
+        onStoryBarHover: panelEventHandler.onStoryBarHover,
+        onStoryBarDrop: panelEventHandler.onStoryBarDrop,
+        onLeaveCluster: _onLeaveCluster,
+      ),
+    );
   }
 
-  List<PanelDragTarget> _createTargets() {
-    SizeModel sizeModel = SizeModel.of(context);
-    List<LineSegment> targets = <LineSegment>[];
-    targets.clear();
-    double verticalMargin = (1.0 - config.scale) / 2.0 * sizeModel.size.height;
-    double horizontalMargin = (1.0 - config.scale) / 2.0 * sizeModel.size.width;
-
-    List<Panel> panels = _originalClusterLayout.panels;
-    int availableRows =
-        maxRows(sizeModel.size) - _getCurrentRows(panels: panels);
-    if (availableRows > 0) {
-      // Top edge target.
-      targets.add(
-        new LineSegment.horizontal(
-          name: 'Top edge target',
-          y: verticalMargin + _kTopEdgeTargetYOffset,
-          left: horizontalMargin + _kStoryEdgeTargetInsetMinDistance,
-          right: sizeModel.size.width -
-              horizontalMargin -
-              _kStoryEdgeTargetInsetMinDistance,
-          color: _kTopEdgeTargetColor,
-          maxStoriesCanAccept: availableRows,
-          validityDistance: kMinPanelHeight,
-          directionallyTargetable: true,
-          onHover: (BuildContext context, StoryCluster storyCluster) =>
-              _addClusterAbovePanels(
-                context: context,
-                storyCluster: storyCluster,
-                preview: true,
-              ),
-          onDrop: (BuildContext context, StoryCluster storyCluster) =>
-              _addClusterAbovePanels(
-                context: context,
-                storyCluster: storyCluster,
-              ),
-        ),
+  void _onLeaveCluster({
+    BuildContext context,
+    StoryCluster storyCluster,
+    bool preview: false,
+  }) {
+    panelEventHandler.onLeaveCluster(
+        context: context, storyCluster: storyCluster, preview: preview);
+    if (preview) {
+      _verticalEdgeHoverTimer = new Timer(
+        _kVerticalEdgeHoverDuration,
+        () => config.onVerticalEdgeHover?.call(),
       );
-
-      // Bottom edge target.
-      targets.add(
-        new LineSegment.horizontal(
-          name: 'Bottom edge target',
-          y: sizeModel.size.height - verticalMargin,
-          left: horizontalMargin + _kStoryEdgeTargetInsetMinDistance,
-          right: sizeModel.size.width -
-              horizontalMargin -
-              _kStoryEdgeTargetInsetMinDistance,
-          color: _kBottomEdgeTargetColor,
-          maxStoriesCanAccept: availableRows,
-          validityDistance: kMinPanelHeight,
-          directionallyTargetable: true,
-          onHover: (BuildContext context, StoryCluster storyCluster) =>
-              _addClusterBelowPanels(
-                context: context,
-                storyCluster: storyCluster,
-                preview: true,
-              ),
-          onDrop: (BuildContext context, StoryCluster storyCluster) =>
-              _addClusterBelowPanels(
-                context: context,
-                storyCluster: storyCluster,
-              ),
-        ),
-      );
-    }
-
-    // Left edge target.
-    int availableColumns =
-        maxColumns(sizeModel.size) - _getCurrentColumns(panels: panels);
-    if (availableColumns > 0) {
-      targets.add(
-        new LineSegment.vertical(
-          name: 'Left edge target',
-          x: horizontalMargin,
-          top: verticalMargin +
-              _kTopEdgeTargetYOffset +
-              _kStoryEdgeTargetInsetMinDistance,
-          bottom: sizeModel.size.height -
-              verticalMargin -
-              _kStoryEdgeTargetInsetMinDistance,
-          color: _kLeftEdgeTargetColor,
-          maxStoriesCanAccept: availableColumns,
-          validityDistance: kMinPanelWidth,
-          directionallyTargetable: true,
-          onHover: (BuildContext context, StoryCluster storyCluster) =>
-              _addClusterToLeftOfPanels(
-                context: context,
-                storyCluster: storyCluster,
-                preview: true,
-              ),
-          onDrop: (BuildContext context, StoryCluster storyCluster) =>
-              _addClusterToLeftOfPanels(
-                context: context,
-                storyCluster: storyCluster,
-              ),
-        ),
-      );
-
-      // Right edge target.
-      targets.add(
-        new LineSegment.vertical(
-          name: 'Right edge target',
-          x: sizeModel.size.width - horizontalMargin,
-          top: verticalMargin +
-              _kTopEdgeTargetYOffset +
-              _kStoryEdgeTargetInsetMinDistance,
-          bottom: sizeModel.size.height -
-              verticalMargin -
-              _kStoryEdgeTargetInsetMinDistance,
-          color: _kRightEdgeTargetColor,
-          maxStoriesCanAccept: availableColumns,
-          validityDistance: kMinPanelWidth,
-          directionallyTargetable: true,
-          onHover: (BuildContext context, StoryCluster storyCluster) =>
-              _addClusterToRightOfPanels(
-                context: context,
-                storyCluster: storyCluster,
-                preview: true,
-              ),
-          onDrop: (BuildContext context, StoryCluster storyCluster) =>
-              _addClusterToRightOfPanels(
-                context: context,
-                storyCluster: storyCluster,
-              ),
-        ),
-      );
-    }
-
-    if (!_inTimeline) {
-      // Top discard target.
-      targets.add(
-        new LineSegment.horizontal(
-          name: 'Top discard target',
-          initiallyTargetable: false,
-          y: verticalMargin + _kDiscardTargetTopEdgeYOffset,
-          left: 0.0,
-          right: sizeModel.size.width,
-          color: _kDiscardTargetColor,
-          validityDistance: verticalMargin + _kDiscardTargetTopEdgeYOffset,
-          maxStoriesCanAccept: _kMaxStoriesPerCluster,
-          onHover: (BuildContext context, StoryCluster storyCluster) {
-            config.storyCluster.removePreviews();
-            _cleanup(context: context, preview: true);
-            _updateDragFeedback(storyCluster);
-            _verticalEdgeHoverTimer = new Timer(
-              _kVerticalEdgeHoverDuration,
-              () => config.onVerticalEdgeHover?.call(),
-            );
-          },
-          onDrop: (BuildContext context, StoryCluster storyCluster) {
-            _verticalEdgeHoverTimer?.cancel();
-            _verticalEdgeHoverTimer = null;
-          },
-        ),
-      );
-
-      // Bottom bring-to-front target.
-      targets.add(
-        new LineSegment.horizontal(
-          name: 'Bottom bring-to-front target',
-          initiallyTargetable: false,
-          y: sizeModel.size.height -
-              verticalMargin +
-              _kBringToFrontTargetBottomEdgeYOffset,
-          left: 0.0,
-          right: sizeModel.size.width,
-          color: _kBringToFrontTargetColor,
-          validityDistance:
-              verticalMargin - _kBringToFrontTargetBottomEdgeYOffset,
-          maxStoriesCanAccept: _kMaxStoriesPerCluster,
-          onHover: (BuildContext context, StoryCluster storyCluster) {
-            config.storyCluster.removePreviews();
-            _cleanup(context: context, preview: true);
-            _updateDragFeedback(storyCluster);
-            _verticalEdgeHoverTimer = new Timer(
-              _kVerticalEdgeHoverDuration,
-              () => config.onVerticalEdgeHover?.call(),
-            );
-          },
-          onDrop: (BuildContext context, StoryCluster storyCluster) {
-            _verticalEdgeHoverTimer?.cancel();
-            _verticalEdgeHoverTimer = null;
-          },
-        ),
-      );
-    }
-
-    // Story Bar targets.
-    int storyBarTargets = _originalClusterLayout.storyCount + 1;
-    double storyBarTargetLeft = 0.0;
-    final double storyBarTargetWidth =
-        (sizeModel.size.width - 2.0 * horizontalMargin) / storyBarTargets;
-    for (int i = 0; i < storyBarTargets; i++) {
-      double lineWidth = storyBarTargetWidth +
-          ((i == 0 || i == storyBarTargets - 1) ? horizontalMargin : 0.0);
-      targets.add(
-        new LineSegment.horizontal(
-          name: '$_kStoryBarTargetName for index $i',
-          y: verticalMargin + _kStoryBarTargetYOffset,
-          left: storyBarTargetLeft,
-          right: storyBarTargetLeft + lineWidth,
-          color: _kStoryBarTargetColor[i % _kStoryBarTargetColor.length],
-          validityDistance: verticalMargin + _kStoryBarTargetYOffset,
-          maxStoriesCanAccept:
-              _kMaxStoriesPerCluster - config.storyCluster.stories.length,
-          onHover: (BuildContext context, StoryCluster storyCluster) =>
-              _onStoryBarHover(context, storyCluster, i),
-          onDrop: (BuildContext context, StoryCluster storyCluster) =>
-              _onStoryBarDrop(context, storyCluster, i),
-        ),
-      );
-      storyBarTargetLeft += lineWidth;
-    }
-
-    // Story edge targets.
-    Point center = new Point(
-      sizeModel.size.width / 2.0,
-      sizeModel.size.height / 2.0,
-    );
-    _originalClusterLayout.visitStories((StoryId storyId, Panel storyPanel) {
-      Rect bounds = _transform(storyPanel, center, sizeModel.size);
-
-      // If we can split vertically add vertical targets on left and right.
-      int verticalSplits =
-          _getVerticalSplitCount(storyPanel, sizeModel.size, panels);
-      if (verticalSplits > 0) {
-        double left = bounds.left + _kStoryEdgeTargetInset;
-        double right = bounds.right - _kStoryEdgeTargetInset;
-        double top = bounds.top +
-            _kStoryEdgeTargetInsetMinDistance +
-            (storyPanel.top == 0.0
-                ? _kStoryTopEdgeTargetYOffset
-                : 2.0 * _kStoryEdgeTargetInset);
-        double bottom = bounds.bottom -
-            _kStoryEdgeTargetInsetMinDistance -
-            _kStoryEdgeTargetInset;
-
-        // Add left target.
-        targets.add(
-          new LineSegment.vertical(
-            name: 'Add left target $storyId',
-            x: left,
-            top: top,
-            bottom: bottom,
-            color: _kLeftStoryEdgeTargetColor,
-            maxStoriesCanAccept: verticalSplits,
-            validityDistance: kMinPanelWidth,
-            directionallyTargetable: true,
-            onHover: (BuildContext context, StoryCluster storyCluster) =>
-                _addClusterToLeftOfPanel(
-                  context: context,
-                  storyCluster: storyCluster,
-                  storyId: storyId,
-                  preview: true,
-                ),
-            onDrop: (BuildContext context, StoryCluster storyCluster) =>
-                _addClusterToLeftOfPanel(
-                  context: context,
-                  storyCluster: storyCluster,
-                  storyId: storyId,
-                ),
-          ),
-        );
-
-        // Add right target.
-        targets.add(
-          new LineSegment.vertical(
-            name: 'Add right target $storyId',
-            x: right,
-            top: top,
-            bottom: bottom,
-            color: _kRightStoryEdgeTargetColor,
-            maxStoriesCanAccept: verticalSplits,
-            validityDistance: kMinPanelWidth,
-            directionallyTargetable: true,
-            onHover: (BuildContext context, StoryCluster storyCluster) =>
-                _addClusterToRightOfPanel(
-                  context: context,
-                  storyCluster: storyCluster,
-                  storyId: storyId,
-                  preview: true,
-                ),
-            onDrop: (BuildContext context, StoryCluster storyCluster) =>
-                _addClusterToRightOfPanel(
-                  context: context,
-                  storyCluster: storyCluster,
-                  storyId: storyId,
-                ),
-          ),
-        );
-      }
-
-      // If we can split horizontally add horizontal targets on top and bottom.
-      int horizontalSplits =
-          _getHorizontalSplitCount(storyPanel, sizeModel.size, panels);
-      if (horizontalSplits > 0) {
-        double top = bounds.top +
-            (storyPanel.top == 0.0
-                ? _kStoryTopEdgeTargetYOffset
-                : _kStoryEdgeTargetInset);
-        double left = bounds.left +
-            _kStoryEdgeTargetInsetMinDistance +
-            _kStoryEdgeTargetInset;
-        double right = bounds.right -
-            _kStoryEdgeTargetInsetMinDistance -
-            _kStoryEdgeTargetInset;
-        double bottom = bounds.bottom - _kStoryEdgeTargetInset;
-
-        // Add top target.
-        targets.add(
-          new LineSegment.horizontal(
-            name: 'Add top target $storyId',
-            y: top,
-            left: left,
-            right: right,
-            color: _kTopStoryEdgeTargetColor,
-            maxStoriesCanAccept: horizontalSplits,
-            validityDistance: kMinPanelHeight,
-            directionallyTargetable: true,
-            onHover: (BuildContext context, StoryCluster storyCluster) =>
-                _addClusterAbovePanel(
-                  context: context,
-                  storyCluster: storyCluster,
-                  storyId: storyId,
-                  preview: true,
-                ),
-            onDrop: (BuildContext context, StoryCluster storyCluster) =>
-                _addClusterAbovePanel(
-                  context: context,
-                  storyCluster: storyCluster,
-                  storyId: storyId,
-                ),
-          ),
-        );
-
-        // Add bottom target.
-        targets.add(
-          new LineSegment.horizontal(
-            name: 'Add bottom target $storyId',
-            y: bottom,
-            left: left,
-            right: right,
-            color: _kBottomStoryEdgeTargetColor,
-            maxStoriesCanAccept: horizontalSplits,
-            validityDistance: kMinPanelHeight,
-            directionallyTargetable: true,
-            onHover: (BuildContext context, StoryCluster storyCluster) =>
-                _addClusterBelowPanel(
-                  context: context,
-                  storyCluster: storyCluster,
-                  storyId: storyId,
-                  preview: true,
-                ),
-            onDrop: (BuildContext context, StoryCluster storyCluster) =>
-                _addClusterBelowPanel(
-                  context: context,
-                  storyCluster: storyCluster,
-                  storyId: storyId,
-                ),
-          ),
-        );
-      }
-    });
-
-    // All of the above LineSegments have been created assuming the cluster
-    // as at the size specified by the sizeModel.  Since that's not always the
-    // case (particularly when we're doing an inline preview) we need to scale
-    // down all the lines when our current size doesn't match our expected size.
-    double horizontalScale = config.currentSize.width / sizeModel.size.width;
-    double verticalScale = config.currentSize.height / sizeModel.size.height;
-    if (horizontalScale != 1.0 || verticalScale != 1.0) {
-      List<LineSegment> scaledTargets = targets
-          .map(
-            (LineSegment lineSegment) => new LineSegment(
-                  new Point(
-                    lerpDouble(0.0, lineSegment.a.x, horizontalScale),
-                    lerpDouble(0.0, lineSegment.a.y, verticalScale),
-                  ),
-                  new Point(
-                    lerpDouble(0.0, lineSegment.b.x, horizontalScale),
-                    lerpDouble(0.0, lineSegment.b.y, verticalScale),
-                  ),
-                  name: lineSegment.name,
-                  color: lineSegment.color,
-                  onHover: lineSegment.onHover,
-                  onDrop: lineSegment.onDrop,
-                  maxStoriesCanAccept: lineSegment.maxStoriesCanAccept,
-                  initiallyTargetable: lineSegment.initiallyTargetable,
-                  directionallyTargetable: lineSegment.directionallyTargetable,
-                  validityDistance: lerpDouble(
-                    0.0,
-                    lineSegment.validityDistance,
-                    lineSegment.isHorizontal ? verticalScale : horizontalScale,
-                  ),
-                ),
-          )
-          .toList();
-      return scaledTargets;
-    }
-    return targets;
-  }
-
-  void _onStoryBarHover(
-    BuildContext context,
-    StoryCluster storyCluster,
-    int targetIndex,
-  ) {
-    _addClusterToRightOfPanels(
-      context: context,
-      storyCluster: storyCluster,
-      preview: true,
-      displayMode: DisplayMode.tabs,
-    );
-
-    // Update tab positions in target cluster.
-    config.storyCluster.movePlaceholderStoriesToIndex(
-      storyCluster.realStories,
-      targetIndex,
-    );
-
-    // Update tab positions in dragged candidate cluster.
-    storyCluster.mirrorStoryOrder(config.storyCluster.stories);
-  }
-
-  void _onStoryBarDrop(
-    BuildContext context,
-    StoryCluster storyCluster, [
-    int targetIndex = -1,
-  ]) {
-    targetIndex =
-        (targetIndex == -1) ? config.storyCluster.stories.length : targetIndex;
-    config.storyCluster.removePreviews();
-    storyCluster.removePreviews();
-    _cleanup(context: context, preview: true);
-
-    config.storyCluster.displayMode = DisplayMode.tabs;
-    config.storyCluster.focusedStoryId = storyCluster.focusedStoryId;
-
-    final List<Story> storiesToMove = storyCluster.realStories;
-
-    StoryModel.of(context).combine(
-          source: storyCluster,
-          target: config.storyCluster,
-        );
-
-    config.storyCluster.maximizeStoryBars();
-
-    config.storyCluster.moveStoriesToIndex(storiesToMove, targetIndex);
-  }
-
-  /// Adds the stories of [storyCluster] to the left, spanning the full height.
-  void _addClusterToLeftOfPanels({
-    BuildContext context,
-    StoryCluster storyCluster,
-    bool preview: false,
-  }) {
-    config.storyCluster.displayMode = DisplayMode.panels;
-
-    // 0) Remove any existing preview stories.
-    Map<StoryId, PlaceHolderStory> placeholders =
-        config.storyCluster.removePreviews();
-
-    List<Story> storiesToAdd = preview
-        ? new List<Story>.generate(
-            storyCluster.realStories.length,
-            (int index) =>
-                placeholders[storyCluster.realStories[index].id] ??
-                new PlaceHolderStory(
-                  associatedStoryId: storyCluster.realStories[index].id,
-                ),
-          )
-        : _getHorizontallySortedStories(storyCluster);
-
-    // 1) Make room for new stories.
-    _makeRoom(
-      panels: config.storyCluster.panels
-          .where((Panel panel) => panel.left == 0)
-          .toList(),
-      leftDelta: (_kAddedStorySpan * storiesToAdd.length),
-      widthFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
-    );
-
-    // 2) Add new stories.
-    _addStoriesHorizontally(
-      stories: storiesToAdd,
-      x: 0.0,
-      top: 0.0,
-      bottom: 1.0,
-    );
-
-    // 3) Clean up.
-    _cleanup(context: context, storyCluster: storyCluster, preview: preview);
-
-    // 4) If previewing, update the drag feedback.
-    if (preview) {
-      _updateDragFeedback(storyCluster);
-    }
-  }
-
-  /// Adds the stories of [storyCluster] to the right, spanning the full height.
-  void _addClusterToRightOfPanels({
-    BuildContext context,
-    StoryCluster storyCluster,
-    bool preview: false,
-    DisplayMode displayMode: DisplayMode.panels,
-  }) {
-    config.storyCluster.displayMode = displayMode;
-
-    // 0) Remove any existing preview stories.
-    Map<StoryId, PlaceHolderStory> placeholders =
-        config.storyCluster.removePreviews();
-
-    List<Story> storiesToAdd = preview
-        ? new List<Story>.generate(
-            storyCluster.realStories.length,
-            (int index) =>
-                placeholders[storyCluster.realStories[index].id] ??
-                new PlaceHolderStory(
-                  associatedStoryId: storyCluster.realStories[index].id,
-                ),
-          )
-        : _getHorizontallySortedStories(storyCluster);
-
-    // 1) Make room for new stories.
-    _makeRoom(
-      panels: config.storyCluster.panels
-          .where((Panel panel) => panel.right == 1.0)
-          .toList(),
-      widthFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
-    );
-
-    // 2) Add new stories.
-    _addStoriesHorizontally(
-      stories: storiesToAdd,
-      x: 1.0 - (_kAddedStorySpan * storiesToAdd.length),
-      top: 0.0,
-      bottom: 1.0,
-    );
-
-    // 3) Clean up.
-    _cleanup(context: context, storyCluster: storyCluster, preview: preview);
-
-    // 4) If previewing, update the drag feedback.
-    if (preview) {
-      _updateDragFeedback(storyCluster, displayMode);
-    }
-  }
-
-  /// Adds the stories of [storyCluster] to the top, spanning the full width.
-  void _addClusterAbovePanels({
-    BuildContext context,
-    StoryCluster storyCluster,
-    bool preview: false,
-  }) {
-    config.storyCluster.displayMode = DisplayMode.panels;
-
-    // 0) Remove any existing preview stories.
-    Map<StoryId, PlaceHolderStory> placeholders =
-        config.storyCluster.removePreviews();
-
-    List<Story> storiesToAdd = preview
-        ? new List<Story>.generate(
-            storyCluster.realStories.length,
-            (int index) =>
-                placeholders[storyCluster.realStories[index].id] ??
-                new PlaceHolderStory(
-                  associatedStoryId: storyCluster.realStories[index].id,
-                ),
-          )
-        : _getVerticallySortedStories(storyCluster);
-
-    // 1) Make room for new stories.
-    _makeRoom(
-      panels: config.storyCluster.panels
-          .where((Panel panel) => panel.top == 0.0)
-          .toList(),
-      topDelta: (_kAddedStorySpan * storiesToAdd.length),
-      heightFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
-    );
-
-    // 2) Add new stories.
-    _addStoriesVertically(
-      stories: storiesToAdd,
-      y: 0.0,
-      left: 0.0,
-      right: 1.0,
-    );
-
-    // 3) Clean up.
-    _cleanup(context: context, storyCluster: storyCluster, preview: preview);
-
-    // 4) If previewing, update the drag feedback.
-    if (preview) {
-      _updateDragFeedback(storyCluster);
-    }
-  }
-
-  /// Adds the stories of [storyCluster] to the bottom, spanning the full width.
-  void _addClusterBelowPanels({
-    BuildContext context,
-    StoryCluster storyCluster,
-    bool preview: false,
-  }) {
-    config.storyCluster.displayMode = DisplayMode.panels;
-
-    // 0) Remove any existing preview stories.
-    Map<StoryId, PlaceHolderStory> placeholders =
-        config.storyCluster.removePreviews();
-
-    List<Story> storiesToAdd = preview
-        ? new List<Story>.generate(
-            storyCluster.realStories.length,
-            (int index) =>
-                placeholders[storyCluster.realStories[index].id] ??
-                new PlaceHolderStory(
-                  associatedStoryId: storyCluster.realStories[index].id,
-                ),
-          )
-        : _getVerticallySortedStories(storyCluster);
-
-    // 1) Make room for new stories.
-    _makeRoom(
-      panels: config.storyCluster.panels
-          .where((Panel panel) => panel.bottom == 1.0)
-          .toList(),
-      heightFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
-    );
-
-    // 2) Add new stories.
-    _addStoriesVertically(
-      stories: storiesToAdd,
-      y: 1.0 - (_kAddedStorySpan * storiesToAdd.length),
-      left: 0.0,
-      right: 1.0,
-    );
-
-    // 3) Clean up.
-    _cleanup(context: context, storyCluster: storyCluster, preview: preview);
-
-    // 4) If previewing, update the drag feedback.
-    if (preview) {
-      _updateDragFeedback(storyCluster);
-    }
-  }
-
-  Panel _getPanelFromStoryId(Object storyId) => config.storyCluster.stories
-      .where((Story s) => storyId == s.id)
-      .single
-      .panel;
-
-  /// Adds the stories of [storyCluster] to the left of [storyId]'s panel,
-  /// spanning that panel's height.
-  void _addClusterToLeftOfPanel({
-    BuildContext context,
-    StoryCluster storyCluster,
-    StoryId storyId,
-    bool preview: false,
-  }) {
-    config.storyCluster.displayMode = DisplayMode.panels;
-
-    // 0) Remove any existing preview stories.
-    Map<StoryId, PlaceHolderStory> placeholders =
-        config.storyCluster.removePreviews();
-
-    List<Story> storiesToAdd = preview
-        ? new List<Story>.generate(
-            storyCluster.realStories.length,
-            (int index) =>
-                placeholders[storyCluster.realStories[index].id] ??
-                new PlaceHolderStory(
-                  associatedStoryId: storyCluster.realStories[index].id,
-                ),
-          )
-        : _getHorizontallySortedStories(storyCluster);
-
-    Panel panel = _getPanelFromStoryId(storyId);
-
-    // 1) Add new stories.
-    _addStoriesHorizontally(
-      stories: storiesToAdd,
-      x: panel.left,
-      top: panel.top,
-      bottom: panel.bottom,
-    );
-
-    // 2) Make room for new stories.
-    _makeRoom(
-      panels: <Panel>[panel],
-      leftDelta: (_kAddedStorySpan * storiesToAdd.length),
-      widthFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
-    );
-
-    // 3) Clean up.
-    _cleanup(context: context, storyCluster: storyCluster, preview: preview);
-
-    // 4) If previewing, update the drag feedback.
-    if (preview) {
-      _updateDragFeedback(storyCluster);
-    }
-  }
-
-  /// Adds the stories of [storyCluster] to the right of [storyId]'s panel',
-  /// spanning that panel's height.
-  void _addClusterToRightOfPanel({
-    BuildContext context,
-    StoryCluster storyCluster,
-    StoryId storyId,
-    bool preview: false,
-  }) {
-    config.storyCluster.displayMode = DisplayMode.panels;
-
-    // 0) Remove any existing preview stories.
-    Map<StoryId, PlaceHolderStory> placeholders =
-        config.storyCluster.removePreviews();
-
-    List<Story> storiesToAdd = preview
-        ? new List<Story>.generate(
-            storyCluster.realStories.length,
-            (int index) =>
-                placeholders[storyCluster.realStories[index].id] ??
-                new PlaceHolderStory(
-                  associatedStoryId: storyCluster.realStories[index].id,
-                ),
-          )
-        : _getHorizontallySortedStories(storyCluster);
-
-    Panel panel = _getPanelFromStoryId(storyId);
-
-    // 1) Add new stories.
-    _addStoriesHorizontally(
-      stories: storiesToAdd,
-      x: panel.right - storiesToAdd.length * _kAddedStorySpan,
-      top: panel.top,
-      bottom: panel.bottom,
-    );
-
-    // 2) Make room for new stories.
-    _makeRoom(
-      panels: <Panel>[panel],
-      widthFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
-    );
-
-    // 3) Clean up.
-    _cleanup(context: context, storyCluster: storyCluster, preview: preview);
-
-    // 4) If previewing, update the drag feedback.
-    if (preview) {
-      _updateDragFeedback(storyCluster);
-    }
-  }
-
-  /// Adds the stories of [storyCluster] to the top of [storyId]'s panel,
-  /// spanning that panel's width.
-  void _addClusterAbovePanel({
-    BuildContext context,
-    StoryCluster storyCluster,
-    StoryId storyId,
-    bool preview: false,
-  }) {
-    config.storyCluster.displayMode = DisplayMode.panels;
-
-    // 0) Remove any existing preview stories.
-    Map<StoryId, PlaceHolderStory> placeholders =
-        config.storyCluster.removePreviews();
-
-    List<Story> storiesToAdd = preview
-        ? new List<Story>.generate(
-            storyCluster.realStories.length,
-            (int index) =>
-                placeholders[storyCluster.realStories[index].id] ??
-                new PlaceHolderStory(
-                  associatedStoryId: storyCluster.realStories[index].id,
-                ),
-          )
-        : _getVerticallySortedStories(storyCluster);
-
-    Panel panel = _getPanelFromStoryId(storyId);
-
-    // 1) Add new stories.
-    _addStoriesVertically(
-      stories: storiesToAdd,
-      y: panel.top,
-      left: panel.left,
-      right: panel.right,
-    );
-
-    // 2) Make room for new stories.
-    _makeRoom(
-      panels: <Panel>[panel],
-      topDelta: (_kAddedStorySpan * storiesToAdd.length),
-      heightFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
-    );
-
-    // 3) Clean up.
-    _cleanup(context: context, storyCluster: storyCluster, preview: preview);
-
-    // 4) If previewing, update the drag feedback.
-    if (preview) {
-      _updateDragFeedback(storyCluster);
-    }
-  }
-
-  /// Adds the stories of [storyCluster] to the bottom of [storyId]'s panel,
-  /// spanning that panel's width.
-  void _addClusterBelowPanel({
-    BuildContext context,
-    StoryCluster storyCluster,
-    StoryId storyId,
-    bool preview: false,
-  }) {
-    config.storyCluster.displayMode = DisplayMode.panels;
-
-    // 0) Remove any existing preview stories.
-    Map<StoryId, PlaceHolderStory> placeholders =
-        config.storyCluster.removePreviews();
-
-    List<Story> storiesToAdd = preview
-        ? new List<Story>.generate(
-            storyCluster.realStories.length,
-            (int index) =>
-                placeholders[storyCluster.realStories[index].id] ??
-                new PlaceHolderStory(
-                  associatedStoryId: storyCluster.realStories[index].id,
-                ),
-          )
-        : _getVerticallySortedStories(storyCluster);
-
-    Panel panel = _getPanelFromStoryId(storyId);
-
-    // 1) Add new stories.
-    _addStoriesVertically(
-      stories: storiesToAdd,
-      y: panel.bottom - storiesToAdd.length * _kAddedStorySpan,
-      left: panel.left,
-      right: panel.right,
-    );
-
-    // 2) Make room for new stories.
-    _makeRoom(
-      panels: <Panel>[panel],
-      heightFactorDelta: -(_kAddedStorySpan * storiesToAdd.length),
-    );
-
-    // 3) Clean up.
-    _cleanup(context: context, storyCluster: storyCluster, preview: preview);
-
-    // 4) If previewing, update the drag feedback.
-    if (preview) {
-      _updateDragFeedback(storyCluster);
-    }
-  }
-
-  void _cleanup({
-    BuildContext context,
-    StoryCluster storyCluster,
-    bool preview,
-  }) {
-    // 1) Normalize sizes.
-    _normalizeSizes();
-
-    // 2) Remove dropped cluster from story model.
-    if (!preview) {
-      StoryModel.of(context).remove(storyCluster);
+    } else {
+      _verticalEdgeHoverTimer?.cancel();
+      _verticalEdgeHoverTimer = null;
     }
   }
 
@@ -1451,208 +593,5 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // 3. Original focused story.
     _originalClusterLayout.restoreFocus(config.storyCluster);
-  }
-
-  void _updateDragFeedback(
-    StoryCluster draggingStoryCluster, [
-    DisplayMode displayMode = DisplayMode.panels,
-  ]) {
-    // 1. Remove existing PlaceHolders (and save them off).
-    Map<StoryId, PlaceHolderStory> previews =
-        draggingStoryCluster.removePreviews();
-
-    // 2. Create and Add PlaceHolders for dragging story cluster for each story
-    //    in this story cluster.
-    if (config.storyCluster.previewStories.isNotEmpty) {
-      config.storyCluster.realStories.forEach((Story story) {
-        draggingStoryCluster.add(
-          story: previews[story.id] ??
-              new PlaceHolderStory(
-                associatedStoryId: story.id,
-                transparent: true,
-              ),
-          withPanel: story.panel,
-          atIndex: 0,
-        );
-      });
-    }
-
-    // 3. Resize all panels in the dragging story cluster with the placeholders
-    //    in this story cluster.
-    config.storyCluster.previewStories.forEach((Story story) {
-      PlaceHolderStory placeHolderStory = story;
-      draggingStoryCluster.replace(
-          panel: draggingStoryCluster.stories
-              .where((Story story) =>
-                  story.id == placeHolderStory.associatedStoryId)
-              .single
-              .panel,
-          withPanel: placeHolderStory.panel);
-    });
-
-    // 4. Update displaymode.
-    draggingStoryCluster.displayMode = displayMode;
-
-    // 5. Normalize sizes.
-    draggingStoryCluster.normalizeSizes();
-  }
-
-  void _normalizeSizes() => config.storyCluster.normalizeSizes();
-
-  /// Resizes the existing panels just enough to add new ones.
-  void _makeRoom({
-    List<Panel> panels,
-    double topDelta: 0.0,
-    double leftDelta: 0.0,
-    double widthFactorDelta: 0.0,
-    double heightFactorDelta: 0.0,
-  }) {
-    panels.forEach((Panel panel) {
-      config.storyCluster.replace(
-        panel: panel,
-        withPanel: new Panel(
-          origin: new FractionalOffset(
-            panel.left + leftDelta,
-            panel.top + topDelta,
-          ),
-          widthFactor: panel.width + widthFactorDelta,
-          heightFactor: panel.height + heightFactorDelta,
-        ),
-      );
-    });
-  }
-
-  /// Adds stories horizontally starting from [x] with vertical bounds of
-  /// [top] to [bottom].
-  void _addStoriesHorizontally({
-    List<Story> stories,
-    double x,
-    double top,
-    double bottom,
-  }) {
-    double dx = x;
-    stories.forEach((Story story) {
-      config.storyCluster.add(
-        story: story,
-        withPanel: new Panel(
-          origin: new FractionalOffset(dx, top),
-          widthFactor: _kAddedStorySpan,
-          heightFactor: bottom - top,
-        ),
-      );
-      dx += _kAddedStorySpan;
-      story.maximizeStoryBar();
-    });
-  }
-
-  /// Adds stories vertically starting from [y] with horizontal bounds of
-  /// [left] to [right].
-  void _addStoriesVertically({
-    List<Story> stories,
-    double y,
-    double left,
-    double right,
-  }) {
-    double dy = y;
-    stories.forEach((Story story) {
-      config.storyCluster.add(
-        story: story,
-        withPanel: new Panel(
-          origin: new FractionalOffset(left, dy),
-          widthFactor: right - left,
-          heightFactor: _kAddedStorySpan,
-        ),
-      );
-      dy += _kAddedStorySpan;
-      story.maximizeStoryBar();
-    });
-  }
-
-  int _getCurrentRows({List<Panel> panels}) =>
-      _getRows(left: 0.0, right: 1.0, panels: panels);
-
-  int _getCurrentColumns({List<Panel> panels}) =>
-      _getColumns(top: 0.0, bottom: 1.0, panels: panels);
-
-  int _getRows({double left, double right, List<Panel> panels}) {
-    Set<double> tops = new Set<double>();
-    panels
-        .where((Panel panel) =>
-            (left <= panel.left && right > panel.left) ||
-            (panel.left < left && panel.right > left))
-        .forEach((Panel panel) {
-      tops.add(panel.top);
-    });
-    return tops.length;
-  }
-
-  int _getColumns({double top, double bottom, List<Panel> panels}) {
-    Set<double> lefts = new Set<double>();
-    panels
-        .where((Panel panel) =>
-            (top <= panel.top && bottom > panel.top) ||
-            (top < panel.top && panel.bottom > top))
-        .forEach((Panel panel) {
-      lefts.add(panel.left);
-    });
-    return lefts.length;
-  }
-
-  int _getHorizontalSplitCount(
-    Panel panel,
-    Size fullSize,
-    List<Panel> panels,
-  ) =>
-      maxRows(fullSize) -
-      _getRows(
-        left: panel.left,
-        right: panel.right,
-        panels: panels,
-      );
-
-  int _getVerticalSplitCount(Panel panel, Size fullSize, List<Panel> panels) =>
-      maxColumns(fullSize) -
-      _getColumns(
-        top: panel.top,
-        bottom: panel.bottom,
-        panels: panels,
-      );
-
-  Rect _bounds(Panel panel, Size size) => new Rect.fromLTRB(
-        panel.left * size.width,
-        panel.top * size.height,
-        panel.right * size.width,
-        panel.bottom * size.height,
-      );
-
-  Rect _transform(Panel panel, Point origin, Size size) =>
-      Rect.lerp(origin & Size.zero, _bounds(panel, size), config.scale);
-
-  static List<Story> _getVerticallySortedStories(StoryCluster storyCluster) {
-    List<Story> sortedStories = new List<Story>.from(storyCluster.stories);
-    sortedStories.sort(
-      (Story a, Story b) => a.panel.top < b.panel.top
-          ? -1
-          : a.panel.top > b.panel.top
-              ? 1
-              : a.panel.left < b.panel.left
-                  ? -1
-                  : a.panel.left > b.panel.left ? 1 : 0,
-    );
-    return sortedStories;
-  }
-
-  static List<Story> _getHorizontallySortedStories(StoryCluster storyCluster) {
-    List<Story> sortedStories = new List<Story>.from(storyCluster.stories);
-    sortedStories.sort(
-      (Story a, Story b) => a.panel.left < b.panel.left
-          ? -1
-          : a.panel.left > b.panel.left
-              ? 1
-              : a.panel.top < b.panel.top
-                  ? -1
-                  : a.panel.top > b.panel.top ? 1 : 0,
-    );
-    return sortedStories;
   }
 }
