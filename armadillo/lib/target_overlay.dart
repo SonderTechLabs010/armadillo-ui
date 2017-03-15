@@ -4,24 +4,24 @@
 
 import 'package:flutter/widgets.dart';
 
-import 'line_segment.dart';
+import 'panel_drag_target.dart';
 
-/// When [enabled] is true, this widget draws the given [targetLines]
+/// When [enabled] is true, this widget draws the given [targets]
 /// that will accept [candidatePoints] overlaid on top of [child].  The
 /// current [Point]s of the [candidatePoints] along with those of the
 /// [closestTargetLockPoints] are also drawn on top of [child].
-class TargetLineOverlay extends StatelessWidget {
+class TargetOverlay extends StatelessWidget {
   final Widget child;
-  final List<LineSegment> targetLines;
+  final List<PanelDragTarget> targets;
   final List<Point> closestTargetLockPoints;
   final List<Point> candidatePoints;
 
-  /// Set to true to draw target lines.
+  /// Set to true to draw targets.
   final bool enabled;
 
-  TargetLineOverlay({
+  TargetOverlay({
     this.enabled,
-    this.targetLines,
+    this.targets,
     this.closestTargetLockPoints,
     this.candidatePoints,
     this.child,
@@ -31,13 +31,11 @@ class TargetLineOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> stackChildren = <Widget>[new Positioned.fill(child: child)];
 
-    // When we have a candidate, show the target lines.
+    // When we have a candidate, show the targets.
     if (enabled && candidatePoints.isNotEmpty) {
-      // Add all the lines.
-      targetLines.forEach(
-        (LineSegment line) => stackChildren.addAll(
-              line.buildStackChildren(),
-            ),
+      // Add all the targets.
+      targets.forEach(
+        (PanelDragTarget target) => stackChildren.add(target.build()),
       );
 
       // Add candidate points

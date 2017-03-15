@@ -10,37 +10,37 @@ export 'model.dart' show ScopedModel, Model;
 /// Using an [DebugModel] allows the debug parameters it tracks to be passed
 /// down the widget tree using a [ScopedModel].
 class DebugModel extends Model {
-  bool _showTargetLineOverlay = false;
-  bool _showTargetLineInfluenceOverlay = false;
+  bool _showTargetOverlay = false;
+  bool _showTargetInfluenceOverlay = false;
 
-  bool get showTargetLineInfluenceOverlay => _showTargetLineInfluenceOverlay;
+  bool get showTargetInfluenceOverlay => _showTargetInfluenceOverlay;
 
-  set showTargetLineInfluenceOverlay(bool showTargetLineInfluenceOverlay) {
-    if (_showTargetLineInfluenceOverlay != showTargetLineInfluenceOverlay) {
-      _showTargetLineInfluenceOverlay = showTargetLineInfluenceOverlay;
+  set showTargetInfluenceOverlay(bool showTargetInfluenceOverlay) {
+    if (_showTargetInfluenceOverlay != showTargetInfluenceOverlay) {
+      _showTargetInfluenceOverlay = showTargetInfluenceOverlay;
       notifyListeners();
     }
   }
 
-  bool get showTargetLineOverlay => _showTargetLineOverlay;
+  bool get showTargetOverlay => _showTargetOverlay;
 
-  set showTargetLineOverlay(bool showTargetLineOverlay) {
-    if (_showTargetLineOverlay != showTargetLineOverlay) {
-      _showTargetLineOverlay = showTargetLineOverlay;
+  set showTargetOverlay(bool showTargetOverlay) {
+    if (_showTargetOverlay != showTargetOverlay) {
+      _showTargetOverlay = showTargetOverlay;
       notifyListeners();
     }
   }
 
   void twiddle() {
-    if (!showTargetLineOverlay && !showTargetLineInfluenceOverlay) {
-      showTargetLineOverlay = true;
-      showTargetLineInfluenceOverlay = false;
-    } else if (!showTargetLineInfluenceOverlay) {
-      showTargetLineOverlay = false;
-      showTargetLineInfluenceOverlay = true;
+    if (!showTargetOverlay && !showTargetInfluenceOverlay) {
+      showTargetOverlay = true;
+      showTargetInfluenceOverlay = false;
+    } else if (!showTargetInfluenceOverlay) {
+      showTargetOverlay = false;
+      showTargetInfluenceOverlay = true;
     } else {
-      showTargetLineOverlay = false;
-      showTargetLineInfluenceOverlay = false;
+      showTargetOverlay = false;
+      showTargetInfluenceOverlay = false;
     }
   }
 }

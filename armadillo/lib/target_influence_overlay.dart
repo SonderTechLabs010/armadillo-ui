@@ -5,30 +5,30 @@
 import 'package:flutter/widgets.dart';
 
 import 'drag_direction.dart';
-import 'line_segment.dart';
+import 'panel_drag_target.dart';
 
 const double _kStepSize = 40.0;
 const double _kTargetMargin = 1.0;
 
-typedef LineSegment ClosestLineGetter(Point point);
+typedef PanelDragTarget ClosestTargetGetter(Point point);
 
 /// When [enabled] is true, this widget draws the influence of the given
-/// [targetLines] by drawing a bunch of points that will accept
+/// [targets] by drawing a bunch of points that will accept
 /// candidates overlaid on top of [child].
-class TargetLineInfluenceOverlay extends StatelessWidget {
+class TargetInfluenceOverlay extends StatelessWidget {
   final Widget child;
-  final List<LineSegment> targetLines;
+  final List<PanelDragTarget> targets;
   final DragDirection dragDirection;
-  final ClosestLineGetter closestLineGetter;
+  final ClosestTargetGetter closestTargetGetter;
 
   /// Set to true to draw influence.
   final bool enabled;
 
-  TargetLineInfluenceOverlay({
+  TargetInfluenceOverlay({
     this.enabled,
-    this.targetLines,
+    this.targets,
     this.dragDirection,
-    this.closestLineGetter,
+    this.closestTargetGetter,
     this.child,
   });
 
@@ -38,15 +38,15 @@ class TargetLineInfluenceOverlay extends StatelessWidget {
 
     // When enabled, show the influence.
     if (enabled) {
-      // Add all the lines.
+      // Add all the targets.
       stackChildren.add(
         new Positioned.fill(
           child: new RepaintBoundary(
             child: new CustomPaint(
               painter: new InfluencePainter(
                 dragDirection: dragDirection,
-                lines: targetLines,
-                closestLineGetter: closestLineGetter,
+                targets: targets,
+                closestTargetGetter: closestTargetGetter,
               ),
             ),
           ),
@@ -59,35 +59,43 @@ class TargetLineInfluenceOverlay extends StatelessWidget {
 
 class InfluencePainter extends CustomPainter {
   final DragDirection dragDirection;
-  final List<LineSegment> lines;
-  final ClosestLineGetter closestLineGetter;
+  final List<PanelDragTarget> targets;
+  final ClosestTargetGetter closestTargetGetter;
 
-  InfluencePainter({this.dragDirection, this.lines, this.closestLineGetter});
+  InfluencePainter({
+    this.dragDirection,
+    this.targets,
+    this.closestTargetGetter,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     int xSteps = (size.width / _kStepSize).round() - 1;
     int ySteps = (size.height / _kStepSize).round() - 1;
-    List<List<LineSegment>> lines = new List<List<LineSegment>>.generate(
+    List<List<PanelDragTarget>> targetMatrix =
+        new List<List<PanelDragTarget>>.generate(
       xSteps,
-      (int xStep) => new List<LineSegment>.generate(
+      (int xStep) => new List<PanelDragTarget>.generate(
             ySteps,
-            (int yStep) => closestLineGetter(
+            (int yStep) => closestTargetGetter(
                   new Point((xStep + 1) * _kStepSize, (yStep + 1) * _kStepSize),
                 ),
           ),
     );
     for (int i = 0; i < xSteps; i++) {
       for (int j = 0; j < ySteps; j++) {
-        double leftShift =
-            i > 0 && lines[i][j] != lines[i - 1][j] ? _kTargetMargin : 0.0;
-        double rightShift = (i < (xSteps - 1)) && lines[i][j] != lines[i + 1][j]
-            ? -_kTargetMargin
+        double leftShift = i > 0 && targetMatrix[i][j] != targetMatrix[i - 1][j]
+            ? _kTargetMargin
             : 0.0;
-        double topShift =
-            j > 0 && lines[i][j] != lines[i][j - 1] ? _kTargetMargin : 0.0;
+        double rightShift =
+            (i < (xSteps - 1)) && targetMatrix[i][j] != targetMatrix[i + 1][j]
+                ? -_kTargetMargin
+                : 0.0;
+        double topShift = j > 0 && targetMatrix[i][j] != targetMatrix[i][j - 1]
+            ? _kTargetMargin
+            : 0.0;
         double bottomShift =
-            (j < (ySteps - 1)) && lines[i][j] != lines[i][j + 1]
+            (j < (ySteps - 1)) && targetMatrix[i][j] != targetMatrix[i][j + 1]
                 ? -_kTargetMargin
                 : 0.0;
         canvas.drawRect(
@@ -98,7 +106,8 @@ class InfluencePainter extends CustomPainter {
             ((j + 1) * _kStepSize) + _kStepSize / 2.0 + bottomShift,
           ),
           new Paint()
-            ..color = (lines[i][j]?.color ?? new Color(0x00000000)).withOpacity(
+            ..color = (targetMatrix[i][j]?.color ?? new Color(0x00000000))
+                .withOpacity(
               0.75,
             ),
         );
@@ -111,17 +120,11 @@ class InfluencePainter extends CustomPainter {
     if (oldDelegate.dragDirection != dragDirection) {
       return true;
     }
-    if (oldDelegate.lines.length != lines.length) {
+    if (oldDelegate.targets.length != targets.length) {
       return true;
     }
-    for (int i = 0; i < lines.length; i++) {
-      if (lines[i].color != oldDelegate.lines[i].color) {
-        return true;
-      }
-      if (lines[i].a != oldDelegate.lines[i].a) {
-        return true;
-      }
-      if (lines[i].b != oldDelegate.lines[i].b) {
+    for (int i = 0; i < targets.length; i++) {
+      if (!targets[i].hasEqualInfluence(oldDelegate.targets[i])) {
         return true;
       }
     }

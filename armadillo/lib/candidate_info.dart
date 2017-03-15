@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
 
 import 'drag_direction.dart';
-import 'line_segment.dart';
+import 'panel_drag_target.dart';
 import 'panel_drag_targets.dart';
 
 const double _kDirectionMinSpeed = 100.0;
@@ -32,7 +32,7 @@ class CandidateInfo {
   /// until the candidate travels the [_kStickyDistance] away from that lock
   /// point.
   Point _lockPoint;
-  LineSegment _closestTarget;
+  PanelDragTarget _closestTarget;
   DateTime _timestamp;
   VelocityTracker _velocityTracker;
   DragDirection _lastDragDirection = DragDirection.none;
@@ -48,7 +48,7 @@ class CandidateInfo {
     assert(minLockDuration != null);
   }
 
-  LineSegment get closestTarget => _closestTarget;
+  PanelDragTarget get closestTarget => _closestTarget;
 
   /// Updates the candidate's velocity with [point].
   void updateVelocity(Point point) {
@@ -61,20 +61,20 @@ class CandidateInfo {
     );
   }
 
-  // The candidate can lock to line closest to the candidate if the candidate:
+  // The candidate can lock to target closest to the candidate if the candidate:
   // 1) is new, or
   // 2) is old, and
-  //    a) the closest line to the candidate has changed,
+  //    a) the closest target to the candidate has changed,
   //    b) we've moved past the sticky distance from the candidate's lock
   //       point, and
-  //    c) the candidate's closest line hasn't changed recently.
-  bool canLock(LineSegment closestTarget, Point storyClusterPoint) =>
+  //    c) the candidate's closest target hasn't changed recently.
+  bool canLock(PanelDragTarget closestTarget, Point storyClusterPoint) =>
       _hasNewPotentialTarget(closestTarget) &&
       _hasMovedPastThreshold(storyClusterPoint) &&
       _hasNotChangedRecently();
 
   /// Locks the candidate to [closestTarget] at the given [lockPoint].
-  void lock(Point lockPoint, LineSegment closestTarget) {
+  void lock(Point lockPoint, PanelDragTarget closestTarget) {
     _timestamp = timestampEmitter();
     _lockPoint = lockPoint;
     _closestTarget = closestTarget;
@@ -114,9 +114,9 @@ class CandidateInfo {
     }
   }
 
-  bool _hasNewPotentialTarget(LineSegment closestLine) =>
-      closestLine != null &&
-      (_closestTarget == null || (_closestTarget.name != closestLine.name));
+  bool _hasNewPotentialTarget(PanelDragTarget closestTarget) =>
+      closestTarget != null &&
+      (_closestTarget == null || (!_closestTarget.isSameTarget(closestTarget)));
 
   bool _hasMovedPastThreshold(Point storyClusterPoint) =>
       (_lockPoint - storyClusterPoint).distance > _kStickyDistance;

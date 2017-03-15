@@ -8,12 +8,11 @@ import 'package:flutter/material.dart' as material;
 import 'package:flutter/widgets.dart';
 
 import 'drag_direction.dart';
+import 'panel_drag_target.dart';
 import 'panel_drag_targets.dart';
 import 'story_cluster.dart';
 
 const double _kLineWidth = 4.0;
-
-typedef void OnPanelEvent(BuildContext context, StoryCluster storyCluster);
 
 /// Details about a target used by [PanelDragTargets].
 ///
@@ -25,17 +24,13 @@ typedef void OnPanelEvent(BuildContext context, StoryCluster storyCluster);
 /// called.
 /// This [LineSegment] can only be targeted by [StoryCluster]s with a story
 /// count of less than or equal to [maxStoriesCanAccept].
-class LineSegment {
+class LineSegment extends PanelDragTarget {
   /// [a] always aligns with [b] in either vertically or horizontally.
   /// [a] is always 'less than' [b] in x or y direction.
   final Point a;
   final Point b;
-  final Color color;
-  final OnPanelEvent onHover;
-  final OnPanelEvent onDrop;
   final int maxStoriesCanAccept;
   final String name;
-  final bool initiallyTargetable;
   final bool directionallyTargetable;
 
   /// A [LineSegment] is considered a valid target for accepting stories if
@@ -46,17 +41,23 @@ class LineSegment {
   LineSegment(
     Point a,
     Point b, {
-    this.color: material.Colors.white,
-    this.onHover,
-    this.onDrop,
+    Color color: material.Colors.white,
+    OnPanelEvent onHover,
+    OnPanelEvent onDrop,
     this.maxStoriesCanAccept: 1,
     this.name,
-    this.initiallyTargetable: true,
+    bool initiallyTargetable: true,
     this.directionallyTargetable: false,
     this.validityDistance: double.INFINITY,
   })
       : this.a = (a.x < b.x || a.y < b.y) ? a : b,
-        this.b = (a.x < b.x || a.y < b.y) ? b : a {
+        this.b = (a.x < b.x || a.y < b.y) ? b : a,
+        super(
+          onHover: onHover,
+          onDrop: onDrop,
+          color: color,
+          initiallyTargetable: initiallyTargetable,
+        ) {
     // Ensure the line is either vertical or horizontal.
     assert(a.x == b.x || a.y == b.y);
   }
@@ -115,8 +116,14 @@ class LineSegment {
 
   bool get isHorizontal => a.y == b.y;
   bool get isVertical => !isHorizontal;
+
+  @override
   bool canAccept(int storyCount) => storyCount <= maxStoriesCanAccept;
 
+  @override
+  bool withinRange(Point p) => distanceFrom(p) < validityDistance;
+
+  @override
   bool isValidInDirection(DragDirection dragDirection) {
     if (!directionallyTargetable) {
       return true;
@@ -141,6 +148,7 @@ class LineSegment {
     return true;
   }
 
+  @override
   bool isInDirectionFromPoint(DragDirection dragDirection, Point point) {
     if (!directionallyTargetable) {
       return true;
@@ -181,6 +189,7 @@ class LineSegment {
     return true;
   }
 
+  @override
   double distanceFrom(Point p) {
     if (isHorizontal) {
       if (p.x < a.x) {
@@ -201,15 +210,15 @@ class LineSegment {
     }
   }
 
-  List<Positioned> buildStackChildren({bool highlighted: false}) =>
-      validityDistance != double.INFINITY
-          ? <Positioned>[
-              _buildValidityDistanceWidget(highlighted: highlighted),
-              _buildLineWidget(highlighted: highlighted),
-            ]
-          : <Positioned>[
-              _buildLineWidget(highlighted: highlighted),
-            ];
+  @override
+  Widget build({bool highlighted: false}) => validityDistance != double.INFINITY
+      ? new Stack(children: <Widget>[
+          _buildValidityDistanceWidget(highlighted: highlighted),
+          _buildLineWidget(highlighted: highlighted),
+        ])
+      : new Stack(children: <Widget>[
+          _buildLineWidget(highlighted: highlighted),
+        ]);
 
   Positioned _buildLineWidget({bool highlighted: false}) => new Positioned(
         left: a.x - _kLineWidth / 2.0,
@@ -237,6 +246,34 @@ class LineSegment {
           ),
         ),
       );
+
+  @override
+  bool hasEqualInfluence(PanelDragTarget other) {
+    if (other is LineSegment) {
+      if (other.color != color) {
+        return false;
+      }
+      if (other.a != a) {
+        return false;
+      }
+      if (other.b != b) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  bool isSameTarget(PanelDragTarget other) {
+    if (other is LineSegment) {
+      if (other.name != name) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
 
   @override
   String toString() =>
