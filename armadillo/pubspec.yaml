@@ -5,19 +5,19 @@
 name: armadillo
 dependencies:
   email_story:
-    path: ../../email/modules/story
+    path: ../../modules/email/modules/story
   flutter:
     sdk: flutter
   keyboard:
     path: ../keyboard
   models:
-    path: ../../modules/packages/models
+    path: ../../modules/common/packages/models
   sysui_widgets:
     path: ../widgets
   util:
-    path: ../../modules/packages/util
+    path: ../../modules/common/packages/util
   widgets:
-    path: ../../modules/packages/widgets
+    path: ../../modules/common/packages/widgets
 dev_dependencies:
   flutter_test:
     sdk: flutter
