@@ -25,7 +25,9 @@ const Color _kBackgroundOverlayColor = const Color(0xB0000000);
 const String _kBackgroundImage = 'packages/armadillo/res/Background.jpg';
 const double _kDeviceScreenInnerBezelRadius = 8.0;
 
-/// The main app which controls the Fuchsia UI.
+/// [Armadillo] is the main Widget.  Its purpose is to set up [Model]s the rest
+/// of the Widgets depend upon. It uses the [Conductor] to display the actual UI
+/// Widgets.
 class Armadillo extends StatelessWidget {
   final StoryModel storyModel;
   final SuggestionModel suggestionModel;
