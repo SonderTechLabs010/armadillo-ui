@@ -104,10 +104,10 @@ Widget _buildApp({
     new CheckedModeBanner(
       child: new StoryTimeRandomizer(
         storyModel: storyModel,
-        child: new ChildConstraintsChanger(
-          constraintsModel: constraintsModel,
-          child: new DebugEnabler(
-            debugModel: debugModel,
+        child: new DebugEnabler(
+          debugModel: debugModel,
+          child: new ChildConstraintsChanger(
+            constraintsModel: constraintsModel,
             child: new DefaultAssetBundle(
               bundle: defaultBundle,
               child: new Armadillo(
