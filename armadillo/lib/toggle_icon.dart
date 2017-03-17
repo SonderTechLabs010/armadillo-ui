@@ -50,7 +50,7 @@ class _ToggleIconState extends State<ToggleIcon> {
         height: config.height,
         child: new Center(
           child: new Image.asset(config.imageList[_currentImageIndex],
-              fit: ImageFit.cover),
+              fit: BoxFit.cover),
         ),
       ),
     );

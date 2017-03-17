@@ -50,14 +50,14 @@ class JsonSuggestionModel extends SuggestionModel {
                       .map(
                         (String icon) => (BuildContext context) =>
                             new Image.asset(icon,
-                                fit: ImageFit.cover, color: Colors.white),
+                                fit: BoxFit.cover, color: Colors.white),
                       )
                       .toList()
                   : const <WidgetBuilder>[],
               image: suggestion['image'] != null
                   ? (_) => new Image.asset(
                         suggestion['image'],
-                        fit: ImageFit.cover,
+                        fit: BoxFit.cover,
                       )
                   : null,
               imageType: _getImageType(suggestion['image_type']),

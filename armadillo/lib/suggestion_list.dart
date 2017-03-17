@@ -138,7 +138,7 @@ class SuggestionListState extends State<SuggestionList> {
                       top: 32.0,
                       bottom: 32.0,
                     ),
-                    child: new Image.asset(_kImage, fit: ImageFit.cover),
+                    child: new Image.asset(_kImage, fit: BoxFit.cover),
                   ),
                   // Ask Anything text field.
                   new Expanded(

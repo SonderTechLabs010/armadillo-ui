@@ -56,7 +56,7 @@ class MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
         image: suggestion.display.imageUrl?.isNotEmpty ?? false
             ? (_) => new Image.network(
                   suggestion.display.imageUrl,
-                  fit: ImageFit.cover,
+                  fit: BoxFit.cover,
                 )
             : null,
         imageType: suggestion.display.imageUrl?.isNotEmpty ?? false

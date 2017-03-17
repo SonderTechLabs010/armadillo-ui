@@ -74,7 +74,7 @@ class NowModel extends Model {
     notifyListeners();
   }
 
-  Widget get user => new Image.asset(_kUserImage, fit: ImageFit.cover);
+  Widget get user => new Image.asset(_kUserImage, fit: BoxFit.cover);
 
   Widget userContextMaximized({double opacity: 1.0}) => new Opacity(
         opacity: opacity,
@@ -121,7 +121,7 @@ class NowModel extends Model {
               color: Color
                   .lerp(Colors.white, Colors.grey[600], _quickSettingsProgress)
                   .withOpacity(opacity),
-              fit: ImageFit.cover,
+              fit: BoxFit.cover,
             ),
           ),
           new Expanded(
@@ -160,7 +160,7 @@ class NowModel extends Model {
                         ),
                         width: _kImportantInfoIconSize,
                         height: _kImportantInfoIconSize,
-                        fit: ImageFit.cover,
+                        fit: BoxFit.cover,
                       ),
                       // spacer
                       new Container(width: _kIconLabelPadding, height: 1.0),
@@ -186,7 +186,7 @@ class NowModel extends Model {
                         ),
                         width: _kImportantInfoIconSize,
                         height: _kImportantInfoIconSize,
-                        fit: ImageFit.cover,
+                        fit: BoxFit.cover,
                       ),
                       // spacer
                       new Container(width: _kIconLabelPadding, height: 1.0),
@@ -244,7 +244,7 @@ class NowModel extends Model {
                   new Image.asset(
                     _kBatteryImageWhite,
                     color: Colors.white.withOpacity(opacityModel.opacity),
-                    fit: ImageFit.cover,
+                    fit: BoxFit.cover,
                   ),
             ),
           ),

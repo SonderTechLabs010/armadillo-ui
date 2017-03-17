@@ -226,7 +226,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         icons: <OpacityBuilder>[],
         avatar: (_, double opacity) => new Opacity(
               opacity: opacity,
-              child: new Image.asset(_kUserImage, fit: ImageFit.cover),
+              child: new Image.asset(_kUserImage, fit: BoxFit.cover),
             ),
         lastInteraction: new DateTime.now(),
         cumulativeInteractionDuration: new Duration(

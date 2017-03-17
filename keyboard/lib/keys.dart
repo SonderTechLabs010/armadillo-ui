@@ -149,7 +149,7 @@ class ImageKeyState extends State<ImageKey> {
                 child: new Container(
                     child: new Image(
                         image: new AssetImage(config.imageUrl),
-                        fit: ImageFit.contain,
+                        fit: BoxFit.contain,
                         color: ImageKey.kImageColor)))));
   }
 }

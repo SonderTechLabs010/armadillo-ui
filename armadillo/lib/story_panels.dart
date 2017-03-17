@@ -411,7 +411,7 @@ class StoryPanels extends StatelessWidget {
   /// The scaled and clipped story.  When full size, the story will
   /// no longer be scaled or clipped.
   Widget _getStoryContents(BuildContext context, Story story) => new FittedBox(
-        fit: ImageFit.cover,
+        fit: BoxFit.cover,
         alignment: FractionalOffset.topCenter,
         child: new StoryFullSizeSimulatedSizedBox(
           displayMode: storyCluster.displayMode,

@@ -24,7 +24,7 @@ Widget _widgetBuilder(String module, Map<String, Object> state) {
                   ? state['imageWide'] ?? state['image']
                   : state['image'],
               alignment: FractionalOffset.topCenter,
-              fit: ImageFit.cover,
+              fit: BoxFit.cover,
             ),
       );
     case 'email/quarterback':
@@ -50,7 +50,7 @@ Story storyBuilder(Map<String, dynamic> story) {
           (String icon) =>
               (BuildContext context, double opacity) => new Image.asset(
                     icon,
-                    fit: ImageFit.cover,
+                    fit: BoxFit.cover,
                     color: Colors.white.withOpacity(opacity),
                   ),
         )
@@ -59,7 +59,7 @@ Story storyBuilder(Map<String, dynamic> story) {
           opacity: opacity,
           child: new Image.asset(
             story['avatar'],
-            fit: ImageFit.cover,
+            fit: BoxFit.cover,
           ),
         ),
     lastInteraction: new DateTime.now().subtract(

@@ -58,7 +58,7 @@ class Armadillo extends StatelessWidget {
           backgroundImage: new BackgroundImage(
             image: new AssetImage(_kBackgroundImage),
             alignment: const FractionalOffset(0.4, 0.5),
-            fit: ImageFit.cover,
+            fit: BoxFit.cover,
             colorFilter: new ui.ColorFilter.mode(
               _kBackgroundOverlayColor,
               ui.BlendMode.srcATop,
