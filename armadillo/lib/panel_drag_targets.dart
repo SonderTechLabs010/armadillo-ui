@@ -226,7 +226,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // If a target hasn't been chosen yet, default to dropping on the story bar
     // target as that's always there.
-    if (_trackedCandidates[storyCluster.id].closestTarget?.onDrop != null) {
+    if (_trackedCandidates[storyCluster.id]?.closestTarget?.onDrop != null) {
       _trackedCandidates[storyCluster.id]
           .closestTarget
           .onDrop(context, storyCluster);
