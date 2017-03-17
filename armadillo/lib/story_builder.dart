@@ -44,7 +44,7 @@ Story storyBuilder(Map<String, dynamic> story) {
     builder: (_) => new DefaultScrollConfiguration(
           child: _widgetBuilder(story['module'], state),
         ),
-    title: story['title'],
+    title: story['title']?.toUpperCase(),
     icons: icons
         .map(
           (String icon) =>

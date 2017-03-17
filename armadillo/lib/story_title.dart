@@ -17,7 +17,7 @@ class StoryTitle extends StatelessWidget {
   Widget build(BuildContext context) => new Opacity(
         opacity: opacity,
         child: new Text(
-          title.toUpperCase(),
+          title,
           style: new TextStyle(
             fontSize: 11.0,
             color: baseColor.withAlpha(160),

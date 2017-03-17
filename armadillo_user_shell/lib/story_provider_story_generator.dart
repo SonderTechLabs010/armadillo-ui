@@ -222,7 +222,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
             ),
         // TODO(apwilson): Improve title.
         title:
-            '[${Uri.parse(storyInfo.url).pathSegments[Uri.parse(storyInfo.url).pathSegments.length-1]} // ${storyInfo.id}]',
+            '[${Uri.parse(storyInfo.url).pathSegments[Uri.parse(storyInfo.url).pathSegments.length-1]?.toUpperCase()} // ${storyInfo.id}]',
         icons: <OpacityBuilder>[],
         avatar: (_, double opacity) => new Opacity(
               opacity: opacity,
