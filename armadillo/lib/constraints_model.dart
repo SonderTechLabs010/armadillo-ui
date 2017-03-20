@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'child_constraints_changer.dart';
 import 'model.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/screen_config.json';
@@ -17,10 +18,12 @@ class ConstraintsModel extends Model {
     const BoxConstraints()
   ];
 
+  /// Loads this model's JSON from [assetBundle].
   void load(AssetBundle assetBundle) {
     assetBundle.loadString(_kJsonUrl).then(parseJson);
   }
 
+  /// Parses [json] for the [constraints] it contains.
   void parseJson(String json) {
     final Map<String, List<Map<String, String>>> decodedJson =
         JSON.decode(json);
@@ -42,5 +45,7 @@ class ConstraintsModel extends Model {
     notifyListeners();
   }
 
+  /// The [constraints] Armadillo can switch between.  See
+  /// [ChildConstraintsChanger] for more information.
   List<BoxConstraints> get constraints => _currentConstraints;
 }

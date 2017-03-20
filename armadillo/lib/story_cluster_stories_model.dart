@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'story_cluster.dart';
 import 'model.dart';
 
-export 'model.dart' show ScopedModel, Model, ScopedModelDecendant;
+export 'model.dart' show ScopedModel, Model, ScopedModelDescendant;
 
 /// Tracks a [StoryCluster], notifying listeners when it changes.
 /// Using a [StoryClusterStoriesModel] allows the [StoryCluster]'s story list

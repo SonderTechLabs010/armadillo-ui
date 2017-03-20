@@ -118,7 +118,7 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
 
   @override
   Widget build(BuildContext context) =>
-      new ScopedModelDecendant<StoryClusterPanelsModel>(
+      new ScopedModelDescendant<StoryClusterPanelsModel>(
         builder: (
           BuildContext context,
           Widget child,
@@ -128,9 +128,9 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
       );
 
   Widget _buildWidget(BuildContext context) =>
-      new ScopedModelDecendant<SizeModel>(
+      new ScopedModelDescendant<SizeModel>(
         builder: (BuildContext context, Widget child, SizeModel sizeModel) =>
-            new ScopedModelDecendant<StoryClusterDragStateModel>(
+            new ScopedModelDescendant<StoryClusterDragStateModel>(
               builder: (BuildContext context, Widget child,
                   StoryClusterDragStateModel storyClusterDragStateModel) {
                 _updateStoryBars();

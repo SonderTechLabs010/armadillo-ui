@@ -53,7 +53,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
 
   @override
   Widget build(BuildContext context) =>
-      new ScopedModelDecendant<StoryClusterDragStateModel>(
+      new ScopedModelDescendant<StoryClusterDragStateModel>(
         builder: (
           BuildContext context,
           Widget child,

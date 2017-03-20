@@ -171,7 +171,7 @@ class SuggestionListState extends State<SuggestionList> {
             left: 0.0,
             right: 0.0,
             bottom: 0.0,
-            child: new ScopedModelDecendant<SuggestionModel>(
+            child: new ScopedModelDescendant<SuggestionModel>(
               builder: (
                 BuildContext context,
                 Widget child,

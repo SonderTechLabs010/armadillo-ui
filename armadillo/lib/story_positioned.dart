@@ -58,7 +58,7 @@ class StoryPositioned extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      new ScopedModelDecendant<PanelResizingModel>(
+      new ScopedModelDescendant<PanelResizingModel>(
           child: child,
           builder: (
             BuildContext context,

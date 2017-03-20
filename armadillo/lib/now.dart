@@ -176,7 +176,7 @@ class NowState extends TickingState<Now> {
 
   @override
   Widget build(BuildContext context) =>
-      new ScopedModelDecendant<StoryDragTransitionModel>(
+      new ScopedModelDescendant<StoryDragTransitionModel>(
         builder: (
           BuildContext context,
           Widget child,
@@ -224,7 +224,7 @@ class NowState extends TickingState<Now> {
                     height: _getNowHeight(config.scrollController.offset),
                     child: child,
                   ),
-              child: new ScopedModelDecendant<NowModel>(
+              child: new ScopedModelDescendant<NowModel>(
                 builder: (
                   BuildContext context,
                   Widget child,

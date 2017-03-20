@@ -10,7 +10,7 @@ import 'peeking_overlay.dart';
 import 'story_cluster_id.dart';
 import 'story_list.dart';
 
-export 'model.dart' show ScopedModel, Model, ScopedModelDecendant;
+export 'model.dart' show ScopedModel, Model, ScopedModelDescendant;
 
 /// Tracks which story clusters are currently being dragged.  This is used by
 /// some UI elements to scale ([StoryList]), fade out ([Now]), or slide away

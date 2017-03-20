@@ -12,8 +12,6 @@ abstract class Model {
   int _version = 0;
   int _microtaskVersion = 0;
 
-  int get version => _version;
-
   /// [listener] will be notified when the model changes.
   void addListener(VoidCallback listener) {
     _listeners.add(listener);
@@ -24,6 +22,7 @@ abstract class Model {
     _listeners.remove(listener);
   }
 
+  /// Returns the number of listeners listening to this model.
   int get listenerCount => _listeners.length;
 
   /// Should be called only by [Model] when the model has changed.
@@ -61,12 +60,16 @@ class ModelFinder<T extends Model> {
   }
 }
 
-/// Allows the given [model] to be accessed by [child] or any of its decendants
+/// Allows the given [model] to be accessed by [child] or any of its descendants
 /// using [ModelFinder].
 class ScopedModel<T extends Model> extends StatelessWidget {
+  /// The [Model] to provide to [child] and its descendants.
   final T model;
+
+  /// The [Widget] the [model] will be available to.
   final Widget child;
 
+  /// Constructor.
   ScopedModel({this.model, this.child});
 
   @override
@@ -127,7 +130,7 @@ class _InheritedModel<T extends Model> extends InheritedWidget {
   final int version;
   _InheritedModel({Key key, Widget child, T model})
       : this.model = model,
-        this.version = model.version,
+        this.version = model._version,
         super(key: key, child: child);
 
   /// Used to return the runtime type.
@@ -140,17 +143,25 @@ class _InheritedModel<T extends Model> extends InheritedWidget {
       (oldWidget.version != version);
 }
 
-typedef Widget ScopedModelDecendantBuilder<T extends Model>(
+/// Builds a child for a [ScopedModelDescendant].
+typedef Widget ScopedModelDescendantBuilder<T extends Model>(
   BuildContext context,
   Widget child,
   T model,
 );
 
-class ScopedModelDecendant<T extends Model> extends StatelessWidget {
-  final ScopedModelDecendantBuilder<T> builder;
+/// A [Widget] who rebuilds its child by calling [builder] whenever the [Model]
+/// provided by an ancestor [ScopedModel] changes.
+class ScopedModelDescendant<T extends Model> extends StatelessWidget {
+  /// Called whenever the [Model] changes.
+  final ScopedModelDescendantBuilder<T> builder;
+
+  /// An optional constant child that depends on the model.  This will be passed
+  /// as the child of [builder].
   final Widget child;
 
-  ScopedModelDecendant({this.builder, this.child});
+  /// Constructor.
+  ScopedModelDescendant({this.builder, this.child});
 
   @override
   Widget build(BuildContext context) => builder(

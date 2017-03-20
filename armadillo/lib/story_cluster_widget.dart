@@ -184,7 +184,7 @@ class StoryClusterWidget extends StatelessWidget {
               storyCluster: storyCluster,
               onAccept: onAccept,
               onVerticalEdgeHover: onVerticalEdgeHover,
-              child: new ScopedModelDecendant<StoryClusterPanelsModel>(
+              child: new ScopedModelDescendant<StoryClusterPanelsModel>(
                 builder: (
                   BuildContext context,
                   Widget child,
@@ -246,13 +246,13 @@ class InlineStoryTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      new ScopedModelDecendant<StoryDragTransitionModel>(
+      new ScopedModelDescendant<StoryDragTransitionModel>(
         builder: (
           BuildContext context,
           Widget child,
           StoryDragTransitionModel storyDragTransitionModel,
         ) =>
-            new ScopedModelDecendant<StoryRearrangementScrimModel>(
+            new ScopedModelDescendant<StoryRearrangementScrimModel>(
               builder: (
                 BuildContext context,
                 Widget child,

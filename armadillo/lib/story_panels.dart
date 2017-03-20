@@ -68,7 +68,7 @@ class StoryPanels extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      new ScopedModelDecendant<StoryClusterPanelsModel>(
+      new ScopedModelDescendant<StoryClusterPanelsModel>(
         builder: (
           BuildContext context,
           Widget child,

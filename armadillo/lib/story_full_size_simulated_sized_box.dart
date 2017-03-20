@@ -31,7 +31,7 @@ class StoryFullSizeSimulatedSizedBox extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => new ScopedModelDecendant<SizeModel>(
+  Widget build(BuildContext context) => new ScopedModelDescendant<SizeModel>(
         builder: (BuildContext context, Widget child, SizeModel sizeModel) =>
             new SimulatedFractional(
               key: containerKey,

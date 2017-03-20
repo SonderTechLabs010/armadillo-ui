@@ -6,7 +6,7 @@ import 'package:armadillo/model.dart';
 import 'package:flutter/widgets.dart';
 
 export 'package:armadillo/model.dart'
-    show ScopedModel, Model, ScopedModelDecendant;
+    show ScopedModel, Model, ScopedModelDescendant;
 
 /// Determines which stories can be hit testable.
 class HitTestModel extends Model {

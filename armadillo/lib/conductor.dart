@@ -154,7 +154,7 @@ class Conductor extends StatelessWidget {
           Widget stack = new Stack(
             children: <Widget>[
               /// Story List.
-              new ScopedModelDecendant<StoryDragTransitionModel>(
+              new ScopedModelDescendant<StoryDragTransitionModel>(
                 builder: (
                   BuildContext context,
                   Widget child,
@@ -269,7 +269,7 @@ class Conductor extends StatelessWidget {
         verticalShift: _kQuickSettingsHeightBump,
         child: new ScrollLocker(
           key: _scrollLockerKey,
-          child: new ScopedModelDecendant<StoryDragTransitionModel>(
+          child: new ScopedModelDescendant<StoryDragTransitionModel>(
             builder: (
               BuildContext context,
               Widget child,
@@ -506,6 +506,13 @@ class Conductor extends StatelessWidget {
     _suggestionOverlayKey.currentState.hide();
   }
 
+  /// Returns the state of the children to their initial values.
+  /// This includes:
+  /// 1) Unfocusing any focused stories.
+  /// 2) Maximizing now.
+  /// 3) Enabling scrolling of the story list.
+  /// 4) Scrolling to the beginning of the story list.
+  /// 5) Peeking the suggestion list.
   void goToOrigin(StoryModel storyModel) {
     _defocus(storyModel);
     _nowKey.currentState.maximize();

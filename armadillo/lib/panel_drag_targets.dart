@@ -135,7 +135,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
   @override
   Widget build(BuildContext context) =>
-      new ScopedModelDecendant<StoryClusterStoriesModel>(
+      new ScopedModelDescendant<StoryClusterStoriesModel>(
         builder: (
           BuildContext context,
           Widget child,
@@ -320,7 +320,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ? DragDirection.none
         : _trackedCandidates[candidates.keys.first.id].dragDirection;
 
-    return new ScopedModelDecendant<DebugModel>(
+    return new ScopedModelDescendant<DebugModel>(
       builder: (BuildContext context, Widget child, DebugModel debugModel) =>
           new TargetInfluenceOverlay(
             enabled:

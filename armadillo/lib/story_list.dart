@@ -80,7 +80,7 @@ class StoryList extends StatelessWidget {
         super(key: key);
 
   @override
-  Widget build(BuildContext context) => new ScopedModelDecendant<StoryModel>(
+  Widget build(BuildContext context) => new ScopedModelDescendant<StoryModel>(
         builder: (
           BuildContext context,
           Widget child,
@@ -150,15 +150,15 @@ class StoryList extends StatelessWidget {
         child: new SingleChildScrollView(
           reverse: true,
           controller: scrollController,
-          child: new ScopedModelDecendant<SizeModel>(
+          child: new ScopedModelDescendant<SizeModel>(
             builder: (_, __, SizeModel sizeModel) =>
-                new ScopedModelDecendant<StoryRearrangementScrimModel>(
+                new ScopedModelDescendant<StoryRearrangementScrimModel>(
                   builder: (
                     _,
                     __,
                     StoryRearrangementScrimModel storyRearrangementScrimModel,
                   ) =>
-                      new ScopedModelDecendant<StoryDragTransitionModel>(
+                      new ScopedModelDescendant<StoryDragTransitionModel>(
                         builder: (
                           BuildContext context,
                           _,

@@ -209,7 +209,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
       new Story(
         id: new StoryId(storyInfo.id),
         builder: (BuildContext context) =>
-            new ScopedModelDecendant<HitTestModel>(
+            new ScopedModelDescendant<HitTestModel>(
               builder: (
                 BuildContext context,
                 Widget child,

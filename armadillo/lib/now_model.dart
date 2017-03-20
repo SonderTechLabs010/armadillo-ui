@@ -87,7 +87,7 @@ class NowModel extends Model {
   Widget get userContextMinimized => new Padding(
         padding: const EdgeInsets.only(left: 8.0),
         child: new RepaintBoundary(
-          child: new ScopedModelDecendant<OpacityModel>(
+          child: new ScopedModelDescendant<OpacityModel>(
             builder: (
               BuildContext context,
               Widget child,
@@ -220,7 +220,7 @@ class NowModel extends Model {
           new Padding(
             padding: const EdgeInsets.only(top: 4.0, right: 4.0),
             child: new RepaintBoundary(
-              child: new ScopedModelDecendant<OpacityModel>(
+              child: new ScopedModelDescendant<OpacityModel>(
                 builder: (
                   BuildContext context,
                   Widget child,
@@ -235,7 +235,7 @@ class NowModel extends Model {
             ),
           ),
           new RepaintBoundary(
-            child: new ScopedModelDecendant<OpacityModel>(
+            child: new ScopedModelDescendant<OpacityModel>(
               builder: (
                 BuildContext context,
                 Widget child,

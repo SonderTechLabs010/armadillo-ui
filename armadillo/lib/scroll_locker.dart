@@ -5,32 +5,37 @@
 import 'package:flutter/physics.dart';
 import 'package:flutter/widgets.dart';
 
-/// Locks and unlocks scrolling in its [child] and its decendants.
+/// Locks and unlocks scrolling in its [child] and its descendants.
 class ScrollLocker extends StatefulWidget {
+  /// The Widget whose scrolling will be locked.
   final Widget child;
 
+  /// Constructor.
   ScrollLocker({Key key, this.child}) : super(key: key);
 
   @override
   ScrollLockerState createState() => new ScrollLockerState();
 }
 
+/// The [State] of [ScrollLocker].
 class ScrollLockerState extends State<ScrollLocker> {
   /// When true, list scrolling is disabled.
   bool _lockScrolling = false;
 
   @override
   Widget build(BuildContext context) => new ScrollConfiguration(
-        behavior: new LockingScrollBehavior(lock: _lockScrolling),
+        behavior: new _LockingScrollBehavior(lock: _lockScrolling),
         child: config.child,
       );
 
+  /// Locks the scrolling of [ScrollLocker.child].
   void lock() {
     setState(() {
       _lockScrolling = true;
     });
   }
 
+  /// Unlocks the scrolling of [ScrollLocker.child].
   void unlock() {
     setState(() {
       _lockScrolling = false;
@@ -38,27 +43,27 @@ class ScrollLockerState extends State<ScrollLocker> {
   }
 }
 
-class LockingScrollBehavior extends ScrollBehavior {
+class _LockingScrollBehavior extends ScrollBehavior {
   final bool lock;
-  const LockingScrollBehavior({this.lock: false});
+  const _LockingScrollBehavior({this.lock: false});
 
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) => lock
-      ? const LockedScrollPhysics(parent: const BouncingScrollPhysics())
+      ? const _LockedScrollPhysics(parent: const BouncingScrollPhysics())
       : const BouncingScrollPhysics();
 
   @override
-  bool shouldNotify(LockingScrollBehavior old) {
+  bool shouldNotify(_LockingScrollBehavior old) {
     return lock != old.lock;
   }
 }
 
-class LockedScrollPhysics extends ScrollPhysics {
-  const LockedScrollPhysics({ScrollPhysics parent}) : super(parent);
+class _LockedScrollPhysics extends ScrollPhysics {
+  const _LockedScrollPhysics({ScrollPhysics parent}) : super(parent);
 
   @override
-  LockedScrollPhysics applyTo(ScrollPhysics parent) =>
-      new LockedScrollPhysics(parent: parent);
+  _LockedScrollPhysics applyTo(ScrollPhysics parent) =>
+      new _LockedScrollPhysics(parent: parent);
 
   @override
   Simulation createBallisticSimulation(
