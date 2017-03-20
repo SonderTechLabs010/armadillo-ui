@@ -13,16 +13,24 @@ import 'story_cluster.dart';
 /// Used by [PanelDragTargets] to take a snapshot of a [StoryCluster]'s layout
 /// so it can be restored later.
 class ClusterLayout {
+  /// The id of the [StoryCluster]s focused [Story].
   final StoryId focusedStoryId;
+
+  /// The layout of stories in the story cluster.
   final Map<StoryId, Panel> storyIdToPanelMap;
+
+  /// The display mode of the story cluster.
   final DisplayMode displayMode;
 
+  /// Constructor.
   ClusterLayout({
     @required this.focusedStoryId,
     @required this.storyIdToPanelMap,
     @required this.displayMode,
   });
 
+  /// Creates a [ClusterLayout] from the current state of the given
+  /// [storyCluster].
   factory ClusterLayout.from(StoryCluster storyCluster) {
     Map<StoryId, Panel> storyIdToPanelMap = <StoryId, Panel>{};
 

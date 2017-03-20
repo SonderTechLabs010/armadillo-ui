@@ -17,6 +17,7 @@ const Duration _kMinLockDuration = const Duration(milliseconds: 500);
 /// before new drag targets are considered.
 const double _kStickyDistance = 40.0;
 
+/// Returns a timestamp representing current time.
 typedef DateTime TimestampEmitter();
 
 /// Manages the metadata associated with a dragged candidate in
@@ -25,6 +26,8 @@ class CandidateInfo {
   /// Should be overridden in testing only.
   final TimestampEmitter timestampEmitter;
 
+  /// The minimum duration a candidate should remain locked to its curren
+  /// target before switching.
   final Duration minLockDuration;
 
   /// When a 'closest target' is chosen, the [Point] of the candidate becomes
@@ -37,9 +40,10 @@ class CandidateInfo {
   VelocityTracker _velocityTracker;
   DragDirection _lastDragDirection = DragDirection.none;
 
+  /// Constructor.
   CandidateInfo({
     @required Point initialLockPoint,
-    this.timestampEmitter: defaultTimestampEmitter,
+    this.timestampEmitter: _defaultTimestampEmitter,
     this.minLockDuration: _kMinLockDuration,
   })
       : _lockPoint = initialLockPoint {
@@ -48,6 +52,7 @@ class CandidateInfo {
     assert(minLockDuration != null);
   }
 
+  /// The target the candidate has locked to.
   PanelDragTarget get closestTarget => _closestTarget;
 
   /// Updates the candidate's velocity with [point].
@@ -61,13 +66,13 @@ class CandidateInfo {
     );
   }
 
-  // The candidate can lock to target closest to the candidate if the candidate:
-  // 1) is new, or
-  // 2) is old, and
-  //    a) the closest target to the candidate has changed,
-  //    b) we've moved past the sticky distance from the candidate's lock
-  //       point, and
-  //    c) the candidate's closest target hasn't changed recently.
+  /// The candidate can lock to target closest to the candidate if the candidate:
+  /// 1) is new, or
+  /// 2) is old, and
+  ///    a) the closest target to the candidate has changed,
+  ///    b) we've moved past the sticky distance from the candidate's lock
+  ///       point, and
+  ///    c) the candidate's closest target hasn't changed recently.
   bool canLock(PanelDragTarget closestTarget, Point storyClusterPoint) =>
       _hasNewPotentialTarget(closestTarget) &&
       _hasMovedPastThreshold(storyClusterPoint) &&
@@ -128,5 +133,5 @@ class CandidateInfo {
   /// Turns a [CandidateInfo] into a [Point] using the candidate's lock point.
   static Point toPoint(CandidateInfo candidateInfo) => candidateInfo._lockPoint;
 
-  static DateTime defaultTimestampEmitter() => new DateTime.now();
+  static DateTime _defaultTimestampEmitter() => new DateTime.now();
 }

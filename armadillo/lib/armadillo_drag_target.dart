@@ -62,6 +62,8 @@ typedef Widget FeedbackBuilder(
   Rect initialBoundsOnDrag,
 );
 
+/// Called when a drag starts.  The returned [Rect] should be the bounds of the
+/// dragged widget.
 typedef Rect OnDragStarted();
 
 /// A widget that can be dragged from to a [ArmadilloDragTarget] starting from long press.
@@ -111,9 +113,14 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
   /// The widget to show under the pointer when a drag is under way.
   final FeedbackBuilder feedbackBuilder;
 
+  /// Called when a drag starts.  The bounds of the dragged widget should be
+  /// returned by this callback.
   final OnDragStarted onDragStarted;
+
+  /// Called when a drag ends.
   final VoidCallback onDragEnded;
 
+  /// The key of the overlay the drag avatar will be built in.
   final GlobalKey<ArmadilloOverlayState> overlayKey;
 
   /// Creates a gesture recognizer that recognizes the start of the drag.
@@ -322,7 +329,6 @@ class _DragAvatarWidgetState extends TickingState<_DragAvatarWidget> {
     if (_returnSimulation?.isDone ?? false) {
       _onReturnSimulationDone();
     }
-    config.overlayKey.currentState.update();
     return !(isDone);
   }
 

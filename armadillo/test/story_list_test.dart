@@ -39,7 +39,7 @@ void main() {
       parentSize: new Size(_kWidthSingleColumn, _kHeight),
       scrollController: scrollController,
     );
-    StoryModel storyModel = new DummyStoryModel(storyKeys: storyKeys);
+    StoryModel storyModel = new _DummyStoryModel(storyKeys: storyKeys);
     await tester.pumpWidget(
       _wrapWithWidgetsAppAndModels(
         storyModel: storyModel,
@@ -77,7 +77,7 @@ void main() {
       parentSize: new Size(_kWidthMultiColumn, _kHeight),
       scrollController: scrollController,
     );
-    StoryModel storyModel = new DummyStoryModel(storyKeys: storyKeys);
+    StoryModel storyModel = new _DummyStoryModel(storyKeys: storyKeys);
 
     await tester.pumpWidget(
       _wrapWithWidgetsAppAndModels(
@@ -103,10 +103,10 @@ void main() {
   });
 }
 
-class DummyStoryModel extends StoryModel {
+class _DummyStoryModel extends StoryModel {
   final List<GlobalKey> storyKeys;
 
-  DummyStoryModel({this.storyKeys});
+  _DummyStoryModel({this.storyKeys});
 
   @override
   List<StoryCluster> get storyClusters => new List<StoryCluster>.generate(
@@ -123,7 +123,7 @@ class DummyStoryModel extends StoryModel {
                   themeColor: new Color(0xFFFFFFFF),
                 ),
               ],
-              storyLayout: new DummyStoryLayout(),
+              storyLayout: new _DummyStoryLayout(),
             ),
       );
 
@@ -131,7 +131,7 @@ class DummyStoryModel extends StoryModel {
   List<StoryCluster> get activeSortedStoryClusters => storyClusters;
 }
 
-class DummyStoryLayout extends StoryLayout {
+class _DummyStoryLayout extends StoryLayout {
   @override
   Size get size => new Size(200.0, 200.0);
 

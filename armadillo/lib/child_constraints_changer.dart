@@ -18,16 +18,21 @@ const double _kOuterBezelRadius = 16.0;
 /// through the [constraintsModel] list applying each constraint to [child] in
 /// turn.
 class ChildConstraintsChanger extends StatefulWidget {
+  /// The model containing the constraints [child] should be constrained by.
   final ConstraintsModel constraintsModel;
+
+  /// The [Widget] whose constrants will be set.
   final Widget child;
+
+  /// Constructor.
   ChildConstraintsChanger({this.constraintsModel, this.child});
 
   @override
-  ChildConstraintsChangerState createState() =>
-      new ChildConstraintsChangerState();
+  _ChildConstraintsChangerState createState() =>
+      new _ChildConstraintsChangerState();
 }
 
-class ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
+class _ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
   List<BoxConstraints> _constraints;
   int _currentConstraintIndex = 0;
 

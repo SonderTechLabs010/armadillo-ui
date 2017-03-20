@@ -17,6 +17,7 @@ import 'keyboard_device_extension.dart';
 import 'quick_settings.dart';
 import 'nothing.dart';
 import 'now.dart';
+import 'peek_manager.dart';
 import 'peeking_overlay.dart';
 import 'scroll_locker.dart';
 import 'selected_suggestion_overlay.dart';
@@ -93,19 +94,30 @@ final GlobalKey<SelectedSuggestionOverlayState> _selectedSuggestionOverlayKey =
 final GlobalKey<ArmadilloOverlayState> _overlayKey =
     new GlobalKey<ArmadilloOverlayState>();
 
+/// Called when an overlay becomes active or inactive.
 typedef void OnOverlayChanged(bool active);
 
 /// Manages the position, size, and state of the story list, user context,
 /// suggestion overlay, device extensions. interruption overlay, and quick
 /// settings overlay.
 class Conductor extends StatelessWidget {
+  /// Set to true to use a software keyboard when asking.
   final bool useSoftKeyboard;
+
+  /// Set to true to blur scrimmed children when performing an inline preview.
   final bool blurScrimmedChildren;
+
+  /// Called when the quick settings overlay becomes active or inactive.
   final OnOverlayChanged onQuickSettingsOverlayChanged;
+
+  /// Called when the suggestions overlay becomes active or inactive.
   final OnOverlayChanged onSuggestionsOverlayChanged;
-  final _PeekManager _peekManager;
+
+  final PeekManager _peekManager;
   bool _ignoreNextScrollOffsetChange = false;
 
+  /// Constructor.  [storyClusterDragStateModel] is used to create a
+  /// [PeekManager] for the suggestion list's peeking overlay.
   Conductor({
     this.useSoftKeyboard: true,
     this.blurScrimmedChildren,
@@ -113,7 +125,7 @@ class Conductor extends StatelessWidget {
     this.onSuggestionsOverlayChanged,
     StoryClusterDragStateModel storyClusterDragStateModel,
   })
-      : _peekManager = new _PeekManager(
+      : _peekManager = new PeekManager(
           peekingOverlayKey: _suggestionOverlayKey,
           storyClusterDragStateModel: storyClusterDragStateModel,
         );
@@ -553,36 +565,5 @@ class Conductor extends StatelessWidget {
 
     // Unhide selected suggestion in suggestion list.
     _suggestionListKey.currentState.resetSelection();
-  }
-}
-
-/// Manages if the [PeekingOverlay] with the [peekingOverlayKey] should
-/// be peeking or not.
-class _PeekManager {
-  final GlobalKey<PeekingOverlayState> peekingOverlayKey;
-  final StoryClusterDragStateModel storyClusterDragStateModel;
-  bool _nowMinimized = false;
-  bool _isDragging = false;
-
-  _PeekManager({this.peekingOverlayKey, this.storyClusterDragStateModel}) {
-    storyClusterDragStateModel.addListener(onStoryClusterDragStateChanged);
-  }
-
-  set nowMinimized(bool value) {
-    if (_nowMinimized != value) {
-      _nowMinimized = value;
-      _updatePeek();
-    }
-  }
-
-  void onStoryClusterDragStateChanged() {
-    if (_isDragging != storyClusterDragStateModel.isDragging) {
-      _isDragging = storyClusterDragStateModel.isDragging;
-      _updatePeek();
-    }
-  }
-
-  void _updatePeek() {
-    peekingOverlayKey.currentState.peek = (!_nowMinimized && !_isDragging);
   }
 }
