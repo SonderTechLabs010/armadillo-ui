@@ -111,14 +111,43 @@ Widget _buildApp({
             child: new DefaultAssetBundle(
               bundle: defaultBundle,
               child: new Armadillo(
-                storyModel: storyModel,
-                suggestionModel: suggestionModel,
-                nowModel: nowModel,
-                storyClusterDragStateModel: storyClusterDragStateModel,
-                storyRearrangementScrimModel: storyRearrangementScrimModel,
-                storyDragTransitionModel: storyDragTransitionModel,
-                debugModel: debugModel,
-                panelResizingModel: panelResizingModel,
+                scopedModelBuilders: <WrapperBuilder>[
+                  (_, Widget child) => new ScopedModel<StoryModel>(
+                        model: storyModel,
+                        child: child,
+                      ),
+                  (_, Widget child) => new ScopedModel<SuggestionModel>(
+                        model: suggestionModel,
+                        child: child,
+                      ),
+                  (_, Widget child) => new ScopedModel<NowModel>(
+                        model: nowModel,
+                        child: child,
+                      ),
+                  (_, Widget child) =>
+                      new ScopedModel<StoryClusterDragStateModel>(
+                        model: storyClusterDragStateModel,
+                        child: child,
+                      ),
+                  (_, Widget child) =>
+                      new ScopedModel<StoryRearrangementScrimModel>(
+                        model: storyRearrangementScrimModel,
+                        child: child,
+                      ),
+                  (_, Widget child) =>
+                      new ScopedModel<StoryDragTransitionModel>(
+                        model: storyDragTransitionModel,
+                        child: child,
+                      ),
+                  (_, Widget child) => new ScopedModel<DebugModel>(
+                        model: debugModel,
+                        child: child,
+                      ),
+                  (_, Widget child) => new ScopedModel<PanelResizingModel>(
+                        model: panelResizingModel,
+                        child: child,
+                      ),
+                ],
                 conductor: new Conductor(
                   storyClusterDragStateModel: storyClusterDragStateModel,
                 ),

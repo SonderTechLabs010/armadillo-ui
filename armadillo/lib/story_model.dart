@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'display_mode.dart';
 import 'model.dart';
 import 'panel.dart';
 import 'story.dart';
@@ -16,18 +17,18 @@ import 'story_list_layout.dart';
 
 export 'model.dart' show ScopedModel, Model;
 
-typedef void OnFocusChanged(StoryCluster storyCluster);
-
 /// A simple story model that gets its stories from calls
 /// [onStoryClustersChanged] and  reorders them with user interaction.
 class StoryModel extends Model {
-  final OnFocusChanged onFocusChanged;
+  /// Called when the currently focused [StoryCluster] changes.
+  final OnStoryClusterEvent onFocusChanged;
   List<StoryCluster> _storyClusters = const <StoryCluster>[];
   List<StoryCluster> _activeSortedStoryClusters = const <StoryCluster>[];
   List<StoryCluster> _inactiveStoryClusters = const <StoryCluster>[];
   Size _lastLayoutSize = Size.zero;
   double _listHeight = 0.0;
 
+  /// Constructor.
   StoryModel({this.onFocusChanged});
 
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
@@ -36,18 +37,27 @@ class StoryModel extends Model {
       new ModelFinder<StoryModel>()
           .of(context, rebuildOnChange: rebuildOnChange);
 
+  /// Returns the current list of [StoryCluster]s.
   List<StoryCluster> get storyClusters => _storyClusters;
+
+  /// Returns the current list of [StoryCluster]s which are active.
   List<StoryCluster> get activeSortedStoryClusters =>
       _activeSortedStoryClusters;
+
+  /// Returns the current list of [StoryCluster]s which are inactive.
   List<StoryCluster> get inactiveStoryClusters => _inactiveStoryClusters;
+
+  /// The current height of the story list.
   double get listHeight => _listHeight;
 
+  /// Called to set a new list of [storyClusters].
   void onStoryClustersChanged(List<StoryCluster> storyClusters) {
     _storyClusters = storyClusters;
     updateLayouts(_lastLayoutSize);
     notifyListeners();
   }
 
+  /// Updates the [size] used to layout the stories.
   void updateLayouts(Size size) {
     if (size.width == 0.0 || size.height == 0.0) {
       return;
@@ -166,8 +176,8 @@ class StoryModel extends Model {
     notifyListeners();
   }
 
-  // Determines the max number of rows and columns based on [size] and either
-  // does nothing, rearrange the panels to fit, or switches to tabs.
+  /// Determines the max number of rows and columns based on [size] and either
+  /// does nothing, rearrange the panels to fit, or switches to tabs.
   void normalize({Size size}) {
     // TODO(apwilson): implement this!
   }
@@ -179,6 +189,7 @@ class StoryModel extends Model {
       .where((StoryCluster storyCluster) => storyCluster.id == storyClusterId)
       .single;
 
+  /// Removes any [StoryCluster]s that consist of entirely place holder stories.
   void clearPlaceHolderStoryClusters() {
     _storyClusters.removeWhere(
       (StoryCluster storyCluster) => storyCluster.realStories.isEmpty,

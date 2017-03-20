@@ -38,10 +38,19 @@ const bool _kBlurScrimmedChildren = true;
 ///      focus.
 ///   3) Focused stories are above and overlap non-focused stories.
 class StoryListRenderBlock extends RenderBlock {
+  bool _blurScrimmedChildren;
+  Color _scrimColor;
+  Size _parentSize;
+  double _scrollOffset;
+  double _bottomPadding;
+  double _listHeight;
+  double _liftScale;
+
+  /// Constructor.
   StoryListRenderBlock({
     List<RenderBox> children,
     Size parentSize,
-    ScrollController scrollController,
+    double scrollOffset,
     double bottomPadding,
     double listHeight,
     Color scrimColor,
@@ -49,7 +58,7 @@ class StoryListRenderBlock extends RenderBlock {
     bool blurScrimmedChildren,
   })
       : _parentSize = parentSize,
-        _scrollController = scrollController,
+        _scrollOffset = scrollOffset,
         _bottomPadding = bottomPadding ?? 0.0,
         _listHeight = listHeight ?? 0.0,
         _scrimColor = scrimColor ?? new Color(0x00000000),
@@ -57,8 +66,7 @@ class StoryListRenderBlock extends RenderBlock {
         _blurScrimmedChildren = blurScrimmedChildren ?? _kBlurScrimmedChildren,
         super(children: children, mainAxis: Axis.vertical);
 
-  bool get blurScrimmedChildren => _blurScrimmedChildren;
-  bool _blurScrimmedChildren;
+  /// Sets whether the children should be blurred when they are scrimmed.
   set blurScrimmedChildren(bool value) {
     if (_blurScrimmedChildren != (value ?? _kBlurScrimmedChildren)) {
       _blurScrimmedChildren = (value ?? _kBlurScrimmedChildren);
@@ -66,8 +74,7 @@ class StoryListRenderBlock extends RenderBlock {
     }
   }
 
-  Color get scrimColor => _scrimColor;
-  Color _scrimColor;
+  /// Sets the color of the scrim placed in front of unfocused children.
   set scrimColor(Color value) {
     if (_scrimColor != value) {
       _scrimColor = value;
@@ -75,8 +82,7 @@ class StoryListRenderBlock extends RenderBlock {
     }
   }
 
-  Size get parentSize => _parentSize;
-  Size _parentSize;
+  /// Sets the size of the parent.  Used to position/size the children.
   set parentSize(Size value) {
     if (_parentSize != value) {
       _parentSize = value;
@@ -84,17 +90,15 @@ class StoryListRenderBlock extends RenderBlock {
     }
   }
 
-  ScrollController get scrollController => _scrollController;
-  ScrollController _scrollController;
-  set scrollController(ScrollController value) {
-    if (_scrollController != value) {
-      _scrollController = value;
+  /// Sets the scroll offset.  Used to position the children.
+  set scrollOffset(double value) {
+    if (_scrollOffset != value) {
+      _scrollOffset = value;
       markNeedsLayout();
     }
   }
 
-  double get bottomPadding => _bottomPadding;
-  double _bottomPadding;
+  /// Sets the bottom padding.  Used to position the children.
   set bottomPadding(double value) {
     if (_bottomPadding != value) {
       _bottomPadding = value;
@@ -102,8 +106,8 @@ class StoryListRenderBlock extends RenderBlock {
     }
   }
 
-  double get listHeight => _listHeight;
-  double _listHeight;
+  /// Sets the expected list height of this [RenderObject].  Used to position
+  /// the children.
   set listHeight(double value) {
     if (_listHeight != value) {
       _listHeight = value;
@@ -111,8 +115,7 @@ class StoryListRenderBlock extends RenderBlock {
     }
   }
 
-  double get liftScale => _liftScale;
-  double _liftScale;
+  /// Sets how much the children should be scaled due to a drag occurring.
   set liftScale(double value) {
     if (_liftScale != value) {
       _liftScale = value;
@@ -152,7 +155,7 @@ class StoryListRenderBlock extends RenderBlock {
     });
 
     if (_scrimColor.alpha != 0) {
-      if (blurScrimmedChildren) {
+      if (_blurScrimmedChildren) {
         context.pushBackdropFilter(
           offset,
           new ImageFilter.blur(
@@ -247,16 +250,18 @@ class StoryListRenderBlock extends RenderBlock {
     assert(!constraints.hasBoundedHeight);
     assert(constraints.hasBoundedWidth);
 
-    double scrollOffset = _scrollController?.offset ?? 0.0;
+    double scrollOffset = _scrollOffset;
     double maxFocusProgress = 0.0;
-    double inlinePreviewScale = getInlinePreviewScale(parentSize);
+    double inlinePreviewScale =
+        StoryListLayout.getInlinePreviewScale(_parentSize);
     double inlinePreviewTranslateToParentCenterRatio = math.min(
       1.0,
       inlinePreviewScale * 1.5 - 0.3,
     );
-    double parentCenterOffsetY = listHeight +
-        (_bottomPadding - scrollOffset - (parentSize.height / 2.0));
-    Point parentCenter = new Point(parentSize.width / 2.0, parentCenterOffsetY);
+    double parentCenterOffsetY = _listHeight +
+        (_bottomPadding - scrollOffset - (_parentSize.height / 2.0));
+    Point parentCenter =
+        new Point(_parentSize.width / 2.0, parentCenterOffsetY);
 
     {
       RenderBox child = firstChild;
@@ -273,19 +278,19 @@ class StoryListRenderBlock extends RenderBlock {
           childParentData.inlinePreviewHintScaleProgress,
         );
         double liftScaleMultiplier = lerpDouble(
-          liftScale * hintScale,
+          _liftScale * hintScale,
           1.0,
           childParentData.inlinePreviewScaleProgress,
         );
         double scaledLayoutHeight = lerpDouble(
               layoutHeight,
-              parentSize.height * inlinePreviewScale,
+              _parentSize.height * inlinePreviewScale,
               childParentData.inlinePreviewScaleProgress,
             ) *
             liftScaleMultiplier;
         double scaledLayoutWidth = lerpDouble(
               layoutWidth,
-              parentSize.width * inlinePreviewScale,
+              _parentSize.width * inlinePreviewScale,
               childParentData.inlinePreviewScaleProgress,
             ) *
             liftScaleMultiplier;
@@ -296,12 +301,12 @@ class StoryListRenderBlock extends RenderBlock {
         double childHeight = lerpDouble(
           scaledLayoutHeight +
               InlineStoryTitle.getHeight(childParentData.focusProgress),
-          parentSize.height,
+          _parentSize.height,
           childParentData.focusProgress,
         );
         double childWidth = lerpDouble(
           scaledLayoutWidth,
-          parentSize.width,
+          _parentSize.width,
           childParentData.focusProgress,
         );
         child.layout(
@@ -319,8 +324,8 @@ class StoryListRenderBlock extends RenderBlock {
             childParentData.focusProgress,
           ),
           lerpDouble(
-            layoutOffsetY + scaleOffsetDeltaY + listHeight,
-            listHeight - parentSize.height - scrollOffset + _bottomPadding,
+            layoutOffsetY + scaleOffsetDeltaY + _listHeight,
+            _listHeight - _parentSize.height - scrollOffset + _bottomPadding,
             childParentData.focusProgress,
           ),
         );
@@ -370,9 +375,9 @@ class StoryListRenderBlock extends RenderBlock {
     // taller than the unfocused list.  In that case, increase the height of the
     // block to be that of the focusing child and shift all the children down to
     // compensate.
-    double unfocusedHeight = listHeight + _bottomPadding;
+    double unfocusedHeight = _listHeight + _bottomPadding;
     double deltaTooSmall =
-        (parentSize.height * maxFocusProgress) - unfocusedHeight;
+        (_parentSize.height * maxFocusProgress) - unfocusedHeight;
     double finalHeight = unfocusedHeight;
     if (deltaTooSmall > 0.0) {
       // shift all children down by deltaTooSmall.
@@ -386,7 +391,7 @@ class StoryListRenderBlock extends RenderBlock {
         child = childParentData.nextSibling;
       }
 
-      finalHeight = (parentSize.height * maxFocusProgress);
+      finalHeight = (_parentSize.height * maxFocusProgress);
     }
 
     size = constraints.constrain(
@@ -425,8 +430,4 @@ class StoryListRenderBlock extends RenderBlock {
     });
     return children;
   }
-
-  static double getInlinePreviewScale(Size parentSize) =>
-      ((1280.0 * 1.5 - math.max(parentSize.width, parentSize.height)) / 1280.0)
-          .clamp(0.4, 0.8);
 }

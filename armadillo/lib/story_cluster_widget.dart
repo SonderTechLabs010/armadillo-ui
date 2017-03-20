@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 
 import 'armadillo_drag_target.dart';
 import 'armadillo_overlay.dart';
+import 'display_mode.dart';
 import 'nothing.dart';
 import 'optional_wrapper.dart';
 import 'panel.dart' as panel;

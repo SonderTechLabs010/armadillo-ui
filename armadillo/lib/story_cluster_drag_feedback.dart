@@ -8,6 +8,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
 
 import 'armadillo_overlay.dart';
+import 'display_mode.dart';
 import 'simulated_sized_box.dart';
 import 'simulated_transform.dart';
 import 'size_model.dart';
@@ -16,7 +17,7 @@ import 'story_cluster.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_panels_model.dart';
 import 'story_cluster_widget.dart';
-import 'story_list_render_block.dart';
+import 'story_list_layout.dart';
 import 'story_panels.dart';
 
 const double _kStoryBarMinimizedHeight = 4.0;
@@ -138,7 +139,7 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                 double height;
                 double childScale;
                 double inlinePreviewScale =
-                    StoryListRenderBlock.getInlinePreviewScale(
+                    StoryListLayout.getInlinePreviewScale(
                   sizeModel.size,
                 );
                 bool isAcceptable = storyClusterDragStateModel.isAcceptable;

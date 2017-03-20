@@ -36,10 +36,8 @@ void main() {
     StoryList storyList = new StoryList(
       key: storyListKey,
       overlayKey: new GlobalKey(),
-      sizeModel: new SizeModel(new Size(_kWidthSingleColumn, _kHeight)),
+      parentSize: new Size(_kWidthSingleColumn, _kHeight),
       scrollController: scrollController,
-      multiColumn: false,
-      quickSettingsHeightBump: 200.0,
     );
     StoryModel storyModel = new DummyStoryModel(storyKeys: storyKeys);
     await tester.pumpWidget(
@@ -76,10 +74,8 @@ void main() {
     StoryList storyList = new StoryList(
       key: storyListKey,
       overlayKey: new GlobalKey(),
-      sizeModel: new SizeModel(new Size(_kWidthMultiColumn, _kHeight)),
+      parentSize: new Size(_kWidthMultiColumn, _kHeight),
       scrollController: scrollController,
-      multiColumn: true,
-      quickSettingsHeightBump: 200.0,
     );
     StoryModel storyModel = new DummyStoryModel(storyKeys: storyKeys);
 

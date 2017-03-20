@@ -432,6 +432,11 @@ class StoryListLayout {
     double height = size.height * width / size.width;
     return new Size(width, height);
   }
+
+  /// Returns the scale factor for inline preview given [parentSize].
+  static double getInlinePreviewScale(Size parentSize) =>
+      ((1280.0 * 1.5 - math.max(parentSize.width, parentSize.height)) / 1280.0)
+          .clamp(0.4, 0.8);
 }
 
 /// Stores positions and sizes of a story as it goes through the

@@ -22,6 +22,7 @@ import 'package:armadillo/story_drag_transition_model.dart';
 import 'package:armadillo/story_model.dart';
 import 'package:armadillo/story_rearrangement_scrim_model.dart';
 import 'package:armadillo/story_time_randomizer.dart';
+import 'package:armadillo/suggestion_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -132,14 +133,40 @@ Future<Null> main() async {
     constraintsModel: constraintsModel,
     debugModel: debugModel,
     armadillo: new Armadillo(
-      storyModel: storyModel,
-      suggestionModel: suggestionProviderSuggestionModel,
-      nowModel: nowModel,
-      storyClusterDragStateModel: storyClusterDragStateModel,
-      storyRearrangementScrimModel: storyRearrangementScrimModel,
-      storyDragTransitionModel: storyDragTransitionModel,
-      debugModel: debugModel,
-      panelResizingModel: panelResizingModel,
+      scopedModelBuilders: <WrapperBuilder>[
+        (_, Widget child) => new ScopedModel<StoryModel>(
+              model: storyModel,
+              child: child,
+            ),
+        (_, Widget child) => new ScopedModel<SuggestionModel>(
+              model: suggestionProviderSuggestionModel,
+              child: child,
+            ),
+        (_, Widget child) => new ScopedModel<NowModel>(
+              model: nowModel,
+              child: child,
+            ),
+        (_, Widget child) => new ScopedModel<StoryClusterDragStateModel>(
+              model: storyClusterDragStateModel,
+              child: child,
+            ),
+        (_, Widget child) => new ScopedModel<StoryRearrangementScrimModel>(
+              model: storyRearrangementScrimModel,
+              child: child,
+            ),
+        (_, Widget child) => new ScopedModel<StoryDragTransitionModel>(
+              model: storyDragTransitionModel,
+              child: child,
+            ),
+        (_, Widget child) => new ScopedModel<DebugModel>(
+              model: debugModel,
+              child: child,
+            ),
+        (_, Widget child) => new ScopedModel<PanelResizingModel>(
+              model: panelResizingModel,
+              child: child,
+            ),
+      ],
       conductor: conductor,
     ),
     hitTestModel: hitTestModel,

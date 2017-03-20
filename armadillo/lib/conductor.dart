@@ -162,7 +162,10 @@ class Conductor extends StatelessWidget {
                 child: _getStoryList(
                   storyModel,
                   constraints.maxWidth,
-                  new SizeModel(fullSize),
+                  new Size(
+                    fullSize.width,
+                    fullSize.height - _kMinimizedNowHeight,
+                  ),
                 ),
               ),
 
@@ -247,7 +250,7 @@ class Conductor extends StatelessWidget {
   Widget _getStoryList(
     StoryModel storyModel,
     double maxWidth,
-    SizeModel sizeModel,
+    Size parentSize,
   ) =>
       new VerticalShifter(
         key: _verticalShifterKey,
@@ -263,8 +266,6 @@ class Conductor extends StatelessWidget {
                 new StoryList(
                   scrollController: _scrollController,
                   overlayKey: _overlayKey,
-                  multiColumn: maxWidth > _kStoryListMultiColumnWidthThreshold,
-                  quickSettingsHeightBump: _kQuickSettingsHeightBump,
                   blurScrimmedChildren: blurScrimmedChildren,
                   bottomPadding: _kMaximizedNowHeight +
                       lerpDouble(
@@ -299,7 +300,7 @@ class Conductor extends StatelessWidget {
                   onStoryClusterFocusCompleted: (StoryCluster storyCluster) {
                     _focusStoryCluster(storyModel, storyCluster);
                   },
-                  sizeModel: sizeModel,
+                  parentSize: parentSize,
                   onStoryClusterVerticalEdgeHover: () => goToOrigin(storyModel),
                 ),
           ),

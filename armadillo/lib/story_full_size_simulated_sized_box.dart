@@ -4,10 +4,10 @@
 
 import 'package:flutter/widgets.dart';
 
+import 'display_mode.dart';
 import 'panel.dart';
 import 'simulated_fractional.dart';
 import 'size_model.dart';
-import 'story_cluster.dart';
 
 /// Sets the size of [child] based on [displayMode] and [panel] using a
 /// [SimulatedFractional].  This widget expects to have an ancestor

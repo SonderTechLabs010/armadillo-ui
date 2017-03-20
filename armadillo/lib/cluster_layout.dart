@@ -4,6 +4,7 @@
 
 import 'package:meta/meta.dart';
 
+import 'display_mode.dart';
 import 'panel.dart';
 import 'panel_drag_targets.dart';
 import 'story.dart';

@@ -4,6 +4,7 @@
 
 import 'package:flutter/widgets.dart';
 
+import 'display_mode.dart';
 import 'panel.dart';
 import 'place_holder_story.dart';
 import 'story.dart';

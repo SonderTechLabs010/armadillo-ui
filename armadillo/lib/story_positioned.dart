@@ -6,10 +6,11 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 
+import 'display_mode.dart';
 import 'panel.dart';
 import 'panel_resizing_model.dart';
 import 'simulated_fractional.dart';
-import 'story_cluster.dart';
+import 'story.dart';
 import 'story_panels.dart';
 
 const double _kUnfocusedStoryMargin = 1.0;
@@ -27,11 +28,20 @@ class StoryPositioned extends StatelessWidget {
   final Panel panel;
   final Size currentSize;
   final double focusProgress;
+
+  /// The [Widget] representation of the [Story].
   final Widget child;
+
+  /// The height of the [Story]'s story bar when maximized.
   final double storyBarMaximizedHeight;
+
+  /// If key to use for the [SimulatedFractional] containing [child].
   final Key childContainerKey;
+
+  /// If true, the corners of [child] will be rounded with a clip.
   final bool clip;
 
+  /// Constructor.
   StoryPositioned({
     this.storyBarMaximizedHeight,
     this.displayMode,

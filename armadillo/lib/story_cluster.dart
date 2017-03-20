@@ -4,6 +4,7 @@
 
 import 'package:flutter/widgets.dart';
 
+import 'display_mode.dart';
 import 'panel.dart';
 import 'place_holder_story.dart';
 import 'simulation_builder.dart';
@@ -14,7 +15,8 @@ import 'story_cluster_panels_model.dart';
 import 'story_cluster_stories_model.dart';
 import 'story_list_layout.dart';
 
-enum DisplayMode { tabs, panels }
+/// Called when something related to [storyCluster] happens.
+typedef void OnStoryClusterEvent(StoryCluster storyCluster);
 
 /// A data model representing a list of [Story]s.
 class StoryCluster {
