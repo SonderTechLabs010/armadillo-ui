@@ -15,8 +15,8 @@ import 'package:armadillo/debug_model.dart';
 import 'package:armadillo/now_model.dart';
 import 'package:armadillo/panel_resizing_model.dart';
 import 'package:armadillo/story_cluster.dart';
+import 'package:armadillo/story_cluster_drag_data.dart';
 import 'package:armadillo/story_cluster_drag_state_model.dart';
-import 'package:armadillo/story_cluster_id.dart';
 import 'package:armadillo/story.dart';
 import 'package:armadillo/story_drag_transition_model.dart';
 import 'package:armadillo/story_model.dart';
@@ -222,15 +222,15 @@ Widget _buildDiscardDragTarget({
   StoryModel storyModel,
   StoryProviderStoryGenerator storyProviderStoryGenerator,
 }) =>
-    new ArmadilloDragTarget<DraggedStoryClusterData>(
-      onWillAccept: (DraggedStoryClusterData draggedStoryClusterData, _) =>
-          storyModel.storyClusters.every((StoryCluster storyCluster) =>
+    new ArmadilloDragTarget<StoryClusterDragData>(
+      onWillAccept: (_, __) => storyModel.storyClusters.every(
+          (StoryCluster storyCluster) =>
               storyCluster.focusSimulationKey.currentState.progress == 0.0),
-      onAccept: (DraggedStoryClusterData draggedStoryClusterData, _, __) =>
+      onAccept: (StoryClusterDragData data, _, __) =>
           storyProviderStoryGenerator.removeStoryCluster(
-            draggedStoryClusterData.id,
+            data.id,
           ),
-      builder: (_, Map<DraggedStoryClusterData, Point> candidateData, __) =>
+      builder: (_, Map<StoryClusterDragData, Point> candidateData, __) =>
           new IgnorePointer(
             child: new Container(
               decoration: new BoxDecoration(

@@ -17,9 +17,9 @@ import 'panel_drag_targets.dart';
 import 'panel_resizing_overlay.dart';
 import 'story.dart';
 import 'story_cluster.dart';
+import 'story_cluster_drag_data.dart';
 import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_drag_state_model.dart';
-import 'story_cluster_id.dart';
 import 'story_cluster_panels_model.dart';
 import 'story_drag_transition_model.dart';
 import 'story_list.dart';
@@ -72,10 +72,10 @@ class StoryClusterWidget extends StatelessWidget {
     return new OptionalWrapper(
       useWrapper: _isUnfocused && !storyCluster.isPlaceholder,
       builder: (BuildContext context, Widget child) =>
-          new ArmadilloLongPressDraggable<DraggedStoryClusterData>(
+          new ArmadilloLongPressDraggable<StoryClusterDragData>(
             key: storyCluster.clusterDraggableKey,
             overlayKey: overlayKey,
-            data: new DraggedStoryClusterData(id: storyCluster.id),
+            data: new StoryClusterDragData(id: storyCluster.id),
             childWhenDragging: Nothing.widget,
             onDragStarted: () {
               RenderBox box =

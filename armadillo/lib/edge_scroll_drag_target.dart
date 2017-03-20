@@ -10,8 +10,8 @@ import 'package:sysui_widgets/ticking_state.dart';
 import 'armadillo_drag_target.dart';
 import 'kenichi_edge_scrolling.dart';
 import 'nothing.dart';
+import 'story_cluster_drag_data.dart';
 import 'story_cluster_drag_state_model.dart';
-import 'story_cluster_id.dart';
 
 const Color _kDraggableHoverColor = const Color(0x00FFFF00);
 const Color _kNoDraggableHoverColor = const Color(0x00FFFF00);
@@ -126,7 +126,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
     Key key,
     _BuildCallback onBuild,
   }) =>
-      new ArmadilloDragTarget<DraggedStoryClusterData>(
+      new ArmadilloDragTarget<StoryClusterDragData>(
         onWillAccept: (_, __) => false,
         onAccept: (_, __, ___) => null,
         builder: (_, __, Map<dynamic, Point> rejectedData) {

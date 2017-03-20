@@ -22,6 +22,7 @@ import 'simulated_fractional.dart';
 import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
+import 'story_cluster_drag_data.dart';
 import 'story_cluster_drag_state_model.dart';
 import 'story_cluster_id.dart';
 import 'story_cluster_stories_model.dart';
@@ -146,18 +147,17 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
       );
 
   Widget _buildWidget(BuildContext context) =>
-      new ArmadilloDragTarget<DraggedStoryClusterData>(
-        onWillAccept: (DraggedStoryClusterData draggedStoryClusterData, _) =>
-            config.storyCluster.id != draggedStoryClusterData.id,
-        onAccept: (DraggedStoryClusterData draggedStoryClusterData, _,
-                Velocity velocity) =>
+      new ArmadilloDragTarget<StoryClusterDragData>(
+        onWillAccept: (StoryClusterDragData data, _) =>
+            config.storyCluster.id != data.id,
+        onAccept: (StoryClusterDragData data, _, Velocity velocity) =>
             _onAccept(
-              draggedStoryClusterData,
+              data,
               velocity,
             ),
         builder: (
           BuildContext context,
-          Map<DraggedStoryClusterData, Point> candidates,
+          Map<StoryClusterDragData, Point> candidates,
           Map<dynamic, Point> rejectedData,
         ) =>
             _build(candidates),
@@ -169,7 +169,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     return !_scaleSimulation.isDone;
   }
 
-  void _onAccept(DraggedStoryClusterData data, Velocity velocity) {
+  void _onAccept(StoryClusterDragData data, Velocity velocity) {
     StoryCluster storyCluster = StoryModel.of(context).getStoryCluster(data.id);
 
     // When focused, if the cluster has been flung, don't call the target
@@ -212,7 +212,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   /// [candidates] are the clusters that are currently
   /// being dragged over this drag target with their associated local
   /// position.
-  Widget _build(Map<DraggedStoryClusterData, Point> candidates) {
+  Widget _build(Map<StoryClusterDragData, Point> candidates) {
     // Update the acceptance of a dragged StoryCluster.  If we have no
     // candidates we're not accepting it.  If we do have condidates and we're
     // focused we do accept it.  If we're in the timeline we need to wait for
@@ -257,7 +257,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     return _buildWithConfirmedCandidates(
       !_inTimeline || _candidatesValid
           ? candidates
-          : <DraggedStoryClusterData, Point>{},
+          : <StoryClusterDragData, Point>{},
     );
   }
 
@@ -265,9 +265,9 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   /// being dragged over this drag target for the prerequesite time period with
   /// their associated local position.
   Widget _buildWithConfirmedCandidates(
-    Map<DraggedStoryClusterData, Point> candidates,
+    Map<StoryClusterDragData, Point> candidates,
   ) {
-    candidates.keys.forEach((DraggedStoryClusterData data) {
+    candidates.keys.forEach((StoryClusterDragData data) {
       if (_trackedCandidates[data.id] == null) {
         _trackedCandidates[data.id] = new CandidateInfo(
           initialLockPoint: candidates[data],
@@ -284,7 +284,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
       // Invoke onFirstHover callbacks if they exist.
       candidates.keys.forEach(
-        (DraggedStoryClusterData data) => data.onFirstHover?.call(),
+        (StoryClusterDragData data) => data.onFirstHover?.call(),
       );
     }
     _hadCandidates = hasCandidates;
@@ -415,10 +415,10 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   }
 
   Map<StoryCluster, Point> _getStoryClusterMap(
-    Map<DraggedStoryClusterData, Point> candidates,
+    Map<StoryClusterDragData, Point> candidates,
   ) {
     Map<StoryCluster, Point> storyClusterMap = <StoryCluster, Point>{};
-    candidates.keys.forEach((DraggedStoryClusterData data) {
+    candidates.keys.forEach((StoryClusterDragData data) {
       Point storyClusterPoint = candidates[data];
       StoryCluster storyCluster =
           StoryModel.of(context).getStoryCluster(data.id);
@@ -436,12 +436,11 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ?.target = (activate || _candidateValidityTimer != null) ? 1.0 : 0.0;
   }
 
-  void _updateClosestTargets(Map<DraggedStoryClusterData, Point> candidates) {
+  void _updateClosestTargets(Map<StoryClusterDragData, Point> candidates) {
     // Remove any candidates that no longer exist.
     _trackedCandidates.keys.toList().forEach((StoryClusterId storyClusterId) {
-      if (candidates.keys.every(
-          (DraggedStoryClusterData draggedStoryClusterData) =>
-              draggedStoryClusterData.id != storyClusterId)) {
+      if (candidates.keys
+          .every((StoryClusterDragData data) => data.id != storyClusterId)) {
         _trackedCandidates.remove(storyClusterId);
 
         panelEventHandler.onCandidateRemoved();
@@ -456,7 +455,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     });
 
     // For each candidate...
-    candidates.keys.forEach((DraggedStoryClusterData data) {
+    candidates.keys.forEach((StoryClusterDragData data) {
       Point storyClusterPoint = candidates[data];
 
       CandidateInfo candidateInfo = _trackedCandidates[data.id];

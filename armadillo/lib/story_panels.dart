@@ -18,9 +18,9 @@ import 'simulated_transform.dart';
 import 'story.dart';
 import 'story_bar.dart';
 import 'story_cluster.dart';
+import 'story_cluster_drag_data.dart';
 import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_drag_state_model.dart';
-import 'story_cluster_id.dart';
 import 'story_cluster_panels_model.dart';
 import 'story_full_size_simulated_sized_box.dart';
 import 'story_model.dart';
@@ -169,10 +169,10 @@ class StoryPanels extends StatelessWidget {
       // Don't allow dragging if we're the only story.
       useWrapper: storyCluster.realStories.length > 1 && focusProgress == 1.0,
       builder: (BuildContext context, Widget child) =>
-          new ArmadilloLongPressDraggable<DraggedStoryClusterData>(
+          new ArmadilloLongPressDraggable<StoryClusterDragData>(
             key: story.clusterDraggableKey,
             overlayKey: overlayKey,
-            data: new DraggedStoryClusterData(
+            data: new StoryClusterDragData(
               id: story.clusterId,
               // If a story bar is dragged such that the story is split from the
               // cluster, we need to do some special work to make the drag
