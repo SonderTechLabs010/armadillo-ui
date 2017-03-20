@@ -198,7 +198,7 @@ class StoryClusterWidget extends StatelessWidget {
                             storyCluster: storyCluster,
                             currentSize: currentSize,
                             onPanelsChanged: () =>
-                                storyCluster.notifyPanelListeners(),
+                                storyClusterPanelsModel.notifyListeners(),
                             child: child,
                           ),
                       child: new StoryPanels(

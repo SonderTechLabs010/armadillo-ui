@@ -4,8 +4,10 @@
 
 import 'package:flutter/widgets.dart';
 
+import 'armadillo_drag_target.dart';
 import 'display_mode.dart';
 import 'panel.dart';
+import 'panel_drag_targets.dart';
 import 'place_holder_story.dart';
 import 'simulation_builder.dart';
 import 'story.dart';
@@ -13,17 +15,29 @@ import 'story_cluster_drag_feedback.dart';
 import 'story_cluster_id.dart';
 import 'story_cluster_panels_model.dart';
 import 'story_cluster_stories_model.dart';
+import 'story_cluster_widget.dart';
 import 'story_list_layout.dart';
+import 'story_panels.dart';
 
 /// Called when something related to [storyCluster] happens.
 typedef void OnStoryClusterEvent(StoryCluster storyCluster);
 
 /// A data model representing a list of [Story]s.
 class StoryCluster {
+  /// The unique id of the cluster.
   final StoryClusterId id;
+
+  /// The list of stories contained in the cluster.
   final List<Story> _stories;
+
+  /// The key used for the cluster's [StoryClusterWidget]'s
+  /// [PanelDragTargets].
   final GlobalKey clusterDragTargetsKey;
+
+  /// The key used for the cluster's [StoryPanels].
   final GlobalKey panelsKey;
+
+  /// The key used for the cluster's [StoryClusterDragFeedback].
   final GlobalKey<StoryClusterDragFeedbackState> dragFeedbackKey;
 
   /// The focus simulation is the scaling that occurs when the
@@ -49,15 +63,21 @@ class StoryCluster {
   /// within the cluster.
   String title;
 
+  /// The key used for the cluster's [StoryClusterWidget]'s
+  /// [ArmadilloLongPressDraggable].
+  GlobalKey clusterDraggableKey;
+
+  /// The layout this cluster should use to place and size itself.
+  StoryLayout storyLayout;
+
   DateTime _lastInteraction;
   Duration _cumulativeInteractionDuration;
-  GlobalKey clusterDraggableKey;
   DisplayMode _displayMode;
   StoryId _focusedStoryId;
-  StoryLayout storyLayout;
   StoryClusterStoriesModel _storiesModel;
   StoryClusterPanelsModel _panelsModel;
 
+  /// Constructor.
   StoryCluster({
     StoryClusterId id,
     GlobalKey clusterDraggableKey,
@@ -92,9 +112,9 @@ class StoryCluster {
     _storiesModel = new StoryClusterStoriesModel(this);
     addStoryListListener(_storiesModel.notifyListeners);
     _panelsModel = new StoryClusterPanelsModel(this);
-    _addPanelListener(_panelsModel.notifyListeners);
   }
 
+  /// Creates a [StoryCluster] from [story].
   factory StoryCluster.fromStory(Story story) {
     story.panel = new Panel();
     story.positionedKey =
@@ -106,6 +126,7 @@ class StoryCluster {
     );
   }
 
+  /// Wraps [child] with the [Model]s corresponding to this [StoryCluster].
   Widget wrapWithModels({Widget child}) =>
       new ScopedModel<StoryClusterStoriesModel>(
         model: _storiesModel,
@@ -130,6 +151,7 @@ class StoryCluster {
         _stories.where((Story story) => story.isPlaceHolder),
       );
 
+  /// Returns [Widget]s for each of the stories in this cluster.
   Map<StoryId, Widget> buildStoryWidgets(BuildContext context) {
     Map<StoryId, Widget> storyWidgets = <StoryId, Widget>{};
     stories.forEach((Story story) {
@@ -138,10 +160,12 @@ class StoryCluster {
     return storyWidgets;
   }
 
+  /// [listener] will be called whenever the list of stories changes.
   void addStoryListListener(VoidCallback listener) {
     _storyListListeners.add(listener);
   }
 
+  /// [listener] will no longer be called whenever the list of stories changes.
   void removeStoryListListener(VoidCallback listener) {
     _storyListListeners.remove(listener);
   }
@@ -149,23 +173,18 @@ class StoryCluster {
   void _notifyStoryListListeners() {
     title = _getClusterTitle(realStories);
     _storyListListeners.forEach((VoidCallback listener) => listener());
-    notifyPanelListeners();
+    _panelsModel.notifyListeners();
   }
 
-  void _addPanelListener(VoidCallback listener) {
-    _panelListeners.add(listener);
-  }
-
-  void notifyPanelListeners() {
-    _panelListeners.forEach((VoidCallback listener) => listener());
-  }
-
-  set inactive(bool inactive) {
+  /// Activates the cluster.  This is only used for demo purposes.
+  void activate() {
     _stories.forEach((Story story) {
-      story.inactive = inactive;
+      story.inactive = false;
     });
   }
 
+  /// Sets the last interaction time for the cluster.  Used for ordering
+  /// clusters in the story list.
   set lastInteraction(DateTime lastInteraction) {
     this._lastInteraction = lastInteraction;
     _stories.forEach((Story story) {
@@ -173,8 +192,11 @@ class StoryCluster {
     });
   }
 
+  /// Gets the last interaction time for the cluster.
   DateTime get lastInteraction => _lastInteraction;
 
+  /// Sets the cumulative interaction time this cluster has had.  Used for
+  /// ordering laying out clusters in the story list.
   set cumulativeInteractionDuration(Duration cumulativeInteractionDuration) {
     this._cumulativeInteractionDuration = cumulativeInteractionDuration;
     _stories.forEach((Story story) {
@@ -182,6 +204,7 @@ class StoryCluster {
     });
   }
 
+  /// Gets the cumulative interaction time this cluster has had.
   Duration get cumulativeInteractionDuration => _cumulativeInteractionDuration;
 
   @override
@@ -200,13 +223,14 @@ class StoryCluster {
     return string;
   }
 
+  /// The current [DisplayMode] of this cluster.
   DisplayMode get displayMode => _displayMode;
 
   /// Switches the [DisplayMode] to [displayMode].
   set displayMode(DisplayMode displayMode) {
     if (_displayMode != displayMode) {
       _displayMode = displayMode;
-      notifyPanelListeners();
+      _panelsModel.notifyListeners();
     }
   }
 
@@ -297,7 +321,7 @@ class StoryCluster {
         );
       },
     );
-    notifyPanelListeners();
+    _panelsModel.notifyListeners();
   }
 
   /// Adds the [story] to [stories] with a [Panel] of [withPanel].
@@ -315,24 +339,29 @@ class StoryCluster {
   void replace({Panel panel, Panel withPanel}) {
     Story story = _stories.where((Story story) => story.panel == panel).single;
     story.panel = withPanel;
-    notifyPanelListeners();
+    _panelsModel.notifyListeners();
   }
 
   /// Replaces the [Story.panel] of the story with [storyId] with [withPanel]/
   void replaceStoryPanel({StoryId storyId, Panel withPanel}) {
     Story story = _stories.where((Story story) => story.id == storyId).single;
     story.panel = withPanel;
-    notifyPanelListeners();
+    _panelsModel.notifyListeners();
   }
 
+  /// true if this cluster has become a placeholder via [becomePlaceholder].
   bool get isPlaceholder => stories.length == 1 && stories.first.isPlaceHolder;
 
+  /// Converts this cluster into a placeholder by replacing all its stories
+  /// with a single place holder story.
   void becomePlaceholder() {
     _stories.clear();
     _stories.add(new PlaceHolderStory(transparent: true));
     _notifyStoryListListeners();
   }
 
+  /// Removes [story] from this cluster.  Stories adjacent to [story] in the
+  /// cluster will absorb the area left behind by [story]'s [Story.panel].
   void absorb(Story story) {
     List<Story> stories = new List<Story>.from(_stories);
     // We can't absorb the story if it's the only story.
@@ -379,10 +408,11 @@ class StoryCluster {
     _notifyStoryListListeners();
   }
 
+  /// Sets the focused story for this cluster.
   set focusedStoryId(StoryId storyId) {
     if (storyId != _focusedStoryId) {
       _focusedStoryId = storyId;
-      notifyPanelListeners();
+      _panelsModel.notifyListeners();
     }
   }
 

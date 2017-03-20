@@ -101,7 +101,7 @@ class StoryModel extends Model {
   /// comes into focus.
   void interactionStarted(StoryCluster storyCluster) {
     storyCluster.lastInteraction = new DateTime.now();
-    storyCluster.inactive = false;
+    storyCluster.activate();
     updateLayouts(_lastLayoutSize);
     notifyListeners();
     onFocusChanged?.call(storyCluster);
