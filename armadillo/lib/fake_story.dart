@@ -15,7 +15,7 @@ class FakeStory extends StatefulWidget {
 }
 
 class FakeStoryState extends State<FakeStory> {
-  Map<int, Color> _swatch = Colors.blue;
+  MaterialColor _swatch = Colors.blue;
   FlutterLogoStyle _style = FlutterLogoStyle.markOnly;
   FakeStoryState() {
     new Timer.periodic(new Duration(seconds: 5 + new math.Random().nextInt(30)),
@@ -64,7 +64,7 @@ class FakeStoryState extends State<FakeStory> {
           foregroundDecoration: new BoxDecoration(
               border: new Border.all(width: 16.0, color: Colors.grey[500])),
           child: new FlutterLogo(
-              swatch: _swatch,
+              colors: _swatch,
               style: _style,
               duration: const Duration(milliseconds: 500),
               curve: Curves.fastOutSlowIn)));
