@@ -10,11 +10,22 @@ import 'package:sysui_widgets/device_extension_state.dart';
 
 /// A device extension for the [Keyboard].
 class KeyboardDeviceExtension extends StatefulWidget {
+  /// The flutter [Key] for the [Keyboard] child of this [Widget].
   final Key keyboardKey;
+
+  /// Called when a key is tapped on the keyboard.
   final OnText onText;
+
+  /// Called when a suggestion is tapped on the keyboard.
   final OnText onSuggestion;
-  final OnDelete onDelete;
-  final OnGo onGo;
+
+  /// Called when 'Delete' is tapped on the keyboard.
+  final VoidCallback onDelete;
+
+  /// Called when 'Go' is tapped on the keyboard.
+  final VoidCallback onGo;
+
+  /// Constructor.
   KeyboardDeviceExtension(
       {Key key,
       this.keyboardKey,
@@ -23,20 +34,23 @@ class KeyboardDeviceExtension extends StatefulWidget {
       this.onDelete,
       this.onGo})
       : super(key: key);
+
   @override
-  KeyboardDeviceExtensionState createState() =>
-      new KeyboardDeviceExtensionState();
+  _KeyboardDeviceExtensionState createState() =>
+      new _KeyboardDeviceExtensionState();
 }
 
-class KeyboardDeviceExtensionState
+class _KeyboardDeviceExtensionState
     extends DeviceExtensionState<KeyboardDeviceExtension> {
   @override
   Widget createWidget(BuildContext context) => new Container(
-      decoration: new BoxDecoration(backgroundColor: Colors.black),
-      child: new Keyboard(
+        decoration: new BoxDecoration(backgroundColor: Colors.black),
+        child: new Keyboard(
           key: config.keyboardKey,
           onText: config.onText,
           onSuggestion: config.onSuggestion,
           onDelete: config.onDelete,
-          onGo: config.onGo));
+          onGo: config.onGo,
+        ),
+      );
 }

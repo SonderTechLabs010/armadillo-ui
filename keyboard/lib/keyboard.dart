@@ -8,255 +8,257 @@ import 'dart:math';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sysui_widgets/scrollable_input_text.dart';
 
-import 'edit_text.dart';
 import 'keys.dart';
 import 'word_suggestion_service.dart';
 
 const double _kSuggestionRowHeight = 40.0;
+const Color _kTurquoiseAccentColor = const Color(0xFF68EFAD);
 
-enum KeyboardType { lowerCase, upperCase, symbolsOne, symbolsTwo }
+const String _kKeyType = 'type'; // defaults to kKeyTypeNormal
+const String _kKeyTypeSuggestion = 'suggestion';
+const String _kKeyTypeNormal = 'normal';
+const String _kKeyTypeSpecial = 'special';
 
-typedef void OnDelete();
-typedef void OnGo();
+const String _kKeyVisualType = 'visualtype'; // defaults to kKeyVisualTypeText
+const String _kKeyVisualTypeText = 'text';
+const String _kKeyVisualTypeImage = 'image';
+const String _kKeyVisualTypeActionText = 'actiontext';
 
-const String kKeyType = 'type'; // defaults to kKeyTypeNormal
-const String kKeyTypeSuggestion = 'suggestion';
-const String kKeyTypeNormal = 'normal';
-const String kKeyTypeSpecial = 'special';
-
-const String kKeyVisualType = 'visualtype'; // defaults to kKeyVisualTypeText
-const String kKeyVisualTypeText = 'text';
-const String kKeyVisualTypeImage = 'image';
-const String kKeyVisualTypeActionText = 'actiontext';
-
-const String kKeyAction =
+const String _kKeyAction =
     'action'; // defaults to kKeyActionEmitText, a number indicates an index into the kayboard layouts array.
-const String kKeyActionEmitText = 'emittext';
-const String kKeyActionDelete = 'delete';
-const String kKeyActionSpace = 'space';
-const String kKeyActionGo = 'go';
+const String _kKeyActionEmitText = 'emittext';
+const String _kKeyActionDelete = 'delete';
+const String _kKeyActionSpace = 'space';
+const String _kKeyActionGo = 'go';
 
-const String kKeyImage = 'image'; // defaults to null
-const String kKeyText = 'text'; // defaults to null
-const String kKeyWidth = 'width'; // defaults to 1
-const String kKeyAlign = 'align'; // defaults to 0.5
+const String _kKeyImage = 'image'; // defaults to null
+const String _kKeyText = 'text'; // defaults to null
+const String _kKeyWidth = 'width'; // defaults to 1
+const String _kKeyAlign = 'align'; // defaults to 0.5
 
-const int kKeyboardLayoutIndexLowerCase = 0;
-const int kKeyboardLayoutIndexUpperCase = 1;
-const int kKeyboardLayoutIndexSymbolsOne = 2;
-const int kKeyboardLayoutIndexSymbolsTwo = 3;
+const int _kKeyboardLayoutIndexLowerCase = 0;
+const int _kKeyboardLayoutIndexUpperCase = 1;
+const int _kKeyboardLayoutIndexSymbolsOne = 2;
+const int _kKeyboardLayoutIndexSymbolsTwo = 3;
 
-const String kKeyboardLayoutsJson = "["
+const String _kKeyboardLayoutsJson = "["
 // Lower Case Layout
     "["
     "["
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"call\"},"
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"text\"},"
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"play\"}"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"call\"},"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"text\"},"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"play\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"q\"},"
-    "{\"$kKeyText\":\"w\"},"
-    "{\"$kKeyText\":\"e\"},"
-    "{\"$kKeyText\":\"r\"},"
-    "{\"$kKeyText\":\"t\"},"
-    "{\"$kKeyText\":\"y\"},"
-    "{\"$kKeyText\":\"u\"},"
-    "{\"$kKeyText\":\"i\"},"
-    "{\"$kKeyText\":\"o\"},"
-    "{\"$kKeyText\":\"p\"}"
+    "{\"$_kKeyText\":\"q\"},"
+    "{\"$_kKeyText\":\"w\"},"
+    "{\"$_kKeyText\":\"e\"},"
+    "{\"$_kKeyText\":\"r\"},"
+    "{\"$_kKeyText\":\"t\"},"
+    "{\"$_kKeyText\":\"y\"},"
+    "{\"$_kKeyText\":\"u\"},"
+    "{\"$_kKeyText\":\"i\"},"
+    "{\"$_kKeyText\":\"o\"},"
+    "{\"$_kKeyText\":\"p\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"a\", \"$kKeyWidth\":\"3\", \"$kKeyAlign\":\"0.66666666\"},"
-    "{\"$kKeyText\":\"s\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"d\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"f\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"g\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"h\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"j\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"k\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"l\", \"$kKeyWidth\":\"3\", \"$kKeyAlign\":\"0.33333333\"}"
+    "{\"$_kKeyText\":\"a\", \"$_kKeyWidth\":\"3\", \"$_kKeyAlign\":\"0.66666666\"},"
+    "{\"$_kKeyText\":\"s\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"d\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"f\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"g\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"h\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"j\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"k\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"l\", \"$_kKeyWidth\":\"3\", \"$_kKeyAlign\":\"0.33333333\"}"
     "],"
     "["
-    "{\"$kKeyImage\":\"packages/keyboard/res/ArrowUp.png\", \"$kKeyAction\":\"$kKeyboardLayoutIndexUpperCase\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeImage\", \"$kKeyWidth\":\"3\"},"
-    "{\"$kKeyText\":\"z\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"x\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"c\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"v\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"b\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"n\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"m\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyImage\":\"packages/keyboard/res/Delete.png\", \"$kKeyAction\":\"$kKeyActionDelete\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeImage\", \"$kKeyWidth\":\"3\"}"
+    "{\"$_kKeyImage\":\"packages/keyboard/res/ArrowUp.png\", \"$_kKeyAction\":\"$_kKeyboardLayoutIndexUpperCase\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeImage\", \"$_kKeyWidth\":\"3\"},"
+    "{\"$_kKeyText\":\"z\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"x\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"c\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"v\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"b\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"n\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"m\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyImage\":\"packages/keyboard/res/Delete.png\", \"$_kKeyAction\":\"$_kKeyActionDelete\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeImage\", \"$_kKeyWidth\":\"3\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"?123\", \"$kKeyAction\":\"$kKeyboardLayoutIndexSymbolsOne\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeActionText\", \"$kKeyWidth\":\"5\"},"
-    "{\"$kKeyImage\":\"packages/keyboard/res/Space.png\", \"$kKeyAction\":\"$kKeyActionSpace\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeImage\", \"$kKeyWidth\":\"10\"},"
-    "{\"$kKeyText\":\".\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"Go\", \"$kKeyAction\":\"$kKeyActionGo\", \"$kKeyVisualType\":\"$kKeyVisualTypeActionText\", \"$kKeyWidth\":\"3\"}"
+    "{\"$_kKeyText\":\"?123\", \"$_kKeyAction\":\"$_kKeyboardLayoutIndexSymbolsOne\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeActionText\", \"$_kKeyWidth\":\"5\"},"
+    "{\"$_kKeyImage\":\"packages/keyboard/res/Space.png\", \"$_kKeyAction\":\"$_kKeyActionSpace\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeImage\", \"$_kKeyWidth\":\"10\"},"
+    "{\"$_kKeyText\":\".\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"Go\", \"$_kKeyAction\":\"$_kKeyActionGo\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeActionText\", \"$_kKeyWidth\":\"3\"}"
     "]"
     "],"
 // Upper Case Layout
     "["
     "["
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"call\"},"
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"text\"},"
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"play\"}"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"call\"},"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"text\"},"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"play\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"Q\"},"
-    "{\"$kKeyText\":\"W\"},"
-    "{\"$kKeyText\":\"E\"},"
-    "{\"$kKeyText\":\"R\"},"
-    "{\"$kKeyText\":\"T\"},"
-    "{\"$kKeyText\":\"Y\"},"
-    "{\"$kKeyText\":\"U\"},"
-    "{\"$kKeyText\":\"I\"},"
-    "{\"$kKeyText\":\"O\"},"
-    "{\"$kKeyText\":\"P\"}"
+    "{\"$_kKeyText\":\"Q\"},"
+    "{\"$_kKeyText\":\"W\"},"
+    "{\"$_kKeyText\":\"E\"},"
+    "{\"$_kKeyText\":\"R\"},"
+    "{\"$_kKeyText\":\"T\"},"
+    "{\"$_kKeyText\":\"Y\"},"
+    "{\"$_kKeyText\":\"U\"},"
+    "{\"$_kKeyText\":\"I\"},"
+    "{\"$_kKeyText\":\"O\"},"
+    "{\"$_kKeyText\":\"P\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"A\", \"$kKeyWidth\":\"3\", \"$kKeyAlign\":\"0.66666666\"},"
-    "{\"$kKeyText\":\"S\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"D\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"F\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"G\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"H\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"J\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"K\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"L\", \"$kKeyWidth\":\"3\", \"$kKeyAlign\":\"0.33333333\"}"
+    "{\"$_kKeyText\":\"A\", \"$_kKeyWidth\":\"3\", \"$_kKeyAlign\":\"0.66666666\"},"
+    "{\"$_kKeyText\":\"S\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"D\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"F\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"G\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"H\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"J\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"K\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"L\", \"$_kKeyWidth\":\"3\", \"$_kKeyAlign\":\"0.33333333\"}"
     "],"
     "["
-    "{\"$kKeyImage\":\"packages/keyboard/res/ArrowDown.png\", \"$kKeyAction\":\"$kKeyboardLayoutIndexLowerCase\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeImage\", \"$kKeyWidth\":\"3\"},"
-    "{\"$kKeyText\":\"Z\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"X\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"C\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"V\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"B\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"N\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"M\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyImage\":\"packages/keyboard/res/Delete.png\", \"$kKeyAction\":\"$kKeyActionDelete\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeImage\", \"$kKeyWidth\":\"3\"}"
+    "{\"$_kKeyImage\":\"packages/keyboard/res/ArrowDown.png\", \"$_kKeyAction\":\"$_kKeyboardLayoutIndexLowerCase\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeImage\", \"$_kKeyWidth\":\"3\"},"
+    "{\"$_kKeyText\":\"Z\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"X\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"C\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"V\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"B\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"N\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"M\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyImage\":\"packages/keyboard/res/Delete.png\", \"$_kKeyAction\":\"$_kKeyActionDelete\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeImage\", \"$_kKeyWidth\":\"3\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"?123\", \"$kKeyAction\":\"$kKeyboardLayoutIndexSymbolsOne\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeActionText\", \"$kKeyWidth\":\"5\"},"
-    "{\"$kKeyImage\":\"packages/keyboard/res/Space.png\", \"$kKeyAction\":\"$kKeyActionSpace\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeImage\", \"$kKeyWidth\":\"10\"},"
-    "{\"$kKeyText\":\".\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"Go\", \"$kKeyAction\":\"$kKeyActionGo\", \"$kKeyVisualType\":\"$kKeyVisualTypeActionText\", \"$kKeyWidth\":\"3\"}"
+    "{\"$_kKeyText\":\"?123\", \"$_kKeyAction\":\"$_kKeyboardLayoutIndexSymbolsOne\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeActionText\", \"$_kKeyWidth\":\"5\"},"
+    "{\"$_kKeyImage\":\"packages/keyboard/res/Space.png\", \"$_kKeyAction\":\"$_kKeyActionSpace\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeImage\", \"$_kKeyWidth\":\"10\"},"
+    "{\"$_kKeyText\":\".\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"Go\", \"$_kKeyAction\":\"$_kKeyActionGo\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeActionText\", \"$_kKeyWidth\":\"3\"}"
     "]"
     "],"
 // Symbols One Layout
     "["
     "["
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"call\"},"
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"text\"},"
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"play\"}"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"call\"},"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"text\"},"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"play\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"1\"},"
-    "{\"$kKeyText\":\"2\"},"
-    "{\"$kKeyText\":\"3\"},"
-    "{\"$kKeyText\":\"4\"},"
-    "{\"$kKeyText\":\"5\"},"
-    "{\"$kKeyText\":\"6\"},"
-    "{\"$kKeyText\":\"7\"},"
-    "{\"$kKeyText\":\"8\"},"
-    "{\"$kKeyText\":\"9\"},"
-    "{\"$kKeyText\":\"0\"}"
+    "{\"$_kKeyText\":\"1\"},"
+    "{\"$_kKeyText\":\"2\"},"
+    "{\"$_kKeyText\":\"3\"},"
+    "{\"$_kKeyText\":\"4\"},"
+    "{\"$_kKeyText\":\"5\"},"
+    "{\"$_kKeyText\":\"6\"},"
+    "{\"$_kKeyText\":\"7\"},"
+    "{\"$_kKeyText\":\"8\"},"
+    "{\"$_kKeyText\":\"9\"},"
+    "{\"$_kKeyText\":\"0\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"@\", \"$kKeyWidth\":\"3\", \"$kKeyAlign\":\"0.66666666\"},"
-    "{\"$kKeyText\":\"#\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"\$\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"%\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"&\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"-\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"+\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"(\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\")\", \"$kKeyWidth\":\"3\", \"$kKeyAlign\":\"0.33333333\"}"
+    "{\"$_kKeyText\":\"@\", \"$_kKeyWidth\":\"3\", \"$_kKeyAlign\":\"0.66666666\"},"
+    "{\"$_kKeyText\":\"#\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"\$\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"%\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"&\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"-\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"+\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"(\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\")\", \"$_kKeyWidth\":\"3\", \"$_kKeyAlign\":\"0.33333333\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"=\\\\<\", \"$kKeyAction\":\"$kKeyboardLayoutIndexSymbolsTwo\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeActionText\", \"$kKeyWidth\":\"3\"},"
-    "{\"$kKeyText\":\"*\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"\\\\\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"\'\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\":\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\";\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"!\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"?\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyImage\":\"packages/keyboard/res/Delete.png\", \"$kKeyAction\":\"$kKeyActionDelete\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeImage\", \"$kKeyWidth\":\"3\"}"
+    "{\"$_kKeyText\":\"=\\\\<\", \"$_kKeyAction\":\"$_kKeyboardLayoutIndexSymbolsTwo\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeActionText\", \"$_kKeyWidth\":\"3\"},"
+    "{\"$_kKeyText\":\"*\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"\\\\\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"\'\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\":\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\";\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"!\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"?\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyImage\":\"packages/keyboard/res/Delete.png\", \"$_kKeyAction\":\"$_kKeyActionDelete\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeImage\", \"$_kKeyWidth\":\"3\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"ABC\", \"$kKeyAction\":\"$kKeyboardLayoutIndexLowerCase\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeActionText\", \"$kKeyWidth\":\"3\"},"
-    "{\"$kKeyText\":\",\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"_\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyImage\":\"packages/keyboard/res/Space.png\", \"$kKeyAction\":\"$kKeyActionSpace\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeImage\", \"$kKeyWidth\":\"6\"},"
-    "{\"$kKeyText\":\"/\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\".\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"Go\", \"$kKeyAction\":\"$kKeyActionGo\", \"$kKeyVisualType\":\"$kKeyVisualTypeActionText\", \"$kKeyWidth\":\"3\"}"
+    "{\"$_kKeyText\":\"ABC\", \"$_kKeyAction\":\"$_kKeyboardLayoutIndexLowerCase\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeActionText\", \"$_kKeyWidth\":\"3\"},"
+    "{\"$_kKeyText\":\",\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"_\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyImage\":\"packages/keyboard/res/Space.png\", \"$_kKeyAction\":\"$_kKeyActionSpace\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeImage\", \"$_kKeyWidth\":\"6\"},"
+    "{\"$_kKeyText\":\"/\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\".\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"Go\", \"$_kKeyAction\":\"$_kKeyActionGo\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeActionText\", \"$_kKeyWidth\":\"3\"}"
     "]"
     "],"
 // Symbols Two Layout
     "["
     "["
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"call\"},"
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"text\"},"
-    "{\"$kKeyType\":\"$kKeyTypeSuggestion\", \"$kKeyText\":\"play\"}"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"call\"},"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"text\"},"
+    "{\"$_kKeyType\":\"$_kKeyTypeSuggestion\", \"$_kKeyText\":\"play\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"~\"},"
-    "{\"$kKeyText\":\"`\"},"
-    "{\"$kKeyText\":\"|\"},"
-    "{\"$kKeyText\":\"\u{2022}\"},"
-    "{\"$kKeyText\":\"\u{221A}\"},"
-    "{\"$kKeyText\":\"\u{03C0}\"},"
-    "{\"$kKeyText\":\"\u{00F7}\"},"
-    "{\"$kKeyText\":\"\u{00D7}\"},"
-    "{\"$kKeyText\":\"\u{00B6}\"},"
-    "{\"$kKeyText\":\"\u{2206}\"}"
+    "{\"$_kKeyText\":\"~\"},"
+    "{\"$_kKeyText\":\"`\"},"
+    "{\"$_kKeyText\":\"|\"},"
+    "{\"$_kKeyText\":\"\u{2022}\"},"
+    "{\"$_kKeyText\":\"\u{221A}\"},"
+    "{\"$_kKeyText\":\"\u{03C0}\"},"
+    "{\"$_kKeyText\":\"\u{00F7}\"},"
+    "{\"$_kKeyText\":\"\u{00D7}\"},"
+    "{\"$_kKeyText\":\"\u{00B6}\"},"
+    "{\"$_kKeyText\":\"\u{2206}\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"\u{00A3}\", \"$kKeyWidth\":\"3\", \"$kKeyAlign\":\"0.66666666\"},"
-    "{\"$kKeyText\":\"\u{00A2}\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"\u{20AC}\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"\u{00A5}\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"^\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"\u{00B0}\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"=\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"{\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"}\", \"$kKeyWidth\":\"3\", \"$kKeyAlign\":\"0.33333333\"}"
+    "{\"$_kKeyText\":\"\u{00A3}\", \"$_kKeyWidth\":\"3\", \"$_kKeyAlign\":\"0.66666666\"},"
+    "{\"$_kKeyText\":\"\u{00A2}\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"\u{20AC}\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"\u{00A5}\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"^\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"\u{00B0}\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"=\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"{\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"}\", \"$_kKeyWidth\":\"3\", \"$_kKeyAlign\":\"0.33333333\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"?123\", \"$kKeyAction\":\"$kKeyboardLayoutIndexSymbolsOne\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeActionText\", \"$kKeyWidth\":\"3\"},"
-    "{\"$kKeyText\":\"\\\\\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"\u{00A9}\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"\u{00AE}\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"\u{2122}\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"\u{2105}\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"[\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"]\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyImage\":\"packages/keyboard/res/Delete.png\", \"$kKeyAction\":\"$kKeyActionDelete\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeImage\", \"$kKeyWidth\":\"3\"}"
+    "{\"$_kKeyText\":\"?123\", \"$_kKeyAction\":\"$_kKeyboardLayoutIndexSymbolsOne\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeActionText\", \"$_kKeyWidth\":\"3\"},"
+    "{\"$_kKeyText\":\"\\\\\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"\u{00A9}\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"\u{00AE}\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"\u{2122}\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"\u{2105}\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"[\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"]\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyImage\":\"packages/keyboard/res/Delete.png\", \"$_kKeyAction\":\"$_kKeyActionDelete\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeImage\", \"$_kKeyWidth\":\"3\"}"
     "],"
     "["
-    "{\"$kKeyText\":\"ABC\", \"$kKeyAction\":\"$kKeyboardLayoutIndexLowerCase\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeActionText\", \"$kKeyWidth\":\"3\"},"
-    "{\"$kKeyText\":\",\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"<\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyImage\":\"packages/keyboard/res/Space.png\", \"$kKeyAction\":\"$kKeyActionSpace\", \"$kKeyType\":\"$kKeyTypeSpecial\", \"$kKeyVisualType\":\"$kKeyVisualTypeImage\", \"$kKeyWidth\":\"6\"},"
-    "{\"$kKeyText\":\">\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\".\", \"$kKeyWidth\":\"2\"},"
-    "{\"$kKeyText\":\"Go\", \"$kKeyAction\":\"$kKeyActionGo\", \"$kKeyVisualType\":\"$kKeyVisualTypeActionText\", \"$kKeyWidth\":\"3\"}"
+    "{\"$_kKeyText\":\"ABC\", \"$_kKeyAction\":\"$_kKeyboardLayoutIndexLowerCase\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeActionText\", \"$_kKeyWidth\":\"3\"},"
+    "{\"$_kKeyText\":\",\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"<\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyImage\":\"packages/keyboard/res/Space.png\", \"$_kKeyAction\":\"$_kKeyActionSpace\", \"$_kKeyType\":\"$_kKeyTypeSpecial\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeImage\", \"$_kKeyWidth\":\"6\"},"
+    "{\"$_kKeyText\":\">\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\".\", \"$_kKeyWidth\":\"2\"},"
+    "{\"$_kKeyText\":\"Go\", \"$_kKeyAction\":\"$_kKeyActionGo\", \"$_kKeyVisualType\":\"$_kKeyVisualTypeActionText\", \"$_kKeyWidth\":\"3\"}"
     "]"
     "]"
     "]";
 
-final List<List<List<Map<String, String>>>> kKeyboardLayouts =
-    JSON.decode(kKeyboardLayoutsJson);
+final List<List<List<Map<String, String>>>> _kKeyboardLayouts =
+    JSON.decode(_kKeyboardLayoutsJson);
 
+/// Displays a keyboard.
 class Keyboard extends StatefulWidget {
+  /// Called when a key is tapped on the keyboard.
   final OnText onText;
+
+  /// Called when a suggestion is tapped on the keyboard.
   final OnText onSuggestion;
-  final OnDelete onDelete;
-  final OnGo onGo;
+
+  /// Called when 'Delete' is tapped on the keyboard.
+  final VoidCallback onDelete;
+
+  /// Called when 'Go' is tapped on the keyboard.
+  final VoidCallback onGo;
 
   Keyboard({Key key, this.onText, this.onSuggestion, this.onDelete, this.onGo})
       : super(key: key);
@@ -265,11 +267,15 @@ class Keyboard extends StatefulWidget {
   KeyboardState createState() => new KeyboardState();
 }
 
+/// Displays the current keyboard for [Keyboard].
+/// [_keyboards] is the list of available keyboards created from
+/// [_kKeyboardLayouts] while [_keyboardWidget] is the one currently being
+/// displayed.
 class KeyboardState extends State<Keyboard> {
   static const double _kGoKeyTextSize = 16.0;
   static const double _kSuggestionTextSize = 16.0;
   static const TextStyle _kSuggestionTextStyle = const TextStyle(
-      color: kTurquoiseAccentColor,
+      color: _kTurquoiseAccentColor,
       fontSize: _kSuggestionTextSize,
       letterSpacing: 2.0);
 
@@ -282,7 +288,7 @@ class KeyboardState extends State<Keyboard> {
   void initState() {
     super.initState();
     _keyboards = <Widget>[];
-    kKeyboardLayouts.forEach((List<List<Map<String, String>>> keyboard) {
+    _kKeyboardLayouts.forEach((List<List<Map<String, String>>> keyboard) {
       _keyboards.add(
         new IntrinsicHeight(
           child: new Column(
@@ -299,6 +305,7 @@ class KeyboardState extends State<Keyboard> {
   @override
   Widget build(BuildContext context) => _keyboardWidget;
 
+  /// Updates the suggestions to be related to [text].
   void updateSuggestions(String text) {
     // If we have no text, clear the suggestions.  If the text ends in
     // whitespace also clear the suggestions (as there is no current word to
@@ -343,30 +350,30 @@ class KeyboardState extends State<Keyboard> {
       mainAxisAlignment: MainAxisAlignment.center);
 
   Widget _makeKey(Map<String, String> jsonKey) {
-    String visualType = jsonKey[kKeyVisualType] ?? kKeyVisualTypeText;
-    String action = jsonKey[kKeyAction] ?? kKeyActionEmitText;
-    int width = int.parse(jsonKey[kKeyWidth] ?? '1');
+    String visualType = jsonKey[_kKeyVisualType] ?? _kKeyVisualTypeText;
+    String action = jsonKey[_kKeyAction] ?? _kKeyActionEmitText;
+    int width = int.parse(jsonKey[_kKeyWidth] ?? '1');
 
     switch (visualType) {
-      case kKeyVisualTypeImage:
-        String image = jsonKey[kKeyImage];
+      case _kKeyVisualTypeImage:
+        String image = jsonKey[_kKeyImage];
         return _createImageKey(image, width, action);
-      case kKeyVisualTypeText:
-      case kKeyVisualTypeActionText:
+      case _kKeyVisualTypeText:
+      case _kKeyVisualTypeActionText:
       default:
-        String type = jsonKey[kKeyType] ?? kKeyTypeNormal;
-        String text = jsonKey[kKeyText];
-        double align = double.parse(jsonKey[kKeyAlign] ?? '0.5');
+        String type = jsonKey[_kKeyType] ?? _kKeyTypeNormal;
+        String text = jsonKey[_kKeyText];
+        double align = double.parse(jsonKey[_kKeyAlign] ?? '0.5');
         return _createTextKey(text, width, action, align, type, visualType);
     }
   }
 
   Widget _createTextKey(String text, int width, String action, double align,
       String type, String visualType) {
-    TextStyle style = (type == kKeyTypeSuggestion)
+    TextStyle style = (type == _kKeyTypeSuggestion)
         ? _kSuggestionTextStyle
-        : (visualType == kKeyVisualTypeActionText)
-            ? (type == kKeyTypeSpecial)
+        : (visualType == _kKeyVisualTypeActionText)
+            ? (type == _kKeyTypeSpecial)
                 ? TextKey.kDefaultTextStyle.copyWith(
                     fontSize: _kGoKeyTextSize,
                     fontWeight: FontWeight.bold,
@@ -374,7 +381,7 @@ class KeyboardState extends State<Keyboard> {
                 : TextKey.kDefaultTextStyle.copyWith(
                     fontSize: _kGoKeyTextSize, fontWeight: FontWeight.bold)
             : TextKey.kDefaultTextStyle;
-    bool isSuggestion = type == kKeyTypeSuggestion;
+    bool isSuggestion = type == _kKeyTypeSuggestion;
     GlobalKey key = isSuggestion ? new GlobalKey() : null;
     TextKey textKey = new TextKey(isSuggestion ? '' : text,
         key: key,
@@ -397,13 +404,13 @@ class KeyboardState extends State<Keyboard> {
 
   VoidCallback _getAction(String action) {
     switch (action) {
-      case kKeyActionEmitText:
+      case _kKeyActionEmitText:
         return null;
-      case kKeyActionDelete:
+      case _kKeyActionDelete:
         return _onDeletePressed;
-      case kKeyActionSpace:
+      case _kKeyActionSpace:
         return _onSpacePressed;
-      case kKeyActionGo:
+      case _kKeyActionGo:
         return _onGoPressed;
       default:
         return () {
@@ -432,67 +439,5 @@ class KeyboardState extends State<Keyboard> {
 
   void _onDeletePressed() {
     config.onDelete();
-  }
-}
-
-class KeyboardInputOverlay {
-  final GlobalKey<ScrollableInputTextState> editTextKey =
-      new GlobalKey<ScrollableInputTextState>();
-
-  Keyboard _keyboard;
-
-  Widget createInputArea(_) => new InputText(editTextKey: editTextKey);
-
-  Widget createDeviceExtension(Key key) {
-    _keyboard = new Keyboard(
-        key: key,
-        onText: _onText,
-        onSuggestion: _onSuggestion,
-        onDelete: _onDelete,
-        onGo: _onGo);
-    return new RepaintBoundary(child: _keyboard);
-  }
-
-  void _onText(String text) {
-    _addText(text);
-    _updateSuggestions();
-  }
-
-  void _onSuggestion(String suggestion) {
-    final List<String> stringList = _text.split(' ');
-    if (stringList.isEmpty) {
-      return;
-    }
-
-    _deleteLast(stringList[stringList.length - 1].length);
-    _addText(suggestion + ' ');
-    _updateSuggestions();
-  }
-
-  void _onDelete() {
-    _deleteLast(1);
-    _updateSuggestions();
-  }
-
-  void _onGo() {
-    editTextKey.currentState.clear();
-  }
-
-  String get _text => editTextKey.currentState.text;
-
-  void _addText(String text) {
-    editTextKey.currentState.append(text);
-  }
-
-  void _deleteLast(int beforeLength) {
-    editTextKey.currentState.backspace();
-  }
-
-  void _updateSuggestions() {
-    Key keyboardKey = _keyboard.key;
-    if (keyboardKey is GlobalKey<KeyboardState>) {
-      GlobalKey<KeyboardState> key = keyboardKey;
-      key.currentState.updateSuggestions(_text);
-    }
   }
 }

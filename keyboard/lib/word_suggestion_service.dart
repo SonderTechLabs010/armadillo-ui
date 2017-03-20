@@ -210,7 +210,9 @@ const List<String> _kWords = const <String>[
   'magenta'
 ];
 
+/// A service that suggests words for a given input.
 class WordSuggestionService {
+  /// Returns a list of words that are similar to [input].
   List<String> suggestWords(String input) {
     final List<String> suggestedWords = new List<String>.from(_kWords);
     suggestedWords.removeWhere((String a) => levenshteinDistance(input, a) > 3);
