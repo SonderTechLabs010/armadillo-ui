@@ -15,6 +15,8 @@ class TimeStringer {
   final Set<VoidCallback> _listeners = new Set<VoidCallback>();
   Timer _timer;
 
+  /// [listener] will be called whenever [shortString] or [longString] have
+  /// changed.
   void addListener(VoidCallback listener) {
     _listeners.add(listener);
     if (_listeners.length == 1) {
@@ -22,6 +24,8 @@ class TimeStringer {
     }
   }
 
+  /// [listener] will no longer be called whenever [shortString] or [longString]
+  /// have changed.
   void removeListener(VoidCallback listener) {
     _listeners.remove(listener);
     if (_listeners.length == 0) {
@@ -30,17 +34,14 @@ class TimeStringer {
     }
   }
 
+  /// Returns a short version of the time (eg. 'Monday 10:34').
   String get shortString => _kShortStringDateFormat
-      .format(
-        new DateTime.now().toLocal(),
-      )
+      .format(new DateTime.now().toLocal())
       .toLowerCase();
 
-  String get longString => _kLongStringDateFormat
-      .format(
-        new DateTime.now().toLocal(),
-      )
-      .toLowerCase();
+  /// Returns a long version of the time including the day (eg. 'Monday 10:34').
+  String get longString =>
+      _kLongStringDateFormat.format(new DateTime.now().toLocal()).toLowerCase();
 
   void _scheduleTimer() {
     _timer?.cancel();

@@ -14,6 +14,7 @@ export 'model.dart' show ScopedModel, Model, ScopedModelDecendant;
 class SizeModel extends Model {
   Size _size;
 
+  /// [size] will be the initial size of this [Model].
   SizeModel(Size size) : _size = size ?? Size.zero;
 
   /// Wraps [ModelFinder.of] for this [Model]. See [ModelFinder.of] for more
@@ -21,8 +22,10 @@ class SizeModel extends Model {
   static SizeModel of(BuildContext context) =>
       new ModelFinder<SizeModel>().of(context);
 
+  /// Gets the [size] for this [Model].
   Size get size => _size;
 
+  /// Sets the [size] for this [Model].
   set size(Size size) {
     if (size != _size) {
       _size = size;

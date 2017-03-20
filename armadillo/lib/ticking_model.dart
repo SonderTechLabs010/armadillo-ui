@@ -16,6 +16,7 @@ abstract class TickingModel extends Model {
   /// Returns false if [_ticker] should stop ticking after this tick.
   bool handleTick(double elapsedSeconds);
 
+  /// Starts the [_ticker].
   void startTicking() {
     if (_ticker?.isTicking ?? false) {
       return;

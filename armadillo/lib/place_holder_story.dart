@@ -17,9 +17,13 @@ const Color _kBackgroundColor = const Color(0x40E6E6E6);
 /// [PanelDragTargets] has a hovering cluster (ie. we're previewing the
 /// combining of two clusters).
 class PlaceHolderStory extends Story {
+  /// The [StoryId] of the [Story] this place holder replacing.
   final StoryId associatedStoryId;
+
+  /// True if the [Widget] representing this [Story] should be invisible.
   final bool transparent;
 
+  /// Constructor.
   PlaceHolderStory({this.associatedStoryId, bool transparent: false})
       : this.transparent = transparent,
         super(

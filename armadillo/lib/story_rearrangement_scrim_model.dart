@@ -21,12 +21,18 @@ class StoryRearrangementScrimModel extends TickingModel {
     desc: _kSimulationDesc,
   );
 
+  /// Starts the simulation of this [TickingModel].  If [isAcceptable] is true
+  /// the opacity will be animated to non-transparent otherwise it will be
+  /// animated to fully transparent.
   void onDragAcceptableStateChanged(bool isAcceptable) {
     _opacitySimulation.target = isAcceptable ? 0.6 : 0.0;
     startTicking();
   }
 
+  /// The current color the story rearrangement scrim should be.
   Color get scrimColor => Colors.black.withOpacity(_opacitySimulation.value);
+
+  /// The progress of the story rearrangement scrim animation.
   double get progress => _opacitySimulation.value / 0.6;
 
   @override

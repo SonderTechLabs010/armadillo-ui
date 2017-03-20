@@ -10,9 +10,16 @@ const double _kTolerance = 0.01;
 /// Spcifies the properties of a fourth order Runge-Kutta spring for
 /// the [RK4SpringSimulation] .
 class RK4SpringDescription {
+  /// The tension of the spring.
   final double tension;
+
+  //// The strength of the friction acting against the spring's movement.
   final double friction;
+
+  /// The velocity the spring will start with.
   final double startingVelocity;
+
+  /// Constructor.
   const RK4SpringDescription({
     this.tension: 300.0,
     this.friction: 25.0,
@@ -24,6 +31,7 @@ class RK4SpringDescription {
 /// simulation.
 /// [desc] specifies the properties of the spring.
 class RK4SpringSimulation {
+  /// The parameters of the simulation.
   final RK4SpringDescription desc;
 
   double _startValue;
@@ -44,6 +52,8 @@ class RK4SpringSimulation {
   /// below 1 etc, as it 'springs'.
   double _curT = 0.0;
 
+  /// [initValue] is the value the simulation will begin with.
+  /// [desc] specifies the parameters of the simulation and is optional.
   RK4SpringSimulation({
     double initValue: 0.0,
     this.desc: const RK4SpringDescription(),

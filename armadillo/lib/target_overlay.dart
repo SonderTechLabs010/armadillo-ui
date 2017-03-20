@@ -11,14 +11,22 @@ import 'panel_drag_target.dart';
 /// current [Point]s of the [candidatePoints] along with those of the
 /// [closestTargetLockPoints] are also drawn on top of [child].
 class TargetOverlay extends StatelessWidget {
+  /// Widget to display behind the overlay.
   final Widget child;
+
+  /// The targets the candidates can lock to.
   final List<PanelDragTarget> targets;
+
+  /// The locations the candidates last chose their targets.
   final List<Point> closestTargetLockPoints;
+
+  /// The locations of the candidates.
   final List<Point> candidatePoints;
 
   /// Set to true to draw targets.
   final bool enabled;
 
+  /// Constructor.
   TargetOverlay({
     this.enabled,
     this.targets,

@@ -10,20 +10,29 @@ import 'panel_drag_target.dart';
 const double _kStepSize = 40.0;
 const double _kTargetMargin = 1.0;
 
+/// Returns the closest target to the given [point].
 typedef PanelDragTarget ClosestTargetGetter(Point point);
 
 /// When [enabled] is true, this widget draws the influence of the given
 /// [targets] by drawing a bunch of points that will accept
 /// candidates overlaid on top of [child].
 class TargetInfluenceOverlay extends StatelessWidget {
+  /// Widget to display behind the overlay.
   final Widget child;
+
+  /// The targets the candidates can lock to.
   final List<PanelDragTarget> targets;
+
+  /// The current direction candidates are being dragged.
   final DragDirection dragDirection;
+
+  /// Returns the closest target to a candidate.
   final ClosestTargetGetter closestTargetGetter;
 
   /// Set to true to draw influence.
   final bool enabled;
 
+  /// Constructor.
   TargetInfluenceOverlay({
     this.enabled,
     this.targets,
@@ -43,7 +52,7 @@ class TargetInfluenceOverlay extends StatelessWidget {
         new Positioned.fill(
           child: new RepaintBoundary(
             child: new CustomPaint(
-              painter: new InfluencePainter(
+              painter: new _InfluencePainter(
                 dragDirection: dragDirection,
                 targets: targets,
                 closestTargetGetter: closestTargetGetter,
@@ -57,12 +66,12 @@ class TargetInfluenceOverlay extends StatelessWidget {
   }
 }
 
-class InfluencePainter extends CustomPainter {
+class _InfluencePainter extends CustomPainter {
   final DragDirection dragDirection;
   final List<PanelDragTarget> targets;
   final ClosestTargetGetter closestTargetGetter;
 
-  InfluencePainter({
+  _InfluencePainter({
     this.dragDirection,
     this.targets,
     this.closestTargetGetter,
@@ -116,7 +125,7 @@ class InfluencePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(InfluencePainter oldDelegate) {
+  bool shouldRepaint(_InfluencePainter oldDelegate) {
     if (oldDelegate.dragDirection != dragDirection) {
       return true;
     }

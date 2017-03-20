@@ -7,10 +7,16 @@ import 'package:flutter/widgets.dart';
 
 /// The title of a story.
 class StoryTitle extends StatelessWidget {
+  /// The text for the title.
   final String title;
+
+  /// The opacity for this [Widget].
   final double opacity;
+
+  /// The font color to use.  This color's alpha will be modified.
   final Color baseColor;
 
+  /// Constructor.
   StoryTitle({this.title, this.opacity: 1.0, this.baseColor: Colors.white});
 
   @override

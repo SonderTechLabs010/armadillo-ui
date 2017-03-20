@@ -5,15 +5,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-// Represents an icon that has multiple states. When tapped, the state changes
-// and a new image is displayed
+/// Represents an icon that has multiple states. When tapped, the state changes
+/// and a new image is displayed
 class ToggleIcon extends StatefulWidget {
-  // A list of image asset paths
+  /// A list of image asset paths.
   final List<String> imageList;
+
+  /// The initial image to show.
   final int initialImageIndex;
+
+  /// The width of the [ToggleIcon].
   final double width;
+
+  /// The height of the [ToggleIcon].
   final double height;
 
+  /// Constructor.
   const ToggleIcon(
       {Key key,
       this.imageList,
