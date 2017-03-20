@@ -20,21 +20,29 @@ const Color _kNoDraggableHoverColor = const Color(0x00FFFF00);
 /// built.
 typedef void _BuildCallback(bool hasDraggableAbove, List<Point> points);
 
-/// The drag targets which cause the given [ScrollController] to scroll when a
-/// draggable hovers over them.
+/// Creates disablable drag targets which cause the given [ScrollController] to
+/// scroll when a draggable hovers over them.  The drag targets are placed
+/// at the top and bottom of this widget's parent such that dragging a candidate
+/// to the top or bottom 'edge' of the parent will trigger scrolling.
 class EdgeScrollDragTarget extends StatefulWidget {
+  /// The [ScrollController] that will have its scroll offset change due to
+  /// dragging a candidate to the edge of this [EdgeScrollDragTarget].
   final ScrollController scrollController;
 
+  /// Constructor.
   EdgeScrollDragTarget({Key key, this.scrollController}) : super(key: key);
 
   @override
   EdgeScrollDragTargetState createState() => new EdgeScrollDragTargetState();
 }
 
+/// [State] of [EdgeScrollDragTarget].
 class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
   final KenichiEdgeScrolling _kenichiEdgeScrolling = new KenichiEdgeScrolling();
   bool _enabled = true;
 
+  /// Disables detection of candidates over the top and bottom edges of its
+  /// parent.
   void disable() {
     if (_enabled) {
       setState(() {
@@ -43,6 +51,8 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
     }
   }
 
+  /// Enables detection of candidates over the top and bottom edges of its
+  /// parent.
   void enable() {
     if (!_enabled) {
       setState(() {

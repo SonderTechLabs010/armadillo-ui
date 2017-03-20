@@ -13,16 +13,23 @@ import 'story_model.dart';
 
 const double _kAddedStorySpan = 0.01;
 
+/// Handles hover and drop events of candidates dragged over
+/// [targetStoryCluster].
 class PanelEventHandler {
+  /// The [StoryCluster] all the events happen to.
   final StoryCluster targetStoryCluster;
 
+  /// Constructor.
   PanelEventHandler(this.targetStoryCluster);
 
+  /// Called when a candidate is not longer being dragged above
+  /// [targetStoryCluster].
   void onCandidateRemoved() {
     targetStoryCluster.removePreviews();
     _normalizeSizes();
   }
 
+  /// Called when [storyCluster] is being removed from [targetStoryCluster].
   void onLeaveCluster({
     BuildContext context,
     StoryCluster storyCluster,
@@ -35,6 +42,8 @@ class PanelEventHandler {
     }
   }
 
+  /// Called when [storyCluster] is hovering above [targetStoryCluster]'s
+  /// story bar.
   void onStoryBarHover({
     BuildContext context,
     StoryCluster storyCluster,
@@ -57,6 +66,8 @@ class PanelEventHandler {
     storyCluster.mirrorStoryOrder(targetStoryCluster.stories);
   }
 
+  /// Called when [storyCluster] is dropped upon [targetStoryCluster]'s
+  /// story bar.
   void onStoryBarDrop({
     BuildContext context,
     StoryCluster storyCluster,

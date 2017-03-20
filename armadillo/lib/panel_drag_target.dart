@@ -8,6 +8,8 @@ import 'drag_direction.dart';
 import 'panel_drag_targets.dart';
 import 'story_cluster.dart';
 
+/// Called when [storyCluster] has locked onto the [PanelDragTarget] by being
+/// dragged over or near the target.
 typedef void OnPanelEvent(BuildContext context, StoryCluster storyCluster);
 
 /// Used by [PanelDragTargets] as a potential target.
@@ -24,6 +26,7 @@ abstract class PanelDragTarget {
   /// Whether this target can be the initial target for a candidate or not.
   final bool initiallyTargetable;
 
+  /// Constructor.
   PanelDragTarget({
     this.onHover,
     this.onDrop,

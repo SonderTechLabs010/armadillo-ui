@@ -11,12 +11,22 @@ const Duration _kLongPressTimeout = const Duration(milliseconds: 300);
 
 /// Triggers drag callbacks after a long press.
 class LongPressGestureDetector extends StatefulWidget {
+  /// Long press gestures are listened for on this [Widget].
   final Widget child;
+
+  /// Called when a drag starts after a long press.
   final GestureDragStartCallback onDragStart;
+
+  /// Called when the dragging updates.
   final GestureDragUpdateCallback onDragUpdate;
+
+  /// Called when the dragging ends.
   final GestureDragEndCallback onDragEnd;
+
+  /// Called when the dragging is canceled.
   final GestureDragCancelCallback onDragCancel;
 
+  /// Constructor.
   LongPressGestureDetector({
     Key key,
     this.onDragStart,

@@ -19,19 +19,26 @@ const int _kJugglingThresholdMinutes = 120;
 const int _kMaxJugglingStoryCount = 4;
 const int _kMinSideMargin = 8;
 
-/// The [size] the story should be.
-/// The [offset] of the story with respect to the bottom center of the list.
-/// The [bounds] of the story as a [Rect].
+/// Indicates the size and position a story should have.
 abstract class StoryLayout {
+  /// The [size] the story should be.
   Size get size;
+
+  /// The [offset] of the story with respect to the bottom center of the list.
   Offset get offset;
+
+  /// The [bounds] of the story as a [Rect].
   Rect get bounds => offset & size;
 
   @override
   String toString() => 'StoryLayout($size, $offset)';
 }
 
+/// Determines the size and offsets of all the stories in the story list given
+/// the screen/parent size.
 class StoryListLayout {
+  /// [size] is the max size constraints of the list the stories will be laid
+  /// out in.
   final Size size;
 
   /// In multicolumn mode, all stories are laid out into a grid.  The grid

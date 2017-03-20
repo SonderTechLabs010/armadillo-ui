@@ -24,13 +24,25 @@ const double _kLineWidth = 4.0;
 /// called.
 /// This [LineSegment] can only be targeted by [StoryCluster]s with a story
 /// count of less than or equal to [maxStoriesCanAccept].
+/// [LineSegment]s can only be vertical or horizontal.
 class LineSegment extends PanelDragTarget {
+  /// The beginning of the line.
   /// [a] always aligns with [b] in either vertically or horizontally.
   /// [a] is always 'less than' [b] in x or y direction.
   final Point a;
+
+  /// The end of the line.
   final Point b;
+
+  /// The number of stories this line will accept.  See [canAccept].
   final int maxStoriesCanAccept;
+
+  /// The unique name of this line.  This is used to distinguish between
+  /// [LineSegment]s.
   final String name;
+
+  /// True if this [LineSegment] can only be a target if the user is dragging
+  /// a candidate in this line's axis.
   final bool directionallyTargetable;
 
   /// A [LineSegment] is considered a valid target for accepting stories if
@@ -38,6 +50,7 @@ class LineSegment extends PanelDragTarget {
   /// [validityDistance] of this [LineSegment].
   final double validityDistance;
 
+  /// Constructor.
   LineSegment(
     Point a,
     Point b, {
@@ -62,6 +75,7 @@ class LineSegment extends PanelDragTarget {
     assert(a.x == b.x || a.y == b.y);
   }
 
+  /// Creates a vertical [LineSegment] whose [a] and [b] have the same [x].
   factory LineSegment.vertical({
     double x,
     double top,
@@ -88,6 +102,7 @@ class LineSegment extends PanelDragTarget {
         validityDistance: validityDistance,
       );
 
+  /// Creates a horizontal [LineSegment] whose [a] and [b] have the same [y].
   factory LineSegment.horizontal({
     double y,
     double left,
@@ -114,7 +129,10 @@ class LineSegment extends PanelDragTarget {
         validityDistance: validityDistance,
       );
 
+  /// Returns true if the line is horizontal.
   bool get isHorizontal => a.y == b.y;
+
+  /// Returns true if the line is vertical.
   bool get isVertical => !isHorizontal;
 
   @override

@@ -4,7 +4,10 @@
 
 import 'package:flutter/widgets.dart';
 
+/// Holds [widget].
 class Nothing {
+  /// A [Widget] that displays nothing.
   static final Widget widget = new Offstage();
+
   Nothing._internal();
 }

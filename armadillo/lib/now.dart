@@ -15,8 +15,6 @@ import 'now_model.dart';
 import 'opacity_model.dart';
 import 'story_drag_transition_model.dart';
 
-typedef void OnQuickSettingsProgressChange(double quickSettingsProgress);
-
 /// Fraction of the minimization animation which should be used for falling away
 /// and sliding in of the user context and battery icon.
 const double _kFallAwayDurationFraction = 0.35;
@@ -64,7 +62,10 @@ class Now extends StatefulWidget {
   final double parentWidth;
 
   final double quickSettingsHeightBump;
-  final OnQuickSettingsProgressChange onQuickSettingsProgressChange;
+
+  /// Called when the quick settings animation progress changes within the range
+  /// of 0.0 to 1.0.
+  final ValueChanged<double> onQuickSettingsProgressChange;
   final VoidCallback onReturnToOriginButtonTap;
   final VoidCallback onShowQuickSettingsOverlay;
   final VoidCallback onMinimize;

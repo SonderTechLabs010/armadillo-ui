@@ -42,14 +42,29 @@ const double _kDragScale = 0.8;
 /// will expand to full size when it comes into focus.  [StoryClusterWidget]s
 /// are intended to be children of [StoryList].
 class StoryClusterWidget extends StatelessWidget {
+  /// The cluster this [Widget] displays.
   final StoryCluster storyCluster;
+
+  /// The progress of the focus animation for this cluster.
   final double focusProgress;
+
+  /// Called when this cluster has another cluster dropped upon it.
   final VoidCallback onAccept;
+
+  /// Called when this cluster is tapped.
   final VoidCallback onTap;
+
+  /// Called when this cluster hovers over the top and bottom edges of the
+  /// screen.
   final VoidCallback onVerticalEdgeHover;
+
+  /// The key this [Widget]'s [ArmadilloLongPressDraggable] puts its avatar in.
   final GlobalKey<ArmadilloOverlayState> overlayKey;
+
+  /// The [Widget]s for the stories in this cluster.
   final Map<StoryId, Widget> storyWidgets;
 
+  /// Constructor.
   StoryClusterWidget({
     Key key,
     this.storyCluster,

@@ -55,7 +55,6 @@ class StoryCluster {
   final GlobalKey<SimulationBuilderState> inlinePreviewHintScaleSimulationKey;
 
   final Set<VoidCallback> _storyListListeners;
-  final Set<VoidCallback> _panelListeners;
 
   /// The title of a cluster is currently generated via
   /// [_getClusterTitle] whenever the list of stories in this cluster changes.
@@ -107,7 +106,6 @@ class StoryCluster {
                 debugLabel: 'inlinePreviewHintScaleSimulationKey'),
         this._displayMode = DisplayMode.panels,
         this._storyListListeners = new Set<VoidCallback>(),
-        this._panelListeners = new Set<VoidCallback>(),
         this._focusedStoryId = stories[0].id {
     _storiesModel = new StoryClusterStoriesModel(this);
     addStoryListListener(_storiesModel.notifyListeners);

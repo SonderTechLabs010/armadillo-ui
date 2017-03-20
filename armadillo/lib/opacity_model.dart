@@ -14,10 +14,13 @@ export 'model.dart' show ScopedModel, Model;
 class OpacityModel extends Model {
   double _opacity;
 
+  /// [opacity] is the initial opacity this model provides.
   OpacityModel(double opacity) : _opacity = opacity ?? 1.0;
 
+  /// The current opacity.
   double get opacity => _opacity;
 
+  /// Updates the opacity.
   set opacity(double opacity) {
     if (opacity != _opacity) {
       _opacity = opacity;
