@@ -21,12 +21,22 @@ typedef void OnTextCommitted(String text);
 /// [RawKeyboardListener] child useless).
 /// TODO(apwilson): Handle non-Latin-1 characters.
 class RawKeyboardInput extends StatefulWidget {
+  /// Keys will only be listened to if [focused] is true.
   final bool focused;
+
+  /// Called when the text changes.
   final OnTextChanged onTextChanged;
+
+  /// Called when the user indicates the text should be committed.
   final OnTextCommitted onTextCommitted;
 
-  RawKeyboardInput(
-      {Key key, this.focused, this.onTextChanged, this.onTextCommitted})
+  /// Constructor.
+  RawKeyboardInput({
+    Key key,
+    this.focused,
+    this.onTextChanged,
+    this.onTextCommitted,
+  })
       : super(key: key);
 
   @override
@@ -36,6 +46,7 @@ class RawKeyboardInput extends StatefulWidget {
 class RawKeyboardInputState extends State<RawKeyboardInput> {
   final GlobalKey<ScrollableInputTextState> _scrollableInputTextKey =
       new GlobalKey<ScrollableInputTextState>();
+
   @override
   Widget build(BuildContext context) => new RawKeyboardListener(
         onKey: _handleKey,
@@ -46,44 +57,50 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
         ),
       );
 
-  ScrollableInputTextState get textState =>
+  ScrollableInputTextState get _textState =>
       _scrollableInputTextKey.currentState;
 
+  /// See [ScrollableInputTextState.clear].
   void clear() {
-    String text = textState?.text;
+    String text = _textState?.text;
     if (text.isNotEmpty) {
-      textState?.clear();
+      _textState?.clear();
       _notifyTextChanged();
     }
   }
 
-  String get text => textState?.text;
-  void append(String text) => textState?.append(text);
-  bool backspace() => textState?.backspace();
+  /// See [ScrollableInputTextState.text].
+  String get text => _textState?.text;
+
+  /// See [ScrollableInputTextState.append].
+  void append(String text) => _textState?.append(text);
+
+  /// See [ScrollableInputTextState.backspace].
+  bool backspace() => _textState?.backspace();
 
   void _handleKey(RawKeyEvent event) {
     if (event is RawKeyDownEvent) {
       if (event.data is RawKeyEventDataAndroid) {
         RawKeyEventDataAndroid data = event.data;
         if (data.keyCode == keyCodeEnter) {
-          String text = textState?.text;
+          String text = _textState?.text;
           if (config.onTextCommitted != null && text.isNotEmpty) {
             config.onTextCommitted(text);
           }
         } else if (data.keyCode == keyCodeBackspace) {
-          if (textState?.backspace() ?? false) {
+          if (_textState?.backspace() ?? false) {
             _notifyTextChanged();
           }
         } else {
           if (data.metaState == metaStateNormal) {
             if (keyCodeMap.containsKey(data.keyCode)) {
-              textState?.append(keyCodeMap[data.keyCode]);
+              _textState?.append(keyCodeMap[data.keyCode]);
               _notifyTextChanged();
             }
           } else if (data.metaState == metaStateLeftShiftDown ||
               data.metaState == metaStateRightShiftDown) {
             if (shiftedKeyCodeMap.containsKey(data.keyCode)) {
-              textState?.append(shiftedKeyCodeMap[data.keyCode]);
+              _textState?.append(shiftedKeyCodeMap[data.keyCode]);
               _notifyTextChanged();
             }
           }
@@ -91,15 +108,15 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
       } else if (event.data is RawKeyEventDataFuchsia) {
         RawKeyEventDataFuchsia data = event.data;
         if (data.codePoint != 0) {
-          textState?.append(new String.fromCharCode(data.codePoint));
+          _textState?.append(new String.fromCharCode(data.codePoint));
           _notifyTextChanged();
         } else if (data.hidUsage == 40) {
-          String text = textState?.text;
+          String text = _textState?.text;
           if (config.onTextCommitted != null && text.isNotEmpty) {
             config.onTextCommitted(text);
           }
         } else if (data.hidUsage == 42) {
-          if (textState?.backspace() ?? false) {
+          if (_textState?.backspace() ?? false) {
             _notifyTextChanged();
           }
         }
@@ -109,7 +126,7 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
 
   void _notifyTextChanged() {
     if (config.onTextChanged != null) {
-      config.onTextChanged(textState?.text);
+      config.onTextChanged(_textState?.text);
     }
   }
 }

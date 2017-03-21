@@ -10,18 +10,28 @@ import 'package:flutter/widgets.dart';
 /// specify the quadrilateral defining insets of the four corners of the
 /// bounding box.
 class QuadrilateralPainter extends CustomPainter {
+  /// Defines the inset of the bounding box's top left corner.
   final Offset topLeftInset;
+
+  /// Defines the inset of the bounding box's top right corner.
   final Offset topRightInset;
+
+  /// Defines the inset of the bounding box's bottom left corner.
   final Offset bottomLeftInset;
+
+  /// Defines the inset of the bounding box's bottom right corner.
   final Offset bottomRightInset;
+
+  /// The color to paint.
   final Color color;
 
-  QuadrilateralPainter(
-      {Offset topLeftInset,
-      Offset topRightInset,
-      Offset bottomLeftInset,
-      Offset bottomRightInset,
-      this.color})
+  QuadrilateralPainter({
+    Offset topLeftInset,
+    Offset topRightInset,
+    Offset bottomLeftInset,
+    Offset bottomRightInset,
+    this.color,
+  })
       : this.topLeftInset = topLeftInset ?? Offset.zero,
         this.topRightInset = topRightInset ?? Offset.zero,
         this.bottomLeftInset = bottomLeftInset ?? Offset.zero,

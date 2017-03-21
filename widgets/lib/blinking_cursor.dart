@@ -9,18 +9,24 @@ import 'package:flutter/widgets.dart';
 /// Shows a blinking line with the given [color] and [height] and blink
 /// [duration].
 class BlinkingCursor extends StatefulWidget {
+  /// The color of the cursor.
   final Color color;
+
+  /// The height of the cursor.
   final double height;
+
+  /// The blink duration.
   final Duration duration;
 
+  /// Constructor.
   BlinkingCursor({this.color, this.duration, this.height});
 
   @override
-  BlinkingCursorState createState() => new BlinkingCursorState();
+  _BlinkingCursorState createState() => new _BlinkingCursorState();
 }
 
 /// [State] for [BlinkingCursor].
-class BlinkingCursorState extends State<BlinkingCursor> {
+class _BlinkingCursorState extends State<BlinkingCursor> {
   Timer _timer;
   bool _on = true;
 

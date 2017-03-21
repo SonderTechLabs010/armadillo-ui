@@ -106,18 +106,6 @@ const Map<int, String> _kAndroidShiftedKeyCodeMap = const <int, String>{
 
 const int _kAndroidKeyCodeEnter = 66;
 const int _kAndroidKeyCodeBackspace = 67;
-const int _kAndroidKeyCode1 = 8;
-const int _kAndroidKeyCode2 = 9;
-const int _kAndroidKeyCode3 = 10;
-const int _kAndroidKeyCode4 = 11;
-const int _kAndroidKeyCode5 = 12;
-const int _kAndroidKeyCode6 = 13;
-const int _kAndroidKeyCode7 = 14;
-const int _kAndroidKeyCode8 = 15;
-const int _kAndroidKeyCode9 = 16;
-const int _kAndroidKeyCodeM = 41;
-const int _kAndroidKeyCodeQ = 45;
-const int _kAndroidKeyCodeW = 51;
 
 const int _kLinuxMetaStateNormal = 0;
 const int _kLinuxMetaStateLeftShiftDown = 1;
@@ -221,54 +209,34 @@ const Map<int, String> _kLinuxShiftedKeyCodeMap = const <int, String>{
 
 const int _kLinuxKeyCodeEnter = 13;
 const int _kLinuxKeyCodeBackspace = 8;
-const int _kLinuxKeyCode1 = 49;
-const int _kLinuxKeyCode2 = 50;
-const int _kLinuxKeyCode3 = 51;
-const int _kLinuxKeyCode4 = 52;
-const int _kLinuxKeyCode5 = 53;
-const int _kLinuxKeyCode6 = 54;
-const int _kLinuxKeyCode7 = 55;
-const int _kLinuxKeyCode8 = 56;
-const int _kLinuxKeyCode9 = 57;
-const int _kLinuxKeyCodeM = 77;
-const int _kLinuxKeyCodeQ = 81;
-const int _kLinuxKeyCodeW = 87;
 
+/// The keycode for backspace on the current platform.
 int get keyCodeBackspace =>
     Platform.isAndroid ? _kAndroidKeyCodeBackspace : _kLinuxKeyCodeBackspace;
 
+/// The keycode for enter on the current platform.
 int get keyCodeEnter =>
     Platform.isAndroid ? _kAndroidKeyCodeEnter : _kLinuxKeyCodeEnter;
 
-int get keyCode1 => Platform.isAndroid ? _kAndroidKeyCode1 : _kLinuxKeyCode1;
-int get keyCode2 => Platform.isAndroid ? _kAndroidKeyCode2 : _kLinuxKeyCode2;
-int get keyCode3 => Platform.isAndroid ? _kAndroidKeyCode3 : _kLinuxKeyCode3;
-int get keyCode4 => Platform.isAndroid ? _kAndroidKeyCode4 : _kLinuxKeyCode4;
-int get keyCode5 => Platform.isAndroid ? _kAndroidKeyCode5 : _kLinuxKeyCode5;
-int get keyCode6 => Platform.isAndroid ? _kAndroidKeyCode6 : _kLinuxKeyCode6;
-int get keyCode7 => Platform.isAndroid ? _kAndroidKeyCode7 : _kLinuxKeyCode7;
-int get keyCode8 => Platform.isAndroid ? _kAndroidKeyCode8 : _kLinuxKeyCode8;
-int get keyCode9 => Platform.isAndroid ? _kAndroidKeyCode9 : _kLinuxKeyCode9;
-int get keyCodeM => Platform.isAndroid ? _kAndroidKeyCodeM : _kLinuxKeyCodeM;
-int get keyCodeQ => Platform.isAndroid ? _kAndroidKeyCodeQ : _kLinuxKeyCodeQ;
-int get keyCodeW => Platform.isAndroid ? _kAndroidKeyCodeW : _kLinuxKeyCodeW;
-
+/// The metastate indicating no modifications apply to the keycode on the
+/// current platform.
 int get metaStateNormal =>
     Platform.isAndroid ? _kAndroidMetaStateNormal : _kLinuxMetaStateNormal;
 
+/// The metastate indicating the left shift is down on the current platform.
 int get metaStateLeftShiftDown => Platform.isAndroid
     ? _kAndroidMetaStateLeftShiftDown
     : _kLinuxMetaStateLeftShiftDown;
 
+/// The metastate indicating the right shift is down on the current platform.
 int get metaStateRightShiftDown => Platform.isAndroid
     ? _kAndroidMetaStateRightShiftDown
     : _kLinuxMetaStateRightShiftDown;
 
-int get metaStateCtrlDown =>
-    Platform.isAndroid ? _kAndroidMetaStateCtrlDown : _kLinuxMetaStateCtrlDown;
-
+/// Maps keycodes to text on the current platform.
 Map<int, String> get keyCodeMap =>
     Platform.isAndroid ? _kAndroidKeyCodeMap : _kLinuxKeyCodeMap;
 
+/// Maps shifted keycodes to text on the current platform.
 Map<int, String> get shiftedKeyCodeMap =>
     Platform.isAndroid ? _kAndroidShiftedKeyCodeMap : _kLinuxShiftedKeyCodeMap;

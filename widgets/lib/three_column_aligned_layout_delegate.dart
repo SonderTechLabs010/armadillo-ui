@@ -6,8 +6,20 @@ import 'package:flutter/widgets.dart';
 
 /// See [ThreeColumnAlignedLayoutDelegate] for details.
 enum ThreeColumnAlignedLayoutDelegateParts {
+  /// Indicates the widget is left aligned and can use up as much space as it
+  /// wants.
   left,
+
+  /// Indicates the widget is centered if it can do so without getting to close
+  /// ([ThreeColumnAlignedLayoutDelegate.partMargin]) to the other
+  /// [ThreeColumnAlignedLayoutDelegateParts].  If it cannot be centered, it
+  /// will keep a minimum distance
+  /// ([ThreeColumnAlignedLayoutDelegate.partMargin]) from [left] and [right]
+  /// while trying to be as close to center as possible.
   center,
+
+  /// Indicates the widget is right aligned and can use up as much space as it
+  /// wants.
   right,
 }
 
@@ -25,8 +37,14 @@ enum ThreeColumnAlignedLayoutDelegateParts {
 ///    [ThreeColumnAlignedLayoutDelegateParts.right] while trying to be as close
 ///    to center as possible.
 class ThreeColumnAlignedLayoutDelegate extends MultiChildLayoutDelegate {
+  /// The minimum distance [ThreeColumnAlignedLayoutDelegateParts.center] can be
+  /// to [ThreeColumnAlignedLayoutDelegateParts.left] and
+  /// [ThreeColumnAlignedLayoutDelegateParts.right].
   final double partMargin;
+
+  /// Constructor.
   ThreeColumnAlignedLayoutDelegate({this.partMargin});
+
   @override
   void performLayout(Size size) {
     // Lay out children.

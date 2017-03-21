@@ -15,13 +15,21 @@ const RK4SpringDescription _kHeightSimulationDesc = const RK4SpringDescription(
 /// A [TickingState] that simulates changes to its height as a RK4 spring.
 abstract class TickingHeightState<T extends StatefulWidget>
     extends TickingState<T> {
+  /// The description of the spring simulation used to change the height of this
+  /// [Widget].
   final RK4SpringDescription springDescription;
-  RK4SpringSimulation _heightSimulation;
 
+  RK4SpringSimulation _heightSimulation;
+  double _minHeight = 0.0;
+  double _maxHeight = 0.0;
+
+  /// Constructor.
   TickingHeightState({this.springDescription: _kHeightSimulationDesc});
 
-  double _minHeight = 0.0;
+  /// Returns the minimum height this [Widget] should have.
   double get minHeight => _minHeight;
+
+  /// Sets the minimum height this [Widget] should have.
   set minHeight(double minHeight) {
     _minHeight = minHeight;
     if (height < _minHeight) {
@@ -29,8 +37,10 @@ abstract class TickingHeightState<T extends StatefulWidget>
     }
   }
 
-  double _maxHeight = 0.0;
+  /// Returns the maximum height this [Widget] should have.
   double get maxHeight => _maxHeight;
+
+  /// Sets the maximum height this [Widget] should have.
   set maxHeight(double maxHeight) {
     _maxHeight = maxHeight;
     if (height > _maxHeight) {
@@ -38,6 +48,10 @@ abstract class TickingHeightState<T extends StatefulWidget>
     }
   }
 
+  /// Sets the target height of this widget to [height].  This will trigger
+  /// an animation from the current height to this new height unless [force]
+  /// is set to true at which point the widget's height will jump directly to
+  /// the new height.
   void setHeight(double height, {bool force: false}) {
     double newHeight = height.clamp(_minHeight, _maxHeight);
     if (force) {
@@ -54,6 +68,7 @@ abstract class TickingHeightState<T extends StatefulWidget>
     startTicking();
   }
 
+  /// The current height the widget should be.
   double get height =>
       (_heightSimulation == null || _heightSimulation.value < 0.0)
           ? 0.0

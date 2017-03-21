@@ -15,6 +15,7 @@ abstract class TickingState<T extends StatefulWidget> extends State<T>
   /// Returns false if [_ticker] should stop ticking after this tick.
   bool handleTick(double elapsedSeconds);
 
+  /// Starts the [_ticker] ticking.
   void startTicking() {
     if (_ticker?.isTicking ?? false) {
       return;

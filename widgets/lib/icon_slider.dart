@@ -41,7 +41,6 @@ import 'package:meta/meta.dart';
 ///  * [Switch]
 ///  * <https://www.google.com/design/spec/components/sliders.html>
 ///
-
 class IconSlider extends StatefulWidget {
   /// Creates a material design slider with an icon for the picker.
   ///

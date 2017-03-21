@@ -9,4 +9,5 @@ AssetBundle _initBundle() {
   return new NetworkAssetBundle(Uri.base);
 }
 
+/// Returns the default [AssetBundle] for this flutter app.
 final AssetBundle defaultBundle = _initBundle();

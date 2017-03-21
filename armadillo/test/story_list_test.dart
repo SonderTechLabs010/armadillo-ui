@@ -15,7 +15,6 @@ import 'package:armadillo/story_model.dart';
 import 'package:armadillo/story_rearrangement_scrim_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sysui_widgets/delegating_page_route.dart';
 
 const int _kStoryCount = 4;
 const double _kWidthSingleColumn = 500.0;
@@ -41,7 +40,7 @@ void main() {
     );
     StoryModel storyModel = new _DummyStoryModel(storyKeys: storyKeys);
     await tester.pumpWidget(
-      _wrapWithWidgetsAppAndModels(
+      _wrapWithModels(
         storyModel: storyModel,
         child: new Center(
           child: new SizedBox(
@@ -80,7 +79,7 @@ void main() {
     StoryModel storyModel = new _DummyStoryModel(storyKeys: storyKeys);
 
     await tester.pumpWidget(
-      _wrapWithWidgetsAppAndModels(
+      _wrapWithModels(
         storyModel: storyModel,
         child: new Center(
           child: new SizedBox(
@@ -142,34 +141,23 @@ class _DummyStoryLayout extends StoryLayout {
   Rect get bounds => offset & size;
 }
 
-Widget _wrapWithWidgetsAppAndModels({
-  Widget child,
-  StoryModel storyModel,
-}) =>
-    new WidgetsApp(
-      title: '',
-      color: const Color(0xFFFFFFFF),
-      onGenerateRoute: (RouteSettings settings) =>
-          new DelegatingPageRoute<Null>(
-            (_) => new ScopedModel<DebugModel>(
-                  model: new DebugModel(),
-                  child: new ScopedModel<PanelResizingModel>(
-                    model: new PanelResizingModel(),
-                    child: new ScopedModel<StoryModel>(
-                      model: storyModel,
-                      child: new ScopedModel<StoryClusterDragStateModel>(
-                        model: new StoryClusterDragStateModel(),
-                        child: new ScopedModel<StoryRearrangementScrimModel>(
-                          model: new StoryRearrangementScrimModel(),
-                          child: new ScopedModel<StoryDragTransitionModel>(
-                            model: new StoryDragTransitionModel(),
-                            child: child,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            settings: settings,
+Widget _wrapWithModels({Widget child, StoryModel storyModel}) =>
+    new ScopedModel<DebugModel>(
+      model: new DebugModel(),
+      child: new ScopedModel<PanelResizingModel>(
+        model: new PanelResizingModel(),
+        child: new ScopedModel<StoryModel>(
+          model: storyModel,
+          child: new ScopedModel<StoryClusterDragStateModel>(
+            model: new StoryClusterDragStateModel(),
+            child: new ScopedModel<StoryRearrangementScrimModel>(
+              model: new StoryRearrangementScrimModel(),
+              child: new ScopedModel<StoryDragTransitionModel>(
+                model: new StoryDragTransitionModel(),
+                child: child,
+              ),
+            ),
           ),
+        ),
+      ),
     );
