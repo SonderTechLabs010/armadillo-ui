@@ -16,16 +16,24 @@ const RK4SpringDescription _kFadeOutSimulationDesc =
 const RK4SpringDescription _kFadeInSimulationDesc =
     const RK4SpringDescription(tension: 900.0, friction: 50.0);
 
+/// Manages a simulation for fading in a [Widget] via an [Opacity].
 class FadingSpringSimulation {
+  /// Called whenever the simulation's value changes.
   final VoidCallback onChange;
+
+  /// Provides the [Ticker] for the simulation.
   final TickerProvider tickerProvider;
+
   RK4SpringSimulation _fadeSimulation;
   Timer _fadeTimer;
   Ticker _ticker;
   Duration _lastTick;
 
+  /// Constructor.
   FadingSpringSimulation({this.onChange, this.tickerProvider});
 
+  /// Starts the simulation forward.  If [force] is true, the simulation jumps
+  /// to the end.
   void fadeIn({bool force: false}) {
     _fadeSimulation = new RK4SpringSimulation(
         initValue: force ? 1.0 : _fadeSimulation?.value ?? 0.0,
@@ -48,6 +56,7 @@ class FadingSpringSimulation {
     _startTicking();
   }
 
+  /// Jumps the simulation to the start.
   void reset() {
     _fadeTimer?.cancel();
     _fadeTimer = null;
@@ -56,7 +65,7 @@ class FadingSpringSimulation {
     _fadeSimulation = null;
   }
 
-  // Returns the opacity that should be used to fade the minimized info.
+  /// Returns the opacity that should be used to fade the minimized info.
   double get opacity => (_fadeSimulation?.value ?? 0.0).clamp(0.0, 1.0);
 
   bool _handleTick(double elapsedSeconds) {

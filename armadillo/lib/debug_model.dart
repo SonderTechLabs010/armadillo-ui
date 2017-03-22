@@ -13,8 +13,13 @@ class DebugModel extends Model {
   bool _showTargetOverlay = false;
   bool _showTargetInfluenceOverlay = false;
 
+  /// True if the target influence overlay should be shown.  This overlay shows
+  /// which targets will be locked when a candidate is in a certain position.
   bool get showTargetInfluenceOverlay => _showTargetInfluenceOverlay;
 
+  /// Set [showTargetInfluenceOverlay] to true to begin showing the
+  /// target influence overlay.  This overlay shows which targets will be
+  /// locked when a candidate is in a certain position.
   set showTargetInfluenceOverlay(bool showTargetInfluenceOverlay) {
     if (_showTargetInfluenceOverlay != showTargetInfluenceOverlay) {
       _showTargetInfluenceOverlay = showTargetInfluenceOverlay;
@@ -22,8 +27,11 @@ class DebugModel extends Model {
     }
   }
 
+  /// True if the visual representation of the targets should be shown.
   bool get showTargetOverlay => _showTargetOverlay;
 
+  /// Set [showTargetOverlay] to true to begin showing a visual representation
+  /// of the targets.
   set showTargetOverlay(bool showTargetOverlay) {
     if (_showTargetOverlay != showTargetOverlay) {
       _showTargetOverlay = showTargetOverlay;
@@ -31,6 +39,8 @@ class DebugModel extends Model {
     }
   }
 
+  /// Causes a switch between no overlays being shown, the visual representation
+  /// of the targets being shown, and the target influence overlay being shown.
   void twiddle() {
     if (!showTargetOverlay && !showTargetInfluenceOverlay) {
       showTargetOverlay = true;

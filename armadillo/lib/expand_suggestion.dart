@@ -9,6 +9,8 @@ import 'selected_suggestion_overlay.dart';
 import 'suggestion.dart';
 import 'suggestion_widget.dart';
 
+/// Called when the [Widget] representing [Suggestion] has fully expanded to
+/// fill its parent.
 typedef void OnSuggestionExpanded(Suggestion suggestion);
 
 const RK4SpringDescription _kExpansionSimulationDesc =
@@ -21,18 +23,30 @@ const double _kOpacitySimulationTarget = 1000.0;
 /// Expands the [suggestion] to fill the screen (modulo the space for the now
 /// bar at the bottom) and then fades to reveal what's behind.
 class ExpandSuggestion extends ExpansionBehavior {
-  final double minimizedNowBarHeight;
+  /// The margin to not draw into at the bottom of the parent when filling the
+  /// parent.
+  final double bottomMargin;
+
+  /// The suggestion to expand.
   final Suggestion suggestion;
+
+  /// The initial bounds of the suggestion's [Widget].
   final Rect suggestionInitialGlobalBounds;
+
+  /// Called when the [Widget] representing [suggestion] has fully expanded to
+  /// fill its parent.
   final OnSuggestionExpanded onSuggestionExpanded;
+
   RK4SpringSimulation _expansionSimulation;
   RK4SpringSimulation _opacitySimulation;
 
-  ExpandSuggestion(
-      {this.minimizedNowBarHeight,
-      this.suggestion,
-      this.suggestionInitialGlobalBounds,
-      this.onSuggestionExpanded});
+  /// Constructor.
+  ExpandSuggestion({
+    this.bottomMargin,
+    this.suggestion,
+    this.suggestionInitialGlobalBounds,
+    this.onSuggestionExpanded,
+  });
 
   @override
   void start() {
@@ -91,7 +105,7 @@ class ExpandSuggestion extends ExpansionBehavior {
           height: suggestionInitialGlobalBounds.height +
               (constraints.maxHeight -
                       suggestionInitialGlobalBounds.height -
-                      minimizedNowBarHeight) *
+                      bottomMargin) *
                   _expansionProgress,
           child: new Opacity(
             opacity: _opacityProgress,

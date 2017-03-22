@@ -4,9 +4,12 @@
 
 import 'package:flutter/widgets.dart';
 
+/// Provides the default scroll configuration for armadillo to its [child].
 class DefaultScrollConfiguration extends StatelessWidget {
+  /// The child to apply the default scroll configuration to.
   final Widget child;
 
+  /// Constructor.
   DefaultScrollConfiguration({Key key, this.child}) : super(key: key);
 
   @override

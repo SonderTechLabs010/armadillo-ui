@@ -429,7 +429,7 @@ class Conductor extends StatelessWidget {
                                   suggestion.selectionStoryId,
                                   storyModel,
                                 ),
-                            minimizedNowBarHeight: _kMinimizedNowHeight,
+                            bottomMargin: _kMinimizedNowHeight,
                           )
                         : new SplashSuggestion(
                             suggestion: suggestion,

@@ -11,9 +11,14 @@ import 'package:flutter/widgets.dart';
 /// that should appear to be an extension of device hardware rather than a
 /// software UI.
 class DeviceExtender extends StatelessWidget {
+  /// The [Widget] that will be resized when the device extensions are activated
+  /// and deactivated.
   final Widget child;
+
+  /// Device extensions which will push [child] up when activated.
   final List<Widget> deviceExtensions;
 
+  /// Constructor.
   DeviceExtender({this.child, this.deviceExtensions: const <Widget>[]});
 
   @override

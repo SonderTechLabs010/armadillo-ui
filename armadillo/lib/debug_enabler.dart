@@ -8,9 +8,13 @@ import 'debug_model.dart';
 
 /// Adds a button to enable debug features.
 class DebugEnabler extends StatelessWidget {
+  /// The model used for enabling/disabling debugging features.
   final DebugModel debugModel;
+
+  /// The child whose bottom left will have the button overlaid on top of.
   final Widget child;
 
+  /// Constructor.
   DebugEnabler({this.debugModel, this.child});
 
   @override
