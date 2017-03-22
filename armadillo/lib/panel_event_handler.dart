@@ -73,7 +73,7 @@ class PanelEventHandler {
     StoryCluster storyCluster,
     int targetIndex = -1,
   }) {
-    targetIndex =
+    int localTargetIndex =
         (targetIndex == -1) ? targetStoryCluster.stories.length : targetIndex;
     targetStoryCluster.removePreviews();
     storyCluster.removePreviews();
@@ -91,7 +91,7 @@ class PanelEventHandler {
 
     targetStoryCluster.maximizeStoryBars();
 
-    targetStoryCluster.moveStoriesToIndex(storiesToMove, targetIndex);
+    targetStoryCluster.moveStoriesToIndex(storiesToMove, localTargetIndex);
   }
 
   /// Adds the stories of [storyCluster] to the left, spanning the full height.

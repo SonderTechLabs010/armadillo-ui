@@ -66,8 +66,6 @@ class QuickSettingsOverlay extends StatefulWidget {
 }
 
 class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
-  double _volumeSliderValue = 0.0;
-  double _brightnessSliderValue = 0.0;
   final RK4SpringSimulation _showSimulation = new RK4SpringSimulation(
     initValue: 0.0,
     desc: _kSimulationDesc,
