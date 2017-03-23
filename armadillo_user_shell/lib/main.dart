@@ -28,8 +28,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:sysui_widgets/default_bundle.dart';
 
-import 'focus_controller_impl.dart';
+import 'focus_request_watcher_impl.dart';
 import 'hit_test_model.dart';
+import 'initial_focus_setter.dart';
 import 'initial_story_generator.dart';
 import 'story_provider_story_generator.dart';
 import 'suggestion_provider_suggestion_model.dart';
@@ -54,9 +55,12 @@ Future<Null> main() async {
   HitTestModel hitTestModel = new HitTestModel();
   InitialStoryGenerator initialStoryGenerator = new InitialStoryGenerator()
     ..load(defaultBundle);
+  InitialFocusSetter initialFocusSetter = new InitialFocusSetter();
+
   StoryProviderStoryGenerator storyProviderStoryGenerator =
       new StoryProviderStoryGenerator(
     onNoStories: initialStoryGenerator.createStories,
+    onStoriesFirstAvailable: initialFocusSetter.onStoriesFirstAvailable,
   );
   StoryClusterDragStateModel storyClusterDragStateModel =
       new StoryClusterDragStateModel();
@@ -81,10 +85,7 @@ Future<Null> main() async {
     storyClusterDragStateModel: storyClusterDragStateModel,
   );
   SuggestionProviderSuggestionModel suggestionProviderSuggestionModel =
-      new SuggestionProviderSuggestionModel(
-    storyGenerator: storyProviderStoryGenerator,
-    hitTestModel: hitTestModel,
-  );
+      new SuggestionProviderSuggestionModel(hitTestModel: hitTestModel);
 
   StoryModel storyModel = new StoryModel(
     onFocusChanged: suggestionProviderSuggestionModel.storyClusterFocusChanged,
@@ -100,26 +101,29 @@ Future<Null> main() async {
     conductor.goToOrigin(storyModel);
   });
 
-  FocusControllerImpl focusController =
-      new FocusControllerImpl(onFocusStory: (String storyId) {
-    VoidCallback focusOnStory = () {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        conductor.requestStoryFocus(
-          new StoryId(storyId),
-          storyModel,
-          jumpToFinish: false,
-        );
-      });
-    };
+  StoryFocuser storyFocuser = (String storyId) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      conductor.requestStoryFocus(
+        new StoryId(storyId),
+        storyModel,
+        jumpToFinish: false,
+      );
+    });
+  };
 
-    // If we don't know about the story that we've been asked to focus, update
-    // the story list first.
-    if (!storyProviderStoryGenerator.containsStory(storyId)) {
-      storyProviderStoryGenerator.update(focusOnStory);
-    } else {
-      focusOnStory();
-    }
-  });
+  initialFocusSetter.storyFocuser = storyFocuser;
+
+  FocusRequestWatcherImpl focusRequestWatcher = new FocusRequestWatcherImpl(
+    onFocusRequest: (String storyId) {
+      // If we don't know about the story that we've been asked to focus, update
+      // the story list first.
+      if (!storyProviderStoryGenerator.containsStory(storyId)) {
+        storyProviderStoryGenerator.update(() => storyFocuser(storyId));
+      } else {
+        storyFocuser(storyId);
+      }
+    },
+  );
 
   NowModel nowModel = new NowModel();
   DebugModel debugModel = new DebugModel();
@@ -177,7 +181,8 @@ Future<Null> main() async {
     userShell: new UserShellImpl(
       storyProviderStoryGenerator: storyProviderStoryGenerator,
       suggestionProviderSuggestionModel: suggestionProviderSuggestionModel,
-      focusController: focusController,
+      focusRequestWatcher: focusRequestWatcher,
+      initialFocusSetter: initialFocusSetter,
     ),
     child:
         _kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app,

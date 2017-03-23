@@ -9,39 +9,69 @@ import 'package:apps.modular.services.user/user_shell.fidl.dart';
 import 'package:apps.modular.services.user/user_context.fidl.dart';
 import 'package:lib.fidl.dart/bindings.dart';
 
-import 'focus_controller_impl.dart';
+import 'focus_request_watcher_impl.dart';
+import 'initial_focus_setter.dart';
 import 'story_provider_story_generator.dart';
 import 'suggestion_provider_suggestion_model.dart';
 
+/// Implements a UserShell for receiving the services a [UserShell] needs to
+/// operate.  When [initialize] is called, the services it receives are routed
+/// by this class to the various classes which need them.
 class UserShellImpl extends UserShell {
-  final StoryProviderStoryGenerator storyProviderStoryGenerator;
-  final SuggestionProviderSuggestionModel suggestionProviderSuggestionModel;
-  final FocusControllerImpl focusController;
-  final StoryProviderProxy storyProvider = new StoryProviderProxy();
-  final SuggestionProviderProxy suggestionProvider =
+  final FocusProviderProxy _focusProvider = new FocusProviderProxy();
+  final FocusControllerProxy _focusController = new FocusControllerProxy();
+  final VisibleStoriesControllerProxy _visibleStoriesController =
+      new VisibleStoriesControllerProxy();
+  final StoryProviderProxy _storyProvider = new StoryProviderProxy();
+  final SuggestionProviderProxy _suggestionProvider =
       new SuggestionProviderProxy();
-  final UserContextProxy userContext = new UserContextProxy();
 
+  /// Receives the [StoryProvider].
+  final StoryProviderStoryGenerator storyProviderStoryGenerator;
+
+  /// Receives the [SuggestionProvider], [FocusController], and
+  /// [VisibleStoriesController].
+  final SuggestionProviderSuggestionModel suggestionProviderSuggestionModel;
+
+  /// Watches the [FocusController].
+  final FocusRequestWatcherImpl focusRequestWatcher;
+
+  /// Receives the [FocusProvider].
+  final InitialFocusSetter initialFocusSetter;
+
+  /// Constructor.
   UserShellImpl({
     this.storyProviderStoryGenerator,
     this.suggestionProviderSuggestionModel,
-    this.focusController,
+    this.focusRequestWatcher,
+    this.initialFocusSetter,
   });
 
   @override
   void initialize(
     InterfaceHandle<UserContext> userContextHandle,
-    InterfaceHandle<StoryProvider> storyProviderHandle,
-    InterfaceHandle<SuggestionProvider> suggestionProviderHandle,
-    InterfaceRequest<FocusController> focusControllerRequest,
+    InterfaceHandle<UserShellContext> userShellContextHandle,
   ) {
-    userContext.ctrl.bind(userContextHandle);
-    storyProvider.ctrl.bind(storyProviderHandle);
-    suggestionProvider.ctrl.bind(suggestionProviderHandle);
-    focusController.bind(focusControllerRequest);
-    storyProviderStoryGenerator.storyProvider = storyProvider;
-    suggestionProviderSuggestionModel.suggestionProvider = suggestionProvider;
-    suggestionProviderSuggestionModel.focusController = focusController;
+    userContextHandle.close();
+
+    UserShellContextProxy userShellContext = new UserShellContextProxy();
+    userShellContext.ctrl.bind(userShellContextHandle);
+    userShellContext.getStoryProvider(_storyProvider.ctrl.request());
+    userShellContext.getSuggestionProvider(_suggestionProvider.ctrl.request());
+    userShellContext.getVisibleStoriesController(
+      _visibleStoriesController.ctrl.request(),
+    );
+    userShellContext.getFocusController(_focusController.ctrl.request());
+    userShellContext.getFocusProvider(_focusProvider.ctrl.request());
+    userShellContext.ctrl.close();
+
+    _focusController.watchRequest(focusRequestWatcher.getHandle());
+    initialFocusSetter.focusProvider = _focusProvider;
+    storyProviderStoryGenerator.storyProvider = _storyProvider;
+    suggestionProviderSuggestionModel.suggestionProvider = _suggestionProvider;
+    suggestionProviderSuggestionModel.focusController = _focusController;
+    suggestionProviderSuggestionModel.visibleStoriesController =
+        _visibleStoriesController;
   }
 
   @override

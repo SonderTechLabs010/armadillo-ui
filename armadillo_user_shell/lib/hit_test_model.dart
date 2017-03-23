@@ -15,15 +15,19 @@ class HitTestModel extends Model {
   static HitTestModel of(BuildContext context) =>
       new ModelFinder<HitTestModel>().of(context);
 
-  List<String> _focusedStoryIds = <String>[];
+  List<String> _visibleStoryIds = <String>[];
   bool _storiesObscuredBySuggestionOverlay = false;
   bool _storiesObscuredByQuickSettingsOverlay = false;
 
-  void onFocusedStoriesChanged(List<String> focusedStoryIds) {
-    _focusedStoryIds = focusedStoryIds;
+  /// Sets the stories visible to the user.
+  /// See [isStoryHitTestable] for details.
+  void onVisibleStoriesChanged(List<String> visibleStoryIds) {
+    _visibleStoryIds = visibleStoryIds;
     notifyListeners();
   }
 
+  /// Sets the quick settings overlay's [active] status.
+  /// See [isStoryHitTestable] for details.
   void onQuickSettingsOverlayChanged(bool active) {
     if (_storiesObscuredByQuickSettingsOverlay != active) {
       _storiesObscuredByQuickSettingsOverlay = active;
@@ -31,6 +35,8 @@ class HitTestModel extends Model {
     }
   }
 
+  /// Sets the suggestion overlay's [active] status.
+  /// See [isStoryHitTestable] for details.
   void onSuggestionsOverlayChanged(bool active) {
     if (_storiesObscuredBySuggestionOverlay != active) {
       _storiesObscuredBySuggestionOverlay = active;
@@ -38,8 +44,12 @@ class HitTestModel extends Model {
     }
   }
 
+  /// Returns whether a story is hitable or not.  A story is hitable if:
+  /// 1) It's not obscured by the quick settings overlay.
+  /// 2) It's not obscured by the suggestions overlay.
+  /// 3) It's visible.
   bool isStoryHitTestable(String storyId) =>
       !_storiesObscuredBySuggestionOverlay &&
       !_storiesObscuredByQuickSettingsOverlay &&
-      _focusedStoryIds.contains(storyId);
+      _visibleStoryIds.contains(storyId);
 }

@@ -20,12 +20,14 @@ import 'story_provider_watcher_impl.dart';
 
 const String _kUserImage = 'packages/armadillo/res/User.png';
 
+/// Called when the [StoryProvider] returns no stories.
 typedef void OnNoStories(StoryProviderProxy storyProvider);
 
 /// Creates a list of stories for the StoryList using
 /// modular's [StoryProvider].
 class StoryProviderStoryGenerator extends StoryGenerator {
   final Set<VoidCallback> _listeners = new Set<VoidCallback>();
+  bool _firstTime = true;
 
   /// Set from an external source - typically the UserShell.
   StoryProviderProxy _storyProvider;
@@ -36,10 +38,16 @@ class StoryProviderStoryGenerator extends StoryGenerator {
       <String, StoryControllerProxy>{};
   StoryProviderWatcherImpl _storyProviderWatcher;
 
+  /// Called when the [StoryProvider] returns no stories.
   final OnNoStories onNoStories;
 
-  StoryProviderStoryGenerator({this.onNoStories});
+  /// Called the first time the [StoryProvider] returns stories.
+  final VoidCallback onStoriesFirstAvailable;
 
+  /// Constructor.
+  StoryProviderStoryGenerator({this.onNoStories, this.onStoriesFirstAvailable});
+
+  /// Sets the [StoryProvider] used to get and start stories.
   set storyProvider(StoryProviderProxy storyProvider) {
     _storyProvider = storyProvider;
     _storyProviderWatcher = new StoryProviderWatcherImpl(
@@ -63,6 +71,8 @@ class StoryProviderStoryGenerator extends StoryGenerator {
   @override
   List<StoryCluster> get storyClusters => _storyClusters;
 
+  /// Removes all the stories in the [StoryCluster] with [storyClusterId] from
+  /// the [StoryProvider].
   void removeStoryCluster(StoryClusterId storyClusterId) {
     StoryCluster storyCluster = _storyClusters
         .where((StoryCluster storyCluster) => storyCluster.id == storyClusterId)
@@ -112,6 +122,10 @@ class StoryProviderStoryGenerator extends StoryGenerator {
             _startStory(storyInfo);
             added++;
             if (added == storiesToAdd.length) {
+              if (_firstTime) {
+                _firstTime = false;
+                onStoriesFirstAvailable();
+              }
               callback?.call();
             }
           });
@@ -124,6 +138,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         (StoryCluster cluster) => cluster.stories,
       );
 
+  /// Returns true if [storyId] is in the list of current stories.
   bool containsStory(String storyId) => _currentStories.any(
         (Story story) => story.id == new StoryId(storyId),
       );

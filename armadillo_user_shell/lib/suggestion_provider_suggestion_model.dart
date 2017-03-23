@@ -8,10 +8,10 @@ import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart'
     as maxwell;
 import 'package:apps.maxwell.services.suggestion/user_input.fidl.dart'
     as maxwell;
+import 'package:apps.modular.services.user/focus.fidl.dart';
 import 'package:armadillo/story.dart';
 import 'package:armadillo/story_cluster.dart';
 import 'package:armadillo/story_cluster_id.dart';
-import 'package:armadillo/story_generator.dart';
 import 'package:armadillo/story_model.dart';
 import 'package:armadillo/suggestion.dart';
 import 'package:armadillo/suggestion_model.dart';
@@ -19,7 +19,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lib.fidl.dart/bindings.dart';
 
-import 'focus_controller_impl.dart';
 import 'hit_test_model.dart';
 
 final Map<maxwell.SuggestionImageType, ImageType> _kImageTypeMap =
@@ -30,14 +29,14 @@ final Map<maxwell.SuggestionImageType, ImageType> _kImageTypeMap =
 
 /// Listens to a maxwell suggestion list.  As suggestions change it
 /// notifies its [suggestionListener].
-class MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
+class _MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
   final String prefix;
   final VoidCallback suggestionListener;
   final maxwell.SuggestionListenerBinding _binding =
       new maxwell.SuggestionListenerBinding();
   final Map<String, Suggestion> _suggestions = <String, Suggestion>{};
 
-  MaxwellSuggestionListenerImpl({this.prefix, this.suggestionListener});
+  _MaxwellSuggestionListenerImpl({this.prefix, this.suggestionListener});
 
   InterfaceHandle<maxwell.SuggestionListener> getHandle() =>
       _binding.wrap(this);
@@ -89,7 +88,7 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
       new maxwell.AskControllerProxy();
 
   // Listens for changes to maxwell's ask suggestion list.
-  MaxwellSuggestionListenerImpl _askListener;
+  _MaxwellSuggestionListenerImpl _askListener;
 
   // Controls how many suggestions we receive from maxwell's Next suggestion
   // stream.
@@ -97,7 +96,7 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
       new maxwell.NextControllerProxy();
 
   // Listens for changes to maxwell's next suggestion list.
-  MaxwellSuggestionListenerImpl _nextListener;
+  _MaxwellSuggestionListenerImpl _nextListener;
 
   List<Suggestion> _currentSuggestions = const <Suggestion>[];
 
@@ -110,19 +109,23 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
   maxwell.SuggestionProviderProxy _suggestionProviderProxy;
 
   /// Set from an external source - typically the UserShell.
-  FocusControllerImpl _focusController;
+  FocusControllerProxy _focusController;
+
+  /// Set from an external source - typically the UserShell.
+  VisibleStoriesControllerProxy _visibleStoriesController;
 
   // Set from an external source - typically the UserShell.
   StoryModel _storyModel;
 
   StoryClusterId _lastFocusedStoryClusterId;
 
-  final StoryGenerator storyGenerator;
-  final HitTestModel hitTestModel;
   final Set<VoidCallback> _focusLossListeners = new Set<VoidCallback>();
 
+  /// Listens for changes to visible stories.
+  final HitTestModel hitTestModel;
+
+  /// Constructor.
   SuggestionProviderSuggestionModel({
-    this.storyGenerator,
     this.hitTestModel,
   });
 
@@ -131,26 +134,38 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
   set suggestionProvider(
       maxwell.SuggestionProviderProxy suggestionProviderProxy) {
     _suggestionProviderProxy = suggestionProviderProxy;
-    _askListener = new MaxwellSuggestionListenerImpl(
+    _askListener = new _MaxwellSuggestionListenerImpl(
       prefix: 'ask',
       suggestionListener: _onAskSuggestionsChanged,
     );
-    _nextListener = new MaxwellSuggestionListenerImpl(
+    _nextListener = new _MaxwellSuggestionListenerImpl(
       prefix: 'next',
       suggestionListener: _onNextSuggestionsChanged,
     );
     _load();
   }
 
-  set focusController(FocusControllerImpl focusController) {
+  /// Sets the [FocusController] called when focus changes.
+  set focusController(FocusControllerProxy focusController) {
     _focusController = focusController;
   }
 
+  /// Sets the [VisibleStoriesController] called when the list of visible
+  /// stories changes.
+  set visibleStoriesController(
+    VisibleStoriesControllerProxy visibleStoriesController,
+  ) {
+    _visibleStoriesController = visibleStoriesController;
+  }
+
+  /// Sets the [StoryModel] used to get the currently focused and visible
+  /// stories.
   set storyModel(StoryModel storyModel) {
     _storyModel = storyModel;
     storyModel.addListener(_onStoryClusterListChanged);
   }
 
+  /// [listener] will be called when no stories are in focus.
   void addOnFocusLossListener(VoidCallback listener) {
     _focusLossListeners.add(listener);
   }
@@ -223,12 +238,14 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
   }
 
   void _onStoryListChanged() {
-    List<String> focusedStoryIds = _lastFocusedStoryCluster?.stories
+    _focusController.set(_lastFocusedStoryCluster?.focusedStoryId?.value);
+
+    List<String> visibleStoryIds = _lastFocusedStoryCluster?.stories
             ?.map<String>((Story story) => story.id.value)
             ?.toList() ??
         <String>[];
-    _focusController.onFocusedStoriesChanged(focusedStoryIds);
-    hitTestModel.onFocusedStoriesChanged(focusedStoryIds);
+    hitTestModel.onVisibleStoriesChanged(visibleStoryIds);
+    _visibleStoriesController.set(visibleStoryIds);
   }
 
   StoryCluster get _lastFocusedStoryCluster {
