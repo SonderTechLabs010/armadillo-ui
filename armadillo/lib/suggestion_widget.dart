@@ -127,7 +127,7 @@ class SuggestionWidget extends StatelessWidget {
                   ),
                   new Container(
                     width: _kSuggestionHeight,
-                    child: suggestion.imageType == ImageType.person
+                    child: suggestion.imageType == ImageType.circular
                         ? new Padding(
                             padding: const EdgeInsets.all(_kPersonImageInset),
                             child: new ClipOval(

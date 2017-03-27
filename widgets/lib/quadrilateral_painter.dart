@@ -25,6 +25,7 @@ class QuadrilateralPainter extends CustomPainter {
   /// The color to paint.
   final Color color;
 
+  /// Constructor.
   QuadrilateralPainter({
     Offset topLeftInset,
     Offset topRightInset,

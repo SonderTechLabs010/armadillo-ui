@@ -64,18 +64,22 @@ class NowModel extends Model {
   double _quickSettingsProgress = 0.0;
   double _quickSettingsSlideUpProgress = 0.0;
 
+  /// Updates the progress of quick settings being shown.
   set quickSettingsProgress(double quickSettingsProgress) {
     _quickSettingsProgress = quickSettingsProgress;
     notifyListeners();
   }
 
+  /// Updates the progress of quick settings sliding up when being shown.
   set quickSettingsSlideUpProgress(double quickSettingsSlideUpProgress) {
     _quickSettingsSlideUpProgress = quickSettingsSlideUpProgress;
     notifyListeners();
   }
 
+  /// Returns an avatar of the current user.
   Widget get user => new Image.asset(_kUserImage, fit: BoxFit.cover);
 
+  /// Returns a verbose representation of the user's current context.
   Widget userContextMaximized({double opacity: 1.0}) => new Opacity(
         opacity: opacity,
         child: new Text(
@@ -84,6 +88,7 @@ class NowModel extends Model {
         ),
       );
 
+  /// Returns a succinct representation of the user's current context.
   Widget get userContextMinimized => new Padding(
         padding: const EdgeInsets.only(left: 8.0),
         child: new RepaintBoundary(
@@ -102,10 +107,13 @@ class NowModel extends Model {
         ),
       );
 
+  /// The minimum width the important info should have.
   double get importantInfoMinWidth =>
       _kImportantInfoMinWidth +
       2 * 8.0; // TODO(mikejurka): pull this into constant
 
+  /// Returns a verbose representation of the important information to the user
+  /// with the given [maxWidth] and [opacity].
   Widget importantInfoMaximized({double maxWidth, double opacity: 1.0}) {
     return new Container(
       // TODO(mikejurka): don't hardcode height after OverflowBox is fixed
@@ -214,6 +222,8 @@ class NowModel extends Model {
     );
   }
 
+  /// Returns a succinct representation of the important information to the
+  /// user.
   Widget get importantInfoMinimized => new Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
@@ -251,6 +261,8 @@ class NowModel extends Model {
         ],
       );
 
+  /// Returns the quick settings to show when [Now] is in its quick settings
+  /// mode.
   Widget quickSettings({double opacity: 1.0}) =>
       new QuickSettings(opacity: opacity);
 

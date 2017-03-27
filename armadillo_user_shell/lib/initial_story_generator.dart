@@ -18,6 +18,8 @@ class InitialStoryGenerator {
   StoryProviderProxy _storyProvider;
   List<Map<String, String>> _decodedJson;
 
+  /// Loads the initial stories to generate from the [_kJsonUrl] JSON file in
+  /// [assetBundle].
   void load(AssetBundle assetBundle) {
     File configFile = new File(
       '/system/armadillo_initial_story_generator_config.json',
@@ -42,6 +44,7 @@ class InitialStoryGenerator {
     }
   }
 
+  /// Creates the initial stories with [storyProvider].
   void createStories(StoryProviderProxy storyProvider) {
     if (!_loaded) {
       _storyCreationPending = true;

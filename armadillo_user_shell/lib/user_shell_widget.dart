@@ -13,12 +13,18 @@ import 'package:lib.fidl.dart/bindings.dart';
 /// For convienence, [advertise] does the advertising of the app as a
 /// [UserShell] to the rest of the system via the [applicationContext].
 class UserShellWidget extends StatelessWidget {
+  /// The [ApplicationContext] to [advertise] its [UserShell] services to.
   final ApplicationContext applicationContext;
+
+  /// The [UserShell] to [advertise].
   final UserShell userShell;
+
+  /// The rest of the application.
   final Widget child;
 
   final UserShellBinding _binding = new UserShellBinding();
 
+  /// Constructor.
   UserShellWidget({this.applicationContext, this.userShell, this.child});
 
   @override

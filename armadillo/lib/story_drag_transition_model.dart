@@ -22,11 +22,14 @@ class StoryDragTransitionModel extends TickingModel {
     desc: _kSimulationDesc,
   );
 
+  /// Sets the dragging state to [isDragging].  This triggers the transition
+  /// animation.
   void onDragStateChanged(bool isDragging) {
     _transitionSimulation.target = isDragging ? 1.0 : 0.0;
     startTicking();
   }
 
+  /// The progress of the story drag transition animation.
   double get progress => _transitionSimulation.value;
 
   @override

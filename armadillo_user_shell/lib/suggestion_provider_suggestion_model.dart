@@ -23,8 +23,8 @@ import 'hit_test_model.dart';
 
 final Map<maxwell.SuggestionImageType, ImageType> _kImageTypeMap =
     <maxwell.SuggestionImageType, ImageType>{
-  maxwell.SuggestionImageType.person: ImageType.person,
-  maxwell.SuggestionImageType.other: ImageType.other
+  maxwell.SuggestionImageType.person: ImageType.circular,
+  maxwell.SuggestionImageType.other: ImageType.rectangular,
 };
 
 /// Listens to a maxwell suggestion list.  As suggestions change it
@@ -60,7 +60,7 @@ class _MaxwellSuggestionListenerImpl extends maxwell.SuggestionListener {
             : null,
         imageType: suggestion.display.imageUrl?.isNotEmpty ?? false
             ? _kImageTypeMap[suggestion.display.imageType]
-            : ImageType.person,
+            : ImageType.circular,
       );
     });
     suggestionListener?.call();

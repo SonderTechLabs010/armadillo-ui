@@ -102,10 +102,10 @@ class JsonSuggestionModel extends SuggestionModel {
   ImageType _getImageType(String imageType) {
     switch (imageType) {
       case 'person':
-        return ImageType.person;
+        return ImageType.circular;
       case 'other':
       default:
-        return ImageType.other;
+        return ImageType.rectangular;
     }
   }
 

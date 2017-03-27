@@ -83,12 +83,18 @@ class RK4SpringSimulation {
     }
   }
 
+  /// Returns true if the simulation is done - it's reached its target and has
+  /// no velocity.
   bool get isDone => _isDone;
+
+  /// The simulation's current value.
   double get value =>
       (_startValue + _curT * (_targetValue - _startValue)).clamp(
         math.min(_startValue, _targetValue),
         math.max(_startValue, _targetValue),
       );
+
+  /// The simulation's target value.
   double get target => _targetValue;
 
   /// Runs the simulated variable for the given number of [seconds].

@@ -100,39 +100,57 @@ class Panel {
     assert(origin.dy + heightFactor >= 0.0 && origin.dx <= 1.0);
   }
 
+  /// Creates a panel from the given fractional [left], [top], [right], and
+  /// [bottom].
   factory Panel.fromLTRB(
-          double left, double top, double right, double bottom) =>
+    double left,
+    double top,
+    double right,
+    double bottom,
+  ) =>
       new Panel(
         origin: new FractionalOffset(left, top),
         widthFactor: right - left,
         heightFactor: bottom - top,
       );
 
+  /// Creates a new [Panel] that is a copy of [panel].
   factory Panel.from(Panel panel) =>
       new Panel.fromLTRB(panel.left, panel.top, panel.right, panel.bottom);
 
+  /// Returns true if the panel can have its [right] set to [newRight]
+  /// considering the [width] of the parent.
   bool canAdjustRight(double newRight, double width) =>
       toGridValue(newRight - left) >= smallestWidthFactor(width);
 
+  /// Returns true if the panel can have its [bottom] set to [newBottom]
+  /// considering the [height] of the parent.
   bool canAdjustBottom(double newBottom, double height) =>
       toGridValue(newBottom - top) >= smallestHeightFactor(height);
 
+  /// Returns true if the panel can have its [left] set to [newLeft]
+  /// considering the [width] of the parent.
   bool canAdjustLeft(double newLeft, double width) =>
       toGridValue(right - newLeft) >= smallestWidthFactor(width);
 
+  /// Returns true if the panel can have its [top] set to [newTop]
+  /// considering the [height] of the parent.
   bool canAdjustTop(double newTop, double height) =>
       toGridValue(bottom - newTop) >= smallestHeightFactor(height);
 
+  /// Sets the panel's [right] to [newRight].
   void adjustRight(double newRight) {
     _widthFactor = toGridValue(newRight - left);
     assert(right == newRight);
   }
 
+  /// Sets the panel's [bottom] to [newBottom].
   void adjustBottom(double newBottom) {
     _heightFactor = toGridValue(newBottom - top);
     assert(bottom == newBottom);
   }
 
+  /// Sets the panel's [left] to [newLeft].
   void adjustLeft(double newLeft) {
     double rightBefore = right;
     _origin = new FractionalOffset(
@@ -143,6 +161,7 @@ class Panel {
     assert(rightBefore == right);
   }
 
+  /// Sets the panel's [top] to [newTop].
   void adjustTop(double newTop) {
     double bottomBefore = bottom;
     _origin = new FractionalOffset(
@@ -153,11 +172,22 @@ class Panel {
     assert(bottomBefore == bottom);
   }
 
+  /// The fractional left of the panel.
   double get left => _origin.dx;
+
+  /// The fractional right of the panel.
   double get right => toGridValue(_origin.dx + _widthFactor);
+
+  /// The fractional top of the panel.
   double get top => _origin.dy;
+
+  /// The fractional bottom of the panel.
   double get bottom => toGridValue(_origin.dy + _heightFactor);
+
+  /// The fractional width of the panel.
   double get width => toGridValue(right - left);
+
+  /// The fractional height of the panel.
   double get height => toGridValue(bottom - top);
 
   /// Returns true if the panel can be split vertically without violating
@@ -214,6 +244,9 @@ class Panel {
           other.right == left ||
           other.bottom == top);
 
+  /// Returns true if [other] can be absorbed by this panel with [absorb].  To
+  /// absorb another panel it must be adjacent, aligned and either have
+  /// the same height or width as that panel.
   bool canAbsorb(Panel other) =>
       isAdjacentWithOriginAligned(other) &&
       ((left == other.left && other.right >= right) ||
@@ -313,6 +346,9 @@ class Panel {
     return 'Panel(origin: $_origin, widthFactor: $_widthFactor, heightFactor: $_heightFactor)';
   }
 
+  /// For debug purposes.  Should only be called within an [assert].
+  /// This verifies the given panels cover the entire area of the parent with
+  /// no overlapping.
   static void haveFullCoverage(List<Panel> panels) {
     // First verify all locations don't overlap.
     for (int i = 0; i < panels.length; i++) {

@@ -26,7 +26,7 @@ void main() {
       onChange: () {
         changed = true;
       },
-      tickerProvider: new DummyTickerProvider(),
+      tickerProvider: new _DummyTickerProvider(),
     );
     expect(fader.opacity, 0.0);
     fader.fadeIn(force: true);
@@ -45,7 +45,7 @@ void main() {
       onChange: () {
         changed = true;
       },
-      tickerProvider: new DummyTickerProvider(),
+      tickerProvider: new _DummyTickerProvider(),
     );
     expect(fader.opacity, 0.0);
     fader.fadeIn();
@@ -70,7 +70,7 @@ void main() {
       onChange: () {
         changed = true;
       },
-      tickerProvider: new DummyTickerProvider(),
+      tickerProvider: new _DummyTickerProvider(),
     );
     expect(fader.opacity, 0.0);
     fader.fadeIn();
@@ -98,7 +98,7 @@ void main() {
   });
 }
 
-class DummyTickerProvider extends TickerProvider {
+class _DummyTickerProvider extends TickerProvider {
   @override
   Ticker createTicker(TickerCallback onTick) => new Ticker(onTick);
 }

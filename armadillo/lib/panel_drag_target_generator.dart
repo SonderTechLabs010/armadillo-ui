@@ -54,12 +54,20 @@ final Color _kDebugLeftStoryEdgeTargetColor = Colors.blue[300];
 final Color _kDebugBottomStoryEdgeTargetColor = Colors.blue[500];
 final Color _kDebugRightStoryEdgeTargetColor = Colors.blue[700];
 
+/// Called when [storyCluster] is hovering over or dropped upon a target which
+/// would result in the stories of [storyCluster] being placed to one side of
+/// the target cluster.  If [preview] is true the resulting changes in the
+/// target story cluster are temporary.
 typedef void OnPanelsEvent({
   @required BuildContext context,
   @required StoryCluster storyCluster,
   @required bool preview,
 });
 
+/// Called when [storyCluster] is hovering over or dropped upon a target which
+/// would result in the stories of [storyCluster] being placed to one side of
+/// [storyId]'s panel in the target cluster.  If [preview] is true the resulting
+/// changes in the target story cluster are temporary.
 typedef void OnAddToPanelEvent({
   @required BuildContext context,
   @required StoryCluster storyCluster,
@@ -67,12 +75,17 @@ typedef void OnAddToPanelEvent({
   @required bool preview,
 });
 
+/// Called when [storyCluster] is being added to the target cluster's story bar
+/// at the specified [targetIndex].
 typedef void OnStoryBarEvent({
   @required BuildContext context,
   @required StoryCluster storyCluster,
   @required int targetIndex,
 });
 
+/// Called when [storyCluster] is being removed from the target cluster. If
+/// [preview] is true the resulting changes in the target story cluster are
+/// temporary.
 typedef void OnLeaveClusterEvent({
   @required BuildContext context,
   @required StoryCluster storyCluster,

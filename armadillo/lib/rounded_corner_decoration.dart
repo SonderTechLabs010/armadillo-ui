@@ -8,9 +8,13 @@ import 'package:flutter/widgets.dart';
 /// can be used with [Container.foregroundDecoration] to simulate a [ClipRRect]
 /// assuming the background color is solid [color].
 class RoundedCornerDecoration extends Decoration {
+  /// The radius of the drawn rounded corners.
   final double radius;
+
+  /// The color of the drawn rounded corners.
   final Color color;
 
+  /// Constructor.
   RoundedCornerDecoration({this.radius, this.color});
 
   @override
