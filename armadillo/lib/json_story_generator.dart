@@ -14,6 +14,7 @@ import 'story_generator.dart';
 
 const String _kJsonUrl = 'packages/armadillo/res/stories.json';
 
+/// Creates stories from a JSON file.
 class JsonStoryGenerator extends StoryGenerator {
   final Set<VoidCallback> _listeners = new Set<VoidCallback>();
   List<StoryCluster> _storyClusters = <StoryCluster>[];
@@ -31,6 +32,7 @@ class JsonStoryGenerator extends StoryGenerator {
   @override
   List<StoryCluster> get storyClusters => _storyClusters;
 
+  /// Loads stories from the JSON file [_kJsonUrl] contained in [assetBundle].
   void load(AssetBundle assetBundle) {
     assetBundle.loadString(_kJsonUrl).then((String json) {
       final Map<String, List<Map<String, Object>>> decodedJson =

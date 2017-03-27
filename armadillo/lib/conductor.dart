@@ -332,8 +332,8 @@ class Conductor extends StatelessWidget {
           onQuickSettingsProgressChange: (double quickSettingsProgress) =>
               _verticalShifterKey.currentState.shiftProgress =
                   quickSettingsProgress,
-          onReturnToOriginButtonTap: () => goToOrigin(storyModel),
-          onShowQuickSettingsOverlay: () =>
+          onMinimizedTap: () => goToOrigin(storyModel),
+          onMinimizedLongPress: () =>
               _quickSettingsOverlayKey.currentState.show(),
           onQuickSettingsMaximized: () {
             // When quick settings starts being shown, scroll to 0.0.

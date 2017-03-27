@@ -27,6 +27,8 @@ class JsonSuggestionModel extends SuggestionModel {
   String _askText;
   bool _asking = false;
 
+  /// Loads suggestions from the JSON file [_kJsonUrl] contained in
+  /// [assetBundle].
   void load(AssetBundle assetBundle) {
     assetBundle.loadString(_kJsonUrl).then((String json) {
       final Map<String, dynamic> decodedJson = JSON.decode(json);

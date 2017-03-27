@@ -4,30 +4,34 @@
 
 import 'dart:math' as math;
 
-/// Manages the state for an edge scrolling animation using Kenichi's algorithm.
-class KenichiEdgeScrolling {
-  static final double a = 1.0;
-  static final double b = 0.5;
-  static final double c = 1.5;
-  static final double d = 0.02;
-  static final double e = 2.0;
-  static final double thMultiplier = 120.0 / 900.0;
-  static final double th2Multiplier = 40.0 / 900.0;
+/// Tunable parameters for how fast scrolling should occur as the user drags
+/// a story cluster toward the top or bottom edges of the screen.
+const double _kA = 1.0;
+const double _kB = 0.5;
+const double _kC = 1.5;
+const double _kD = 0.02;
+const double _kE = 2.0;
+const double _kTh1Multiplier = 120.0 / 900.0;
+const double _kTh2Multiplier = 40.0 / 900.0;
 
+/// Manages the state of Kenichi's algorithm for a scrolling animation that
+/// should occur when a user drags a story cluster toward the top or bottom
+/// edges of the screen.
+class KenichiEdgeScrolling {
   double _velocity = 0.0;
   double _screenH = 2.0 * 120.0;
-  double _p = 120.0;
+  double _currentY = 120.0;
 
-  /// [p] is the y position of the finger on the screen.
+  /// [newY] is the y position of the finger on the screen.
   /// [screenH] the height of the screen.
-  void update(double p, double screenH) {
-    _p = p;
+  void update(double newY, double screenH) {
+    _currentY = newY;
     _screenH = screenH;
   }
 
-  /// Resets [_p] to a reasonable value for the algorithm.
+  /// Resets [_currentY] to a reasonable value for the algorithm.
   void onNoDrag() {
-    _p = _screenH / 2.0;
+    _currentY = _screenH / 2.0;
   }
 
   /// [time] is elapsed time in seconds.
@@ -35,22 +39,25 @@ class KenichiEdgeScrolling {
   double getScrollDelta(double time) {
     // If we should scroll up, accelerate upward.
     if (shouldScrollUp) {
-      double r = _smoothstep(th, th2, _p);
-      _velocity += math.pow(r, a) * b * time * 60;
+      double r = _smoothstep(_currentY);
+      _velocity += math.pow(r, _kA) * _kB * time * 60;
     }
 
     // If we should scroll down, accelerate downward.
     if (shouldScrollDown) {
-      double r = _smoothstep(th, th2, _screenH - _p);
-      _velocity -= math.pow(r, a) * b * time * 60;
+      double r = _smoothstep(_screenH - _currentY);
+      _velocity -= math.pow(r, _kA) * _kB * time * 60;
     }
 
     // Apply friction.
     double friction;
-    if (_p < _screenH / 2) {
-      friction = math.pow(math.max(0.0, _p) / th, c) * d;
+    if (_currentY < _screenH / 2) {
+      friction =
+          math.pow(math.max(0.0, _currentY) / _startScrollDeltaY, _kC) * _kD;
     } else {
-      friction = math.pow(math.max(0.0, (_screenH - _p)) / th, c) * d;
+      friction = math.pow(
+              math.max(0.0, (_screenH - _currentY)) / _startScrollDeltaY, _kC) *
+          _kD;
     }
     _velocity -= _velocity * friction * time * 60;
 
@@ -62,14 +69,29 @@ class KenichiEdgeScrolling {
     return _velocity * time * 60;
   }
 
-  bool get shouldScrollUp => _p < th;
-  bool get shouldScrollDown => _p > _screenH - th;
-  bool get isDone => !shouldScrollUp && !shouldScrollDown && _velocity == 0.0;
-  double get th => thMultiplier * _screenH;
-  double get th2 => th2Multiplier * _screenH;
+  /// Returns true if the current position indicates scrolling up should happen.
+  bool get shouldScrollUp => _currentY < _startScrollDeltaY;
 
-  static double _smoothstep(double a, double b, double n) {
-    double t = (n - a) / (b - a) * 12 - 6;
+  /// Returns true if the current position indicates scrolling down should
+  /// happen.
+  bool get shouldScrollDown => _currentY > _screenH - _startScrollDeltaY;
+
+  /// Returns true no scrolling should happen and the current velocity is zero.
+  bool get isDone => !shouldScrollUp && !shouldScrollDown && _velocity == 0.0;
+
+  /// Returns the delta y from the top or bottom edge at which scrolling should
+  /// start.
+  double get _startScrollDeltaY => _kTh1Multiplier * _screenH;
+
+  /// Returns the delta y from the top or bottom edge at which scrolling should
+  /// increase in velocity.
+  double get _increaseScrollDeltaY => _kTh2Multiplier * _screenH;
+
+  double _smoothstep(double deltaYFromEdge) {
+    double t = (deltaYFromEdge - _startScrollDeltaY) /
+            (_increaseScrollDeltaY - _startScrollDeltaY) *
+            12 -
+        6;
     return 1 / (1 + math.pow(math.E, -t));
   }
 }

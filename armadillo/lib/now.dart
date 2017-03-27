@@ -57,29 +57,54 @@ const double _kOverscrollSnapDragDistanceThreshold = 200.0;
 /// Shows the user, the user's context, and important settings.  When minimized
 /// also shows an affordance for seeing missed interruptions.
 class Now extends StatefulWidget {
+  /// The height [Now] should collapse to when minimizing.
   final double minHeight;
+
+  /// The height [Now] should expand to when maximizing.
   final double maxHeight;
+
+  /// The width of [Now]'s parent.  Used to size Now's quick setting's
+  /// background.
   final double parentWidth;
 
+  /// How much to shift the quick settings vertically when shown.
   final double quickSettingsHeightBump;
 
   /// Called when the quick settings animation progress changes within the range
   /// of 0.0 to 1.0.
   final ValueChanged<double> onQuickSettingsProgressChange;
-  final VoidCallback onReturnToOriginButtonTap;
-  final VoidCallback onShowQuickSettingsOverlay;
+
+  /// Called when [Now]'s center button is tapped while minimized.
+  final VoidCallback onMinimizedTap;
+
+  /// Called when [Now]'s center button is long pressed while minimized.
+  final VoidCallback onMinimizedLongPress;
+
+  /// Called when [Now] is minimized.
   final VoidCallback onMinimize;
+
+  /// Called when [Now] is maximized.
   final VoidCallback onMaximize;
+
+  /// Called when [Now]'s quick settings are maximized.
   final VoidCallback onQuickSettingsMaximized;
+
+  /// Called when the user releases their finger while overscrolled past a
+  /// certain threshold and/or overscrolling with a certain velocity.
   final VoidCallback onOverscrollThresholdRelease;
 
-  /// [onBarVerticalDragUpdate] and [onBarVerticalDragEnd] will be called only
-  /// when a vertical drag occurs on [Now] when in its fully minimized bar
-  /// state.
+  /// Called when a vertical drag occurs on [Now] when in its fully minimized
+  /// bar state.
   final GestureDragUpdateCallback onBarVerticalDragUpdate;
+
+  /// Called when a vertical drag ends on [Now] when in its fully minimized bar
+  /// state.
   final GestureDragEndCallback onBarVerticalDragEnd;
+
+  /// Provides story list scrolling information.
   final ScrollController scrollController;
 
+  /// Constructor.
   Now({
     Key key,
     this.minHeight,
@@ -87,8 +112,8 @@ class Now extends StatefulWidget {
     this.parentWidth,
     this.quickSettingsHeightBump,
     this.onQuickSettingsProgressChange,
-    this.onReturnToOriginButtonTap,
-    this.onShowQuickSettingsOverlay,
+    this.onMinimizedTap,
+    this.onMinimizedLongPress,
     this.onMinimize,
     this.onMaximize,
     this.onQuickSettingsMaximized,
@@ -111,6 +136,8 @@ const RK4SpringDescription _kSimulationDesc =
 const double _kMinimizationSimulationTarget = 400.0;
 const double _kQuickSettingsSimulationTarget = 100.0;
 
+/// Controls the animations for maximizing and minimizing, showing and hiding
+/// quick settings, and vertically shifting as the story list is scrolled.
 class NowState extends TickingState<Now> {
   /// The simulation for the minimization to a bar.
   final RK4SpringSimulation _minimizationSimulation =
@@ -142,6 +169,7 @@ class NowState extends TickingState<Now> {
   double _userImageHeight = 0.0;
   double _pointerDownY;
 
+  /// Sets the [scrollOffset] of the story list tracked by [Now].
   set scrollOffset(double scrollOffset) {
     if (scrollOffset > _kNowMinimizationScrollOffsetThreshold &&
         _lastScrollOffset < scrollOffset) {
@@ -431,8 +459,8 @@ class NowState extends TickingState<Now> {
               ),
               new GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: config.onReturnToOriginButtonTap,
-                onLongPress: config.onShowQuickSettingsOverlay,
+                onTap: config.onMinimizedTap,
+                onLongPress: config.onMinimizedLongPress,
                 child: new Container(width: config.minHeight * 4.0),
               ),
               new Expanded(
@@ -484,6 +512,7 @@ class NowState extends TickingState<Now> {
     return continueTicking;
   }
 
+  /// Minimizes [Now] to its bar state.
   void minimize() {
     if (!_minimizing) {
       _minimizationSimulation.target = _kMinimizationSimulationTarget;
@@ -493,6 +522,7 @@ class NowState extends TickingState<Now> {
     }
   }
 
+  /// Maximizes [Now] to display the user and context text.
   void maximize() {
     if (_minimizing) {
       _minimizationSimulation.target = 0.0;
@@ -501,6 +531,8 @@ class NowState extends TickingState<Now> {
     }
   }
 
+  /// Morphs [Now] into its quick settings mode.
+  /// This should only be called when [Now] is maximized.
   void showQuickSettings() {
     double heightFromKey(GlobalKey key) {
       RenderBox box = key.currentContext.findRenderObject();
@@ -519,6 +551,8 @@ class NowState extends TickingState<Now> {
     }
   }
 
+  /// Morphs [Now] into its normal mode.
+  /// This should only be called when [Now] is maximized.
   void hideQuickSettings() {
     if (_revealingQuickSettings) {
       _quickSettingsSimulation.target = 0.0;
