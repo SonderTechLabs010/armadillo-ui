@@ -164,30 +164,40 @@ class StoryList extends StatelessWidget {
                           _,
                           StoryDragTransitionModel storyDragTransitionModel,
                         ) =>
-                            new _StoryListBlockBody(
-                              children: new List<Widget>.generate(
-                                storyModel.activeSortedStoryClusters.length,
-                                (int index) => _createFocusableStoryCluster(
-                                      context,
-                                      storyModel.activeSortedStoryClusters,
+                            new AnimatedBuilder(
+                              animation: scrollController,
+                              builder: (BuildContext context, Widget child) =>
+                                  new _StoryListBlockBody(
+                                    children: new List<Widget>.generate(
                                       storyModel
-                                          .activeSortedStoryClusters[index],
-                                      storyModel
-                                          .activeSortedStoryClusters[index]
-                                          .buildStoryWidgets(
-                                        context,
-                                      ),
+                                          .activeSortedStoryClusters.length,
+                                      (int index) =>
+                                          _createFocusableStoryCluster(
+                                            context,
+                                            storyModel
+                                                .activeSortedStoryClusters,
+                                            storyModel
+                                                    .activeSortedStoryClusters[
+                                                index],
+                                            storyModel
+                                                .activeSortedStoryClusters[
+                                                    index]
+                                                .buildStoryWidgets(
+                                              context,
+                                            ),
+                                          ),
                                     ),
-                              ),
-                              listHeight: storyModel.listHeight,
-                              scrollOffset: scrollController?.offset ?? 0.0,
-                              bottomPadding: bottomPadding,
-                              parentSize: sizeModel.size,
-                              scrimColor:
-                                  storyRearrangementScrimModel.scrimColor,
-                              blurScrimmedChildren: blurScrimmedChildren,
-                              storyDragTransitionModelProgress:
-                                  storyDragTransitionModel.progress,
+                                    listHeight: storyModel.listHeight,
+                                    scrollOffset:
+                                        scrollController?.offset ?? 0.0,
+                                    bottomPadding: bottomPadding,
+                                    parentSize: sizeModel.size,
+                                    scrimColor:
+                                        storyRearrangementScrimModel.scrimColor,
+                                    blurScrimmedChildren: blurScrimmedChildren,
+                                    storyDragTransitionModelProgress:
+                                        storyDragTransitionModel.progress,
+                                  ),
                             ),
                       ),
                 ),
