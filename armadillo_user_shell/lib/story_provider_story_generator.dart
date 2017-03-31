@@ -99,6 +99,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         // Remove any stories that aren't in the previous story list.
         _currentStories
             .where((Story story) => !storyIds.contains(story.id.value))
+            .toList()
             .forEach((Story story) {
           armadilloPrint('Story ${story.id.value} has been removed!');
           _removeStoryFromClusters(story);
