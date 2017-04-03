@@ -34,6 +34,7 @@ import 'initial_focus_setter.dart';
 import 'initial_story_generator.dart';
 import 'story_provider_story_generator.dart';
 import 'suggestion_provider_suggestion_model.dart';
+import 'user_logoutter.dart';
 import 'user_shell_impl.dart';
 import 'user_shell_widget.dart';
 
@@ -77,12 +78,14 @@ Future<Null> main() async {
         .onDragStateChanged(storyClusterDragStateModel.isDragging),
   );
 
+  UserLogoutter userLogoutter = new UserLogoutter();
   Conductor conductor = new Conductor(
     useSoftKeyboard: false,
     blurScrimmedChildren: false,
     onQuickSettingsOverlayChanged: hitTestModel.onQuickSettingsOverlayChanged,
     onSuggestionsOverlayChanged: hitTestModel.onSuggestionsOverlayChanged,
     storyClusterDragStateModel: storyClusterDragStateModel,
+    onLogoutSelected: userLogoutter.logout,
   );
   SuggestionProviderSuggestionModel suggestionProviderSuggestionModel =
       new SuggestionProviderSuggestionModel(hitTestModel: hitTestModel);
@@ -183,6 +186,7 @@ Future<Null> main() async {
       suggestionProviderSuggestionModel: suggestionProviderSuggestionModel,
       focusRequestWatcher: focusRequestWatcher,
       initialFocusSetter: initialFocusSetter,
+      userLogoutter: userLogoutter,
     ),
     child:
         _kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app,

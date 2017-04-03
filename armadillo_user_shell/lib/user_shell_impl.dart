@@ -13,11 +13,13 @@ import 'focus_request_watcher_impl.dart';
 import 'initial_focus_setter.dart';
 import 'story_provider_story_generator.dart';
 import 'suggestion_provider_suggestion_model.dart';
+import 'user_logoutter.dart';
 
 /// Implements a UserShell for receiving the services a [UserShell] needs to
 /// operate.  When [initialize] is called, the services it receives are routed
 /// by this class to the various classes which need them.
 class UserShellImpl extends UserShell {
+  final UserContextProxy _userContext = new UserContextProxy();
   final FocusProviderProxy _focusProvider = new FocusProviderProxy();
   final FocusControllerProxy _focusController = new FocusControllerProxy();
   final VisibleStoriesControllerProxy _visibleStoriesController =
@@ -39,12 +41,16 @@ class UserShellImpl extends UserShell {
   /// Receives the [FocusProvider].
   final InitialFocusSetter initialFocusSetter;
 
+  /// Receives the [UserContext].
+  final UserLogoutter userLogoutter;
+
   /// Constructor.
   UserShellImpl({
     this.storyProviderStoryGenerator,
     this.suggestionProviderSuggestionModel,
     this.focusRequestWatcher,
     this.initialFocusSetter,
+    this.userLogoutter,
   });
 
   @override
@@ -52,7 +58,8 @@ class UserShellImpl extends UserShell {
     InterfaceHandle<UserContext> userContextHandle,
     InterfaceHandle<UserShellContext> userShellContextHandle,
   ) {
-    userContextHandle.close();
+    _userContext.ctrl.bind(userContextHandle);
+    userLogoutter.userContext = _userContext;
 
     UserShellContextProxy userShellContext = new UserShellContextProxy();
     userShellContext.ctrl.bind(userShellContextHandle);

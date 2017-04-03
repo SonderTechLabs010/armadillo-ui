@@ -113,6 +113,9 @@ class Conductor extends StatelessWidget {
   /// Called when the suggestions overlay becomes active or inactive.
   final OnOverlayChanged onSuggestionsOverlayChanged;
 
+  /// Called when the user selects log out from the quick settings.
+  final VoidCallback onLogoutSelected;
+
   final PeekManager _peekManager;
   bool _ignoreNextScrollOffsetChange = false;
 
@@ -123,6 +126,7 @@ class Conductor extends StatelessWidget {
     this.blurScrimmedChildren,
     this.onQuickSettingsOverlayChanged,
     this.onSuggestionsOverlayChanged,
+    this.onLogoutSelected,
     StoryClusterDragStateModel storyClusterDragStateModel,
   })
       : _peekManager = new PeekManager(
@@ -196,15 +200,17 @@ class Conductor extends StatelessWidget {
 
               // Quick Settings Overlay.
               new QuickSettingsOverlay(
-                  key: _quickSettingsOverlayKey,
-                  minimizedNowBarHeight: _kMinimizedNowHeight,
-                  onProgressChanged: (double progress) {
-                    if (progress == 0.0) {
-                      onQuickSettingsOverlayChanged?.call(false);
-                    } else {
-                      onQuickSettingsOverlayChanged?.call(true);
-                    }
-                  }),
+                key: _quickSettingsOverlayKey,
+                minimizedNowBarHeight: _kMinimizedNowHeight,
+                onProgressChanged: (double progress) {
+                  if (progress == 0.0) {
+                    onQuickSettingsOverlayChanged?.call(false);
+                  } else {
+                    onQuickSettingsOverlayChanged?.call(true);
+                  }
+                },
+                onLogoutSelected: onLogoutSelected,
+              ),
 
               // Top and bottom edge scrolling drag targets.
               new Positioned(
@@ -358,6 +364,7 @@ class Conductor extends StatelessWidget {
           onOverscrollThresholdRelease: () =>
               _suggestionOverlayKey.currentState.show(),
           scrollController: _scrollController,
+          onLogoutSelected: onLogoutSelected,
         ),
       );
 

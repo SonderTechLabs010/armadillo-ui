@@ -263,8 +263,8 @@ class NowModel extends Model {
 
   /// Returns the quick settings to show when [Now] is in its quick settings
   /// mode.
-  Widget quickSettings({double opacity: 1.0}) =>
-      new QuickSettings(opacity: opacity);
+  Widget quickSettings({double opacity: 1.0, VoidCallback onLogoutSelected}) =>
+      new QuickSettings(opacity: opacity, onLogoutSelected: onLogoutSelected);
 
   TextStyle get _textStyle => TextStyle.lerp(
         new TextStyle(

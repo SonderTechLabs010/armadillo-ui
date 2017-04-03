@@ -53,11 +53,13 @@ typedef void OnProgressChanged(double progress);
 class QuickSettingsOverlay extends StatefulWidget {
   final double minimizedNowBarHeight;
   final OnProgressChanged onProgressChanged;
+  final VoidCallback onLogoutSelected;
 
   QuickSettingsOverlay({
     Key key,
     this.minimizedNowBarHeight,
     this.onProgressChanged,
+    this.onLogoutSelected,
   })
       : super(key: key);
 
@@ -100,6 +102,7 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
                   1.0,
                   _showProgress,
                 ),
+                onLogoutSelected: config.onLogoutSelected,
               )),
         ),
       );
@@ -165,8 +168,9 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
 
 class QuickSettings extends StatefulWidget {
   final double opacity;
+  final VoidCallback onLogoutSelected;
 
-  QuickSettings({this.opacity});
+  QuickSettings({this.opacity, this.onLogoutSelected});
 
   @override
   _QuickSettingsState createState() => new _QuickSettingsState();
@@ -322,6 +326,25 @@ class _QuickSettingsState extends State<QuickSettings> {
                         ? _buildForWideScreen(context)
                         : _buildForNarrowScreen(context),
                   ),
+            ),
+          ),
+          _divider(opacity: config.opacity),
+          new GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => config.onLogoutSelected?.call(),
+            child: new Container(
+              padding: const EdgeInsets.all(16.0),
+              child: new Opacity(
+                opacity: config.opacity,
+                child: new Text(
+                  'LOG OUT',
+                  textAlign: TextAlign.center,
+                  style: new TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ),
             ),
           ),
           _divider(opacity: config.opacity),
