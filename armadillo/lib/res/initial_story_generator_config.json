@@ -1,24 +1,2 @@
 [
-  {
-    "url": "file:///system/apps/color",
-    "color": "0xFF5AFFD6",
-    "rootJson": {
-      "color": "0xFF1DE9B6"
-    }
-  },
-  {
-    "url": "file:///system/apps/moterm",
-    "color": "0xFF212121",
-    "rootJson": null
-  },
-  {
-    "url": "file:///system/apps/spinning_square_view",
-    "color": "0xFF512DA8",
-    "rootJson": null
-  },
-  {
-    "url": "file:///system/apps/paint_view",
-    "color": "0xFFAD1457",
-    "rootJson": null
-  }
 ]
