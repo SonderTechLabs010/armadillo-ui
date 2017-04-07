@@ -6,14 +6,14 @@ import 'package:flutter/rendering.dart';
 
 import 'story_list_layout.dart';
 
-class StoryListRenderBlockParentData extends BlockParentData {
+class StoryListBodyParentData extends ListBodyParentData {
   final RenderObject owner;
   StoryLayout storyLayout;
   double _focusProgress;
   double _inlinePreviewScaleProgress;
   double _inlinePreviewHintScaleProgress;
 
-  StoryListRenderBlockParentData(this.owner);
+  StoryListBodyParentData(this.owner);
 
   set focusProgress(double focusProgress) {
     if (_focusProgress != focusProgress) {

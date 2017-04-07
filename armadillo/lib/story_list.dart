@@ -12,15 +12,15 @@ import 'package:sysui_widgets/rk4_spring_simulation.dart';
 
 import 'armadillo_overlay.dart';
 import 'nothing.dart';
+import 'render_story_list_body.dart';
 import 'simulation_builder.dart';
 import 'size_model.dart';
 import 'story.dart';
 import 'story_cluster.dart';
 import 'story_cluster_widget.dart';
 import 'story_drag_transition_model.dart';
+import 'story_list_body_parent_data.dart';
 import 'story_list_layout.dart';
-import 'story_list_render_block.dart';
-import 'story_list_render_block_parent_data.dart';
 import 'story_model.dart';
 import 'story_rearrangement_scrim_model.dart';
 
@@ -167,7 +167,7 @@ class StoryList extends StatelessWidget {
                             new AnimatedBuilder(
                               animation: scrollController,
                               builder: (BuildContext context, Widget child) =>
-                                  new _StoryListBlockBody(
+                                  new _StoryListBody(
                                     children: new List<Widget>.generate(
                                       storyModel
                                           .activeSortedStoryClusters.length,
@@ -300,7 +300,7 @@ class StoryList extends StatelessWidget {
   }
 }
 
-class _StoryListBlockBody extends MultiChildRenderObjectWidget {
+class _StoryListBody extends MultiChildRenderObjectWidget {
   final double _scrollOffset;
   final double _bottomPadding;
   final double _listHeight;
@@ -310,7 +310,7 @@ class _StoryListBlockBody extends MultiChildRenderObjectWidget {
   final double _storyDragTransitionModelProgress;
 
   /// Constructor.
-  _StoryListBlockBody({
+  _StoryListBody({
     Key key,
     List<Widget> children,
     double scrollOffset,
@@ -331,8 +331,8 @@ class _StoryListBlockBody extends MultiChildRenderObjectWidget {
         super(key: key, children: children);
 
   @override
-  StoryListRenderBlock createRenderObject(BuildContext context) =>
-      new StoryListRenderBlock(
+  RenderStoryListBody createRenderObject(BuildContext context) =>
+      new RenderStoryListBody(
         parentSize: _parentSize,
         scrollOffset: _scrollOffset,
         bottomPadding: _bottomPadding,
@@ -347,24 +347,24 @@ class _StoryListBlockBody extends MultiChildRenderObjectWidget {
       );
 
   @override
-  void updateRenderObject(BuildContext context, RenderBlock renderObject) {
-    StoryListRenderBlock storyListRenderBlock = renderObject;
-    storyListRenderBlock.mainAxis = Axis.vertical;
-    storyListRenderBlock.parentSize = _parentSize;
-    storyListRenderBlock.scrollOffset = _scrollOffset;
-    storyListRenderBlock.bottomPadding = _bottomPadding;
-    storyListRenderBlock.listHeight = _listHeight;
-    storyListRenderBlock.scrimColor = _scrimColor;
-    storyListRenderBlock.blurScrimmedChildren = _blurScrimmedChildren;
-    storyListRenderBlock.liftScale = lerpDouble(
-      1.0,
-      0.9,
-      _storyDragTransitionModelProgress,
-    );
+  void updateRenderObject(BuildContext context, RenderStoryListBody renderObject) {
+    renderObject
+      ..mainAxis = Axis.vertical
+      ..parentSize = _parentSize
+      ..scrollOffset = _scrollOffset
+      ..bottomPadding = _bottomPadding
+      ..listHeight = _listHeight
+      ..scrimColor = _scrimColor
+      ..blurScrimmedChildren = _blurScrimmedChildren
+      ..liftScale = lerpDouble(
+        1.0,
+        0.9,
+        _storyDragTransitionModelProgress,
+      );
   }
 }
 
-class _StoryListChild extends ParentDataWidget<_StoryListBlockBody> {
+class _StoryListChild extends ParentDataWidget<_StoryListBody> {
   final StoryLayout _storyLayout;
   final double _focusProgress;
   final double _inlinePreviewScaleProgress;
@@ -385,12 +385,13 @@ class _StoryListChild extends ParentDataWidget<_StoryListBlockBody> {
 
   @override
   void applyParentData(RenderObject renderObject) {
-    assert(renderObject.parentData is StoryListRenderBlockParentData);
-    final StoryListRenderBlockParentData parentData = renderObject.parentData;
-    parentData.storyLayout = _storyLayout;
-    parentData.focusProgress = _focusProgress;
-    parentData.inlinePreviewScaleProgress = _inlinePreviewScaleProgress;
-    parentData.inlinePreviewHintScaleProgress = _inlinePreviewHintScaleProgress;
+    assert(renderObject.parentData is StoryListBodyParentData);
+    final StoryListBodyParentData parentData = renderObject.parentData;
+    parentData
+      ..storyLayout = _storyLayout
+      ..focusProgress = _focusProgress
+      ..inlinePreviewScaleProgress = _inlinePreviewScaleProgress
+      ..inlinePreviewHintScaleProgress = _inlinePreviewHintScaleProgress;
   }
 
   @override

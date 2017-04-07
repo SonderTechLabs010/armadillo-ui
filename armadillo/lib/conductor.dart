@@ -486,12 +486,12 @@ class Conductor extends StatelessWidget {
 
     // We need to set the scroll offset to 0.0 to ensure the story
     // bars don't become untouchable when fully focused:
-    // If we're at a scroll offset other than zero, the StoryListRenderBlock
+    // If we're at a scroll offset other than zero, the RenderStoryListBody
     // might not be as big as it would need to be to fully cover the screen and
     // thus would have areas where its painting but not receiving hit testing.
-    // Right now the StoryListRenderBlock ensures that its at least the size of
+    // Right now the RenderStoryListBody ensures that its at least the size of
     // the screen when we're focused but doesn't take into account the scroll
-    // offset.  It seems weird to size the StoryListRenderBlock based on the
+    // offset.  It seems weird to size the RenderStoryListBody based on the
     // scroll offset and it also seems weird to scroll to offset 0.0 from some
     // arbitrary scroll offset when we defocus so this solves both issues with
     // one stone.

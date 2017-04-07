@@ -10,17 +10,17 @@ import 'package:flutter/widgets.dart';
 
 import 'story_cluster_widget.dart' show InlineStoryTitle;
 import 'story_list_layout.dart';
-import 'story_list_render_block_parent_data.dart';
+import 'story_list_body_parent_data.dart';
 
-/// Set to true to slide the unfocused children of [StoryListRenderBlock] as the
+/// Set to true to slide the unfocused children of [RenderStoryListBody] as the
 /// focused child grows.
 const bool _kSlideUnfocusedAway = true;
 
 /// The distance in the Y direction to slide the unfocused children of
-/// [StoryListRenderBlock] as the focused child grows.
+/// [RenderStoryListBody] as the focused child grows.
 const double _kSlideUnfocusedAwayOffsetY = -200.0;
 
-/// The unfocused children of [StoryListRenderBlock] should be fully transparent
+/// The unfocused children of [RenderStoryListBody] should be fully transparent
 /// when the focused child's focus progress reaches this value and beyond.
 const double _kFocusProgressWhenUnfocusedFullyTransparent = 0.7;
 
@@ -31,13 +31,13 @@ const double _kAlphaToBlurRatio = 1 / 25;
 /// If true, children behind the scrim will be blurred.
 const bool _kBlurScrimmedChildren = true;
 
-/// Overrides [RenderBlock]'s layout, paint, and hit-test behaviour to allow
+/// Overrides [RenderListBody]'s layout, paint, and hit-test behaviour to allow
 /// the following:
 ///   1) Stories are laid out as specified by [StoryListLayout].
 ///   2) A story expands as it comes into focus and shrinks when it leaves
 ///      focus.
 ///   3) Focused stories are above and overlap non-focused stories.
-class StoryListRenderBlock extends RenderBlock {
+class RenderStoryListBody extends RenderListBody {
   bool _blurScrimmedChildren;
   Color _scrimColor;
   Size _parentSize;
@@ -47,7 +47,7 @@ class StoryListRenderBlock extends RenderBlock {
   double _liftScale;
 
   /// Constructor.
-  StoryListRenderBlock({
+  RenderStoryListBody({
     List<RenderBox> children,
     Size parentSize,
     double scrollOffset,
@@ -125,8 +125,8 @@ class StoryListRenderBlock extends RenderBlock {
 
   @override
   void setupParentData(RenderBox child) {
-    if (child.parentData is! StoryListRenderBlockParentData) {
-      child.parentData = new StoryListRenderBlockParentData(this);
+    if (child.parentData is! StoryListBodyParentData) {
+      child.parentData = new StoryListBodyParentData(this);
     }
   }
 
@@ -139,7 +139,7 @@ class StoryListRenderBlock extends RenderBlock {
     }
     final RenderBox lastChild = childrenSortedByFocusProgress.last;
     childrenSortedByFocusProgress.remove(lastChild);
-    final StoryListRenderBlockParentData mostFocusedChildParentData =
+    final StoryListBodyParentData mostFocusedChildParentData =
         lastChild.parentData;
     int unfocusedAlpha = (lerpDouble(
                 1.0,
@@ -187,7 +187,7 @@ class StoryListRenderBlock extends RenderBlock {
     RenderBox child,
     int unfocusedAlpha,
   ) {
-    final StoryListRenderBlockParentData childParentData = child.parentData;
+    final StoryListBodyParentData childParentData = child.parentData;
     if (unfocusedAlpha != 255 && childParentData.focusProgress == 0.0) {
       // Apply transparency.
       assert(needsCompositing);
@@ -208,7 +208,7 @@ class StoryListRenderBlock extends RenderBlock {
         _childrenSortedByFocusProgress.reversed.toList();
     if (children.isNotEmpty) {
       final RenderBox mostFocusedChild = children.first;
-      final StoryListRenderBlockParentData mostFocusedChildParentData =
+      final StoryListBodyParentData mostFocusedChildParentData =
           mostFocusedChild.parentData;
       double mostFocusedProgress = mostFocusedChildParentData.focusProgress;
 
@@ -230,7 +230,7 @@ class StoryListRenderBlock extends RenderBlock {
         // the HitTestResult but will return false for its hitTest)).
         for (int i = 0; i < children.length; i++) {
           final RenderBox child = children[i];
-          final StoryListRenderBlockParentData childParentData =
+          final StoryListBodyParentData childParentData =
               child.parentData;
           Point transformed = new Point(
             position.x - childParentData.offset.dx,
@@ -266,7 +266,7 @@ class StoryListRenderBlock extends RenderBlock {
     {
       RenderBox child = firstChild;
       while (child != null) {
-        final StoryListRenderBlockParentData childParentData = child.parentData;
+        final StoryListBodyParentData childParentData = child.parentData;
 
         double layoutHeight = childParentData.storyLayout.size.height;
         double layoutWidth = childParentData.storyLayout.size.width;
@@ -362,7 +362,7 @@ class StoryListRenderBlock extends RenderBlock {
     if (_kSlideUnfocusedAway && maxFocusProgress > 0.0) {
       RenderBox child = firstChild;
       while (child != null) {
-        final StoryListRenderBlockParentData childParentData = child.parentData;
+        final StoryListBodyParentData childParentData = child.parentData;
         if (childParentData.focusProgress == 0.0) {
           childParentData.offset = childParentData.offset +
               new Offset(0.0, _kSlideUnfocusedAwayOffsetY * maxFocusProgress);
@@ -373,8 +373,8 @@ class StoryListRenderBlock extends RenderBlock {
 
     // When we focus on a child there's a chance that the focused child will be
     // taller than the unfocused list.  In that case, increase the height of the
-    // block to be that of the focusing child and shift all the children down to
-    // compensate.
+    // story list to be that of the focusing child and shift all the children
+    // down to compensate.
     double unfocusedHeight = _listHeight + _bottomPadding;
     double deltaTooSmall =
         (_parentSize.height * maxFocusProgress) - unfocusedHeight;
@@ -383,7 +383,7 @@ class StoryListRenderBlock extends RenderBlock {
       // shift all children down by deltaTooSmall.
       RenderBox child = firstChild;
       while (child != null) {
-        final StoryListRenderBlockParentData childParentData = child.parentData;
+        final StoryListBodyParentData childParentData = child.parentData;
         childParentData.offset = new Offset(
           childParentData.offset.dx,
           childParentData.offset.dy + deltaTooSmall,
@@ -408,14 +408,14 @@ class StoryListRenderBlock extends RenderBlock {
     final List<RenderBox> children = <RenderBox>[];
     RenderBox child = firstChild;
     while (child != null) {
-      final BlockParentData childParentData = child.parentData;
+      final StoryListBodyParentData childParentData = child.parentData;
       children.add(child);
       child = childParentData.nextSibling;
     }
 
     children.sort((RenderBox child1, RenderBox child2) {
-      final StoryListRenderBlockParentData child1ParentData = child1.parentData;
-      final StoryListRenderBlockParentData child2ParentData = child2.parentData;
+      final StoryListBodyParentData child1ParentData = child1.parentData;
+      final StoryListBodyParentData child2ParentData = child2.parentData;
       return child1ParentData.focusProgress > child2ParentData.focusProgress
           ? 1
           : child1ParentData.focusProgress < child2ParentData.focusProgress
