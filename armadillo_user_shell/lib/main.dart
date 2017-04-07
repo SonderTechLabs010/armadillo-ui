@@ -7,9 +7,7 @@ import 'dart:async';
 import 'package:application.lib.app.dart/app.dart';
 import 'package:armadillo/armadillo.dart';
 import 'package:armadillo/armadillo_drag_target.dart';
-import 'package:armadillo/child_constraints_changer.dart';
 import 'package:armadillo/conductor.dart';
-import 'package:armadillo/constraints_model.dart';
 import 'package:armadillo/debug_enabler.dart';
 import 'package:armadillo/debug_model.dart';
 import 'package:armadillo/now_model.dart';
@@ -131,13 +129,10 @@ Future<Null> main() async {
   NowModel nowModel = new NowModel();
   DebugModel debugModel = new DebugModel();
   PanelResizingModel panelResizingModel = new PanelResizingModel();
-  ConstraintsModel constraintsModel = new ConstraintsModel()
-    ..load(defaultBundle);
 
   Widget app = _buildApp(
     storyModel: storyModel,
     storyProviderStoryGenerator: storyProviderStoryGenerator,
-    constraintsModel: constraintsModel,
     debugModel: debugModel,
     armadillo: new Armadillo(
       scopedModelBuilders: <WrapperBuilder>[
@@ -198,7 +193,6 @@ Future<Null> main() async {
 Widget _buildApp({
   StoryModel storyModel,
   StoryProviderStoryGenerator storyProviderStoryGenerator,
-  ConstraintsModel constraintsModel,
   DebugModel debugModel,
   Armadillo armadillo,
   HitTestModel hitTestModel,
@@ -207,37 +201,34 @@ Widget _buildApp({
       storyModel: storyModel,
       child: new DebugEnabler(
         debugModel: debugModel,
-        child: new ChildConstraintsChanger(
-          constraintsModel: constraintsModel,
-          child: new DefaultAssetBundle(
-            bundle: defaultBundle,
-            child: new Stack(children: <Widget>[
-              new ScopedModel<HitTestModel>(
-                model: hitTestModel,
-                child: armadillo,
+        child: new DefaultAssetBundle(
+          bundle: defaultBundle,
+          child: new Stack(children: <Widget>[
+            new ScopedModel<HitTestModel>(
+              model: hitTestModel,
+              child: armadillo,
+            ),
+            new Positioned(
+              left: 0.0,
+              top: 0.0,
+              bottom: 0.0,
+              width: 100.0,
+              child: _buildDiscardDragTarget(
+                storyModel: storyModel,
+                storyProviderStoryGenerator: storyProviderStoryGenerator,
               ),
-              new Positioned(
-                left: 0.0,
-                top: 0.0,
-                bottom: 0.0,
-                width: 100.0,
-                child: _buildDiscardDragTarget(
-                  storyModel: storyModel,
-                  storyProviderStoryGenerator: storyProviderStoryGenerator,
-                ),
+            ),
+            new Positioned(
+              right: 0.0,
+              top: 0.0,
+              bottom: 0.0,
+              width: 100.0,
+              child: _buildDiscardDragTarget(
+                storyModel: storyModel,
+                storyProviderStoryGenerator: storyProviderStoryGenerator,
               ),
-              new Positioned(
-                right: 0.0,
-                top: 0.0,
-                bottom: 0.0,
-                width: 100.0,
-                child: _buildDiscardDragTarget(
-                  storyModel: storyModel,
-                  storyProviderStoryGenerator: storyProviderStoryGenerator,
-                ),
-              ),
-            ]),
-          ),
+            ),
+          ]),
         ),
       ),
     );

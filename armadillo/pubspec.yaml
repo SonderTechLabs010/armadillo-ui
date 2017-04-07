@@ -43,7 +43,6 @@ flutter:
     - packages/armadillo/res/initial_story_generator_config.json
     - packages/armadillo/res/logo_googleg_24dpx4.png
     - packages/armadillo/res/placeholder_grid.png
-    - packages/armadillo/res/screen_config.json
     - packages/armadillo/res/stories.json
     - packages/armadillo/res/User.png
     - packages/keyboard/res/ArrowDown.png

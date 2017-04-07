@@ -10,7 +10,6 @@ import 'package:meta/meta.dart';
 
 import 'conductor.dart';
 import 'model.dart';
-import 'rounded_corner_decoration.dart';
 import 'default_scroll_configuration.dart';
 import 'wrapper_builder.dart';
 
@@ -55,10 +54,6 @@ class Armadillo extends StatelessWidget {
             ui.BlendMode.srcATop,
           ),
         ),
-      ),
-      foregroundDecoration: new RoundedCornerDecoration(
-        radius: _kDeviceScreenInnerBezelRadius,
-        color: Colors.black,
       ),
       child: currentChild,
     );

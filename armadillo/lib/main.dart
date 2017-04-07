@@ -10,9 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:sysui_widgets/default_bundle.dart';
 
 import 'armadillo.dart';
-import 'child_constraints_changer.dart';
 import 'conductor.dart';
-import 'constraints_model.dart';
 import 'debug_enabler.dart';
 import 'debug_model.dart';
 import 'json_story_generator.dart';
@@ -55,8 +53,6 @@ Future<Null> main() async {
   NowModel nowModel = new NowModel();
   DebugModel debugModel = new DebugModel();
   PanelResizingModel panelResizingModel = new PanelResizingModel();
-  ConstraintsModel constraintsModel = new ConstraintsModel()
-    ..load(defaultBundle);
   StoryClusterDragStateModel storyClusterDragStateModel =
       new StoryClusterDragStateModel();
   StoryRearrangementScrimModel storyRearrangementScrimModel =
@@ -77,7 +73,6 @@ Future<Null> main() async {
     suggestionModel: jsonSuggestionModel,
     storyModel: storyModel,
     nowModel: nowModel,
-    constraintsModel: constraintsModel,
     storyClusterDragStateModel: storyClusterDragStateModel,
     storyRearrangementScrimModel: storyRearrangementScrimModel,
     storyDragTransitionModel: storyDragTransitionModel,
@@ -94,7 +89,6 @@ Widget _buildApp({
   SuggestionModel suggestionModel,
   StoryModel storyModel,
   NowModel nowModel,
-  ConstraintsModel constraintsModel,
   StoryClusterDragStateModel storyClusterDragStateModel,
   StoryRearrangementScrimModel storyRearrangementScrimModel,
   StoryDragTransitionModel storyDragTransitionModel,
@@ -106,51 +100,47 @@ Widget _buildApp({
         storyModel: storyModel,
         child: new DebugEnabler(
           debugModel: debugModel,
-          child: new ChildConstraintsChanger(
-            constraintsModel: constraintsModel,
-            child: new DefaultAssetBundle(
-              bundle: defaultBundle,
-              child: new Armadillo(
-                scopedModelBuilders: <WrapperBuilder>[
-                  (_, Widget child) => new ScopedModel<StoryModel>(
-                        model: storyModel,
-                        child: child,
-                      ),
-                  (_, Widget child) => new ScopedModel<SuggestionModel>(
-                        model: suggestionModel,
-                        child: child,
-                      ),
-                  (_, Widget child) => new ScopedModel<NowModel>(
-                        model: nowModel,
-                        child: child,
-                      ),
-                  (_, Widget child) =>
-                      new ScopedModel<StoryClusterDragStateModel>(
-                        model: storyClusterDragStateModel,
-                        child: child,
-                      ),
-                  (_, Widget child) =>
-                      new ScopedModel<StoryRearrangementScrimModel>(
-                        model: storyRearrangementScrimModel,
-                        child: child,
-                      ),
-                  (_, Widget child) =>
-                      new ScopedModel<StoryDragTransitionModel>(
-                        model: storyDragTransitionModel,
-                        child: child,
-                      ),
-                  (_, Widget child) => new ScopedModel<DebugModel>(
-                        model: debugModel,
-                        child: child,
-                      ),
-                  (_, Widget child) => new ScopedModel<PanelResizingModel>(
-                        model: panelResizingModel,
-                        child: child,
-                      ),
-                ],
-                conductor: new Conductor(
-                  storyClusterDragStateModel: storyClusterDragStateModel,
-                ),
+          child: new DefaultAssetBundle(
+            bundle: defaultBundle,
+            child: new Armadillo(
+              scopedModelBuilders: <WrapperBuilder>[
+                (_, Widget child) => new ScopedModel<StoryModel>(
+                      model: storyModel,
+                      child: child,
+                    ),
+                (_, Widget child) => new ScopedModel<SuggestionModel>(
+                      model: suggestionModel,
+                      child: child,
+                    ),
+                (_, Widget child) => new ScopedModel<NowModel>(
+                      model: nowModel,
+                      child: child,
+                    ),
+                (_, Widget child) =>
+                    new ScopedModel<StoryClusterDragStateModel>(
+                      model: storyClusterDragStateModel,
+                      child: child,
+                    ),
+                (_, Widget child) =>
+                    new ScopedModel<StoryRearrangementScrimModel>(
+                      model: storyRearrangementScrimModel,
+                      child: child,
+                    ),
+                (_, Widget child) => new ScopedModel<StoryDragTransitionModel>(
+                      model: storyDragTransitionModel,
+                      child: child,
+                    ),
+                (_, Widget child) => new ScopedModel<DebugModel>(
+                      model: debugModel,
+                      child: child,
+                    ),
+                (_, Widget child) => new ScopedModel<PanelResizingModel>(
+                      model: panelResizingModel,
+                      child: child,
+                    ),
+              ],
+              conductor: new Conductor(
+                storyClusterDragStateModel: storyClusterDragStateModel,
               ),
             ),
           ),
