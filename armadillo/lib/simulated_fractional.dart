@@ -58,54 +58,54 @@ class SimulatedFractionalState extends TickingState<SimulatedFractional> {
   @override
   void initState() {
     super.initState();
-    if (config.fractionalTop != null) {
+    if (widget.fractionalTop != null) {
       _fractionalTopSimulation = new RK4SpringSimulation(
-        initValue: config.fractionalTop,
-        desc: config.springDescription,
+        initValue: widget.fractionalTop,
+        desc: widget.springDescription,
       );
       _fractionalLeftSimulation = new RK4SpringSimulation(
-        initValue: config.fractionalLeft,
-        desc: config.springDescription,
+        initValue: widget.fractionalLeft,
+        desc: widget.springDescription,
       );
     }
     _fractionalWidthSimulation = new RK4SpringSimulation(
-      initValue: config.fractionalWidth,
-      desc: config.springDescription,
+      initValue: widget.fractionalWidth,
+      desc: widget.springDescription,
     );
     _fractionalHeightSimulation = new RK4SpringSimulation(
-      initValue: config.fractionalHeight,
-      desc: config.springDescription,
+      initValue: widget.fractionalHeight,
+      desc: widget.springDescription,
     );
   }
 
   @override
-  void didUpdateConfig(SimulatedFractional oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    if (config.fractionalTop != null) {
-      _fractionalTopSimulation.target = config.fractionalTop;
-      _fractionalLeftSimulation.target = config.fractionalLeft;
+  void didUpdateWidget(SimulatedFractional oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.fractionalTop != null) {
+      _fractionalTopSimulation.target = widget.fractionalTop;
+      _fractionalLeftSimulation.target = widget.fractionalLeft;
     } else {
       _fractionalTopSimulation = null;
       _fractionalLeftSimulation = null;
     }
-    _fractionalWidthSimulation.target = config.fractionalWidth;
-    _fractionalHeightSimulation.target = config.fractionalHeight;
+    _fractionalWidthSimulation.target = widget.fractionalWidth;
+    _fractionalHeightSimulation.target = widget.fractionalHeight;
     startTicking();
   }
 
   @override
   Widget build(BuildContext context) => _fractionalTopSimulation == null
       ? new SizedBox(
-          width: _fractionalWidthSimulation.value * config.size.width,
-          height: _fractionalHeightSimulation.value * config.size.height,
-          child: config.child,
+          width: _fractionalWidthSimulation.value * widget.size.width,
+          height: _fractionalHeightSimulation.value * widget.size.height,
+          child: widget.child,
         )
       : new Positioned(
-          top: _fractionalTopSimulation.value * config.size.height,
-          left: _fractionalLeftSimulation.value * config.size.width,
-          width: _fractionalWidthSimulation.value * config.size.width,
-          height: _fractionalHeightSimulation.value * config.size.height,
-          child: config.child,
+          top: _fractionalTopSimulation.value * widget.size.height,
+          left: _fractionalLeftSimulation.value * widget.size.width,
+          width: _fractionalWidthSimulation.value * widget.size.width,
+          height: _fractionalHeightSimulation.value * widget.size.height,
+          child: widget.child,
         );
 
   @override
@@ -123,26 +123,26 @@ class SimulatedFractionalState extends TickingState<SimulatedFractional> {
   void jumpFractionalHeight(double fractionalHeight) {
     _fractionalHeightSimulation = new RK4SpringSimulation(
       initValue: fractionalHeight,
-      desc: config.springDescription,
+      desc: widget.springDescription,
     );
   }
 
   void jump(Rect bounds, Size newSize) {
     _fractionalTopSimulation = new RK4SpringSimulation(
       initValue: bounds.topLeft.dy / newSize.height,
-      desc: config.springDescription,
+      desc: widget.springDescription,
     );
     _fractionalLeftSimulation = new RK4SpringSimulation(
       initValue: bounds.topLeft.dx / newSize.width,
-      desc: config.springDescription,
+      desc: widget.springDescription,
     );
     _fractionalWidthSimulation = new RK4SpringSimulation(
       initValue: bounds.width / newSize.width,
-      desc: config.springDescription,
+      desc: widget.springDescription,
     );
     _fractionalHeightSimulation = new RK4SpringSimulation(
       initValue: bounds.height / newSize.height,
-      desc: config.springDescription,
+      desc: widget.springDescription,
     );
   }
 
@@ -155,28 +155,28 @@ class SimulatedFractionalState extends TickingState<SimulatedFractional> {
     if (fractionalTop != null) {
       _fractionalTopSimulation = new RK4SpringSimulation(
         initValue: fractionalTop,
-        desc: config.springDescription,
+        desc: widget.springDescription,
       );
     }
 
     if (fractionalLeft != null) {
       _fractionalLeftSimulation = new RK4SpringSimulation(
         initValue: fractionalLeft,
-        desc: config.springDescription,
+        desc: widget.springDescription,
       );
     }
 
     if (fractionalWidth != null) {
       _fractionalWidthSimulation = new RK4SpringSimulation(
         initValue: fractionalWidth,
-        desc: config.springDescription,
+        desc: widget.springDescription,
       );
     }
 
     if (fractionalHeight != null) {
       _fractionalHeightSimulation = new RK4SpringSimulation(
         initValue: fractionalHeight,
-        desc: config.springDescription,
+        desc: widget.springDescription,
       );
     }
   }

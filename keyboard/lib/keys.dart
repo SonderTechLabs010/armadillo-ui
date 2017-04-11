@@ -49,14 +49,14 @@ class TextKeyState extends State<TextKey> {
   @override
   void initState() {
     super.initState();
-    _text = config.text;
+    _text = widget.text;
     _down = false;
   }
 
   @override
-  void didUpdateConfig(_) {
+  void didUpdateWidget(_) {
     setState(() {
-      _text = config.text;
+      _text = widget.text;
       _down = false;
     });
   }
@@ -64,7 +64,7 @@ class TextKeyState extends State<TextKey> {
   @override
   Widget build(BuildContext context) {
     return new Expanded(
-        flex: config.flex,
+        flex: widget.flex,
         child: new Listener(
             onPointerDown: (_) {
               setState(() {
@@ -75,11 +75,11 @@ class TextKeyState extends State<TextKey> {
               setState(() {
                 _down = false;
               });
-              final VoidCallback onPressed = config.onKeyPressed != null
-                  ? config.onKeyPressed
-                  : config.onText != null
+              final VoidCallback onPressed = widget.onKeyPressed != null
+                  ? widget.onKeyPressed
+                  : widget.onText != null
                       ? () {
-                          config.onText(_text);
+                          widget.onText(_text);
                         }
                       : () {};
               onPressed();
@@ -89,11 +89,11 @@ class TextKeyState extends State<TextKey> {
                     backgroundColor: new Color(_down
                         ? _kTurquoiseAccentColorValue
                         : _kUnselectedColorValue)),
-                height: config.height,
+                height: widget.height,
                 child: new Align(
                     alignment: new FractionalOffset(
-                        config.horizontalAlign, config.verticalAlign),
-                    child: new Text(_text, style: config.style)))));
+                        widget.horizontalAlign, widget.verticalAlign),
+                    child: new Text(_text, style: widget.style)))));
   }
 
   set text(String text) {
@@ -124,7 +124,7 @@ class ImageKeyState extends State<ImageKey> {
   @override
   Widget build(BuildContext context) {
     return new Expanded(
-        flex: config.flex,
+        flex: widget.flex,
         child: new Listener(
             onPointerDown: (_) {
               setState(() {
@@ -136,7 +136,7 @@ class ImageKeyState extends State<ImageKey> {
                 _down = false;
               });
               final VoidCallback onPressed =
-                  config.onKeyPressed != null ? config.onKeyPressed : () {};
+                  widget.onKeyPressed != null ? widget.onKeyPressed : () {};
               onPressed();
             },
             child: new Container(
@@ -148,7 +148,7 @@ class ImageKeyState extends State<ImageKey> {
                 height: kDefaultRowHeight,
                 child: new Container(
                     child: new Image(
-                        image: new AssetImage(config.imageUrl),
+                        image: new AssetImage(widget.imageUrl),
                         fit: BoxFit.contain,
                         color: ImageKey.kImageColor)))));
   }

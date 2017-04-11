@@ -122,22 +122,22 @@ class IconSlider extends StatefulWidget {
 
 class _IconSliderState extends State<IconSlider> with TickerProviderStateMixin {
   void _handleChanged(double value) {
-    assert(config.onChanged != null);
-    config.onChanged(value * (config.max - config.min) + config.min);
+    assert(widget.onChanged != null);
+    widget.onChanged(value * (widget.max - widget.min) + widget.min);
   }
 
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     return new _IconSliderRenderObjectWidget(
-        value: (config.value - config.min) / (config.max - config.min),
-        divisions: config.divisions,
-        label: config.label,
-        activeColor: config.activeColor ?? theme.accentColor,
+        value: (widget.value - widget.min) / (widget.max - widget.min),
+        divisions: widget.divisions,
+        label: widget.label,
+        activeColor: widget.activeColor ?? theme.accentColor,
         textTheme: theme.primaryTextTheme,
-        thumbImage: config.thumbImage,
+        thumbImage: widget.thumbImage,
         configuration: createLocalImageConfiguration(context),
-        onChanged: config.onChanged != null ? _handleChanged : null,
+        onChanged: widget.onChanged != null ? _handleChanged : null,
         vsync: this);
   }
 }

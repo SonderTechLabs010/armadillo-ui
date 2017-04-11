@@ -58,13 +58,13 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
   @override
   void initState() {
     super.initState();
-    maxHeight = config.peekHeight;
+    maxHeight = widget.peekHeight;
     peek = true;
     _dragTarget = new Positioned(
       top: 0.0,
       left: 0.0,
       right: 0.0,
-      height: config.peekHeight,
+      height: widget.peekHeight,
       child: new GestureDetector(
         onVerticalDragUpdate: onVerticalDragUpdate,
         onVerticalDragEnd: onVerticalDragEnd,
@@ -77,16 +77,16 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
   }
 
   void hide() {
-    if (config.onHide != null) {
-      config.onHide();
+    if (widget.onHide != null) {
+      widget.onHide();
     }
     _hiding = true;
     setHeight(minHeight);
   }
 
   void show() {
-    if (config.onShow != null) {
-      config.onShow();
+    if (widget.onShow != null) {
+      widget.onShow();
     }
     _hiding = false;
     setHeight(maxHeight);
@@ -95,7 +95,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
   set peek(bool peeking) {
     if (peeking != _peeking) {
       _peeking = peeking;
-      minHeight = _peeking ? config.peekHeight : 0.0;
+      minHeight = _peeking ? widget.peekHeight : 0.0;
       hide();
     }
   }
@@ -105,10 +105,10 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
   /// Tracks how 'peeked' the overlay is taking [_kAngleOffsetY] into account.
   /// This is used to ensure the angle of the overlay is flat as it becomes
   /// fully 'unpeeked'. This tracks from [0.0 to 1.0] for [height]s of
-  /// [_kAngleOffsetY to config.peekHeight].
+  /// [_kAngleOffsetY to widget.peekHeight].
   double get _peekProgress => math.max(
       0.0,
-      math.min((height - _kAngleOffsetY) / (config.peekHeight - _kAngleOffsetY),
+      math.min((height - _kAngleOffsetY) / (widget.peekHeight - _kAngleOffsetY),
           1.0));
 
   void onVerticalDragUpdate(DragUpdateDetails details) =>
@@ -149,8 +149,8 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
             bottom: 0.0,
             height: height,
             child: new OverflowBox(
-              minWidth: config.parentWidth,
-              maxWidth: config.parentWidth,
+              minWidth: widget.parentWidth,
+              maxWidth: widget.parentWidth,
               minHeight: math.max(height, maxHeight),
               maxHeight: math.max(height, maxHeight),
               alignment: FractionalOffset.topCenter,
@@ -169,7 +169,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
                       color: new Color(0xFFDBE2E5),
                     ),
                   ),
-                  config.child,
+                  widget.child,
                   _dragTarget,
                 ],
               ),
@@ -178,11 +178,11 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
         ],
       );
 
-  double get _openingProgress => (height > config.darkeningBackgroundMinHeight
+  double get _openingProgress => (height > widget.darkeningBackgroundMinHeight
       ? math.min(
           1.0,
-          (height - config.darkeningBackgroundMinHeight) /
-              (maxHeight - config.darkeningBackgroundMinHeight))
+          (height - widget.darkeningBackgroundMinHeight) /
+              (maxHeight - widget.darkeningBackgroundMinHeight))
       : 0.0);
 
   Color get _overlayBackgroundColor =>

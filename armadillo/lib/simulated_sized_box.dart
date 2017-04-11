@@ -38,20 +38,20 @@ class SimulatedSizedBoxState extends TickingState<SimulatedSizedBox> {
   void initState() {
     super.initState();
     _widthSimulation = new RK4SpringSimulation(
-      initValue: config.width,
-      desc: config.springDescription,
+      initValue: widget.width,
+      desc: widget.springDescription,
     );
     _heightSimulation = new RK4SpringSimulation(
-      initValue: config.height,
-      desc: config.springDescription,
+      initValue: widget.height,
+      desc: widget.springDescription,
     );
   }
 
   @override
-  void didUpdateConfig(SimulatedSizedBox oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    _widthSimulation.target = config.width;
-    _heightSimulation.target = config.height;
+  void didUpdateWidget(SimulatedSizedBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _widthSimulation.target = widget.width;
+    _heightSimulation.target = widget.height;
     startTicking();
   }
 
@@ -59,7 +59,7 @@ class SimulatedSizedBoxState extends TickingState<SimulatedSizedBox> {
   Widget build(BuildContext context) => new SizedBox(
         width: _widthSimulation.value.clamp(0.0, double.INFINITY),
         height: _heightSimulation.value.clamp(0.0, double.INFINITY),
-        child: config.child,
+        child: widget.child,
       );
 
   @override
@@ -72,11 +72,11 @@ class SimulatedSizedBoxState extends TickingState<SimulatedSizedBox> {
   set size(Size size) {
     _widthSimulation = new RK4SpringSimulation(
       initValue: size.width,
-      desc: config.springDescription,
+      desc: widget.springDescription,
     );
     _heightSimulation = new RK4SpringSimulation(
       initValue: size.height,
-      desc: config.springDescription,
+      desc: widget.springDescription,
     );
   }
 

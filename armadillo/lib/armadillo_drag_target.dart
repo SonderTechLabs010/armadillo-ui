@@ -155,7 +155,7 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
   @override
   void initState() {
     super.initState();
-    _recognizer = config.createRecognizer(_startDrag);
+    _recognizer = widget.createRecognizer(_startDrag);
   }
 
   @override
@@ -167,18 +167,18 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
   @override
   Widget build(BuildContext context) {
     final bool showChild =
-        (_activeCount == 0 || config.childWhenDragging == null) &&
+        (_activeCount == 0 || widget.childWhenDragging == null) &&
             (_dragAvatarKey.currentState?.isDone ?? true);
     return new Listener(
       key: _nonDraggedChildKey,
       onPointerDown: _routePointer,
-      child: showChild ? config.child : config.childWhenDragging,
+      child: showChild ? widget.child : widget.childWhenDragging,
     );
   }
 
   bool get _canDrag =>
       (_activeCount < 1) &&
-      !(config.overlayKey.currentState?.hasBuilders ?? false);
+      !(widget.overlayKey.currentState?.hasBuilders ?? false);
 
   void _routePointer(PointerEvent event) {
     if (_canDrag) {
@@ -197,21 +197,21 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
 
     final RenderBox box = context.findRenderObject();
     final Offset dragStartPoint = box.globalToLocal(position);
-    final Rect initialBoundsOnDrag = config.onDragStarted?.call();
+    final Rect initialBoundsOnDrag = widget.onDragStarted?.call();
     final WidgetBuilder builder =
         (BuildContext context) => new _DragAvatarWidget(
               key: _dragAvatarKey,
               returnTargetKey: _nonDraggedChildKey,
-              overlayKey: config.overlayKey,
+              overlayKey: widget.overlayKey,
               initialPosition: position,
               dragStartPoint: dragStartPoint,
               initialBoundsOnDrag: initialBoundsOnDrag,
-              feedbackBuilder: config.feedbackBuilder,
+              feedbackBuilder: widget.feedbackBuilder,
             );
-    config.overlayKey.currentState.addBuilder(builder);
+    widget.overlayKey.currentState.addBuilder(builder);
 
     _DragAvatar<T> dragAvatar = new _DragAvatar<T>(
-      data: config.data,
+      data: widget.data,
       onDragUpdate: (Offset position) =>
           _dragAvatarKey.currentState?.updatePosition(position),
       onDragEnd: (bool wasAccepted) {
@@ -220,14 +220,14 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
           if (!wasAccepted) {
             _dragAvatarKey.currentState?.startReturnSimulation(
               () => setState(
-                    () => config.overlayKey.currentState.removeBuilder(builder),
+                    () => widget.overlayKey.currentState.removeBuilder(builder),
                   ),
             );
           } else {
-            config.overlayKey.currentState.removeBuilder(builder);
+            widget.overlayKey.currentState.removeBuilder(builder);
           }
         });
-        config.onDragEnded?.call();
+        widget.onDragEnded?.call();
       },
     );
 
@@ -278,21 +278,21 @@ class _DragAvatarWidgetState extends TickingState<_DragAvatarWidget> {
   @override
   void initState() {
     super.initState();
-    _position = config.initialPosition;
+    _position = widget.initialPosition;
   }
 
   @override
   Widget build(BuildContext context) {
-    RenderBox overlayBox = config.overlayKey.currentContext.findRenderObject();
+    RenderBox overlayBox = widget.overlayKey.currentContext.findRenderObject();
     Offset overlayTopLeft = overlayBox.localToGlobal(Offset.zero);
-    Offset localOffset = _position - config.dragStartPoint;
+    Offset localOffset = _position - widget.dragStartPoint;
     double left = localOffset.dx - overlayTopLeft.dx;
     double top = localOffset.dy - overlayTopLeft.dy;
 
     double returnProgress = _returnSimulation?.value ?? 0.0;
     if (returnProgress > 0.0) {
       final RenderBox returnTargetBox =
-          config.returnTargetKey.currentContext.findRenderObject();
+          widget.returnTargetKey.currentContext.findRenderObject();
       final Offset returnTargetTopLeft = returnTargetBox.localToGlobal(
         Offset.zero,
       );
@@ -313,9 +313,9 @@ class _DragAvatarWidgetState extends TickingState<_DragAvatarWidget> {
           left: left,
           top: top,
           child: new IgnorePointer(
-            child: config.feedbackBuilder(
-              config.dragStartPoint,
-              config.initialBoundsOnDrag,
+            child: widget.feedbackBuilder(
+              widget.dragStartPoint,
+              widget.initialBoundsOnDrag,
             ),
           ),
         ),
@@ -398,7 +398,7 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
   bool didEnter(dynamic data, Offset localPosition) {
     assert(_candidateData[data] == null);
     assert(_rejectedData[data] == null);
-    if (data is T && (config.onWillAccept?.call(data, localPosition) ?? true)) {
+    if (data is T && (widget.onWillAccept?.call(data, localPosition) ?? true)) {
       setState(() {
         _candidateData[data] = localPosition;
       });
@@ -440,7 +440,7 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
         _candidateData.remove(data);
         _rejectedData.remove(data);
       });
-      config.onAccept?.call(data, point, velocity);
+      widget.onAccept?.call(data, point, velocity);
     }
   }
 
@@ -448,7 +448,7 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
   Widget build(BuildContext context) => new MetaData(
         metaData: this,
         behavior: HitTestBehavior.translucent,
-        child: config.builder(context, _candidateData, _rejectedData),
+        child: widget.builder(context, _candidateData, _rejectedData),
       );
 }
 

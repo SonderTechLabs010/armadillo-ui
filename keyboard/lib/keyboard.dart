@@ -422,22 +422,22 @@ class KeyboardState extends State<Keyboard> {
   }
 
   void _onText(String text) {
-    config.onText?.call(text);
+    widget.onText?.call(text);
   }
 
   void _onSuggestion(String suggestion) {
-    config.onSuggestion?.call(suggestion);
+    widget.onSuggestion?.call(suggestion);
   }
 
   void _onSpacePressed() {
-    config.onText?.call(' ');
+    widget.onText?.call(' ');
   }
 
   void _onGoPressed() {
-    config.onGo?.call();
+    widget.onGo?.call();
   }
 
   void _onDeletePressed() {
-    config.onDelete?.call();
+    widget.onDelete?.call();
   }
 }

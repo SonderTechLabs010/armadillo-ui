@@ -39,7 +39,7 @@ class _ToggleIconState extends State<ToggleIcon> {
   @override
   void initState() {
     super.initState();
-    _currentImageIndex = config.initialImageIndex;
+    _currentImageIndex = widget.initialImageIndex;
   }
 
   @override
@@ -49,14 +49,14 @@ class _ToggleIconState extends State<ToggleIcon> {
       onTap: () {
         setState(() {
           _currentImageIndex =
-              (_currentImageIndex + 1) % config.imageList.length;
+              (_currentImageIndex + 1) % widget.imageList.length;
         });
       },
       child: new Container(
-        width: config.width,
-        height: config.height,
+        width: widget.width,
+        height: widget.height,
         child: new Center(
-          child: new Image.asset(config.imageList[_currentImageIndex],
+          child: new Image.asset(widget.imageList[_currentImageIndex],
               fit: BoxFit.cover),
         ),
       ),

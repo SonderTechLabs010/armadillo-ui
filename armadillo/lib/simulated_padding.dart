@@ -40,20 +40,20 @@ class SimulatedPaddingState extends TickingState<SimulatedPadding> {
   void initState() {
     super.initState();
     _leftSimulation = new RK4SpringSimulation(
-      initValue: config.fractionalLeftPadding,
-      desc: config.springDescription,
+      initValue: widget.fractionalLeftPadding,
+      desc: widget.springDescription,
     );
     _rightSimulation = new RK4SpringSimulation(
-      initValue: config.fractionalRightPadding,
-      desc: config.springDescription,
+      initValue: widget.fractionalRightPadding,
+      desc: widget.springDescription,
     );
   }
 
   @override
-  void didUpdateConfig(SimulatedPadding oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    _leftSimulation.target = config.fractionalLeftPadding;
-    _rightSimulation.target = config.fractionalRightPadding;
+  void didUpdateWidget(SimulatedPadding oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _leftSimulation.target = widget.fractionalLeftPadding;
+    _rightSimulation.target = widget.fractionalRightPadding;
     startTicking();
   }
 
@@ -61,11 +61,11 @@ class SimulatedPaddingState extends TickingState<SimulatedPadding> {
   Widget build(BuildContext context) => new Padding(
         padding: new EdgeInsets.only(
           left:
-              config.width * _leftSimulation.value.clamp(0.0, double.INFINITY),
+              widget.width * _leftSimulation.value.clamp(0.0, double.INFINITY),
           right:
-              config.width * _rightSimulation.value.clamp(0.0, double.INFINITY),
+              widget.width * _rightSimulation.value.clamp(0.0, double.INFINITY),
         ),
-        child: config.child,
+        child: widget.child,
       );
 
   @override

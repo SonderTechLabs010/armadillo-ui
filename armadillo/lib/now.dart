@@ -238,13 +238,13 @@ class NowState extends TickingState<Now> {
               // want to snap suggestions open.
               // We will do so if the overscroll is significant or if the user
               // lifted after dragging a certain distance.
-              if (config.scrollController.offset <
+              if (widget.scrollController.offset <
                       _kOverscrollAutoSnapThreshold ||
-                  (config.scrollController.offset <
+                  (widget.scrollController.offset <
                           _kOverscrollSnapDragThreshold &&
                       _pointerDownY - event.position.dy >
                           _kOverscrollSnapDragDistanceThreshold)) {
-                config.onOverscrollThresholdRelease?.call();
+                widget.onOverscrollThresholdRelease?.call();
               }
               hideQuickSettings();
             },
@@ -252,9 +252,9 @@ class NowState extends TickingState<Now> {
           new Align(
             alignment: FractionalOffset.bottomCenter,
             child: new AnimatedBuilder(
-              animation: config.scrollController,
+              animation: widget.scrollController,
               builder: (BuildContext context, Widget child) => new Container(
-                    height: _getNowHeight(config.scrollController.offset),
+                    height: _getNowHeight(widget.scrollController.offset),
                     child: child,
                   ),
               child: new ScopedModelDescendant<NowModel>(
@@ -406,7 +406,7 @@ class NowState extends TickingState<Now> {
                   new Container(
                     child: nowModel.quickSettings(
                       opacity: _quickSettingsSlideUpProgress,
-                      onLogoutSelected: config.onLogoutSelected,
+                      onLogoutSelected: widget.onLogoutSelected,
                     ),
                   ),
                 ],
@@ -422,7 +422,7 @@ class NowState extends TickingState<Now> {
       new Align(
         alignment: FractionalOffset.bottomCenter,
         child: new Container(
-          height: config.minHeight,
+          height: widget.minHeight,
           padding: new EdgeInsets.symmetric(horizontal: 8.0 + _slideInDistance),
           child: new RepaintBoundary(
             child: new ScopedModel<OpacityModel>(
@@ -449,8 +449,8 @@ class NowState extends TickingState<Now> {
         offstage: _buttonTapDisabled,
         child: new GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onVerticalDragUpdate: config.onBarVerticalDragUpdate,
-          onVerticalDragEnd: config.onBarVerticalDragEnd,
+          onVerticalDragUpdate: widget.onBarVerticalDragUpdate,
+          onVerticalDragEnd: widget.onBarVerticalDragEnd,
           child: new Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
@@ -464,9 +464,9 @@ class NowState extends TickingState<Now> {
               ),
               new GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: config.onMinimizedTap,
-                onLongPress: config.onMinimizedLongPress,
-                child: new Container(width: config.minHeight * 4.0),
+                onTap: widget.onMinimizedTap,
+                onLongPress: widget.onMinimizedLongPress,
+                child: new Container(width: widget.minHeight * 4.0),
               ),
               new Expanded(
                 child: new GestureDetector(
@@ -505,8 +505,8 @@ class NowState extends TickingState<Now> {
       if (!_quickSettingsSimulation.isDone) {
         continueTicking = true;
       }
-      if (config.onQuickSettingsProgressChange != null) {
-        config.onQuickSettingsProgressChange(_quickSettingsProgress);
+      if (widget.onQuickSettingsProgressChange != null) {
+        widget.onQuickSettingsProgressChange(_quickSettingsProgress);
       }
       NowModel nowModel = NowModel.of(context);
       nowModel.quickSettingsProgress = _quickSettingsProgress;
@@ -523,7 +523,7 @@ class NowState extends TickingState<Now> {
       _minimizationSimulation.target = _kMinimizationSimulationTarget;
       _showMinimizedInfo();
       startTicking();
-      config.onMinimize?.call();
+      widget.onMinimize?.call();
     }
   }
 
@@ -532,7 +532,7 @@ class NowState extends TickingState<Now> {
     if (_minimizing) {
       _minimizationSimulation.target = 0.0;
       startTicking();
-      config.onMaximize?.call();
+      widget.onMaximize?.call();
     }
   }
 
@@ -552,7 +552,7 @@ class NowState extends TickingState<Now> {
     if (!_revealingQuickSettings) {
       _quickSettingsSimulation.target = _kQuickSettingsSimulationTarget;
       startTicking();
-      config.onQuickSettingsMaximized?.call();
+      widget.onQuickSettingsMaximized?.call();
     }
   }
 
@@ -589,9 +589,9 @@ class NowState extends TickingState<Now> {
   bool get _buttonTapDisabled => _minimizationProgress < 1.0;
 
   double _getNowHeight(double scrollOffset) => math.max(
-      config.minHeight,
-      config.minHeight +
-          ((config.maxHeight - config.minHeight) *
+      widget.minHeight,
+      widget.minHeight +
+          ((widget.maxHeight - widget.minHeight) *
               (1.0 - _minimizationProgress)) +
           _quickSettingsRaiseDistance +
           _getScrollOffsetHeightDelta(scrollOffset));
@@ -604,7 +604,7 @@ class NowState extends TickingState<Now> {
   double get _userImageTopOffset =>
       lerpDouble(100.0, 20.0, _quickSettingsProgress) *
           (1.0 - _minimizationProgress) +
-      ((config.minHeight - _userImageSize) / 2.0) * _minimizationProgress;
+      ((widget.minHeight - _userImageSize) / 2.0) * _minimizationProgress;
 
   double get _quickSettingsBackgroundTopOffset =>
       _userImageTopOffset + ((_userImageSize / 2.0) * _quickSettingsProgress);
@@ -613,7 +613,7 @@ class NowState extends TickingState<Now> {
       lerpDouble(50.0, 4.0, _quickSettingsProgress);
 
   double get _quickSettingsBackgroundMaximizedWidth =>
-      math.min(_kMaxQuickSettingsBackgroundWidth, config.parentWidth) -
+      math.min(_kMaxQuickSettingsBackgroundWidth, widget.parentWidth) -
       2 * _kQuickSettingsHorizontalPadding;
 
   double get _quickSettingsBackgroundWidth => lerpDouble(
@@ -640,7 +640,7 @@ class NowState extends TickingState<Now> {
   double get _slideInDistance => lerpDouble(10.0, 0.0, _slideInProgress);
 
   double get _quickSettingsRaiseDistance =>
-      config.quickSettingsHeightBump * _quickSettingsProgress;
+      widget.quickSettingsHeightBump * _quickSettingsProgress;
 
   double _getScrollOffsetHeightDelta(double scrollOffset) =>
       (math.max(

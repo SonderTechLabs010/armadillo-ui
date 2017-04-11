@@ -42,24 +42,24 @@ class SimulatedFractionallySizedBoxState
   void initState() {
     super.initState();
     _heightFactorSimulation = new RK4SpringSimulation(
-      initValue: config.heightFactor,
-      desc: config.springDescription,
+      initValue: widget.heightFactor,
+      desc: widget.springDescription,
     );
   }
 
   @override
-  void didUpdateConfig(SimulatedFractionallySizedBox oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    _heightFactorSimulation.target = config.heightFactor;
+  void didUpdateWidget(SimulatedFractionallySizedBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _heightFactorSimulation.target = widget.heightFactor;
     startTicking();
   }
 
   @override
   Widget build(BuildContext context) => new FractionallySizedBox(
-        alignment: config.alignment,
+        alignment: widget.alignment,
         heightFactor: _heightFactorSimulation.value,
         widthFactor: 1.0,
-        child: config.child,
+        child: widget.child,
       );
 
   @override
@@ -71,7 +71,7 @@ class SimulatedFractionallySizedBoxState
   void jump({double heightFactor}) {
     _heightFactorSimulation = new RK4SpringSimulation(
       initValue: heightFactor,
-      desc: config.springDescription,
+      desc: widget.springDescription,
     );
   }
 }

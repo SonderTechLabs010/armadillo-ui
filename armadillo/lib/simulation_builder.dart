@@ -43,18 +43,18 @@ class SimulationBuilderState extends TickingState<SimulationBuilder> {
   void initState() {
     super.initState();
     _simulation = new RK4SpringSimulation(
-      initValue: config.initValue,
-      desc: config.springDescription,
+      initValue: widget.initValue,
+      desc: widget.springDescription,
     );
-    _simulation.target = config.targetValue;
+    _simulation.target = widget.targetValue;
     startTicking();
   }
 
   @override
-  void didUpdateConfig(SimulationBuilder oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    if (oldConfig.targetValue != config.targetValue) {
-      _simulation.target = config.targetValue;
+  void didUpdateWidget(SimulationBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.targetValue != widget.targetValue) {
+      _simulation.target = widget.targetValue;
       startTicking();
     }
   }
@@ -63,7 +63,7 @@ class SimulationBuilderState extends TickingState<SimulationBuilder> {
     setState(() {
       _simulation = new RK4SpringSimulation(
         initValue: value,
-        desc: config.springDescription,
+        desc: widget.springDescription,
       );
     });
   }
@@ -88,11 +88,11 @@ class SimulationBuilderState extends TickingState<SimulationBuilder> {
     _simulation.elapseTime(elapsedSeconds);
 
     // Notify listeners of progress change.
-    config.onSimulationChanged?.call(progress, _simulation.isDone);
+    widget.onSimulationChanged?.call(progress, _simulation.isDone);
 
     return !_simulation.isDone;
   }
 
   @override
-  Widget build(BuildContext context) => config.builder(context, progress);
+  Widget build(BuildContext context) => widget.builder(context, progress);
 }

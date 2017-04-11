@@ -76,8 +76,8 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     // Store off original stories and display state and on change to
     // isAccepted, revert to initial story locations and
     // display state.
-    _originalStories = config.storyCluster.stories;
-    _originalDisplayMode = config.storyCluster.displayMode;
+    _originalStories = widget.storyCluster.stories;
+    _originalDisplayMode = widget.storyCluster.displayMode;
   }
 
   @override
@@ -95,23 +95,23 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
     }
 
     if (StoryClusterDragStateModel.of(context).isAcceptable &&
-        config.storyCluster.previewStories.isNotEmpty) {
-      config.storyCluster.maximizeStoryBars();
+        widget.storyCluster.previewStories.isNotEmpty) {
+      widget.storyCluster.maximizeStoryBars();
     } else {
-      config.storyCluster.minimizeStoryBars();
+      widget.storyCluster.minimizeStoryBars();
     }
 
     if (_wasAcceptable &&
         !StoryClusterDragStateModel.of(context).isAcceptable) {
       // Revert to initial story locations and display state.
-      config.storyCluster.removePreviews();
+      widget.storyCluster.removePreviews();
       _originalStories.forEach((Story story) {
-        config.storyCluster.replaceStoryPanel(
+        widget.storyCluster.replaceStoryPanel(
           storyId: story.id,
           withPanel: story.panel,
         );
       });
-      config.storyCluster.displayMode = _originalDisplayMode;
+      widget.storyCluster.displayMode = _originalDisplayMode;
     }
     _wasAcceptable = StoryClusterDragStateModel.of(context).isAcceptable;
   }
@@ -145,22 +145,22 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                 bool isAcceptable = storyClusterDragStateModel.isAcceptable;
 
                 if (isAcceptable &&
-                    config.storyCluster.previewStories.isNotEmpty) {
+                    widget.storyCluster.previewStories.isNotEmpty) {
                   width = sizeModel.size.width;
                   height = sizeModel.size.height;
                   childScale =
-                      lerpDouble(inlinePreviewScale, 0.7, config.focusProgress);
+                      lerpDouble(inlinePreviewScale, 0.7, widget.focusProgress);
                 } else {
-                  width = config.storyCluster.storyLayout.size.width;
-                  height = config.storyCluster.storyLayout.size.height;
+                  width = widget.storyCluster.storyLayout.size.width;
+                  height = widget.storyCluster.storyLayout.size.height;
                   childScale = 1.0;
                 }
                 double targetWidth = (_childKey.currentState == null
-                        ? config.initialBounds.width
+                        ? widget.initialBounds.width
                         : width) *
                     childScale;
                 double targetHeight = (_childKey.currentState == null
-                        ? config.initialBounds.height
+                        ? widget.initialBounds.height
                         : height) *
                     childScale;
 
@@ -172,7 +172,7 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                 double realStoriesFractionalTop = 1.0;
                 double realStoriesFractionalBottom = 0.0;
 
-                config.storyCluster.realStories.forEach((Story story) {
+                widget.storyCluster.realStories.forEach((Story story) {
                   realStoriesFractionalLeft =
                       math.min(realStoriesFractionalLeft, story.panel.left);
                   realStoriesFractionalRight =
@@ -193,7 +193,7 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                         2.0;
                 double realStoriesFractionalTopY = realStoriesFractionalTop;
 
-                List<Story> stories = config.storyCluster.stories;
+                List<Story> stories = widget.storyCluster.stories;
                 int realTabStartingIndex = 0;
                 for (int i = 0; i < stories.length; i++) {
                   if (!stories[i].isPlaceHolder) {
@@ -202,31 +202,31 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                   realTabStartingIndex++;
                 }
                 int totalTabs = stories.length;
-                int realStories = config.storyCluster.realStories.length;
+                int realStories = widget.storyCluster.realStories.length;
                 double realStoriesOffset = realStories / totalTabs / 2.0;
                 double tabFractionalXOffset =
                     realTabStartingIndex / totalTabs + realStoriesOffset;
 
-                // Since the user begins the drag at config.localDragStartPoint and we want
+                // Since the user begins the drag at widget.localDragStartPoint and we want
                 // to move the story to a better visual position when previewing we animate
                 // its translation when isAcceptable is true.
                 // In tab mode we center on the story's story bar.
                 // In panel mode we center on the story itself.
                 double newDx =
-                    (isAcceptable || config.localDragStartPoint.dx > targetWidth)
-                        ? (config.storyCluster.displayMode == DisplayMode.tabs)
-                            ? config.localDragStartPoint.dx -
+                    (isAcceptable || widget.localDragStartPoint.dx > targetWidth)
+                        ? (widget.storyCluster.displayMode == DisplayMode.tabs)
+                            ? widget.localDragStartPoint.dx -
                                 targetWidth * tabFractionalXOffset
-                            : config.localDragStartPoint.dx -
+                            : widget.localDragStartPoint.dx -
                                 targetWidth * realStoriesFractionalCenterX
                         : 0.0;
                 double newDy = (isAcceptable ||
-                        config.localDragStartPoint.dy > targetHeight)
-                    ? (config.storyCluster.displayMode == DisplayMode.tabs)
-                        ? config.localDragStartPoint.dy -
+                        widget.localDragStartPoint.dy > targetHeight)
+                    ? (widget.storyCluster.displayMode == DisplayMode.tabs)
+                        ? widget.localDragStartPoint.dy -
                             targetHeight * realStoriesFractionalTopY -
                             childScale * _kStoryBarMaximizedHeight
-                        : config.localDragStartPoint.dy -
+                        : widget.localDragStartPoint.dy -
                             targetHeight * realStoriesFractionalCenterY
                     : 0.0;
 
@@ -237,36 +237,36 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                     : new Size(
                         simulatedSizedBoxCurrentSize.width,
                         simulatedSizedBoxCurrentSize.height -
-                            InlineStoryTitle.getHeight(config.focusProgress),
+                            InlineStoryTitle.getHeight(widget.focusProgress),
                       );
 
                 return new SimulatedTransform(
-                  initDx: config.initDx,
+                  initDx: widget.initDx,
                   targetDx: newDx,
                   targetDy: newDy,
                   child: new SimulatedSizedBox(
                     key: _childKey,
                     width: targetWidth,
                     height: targetHeight +
-                        InlineStoryTitle.getHeight(config.focusProgress),
+                        InlineStoryTitle.getHeight(widget.focusProgress),
                     child: new Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         new Expanded(
                           child: new StoryPanels(
-                            key: config.storyCluster.panelsKey,
-                            storyCluster: config.storyCluster,
+                            key: widget.storyCluster.panelsKey,
+                            storyCluster: widget.storyCluster,
                             focusProgress: 0.0,
-                            overlayKey: config.overlayKey,
-                            storyWidgets: config.storyWidgets,
+                            overlayKey: widget.overlayKey,
+                            storyWidgets: widget.storyWidgets,
                             paintShadows: true,
                             currentSize: panelsCurrentSize,
                           ),
                         ),
                         new InlineStoryTitle(
-                          focusProgress: config.focusProgress,
-                          storyCluster: config.storyCluster,
+                          focusProgress: widget.focusProgress,
+                          storyCluster: widget.storyCluster,
                         ),
                       ],
                     ),

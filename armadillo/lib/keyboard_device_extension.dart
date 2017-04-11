@@ -46,11 +46,11 @@ class _KeyboardDeviceExtensionState
   Widget createWidget(BuildContext context) => new Container(
         decoration: new BoxDecoration(backgroundColor: Colors.black),
         child: new Keyboard(
-          key: config.keyboardKey,
-          onText: config.onText,
-          onSuggestion: config.onSuggestion,
-          onDelete: config.onDelete,
-          onGo: config.onGo,
+          key: widget.keyboardKey,
+          onText: widget.onText,
+          onSuggestion: widget.onSuggestion,
+          onDelete: widget.onDelete,
+          onGo: widget.onGo,
         ),
       );
 }

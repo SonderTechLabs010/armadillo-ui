@@ -32,17 +32,17 @@ class ScrollableInputTextState extends State<ScrollableInputText> {
   Widget build(BuildContext context) {
     List<Widget> blockChildren = <Widget>[
       new Align(
-          alignment: config.alignment ?? const FractionalOffset(0.0, 0.5),
+          alignment: widget.alignment ?? const FractionalOffset(0.0, 0.5),
           child: new Text(
-              (_text.isEmpty && !config.focused) ? 'Ask for anything' : _text,
+              (_text.isEmpty && !widget.focused) ? 'Ask for anything' : _text,
               style: new TextStyle(
                   fontSize: _kTextSize,
                   color: _text.isEmpty ? _kHintTextColor : _kTextColor)))
     ];
 
-    if (config.focused) {
+    if (widget.focused) {
       blockChildren.add(new Align(
-          alignment: config.alignment ?? const FractionalOffset(0.0, 0.5),
+          alignment: widget.alignment ?? const FractionalOffset(0.0, 0.5),
           child: new BlinkingCursor(
               height: _kTextSize,
               color: _kTextColor,

@@ -115,20 +115,20 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   @override
   void initState() {
     super.initState();
-    _originalClusterLayout = new ClusterLayout.from(config.storyCluster);
-    panelEventHandler = new PanelEventHandler(config.storyCluster);
+    _originalClusterLayout = new ClusterLayout.from(widget.storyCluster);
+    panelEventHandler = new PanelEventHandler(widget.storyCluster);
     _populateTargets();
   }
 
   @override
-  void didUpdateConfig(PanelDragTargets oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    panelEventHandler = new PanelEventHandler(config.storyCluster);
-    if (oldConfig.storyCluster.id != config.storyCluster.id) {
-      _originalClusterLayout = new ClusterLayout.from(config.storyCluster);
+  void didUpdateWidget(PanelDragTargets oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    panelEventHandler = new PanelEventHandler(widget.storyCluster);
+    if (oldWidget.storyCluster.id != widget.storyCluster.id) {
+      _originalClusterLayout = new ClusterLayout.from(widget.storyCluster);
     }
-    if (oldConfig.focusProgress != config.focusProgress ||
-        oldConfig.currentSize != config.currentSize) {
+    if (oldWidget.focusProgress != widget.focusProgress ||
+        oldWidget.currentSize != widget.currentSize) {
       _populateTargets();
     }
   }
@@ -149,7 +149,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   Widget _buildWidget(BuildContext context) =>
       new ArmadilloDragTarget<StoryClusterDragData>(
         onWillAccept: (StoryClusterDragData data, _) =>
-            config.storyCluster.id != data.id,
+            widget.storyCluster.id != data.id,
         onAccept: (StoryClusterDragData data, _, Velocity velocity) =>
             _onAccept(
               data,
@@ -186,7 +186,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     _transposeToChildCoordinates(storyCluster.stories);
 
-    config.onAccept?.call();
+    widget.onAccept?.call();
 
     // If a target hasn't been chosen yet, default to dropping on the story bar
     // target as that's always there.
@@ -207,7 +207,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     _updateFocusedStoryId(storyCluster);
   }
 
-  bool get _inTimeline => config.focusProgress == 0.0;
+  bool get _inTimeline => widget.focusProgress == 0.0;
 
   /// [candidates] are the clusters that are currently
   /// being dragged over this drag target with their associated local
@@ -219,11 +219,11 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // the validity timer to go off before accepting it.
     if (candidates.isEmpty) {
       StoryClusterDragStateModel.of(context).removeAcceptance(
-            config.storyCluster.id,
+            widget.storyCluster.id,
           );
     } else if (!_inTimeline) {
       StoryClusterDragStateModel.of(context).addAcceptance(
-            config.storyCluster.id,
+            widget.storyCluster.id,
           );
     }
 
@@ -244,7 +244,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
                     _candidateValidityTimer = null;
                     StoryClusterDragStateModel
                         .of(context)
-                        .addAcceptance(config.storyCluster.id);
+                        .addAcceptance(widget.storyCluster.id);
                   },
                 );
               }
@@ -279,7 +279,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     bool hasCandidates = candidates.isNotEmpty;
     if (hasCandidates && !_hadCandidates) {
-      _originalClusterLayout = new ClusterLayout.from(config.storyCluster);
+      _originalClusterLayout = new ClusterLayout.from(widget.storyCluster);
       _populateTargets();
 
       // Invoke onFirstHover callbacks if they exist.
@@ -298,9 +298,9 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     _updateStoryBars(hasCandidates);
     _updateClosestTargets(candidates);
 
-    // Scale child to config.scale if we aren't in the timeline
+    // Scale child to widget.scale if we aren't in the timeline
     // and we have a candidate being dragged over us.
-    _scale = hasCandidates && !_inTimeline ? config.scale : 1.0;
+    _scale = hasCandidates && !_inTimeline ? widget.scale : 1.0;
 
     List<PanelDragTarget> validTargets = _targets
         .where(
@@ -347,7 +347,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
       child: new Transform(
         transform: new Matrix4.identity().scaled(_scale, _scale),
         alignment: FractionalOffset.center,
-        child: config.child,
+        child: widget.child,
       ),
     );
   }
@@ -367,9 +367,9 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     }
 
     if (hasCandidates) {
-      config.storyCluster.maximizeStoryBars();
+      widget.storyCluster.maximizeStoryBars();
     } else {
-      config.storyCluster.minimizeStoryBars();
+      widget.storyCluster.minimizeStoryBars();
     }
   }
 
@@ -395,7 +395,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
       // Convert the Story's global bounds into bounds local to the
       // StoryPanels...
       RenderBox panelsBox =
-          config.storyCluster.panelsKey.currentContext.findRenderObject();
+          widget.storyCluster.panelsKey.currentContext.findRenderObject();
       Offset storyInPanelsTopLeft = panelsBox.globalToLocal(storyTopLeft);
       Offset storyInPanelsBottomRight =
           panelsBox.globalToLocal(storyBottomRight);
@@ -430,9 +430,9 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   /// If [activate] is true, start the inline preview scale simulation.  If
   /// false, reverse the simulation back to its beginning.
   void _updateInlinePreviewScalingSimulation(bool activate) {
-    config.storyCluster.inlinePreviewScaleSimulationKey.currentState?.target =
+    widget.storyCluster.inlinePreviewScaleSimulationKey.currentState?.target =
         activate ? 1.0 : 0.0;
-    config.storyCluster.inlinePreviewHintScaleSimulationKey.currentState
+    widget.storyCluster.inlinePreviewHintScaleSimulationKey.currentState
         ?.target = (activate || _candidateValidityTimer != null) ? 1.0 : 0.0;
   }
 
@@ -448,8 +448,8 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
         // If no stories have changed, and a candidate was removed we need
         // to revert back to our original layout.
         if (_originalClusterLayout.storyCount ==
-            config.storyCluster.stories.length) {
-          _originalClusterLayout.restore(config.storyCluster);
+            widget.storyCluster.stories.length) {
+          _originalClusterLayout.restore(widget.storyCluster);
         }
       }
     });
@@ -528,11 +528,11 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     _targets.addAll(
       _panelDragTargetGenerator.createTargets(
         size: SizeModel.of(context).size,
-        currentSize: config.currentSize,
+        currentSize: widget.currentSize,
         clusterLayout: _originalClusterLayout,
-        scale: config.scale,
+        scale: widget.scale,
         inTimeline: _inTimeline,
-        maxStories: _kMaxStoriesPerCluster - config.storyCluster.stories.length,
+        maxStories: _kMaxStoriesPerCluster - widget.storyCluster.stories.length,
         onAddClusterAbovePanels: panelEventHandler.onAddClusterAbovePanels,
         onAddClusterBelowPanels: panelEventHandler.onAddClusterBelowPanels,
         onAddClusterToLeftOfPanels:
@@ -561,7 +561,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     if (preview) {
       _verticalEdgeHoverTimer = new Timer(
         _kVerticalEdgeHoverDuration,
-        () => config.onVerticalEdgeHover?.call(),
+        () => widget.onVerticalEdgeHover?.call(),
       );
     } else {
       _verticalEdgeHoverTimer?.cancel();
@@ -573,24 +573,24 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     // After onHover or onDrop call always focus on, in order of priority:
 
     // 1. story with same ID as storyCluster.focusedStoryId if exists. OR
-    if (config.storyCluster.realStories
+    if (widget.storyCluster.realStories
         .where((Story story) => story.id == storyCluster.focusedStoryId)
         .isNotEmpty) {
-      config.storyCluster.focusedStoryId = storyCluster.focusedStoryId;
+      widget.storyCluster.focusedStoryId = storyCluster.focusedStoryId;
       return;
     }
 
     // 2. placeholder with same ID as storyCluster.focusedStoryId if exists. OR
-    List<PlaceHolderStory> previews = config.storyCluster.previewStories
+    List<PlaceHolderStory> previews = widget.storyCluster.previewStories
         .where((PlaceHolderStory story) =>
             story.associatedStoryId == storyCluster.focusedStoryId)
         .toList();
     if (previews.isNotEmpty) {
-      config.storyCluster.focusedStoryId = previews[0].id;
+      widget.storyCluster.focusedStoryId = previews[0].id;
       return;
     }
 
     // 3. Original focused story.
-    _originalClusterLayout.restoreFocus(config.storyCluster);
+    _originalClusterLayout.restoreFocus(widget.storyCluster);
   }
 }

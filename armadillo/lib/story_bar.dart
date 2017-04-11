@@ -46,22 +46,22 @@ class StoryBarState extends TickingState<StoryBar> {
   void initState() {
     super.initState();
     _heightSimulation = new RK4SpringSimulation(
-      initValue: config.minimizedHeight,
+      initValue: widget.minimizedHeight,
       desc: _kHeightSimulationDesc,
     );
     _focusedSimulation = new RK4SpringSimulation(
       initValue: 0.0,
       desc: _kHeightSimulationDesc,
     );
-    _focusedSimulation.target = config.focused ? 0.0 : 4.0;
-    _showHeight = config.minimizedHeight;
+    _focusedSimulation.target = widget.focused ? 0.0 : 4.0;
+    _showHeight = widget.minimizedHeight;
   }
 
   @override
-  void didUpdateConfig(StoryBar oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    if (config.focused != oldConfig.focused) {
-      _focusedSimulation.target = config.focused ? 0.0 : 4.0;
+  void didUpdateWidget(StoryBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.focused != oldWidget.focused) {
+      _focusedSimulation.target = widget.focused ? 0.0 : 4.0;
       startTicking();
     }
   }
@@ -71,10 +71,10 @@ class StoryBarState extends TickingState<StoryBar> {
         height: _height - _focusedSimulation.value,
         padding: new EdgeInsets.symmetric(horizontal: 12.0),
         margin: new EdgeInsets.only(bottom: _focusedSimulation.value),
-        decoration: new BoxDecoration(backgroundColor: config.story.themeColor),
+        decoration: new BoxDecoration(backgroundColor: widget.story.themeColor),
         child: new OverflowBox(
-          minHeight: config.maximizedHeight,
-          maxHeight: config.maximizedHeight,
+          minHeight: widget.maximizedHeight,
+          maxHeight: widget.maximizedHeight,
           alignment: FractionalOffset.topCenter,
           child: new Padding(
             padding: const EdgeInsets.symmetric(
@@ -92,7 +92,7 @@ class StoryBarState extends TickingState<StoryBar> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
-                    children: config.story.icons
+                    children: widget.story.icons
                         .map(
                           (OpacityBuilder builder) => builder(
                                 context,
@@ -105,7 +105,7 @@ class StoryBarState extends TickingState<StoryBar> {
                 new LayoutId(
                   id: ThreeColumnAlignedLayoutDelegateParts.center,
                   child: new StoryTitle(
-                    title: config.story.title,
+                    title: widget.story.title,
                     opacity: _opacity,
                     baseColor: _textColor,
                   ),
@@ -121,7 +121,7 @@ class StoryBarState extends TickingState<StoryBar> {
                         ),
                         shape: BoxShape.circle,
                       ),
-                      child: config.story.avatar(context, _opacity),
+                      child: widget.story.avatar(context, _opacity),
                     ),
                   ),
                 ),
@@ -134,9 +134,9 @@ class StoryBarState extends TickingState<StoryBar> {
   Color get _textColor {
     // See http://www.w3.org/TR/AERT#color-contrast for the details of this
     // algorithm.
-    int brightness = (((config.story.themeColor.red * 299) +
-                (config.story.themeColor.green * 587) +
-                (config.story.themeColor.blue * 114)) /
+    int brightness = (((widget.story.themeColor.red * 299) +
+                (widget.story.themeColor.green * 587) +
+                (widget.story.themeColor.blue * 114)) /
             1000)
         .round();
 
@@ -171,25 +171,25 @@ class StoryBarState extends TickingState<StoryBar> {
   void maximize({bool jumpToFinish: false}) {
     if (jumpToFinish) {
       _heightSimulation = new RK4SpringSimulation(
-        initValue: config.maximizedHeight,
+        initValue: widget.maximizedHeight,
         desc: _kHeightSimulationDesc,
       );
     }
-    _showHeight = config.maximizedHeight;
-    _focusedSimulation.target = config.focused ? 0.0 : 4.0;
+    _showHeight = widget.maximizedHeight;
+    _focusedSimulation.target = widget.focused ? 0.0 : 4.0;
     show();
   }
 
   void minimize() {
-    _showHeight = config.minimizedHeight;
+    _showHeight = widget.minimizedHeight;
     _focusedSimulation.target = 0.0;
     show();
   }
 
   double get _opacity => math.max(
       0.0,
-      (_height - config.minimizedHeight) /
-          (config.maximizedHeight - config.minimizedHeight));
+      (_height - widget.minimizedHeight) /
+          (widget.maximizedHeight - widget.minimizedHeight));
 
   double get _height => _heightSimulation.value;
 }

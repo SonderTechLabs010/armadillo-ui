@@ -47,19 +47,19 @@ class SuggestionListState extends State<SuggestionList> {
   String get text => _inputKey.currentState?.text;
   void append(String text) {
     _inputKey.currentState?.append(text);
-    config.onAskTextChanged?.call(text);
+    widget.onAskTextChanged?.call(text);
     SuggestionModel.of(context).askText = this.text;
   }
 
   void backspace() {
     _inputKey.currentState?.backspace();
-    config.onAskTextChanged?.call(text);
+    widget.onAskTextChanged?.call(text);
     SuggestionModel.of(context).askText = text;
   }
 
   void clear() {
     _inputKey.currentState?.clear();
-    config.onAskTextChanged?.call(text);
+    widget.onAskTextChanged?.call(text);
     SuggestionModel.of(context).askText = null;
   }
 
@@ -95,7 +95,7 @@ class SuggestionListState extends State<SuggestionList> {
       _asking = false;
       SuggestionModel.of(context).asking = _asking;
       clear();
-      config.onAskingEnded?.call();
+      widget.onAskingEnded?.call();
     });
   }
 
@@ -124,7 +124,7 @@ class SuggestionListState extends State<SuggestionList> {
                   _asking = true;
                 });
                 SuggestionModel.of(context).asking = _asking;
-                config.onAskingStarted?.call();
+                widget.onAskingStarted?.call();
               },
               child: new Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -177,9 +177,9 @@ class SuggestionListState extends State<SuggestionList> {
                 Widget child,
                 SuggestionModel suggestionModel,
               ) =>
-                  config.columnCount == 3
+                  widget.columnCount == 3
                       ? _createThreeColumnBlock(suggestionModel.suggestions)
-                      : config.columnCount == 2
+                      : widget.columnCount == 2
                           ? _createTwoColumnBlock(suggestionModel.suggestions)
                           : _createSingleColumnBlock(
                               suggestionModel.suggestions),
@@ -193,7 +193,7 @@ class SuggestionListState extends State<SuggestionList> {
           horizontal: 8.0,
         ),
         child: new ListView(
-          controller: config.scrollController,
+          controller: widget.scrollController,
           children: suggestions
               .map((Suggestion suggestion) => _createSuggestion(suggestion))
               .toList(),
@@ -218,7 +218,7 @@ class SuggestionListState extends State<SuggestionList> {
       child: new ConstrainedBox(
         constraints: new BoxConstraints(maxWidth: 960.0),
         child: new ListView.builder(
-          controller: config.scrollController,
+          controller: widget.scrollController,
           itemCount: leftSuggestions.length,
           itemBuilder: (BuildContext context, int index) => new Row(
                 children: <Widget>[
@@ -260,7 +260,7 @@ class SuggestionListState extends State<SuggestionList> {
       child: new ConstrainedBox(
         constraints: new BoxConstraints(maxWidth: 1440.0),
         child: new ListView.builder(
-          controller: config.scrollController,
+          controller: widget.scrollController,
           itemCount: leftSuggestions.length,
           itemBuilder: (BuildContext context, int index) => new Row(
                 children: <Widget>[
@@ -302,7 +302,7 @@ class SuggestionListState extends State<SuggestionList> {
         // SelectedSuggestionOverlay.
         RenderBox box =
             new GlobalObjectKey(suggestion).currentContext.findRenderObject();
-        config.onSuggestionSelected(
+        widget.onSuggestionSelected(
           suggestion,
           box.localToGlobal(Offset.zero) & box.size,
         );

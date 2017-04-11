@@ -102,7 +102,7 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
                   1.0,
                   _showProgress,
                 ),
-                onLogoutSelected: config.onLogoutSelected,
+                onLogoutSelected: widget.onLogoutSelected,
               )),
         ),
       );
@@ -116,7 +116,7 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
               left: 0.0,
               top: 0.0,
               right: 0.0,
-              bottom: config.minimizedNowBarHeight,
+              bottom: widget.minimizedNowBarHeight,
               child: new IgnorePointer(
                 child: new Container(
                   decoration: new BoxDecoration(
@@ -147,7 +147,7 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
             new Positioned(
               bottom: lerpDouble(
                 0.0,
-                8.0 + config.minimizedNowBarHeight,
+                8.0 + widget.minimizedNowBarHeight,
                 _showProgress,
               ),
               left: 8.0,
@@ -161,7 +161,7 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
   @override
   bool handleTick(double elapsedSeconds) {
     _showSimulation.elapseTime(elapsedSeconds);
-    config.onProgressChanged?.call(_showProgress);
+    widget.onProgressChanged?.call(_showProgress);
     return !_showSimulation.isDone;
   }
 }
@@ -321,21 +321,21 @@ class _QuickSettingsState extends State<QuickSettings> {
             child: new LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) =>
                   new Opacity(
-                    opacity: config.opacity,
+                    opacity: widget.opacity,
                     child: (constraints.maxWidth > _kMultiColumnWidthThreshold)
                         ? _buildForWideScreen(context)
                         : _buildForNarrowScreen(context),
                   ),
             ),
           ),
-          _divider(opacity: config.opacity),
+          _divider(opacity: widget.opacity),
           new GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () => config.onLogoutSelected?.call(),
+            onTap: () => widget.onLogoutSelected?.call(),
             child: new Container(
               padding: const EdgeInsets.all(16.0),
               child: new Opacity(
-                opacity: config.opacity,
+                opacity: widget.opacity,
                 child: new Text(
                   'LOG OUT',
                   textAlign: TextAlign.center,
@@ -347,7 +347,7 @@ class _QuickSettingsState extends State<QuickSettings> {
               ),
             ),
           ),
-          _divider(opacity: config.opacity),
+          _divider(opacity: widget.opacity),
           new GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
@@ -356,7 +356,7 @@ class _QuickSettingsState extends State<QuickSettings> {
             child: new Container(
               padding: const EdgeInsets.all(16.0),
               child: new Opacity(
-                opacity: config.opacity,
+                opacity: widget.opacity,
                 child: new Text(
                   'MORE',
                   textAlign: TextAlign.center,

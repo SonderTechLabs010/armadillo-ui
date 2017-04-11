@@ -52,15 +52,15 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
   @override
   void initState() {
     super.initState();
-    if (config.focused) {
+    if (widget.focused) {
       FocusScope.of(context).requestFocus(_focusNode);
     }
   }
 
   @override
-  void didUpdateConfig(RawKeyboardInput oldConfig) {
-    if (config.focused != oldConfig.focused) {
-      if (config.focused) {
+  void didUpdateWidget(RawKeyboardInput oldWidget) {
+    if (widget.focused != oldWidget.focused) {
+      if (widget.focused) {
         FocusScope.of(context).requestFocus(_focusNode);
       } else {
         _focusNode.unfocus();
@@ -82,7 +82,7 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
       focusNode: _focusNode,
       child: new ScrollableInputText(
         key: _scrollableInputTextKey,
-        focused: config.focused,
+        focused: widget.focused,
       ),
     );
   }
@@ -114,8 +114,8 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
         RawKeyEventDataAndroid data = event.data;
         if (data.keyCode == keyCodeEnter) {
           String text = _textState?.text;
-          if (config.onTextCommitted != null && text.isNotEmpty) {
-            config.onTextCommitted(text);
+          if (widget.onTextCommitted != null && text.isNotEmpty) {
+            widget.onTextCommitted(text);
           }
         } else if (data.keyCode == keyCodeBackspace) {
           if (_textState?.backspace() ?? false) {
@@ -142,8 +142,8 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
           _notifyTextChanged();
         } else if (data.hidUsage == 40) {
           String text = _textState?.text;
-          if (config.onTextCommitted != null && text.isNotEmpty) {
-            config.onTextCommitted(text);
+          if (widget.onTextCommitted != null && text.isNotEmpty) {
+            widget.onTextCommitted(text);
           }
         } else if (data.hidUsage == 42) {
           if (_textState?.backspace() ?? false) {
@@ -155,8 +155,8 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
   }
 
   void _notifyTextChanged() {
-    if (config.onTextChanged != null) {
-      config.onTextChanged(_textState?.text);
+    if (widget.onTextChanged != null) {
+      widget.onTextChanged(_textState?.text);
     }
   }
 }

@@ -25,7 +25,7 @@ class ScrollLockerState extends State<ScrollLocker> {
   @override
   Widget build(BuildContext context) => new ScrollConfiguration(
         behavior: new _LockingScrollBehavior(lock: _lockScrolling),
-        child: config.child,
+        child: widget.child,
       );
 
   /// Locks the scrolling of [ScrollLocker.child].

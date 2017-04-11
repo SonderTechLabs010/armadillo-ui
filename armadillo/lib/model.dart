@@ -97,26 +97,26 @@ class _ModelListenerState extends State<_ModelListener> {
   @override
   void initState() {
     super.initState();
-    config.model.addListener(_onChange);
+    widget.model.addListener(_onChange);
   }
 
   @override
-  void didUpdateConfig(_ModelListener oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    if (config.model != oldConfig.model) {
-      oldConfig.model.removeListener(_onChange);
-      config.model.addListener(_onChange);
+  void didUpdateWidget(_ModelListener oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.model != oldWidget.model) {
+      oldWidget.model.removeListener(_onChange);
+      widget.model.addListener(_onChange);
     }
   }
 
   @override
   void dispose() {
-    config.model.removeListener(_onChange);
+    widget.model.removeListener(_onChange);
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => config.builder(context);
+  Widget build(BuildContext context) => widget.builder(context);
 
   void _onChange() => setState(() {});
 }

@@ -52,21 +52,21 @@ class _LongPressGestureDetectorState extends State<LongPressGestureDetector> {
     _recognizer =
         new DelayedMultiDragGestureRecognizer(delay: _kLongPressTimeout)
           ..onStart = (Offset position) {
-            config.onDragStart(
+            widget.onDragStart(
               new DragStartDetails(
                 globalPosition: position,
               ),
             );
             HapticFeedback.vibrate();
             return new _LongPressGestureDetectorDrag(
-              onDragUpdate: config.onDragUpdate,
+              onDragUpdate: widget.onDragUpdate,
               onDragEnd: (DragEndDetails details) {
                 _active = false;
-                config.onDragEnd(details);
+                widget.onDragEnd(details);
               },
               onDragCancel: () {
                 _active = false;
-                config.onDragCancel();
+                widget.onDragCancel();
               },
             );
           };
@@ -87,7 +87,7 @@ class _LongPressGestureDetectorState extends State<LongPressGestureDetector> {
           }
         },
         behavior: HitTestBehavior.opaque,
-        child: config.child,
+        child: widget.child,
       );
 }
 

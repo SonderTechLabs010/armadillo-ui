@@ -109,7 +109,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
       return false;
     }
 
-    ScrollPosition position = config.scrollController.position;
+    ScrollPosition position = widget.scrollController.position;
     double minScrollExtent = position.minScrollExtent;
     double maxScrollExtent = position.maxScrollExtent;
     double currentScrollOffset = position.pixels;
@@ -123,7 +123,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
       cumulativeScrollDelta += _kenichiEdgeScrolling.getScrollDelta(stepSize);
       secondsRemaining -= _kMaxStepSize;
     }
-    config.scrollController.jumpTo(
+    widget.scrollController.jumpTo(
       (currentScrollOffset + cumulativeScrollDelta).clamp(
         minScrollExtent,
         maxScrollExtent,

@@ -35,10 +35,10 @@ class VerticalShifterState extends State<VerticalShifter> {
             right: 0.0,
             top: -_shiftAmount,
             bottom: _shiftAmount,
-            child: config.child,
+            child: widget.child,
           ),
         ],
       );
 
-  double get _shiftAmount => _shiftProgress * config.verticalShift;
+  double get _shiftAmount => _shiftProgress * widget.verticalShift;
 }

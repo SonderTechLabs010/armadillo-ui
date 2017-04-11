@@ -33,7 +33,7 @@ class _BlinkingCursorState extends State<BlinkingCursor> {
   @override
   void initState() {
     super.initState();
-    _timer = new Timer.periodic(config.duration, (_) {
+    _timer = new Timer.periodic(widget.duration, (_) {
       if (mounted) {
         setState(() {
           _on = !_on;
@@ -47,7 +47,7 @@ class _BlinkingCursorState extends State<BlinkingCursor> {
   @override
   Widget build(_) => new Container(
       width: 1.0,
-      height: config.height,
+      height: widget.height,
       decoration: new BoxDecoration(
-          backgroundColor: _on ? config.color : new Color(0x00000000)));
+          backgroundColor: _on ? widget.color : new Color(0x00000000)));
 }

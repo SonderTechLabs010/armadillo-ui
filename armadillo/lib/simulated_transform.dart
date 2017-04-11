@@ -65,35 +65,35 @@ class SimulatedTranslationTransformState
   void initState() {
     super.initState();
     _dxSimulation = new RK4SpringSimulation(
-      initValue: config.initDx,
-      desc: config.springDescription,
+      initValue: widget.initDx,
+      desc: widget.springDescription,
     );
-    _dxSimulation.target = config.targetDx;
+    _dxSimulation.target = widget.targetDx;
     _dySimulation = new RK4SpringSimulation(
-      initValue: config.initDy,
-      desc: config.springDescription,
+      initValue: widget.initDy,
+      desc: widget.springDescription,
     );
-    _dySimulation.target = config.targetDy;
+    _dySimulation.target = widget.targetDy;
     _scaleSimulation = new RK4SpringSimulation(
-      initValue: config.initScale,
-      desc: config.springDescription,
+      initValue: widget.initScale,
+      desc: widget.springDescription,
     );
-    _scaleSimulation.target = config.targetScale;
+    _scaleSimulation.target = widget.targetScale;
     _opacitySimulation = new RK4SpringSimulation(
-      initValue: config.initOpacity,
-      desc: config.springDescription,
+      initValue: widget.initOpacity,
+      desc: widget.springDescription,
     );
-    _opacitySimulation.target = config.targetOpacity;
+    _opacitySimulation.target = widget.targetOpacity;
     startTicking();
   }
 
   @override
-  void didUpdateConfig(SimulatedTransform oldConfig) {
-    super.didUpdateConfig(oldConfig);
-    _dxSimulation.target = config.targetDx;
-    _dySimulation.target = config.targetDy;
-    _scaleSimulation.target = config.targetScale;
-    _opacitySimulation.target = config.targetOpacity;
+  void didUpdateWidget(SimulatedTransform oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _dxSimulation.target = widget.targetDx;
+    _dySimulation.target = widget.targetDy;
+    _scaleSimulation.target = widget.targetScale;
+    _opacitySimulation.target = widget.targetOpacity;
     startTicking();
   }
 
@@ -109,10 +109,10 @@ class SimulatedTranslationTransformState
           _scaleSimulation.value,
           _scaleSimulation.value,
         ),
-        alignment: config.alignment,
+        alignment: widget.alignment,
         child: new Opacity(
           opacity: _opacitySimulation.value.clamp(0.0, 1.0),
-          child: config.child,
+          child: widget.child,
         ),
       ));
 
