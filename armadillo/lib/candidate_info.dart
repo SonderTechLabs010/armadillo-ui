@@ -30,11 +30,11 @@ class CandidateInfo {
   /// target before switching.
   final Duration minLockDuration;
 
-  /// When a 'closest target' is chosen, the [Point] of the candidate becomes
+  /// When a 'closest target' is chosen, the [Offset] of the candidate becomes
   /// the lock point for that target.  A new 'closest target' will not be chosen
   /// until the candidate travels the [_kStickyDistance] away from that lock
   /// point.
-  Point _lockPoint;
+  Offset _lockPoint;
   PanelDragTarget _closestTarget;
   DateTime _timestamp;
   VelocityTracker _velocityTracker;
@@ -42,7 +42,7 @@ class CandidateInfo {
 
   /// Constructor.
   CandidateInfo({
-    @required Point initialLockPoint,
+    @required Offset initialLockPoint,
     this.timestampEmitter: _defaultTimestampEmitter,
     this.minLockDuration: _kMinLockDuration,
   })
@@ -56,7 +56,7 @@ class CandidateInfo {
   PanelDragTarget get closestTarget => _closestTarget;
 
   /// Updates the candidate's velocity with [point].
-  void updateVelocity(Point point) {
+  void updateVelocity(Offset point) {
     if (_velocityTracker == null) {
       _velocityTracker = new VelocityTracker();
     }
@@ -73,13 +73,13 @@ class CandidateInfo {
   ///    b) we've moved past the sticky distance from the candidate's lock
   ///       point, and
   ///    c) the candidate's closest target hasn't changed recently.
-  bool canLock(PanelDragTarget closestTarget, Point storyClusterPoint) =>
+  bool canLock(PanelDragTarget closestTarget, Offset storyClusterPoint) =>
       _hasNewPotentialTarget(closestTarget) &&
       _hasMovedPastThreshold(storyClusterPoint) &&
       _hasNotChangedRecently();
 
   /// Locks the candidate to [closestTarget] at the given [lockPoint].
-  void lock(Point lockPoint, PanelDragTarget closestTarget) {
+  void lock(Offset lockPoint, PanelDragTarget closestTarget) {
     _timestamp = timestampEmitter();
     _lockPoint = lockPoint;
     _closestTarget = closestTarget;
@@ -123,15 +123,15 @@ class CandidateInfo {
       closestTarget != null &&
       (_closestTarget == null || (!_closestTarget.isSameTarget(closestTarget)));
 
-  bool _hasMovedPastThreshold(Point storyClusterPoint) =>
+  bool _hasMovedPastThreshold(Offset storyClusterPoint) =>
       (_lockPoint - storyClusterPoint).distance > _kStickyDistance;
 
   bool _hasNotChangedRecently() =>
       _timestamp == null ||
       timestampEmitter().subtract(minLockDuration).isAfter(_timestamp);
 
-  /// Turns a [CandidateInfo] into a [Point] using the candidate's lock point.
-  static Point toPoint(CandidateInfo candidateInfo) => candidateInfo._lockPoint;
+  /// Turns a [CandidateInfo] into an [Offset] using the candidate's lock point.
+  static Offset toPoint(CandidateInfo candidateInfo) => candidateInfo._lockPoint;
 
   static DateTime _defaultTimestampEmitter() => new DateTime.now();
 }

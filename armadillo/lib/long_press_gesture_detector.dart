@@ -51,7 +51,7 @@ class _LongPressGestureDetectorState extends State<LongPressGestureDetector> {
     super.initState();
     _recognizer =
         new DelayedMultiDragGestureRecognizer(delay: _kLongPressTimeout)
-          ..onStart = (Point position) {
+          ..onStart = (Offset position) {
             config.onDragStart(
               new DragStartDetails(
                 globalPosition: position,

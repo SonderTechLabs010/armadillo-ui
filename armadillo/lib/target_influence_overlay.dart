@@ -11,7 +11,7 @@ const double _kStepSize = 40.0;
 const double _kTargetMargin = 1.0;
 
 /// Returns the closest target to the given [point].
-typedef PanelDragTarget ClosestTargetGetter(Point point);
+typedef PanelDragTarget ClosestTargetGetter(Offset point);
 
 /// When [enabled] is true, this widget draws the influence of the given
 /// [targets] by drawing a bunch of points that will accept
@@ -87,7 +87,7 @@ class _InfluencePainter extends CustomPainter {
       (int xStep) => new List<PanelDragTarget>.generate(
             ySteps,
             (int yStep) => closestTargetGetter(
-                  new Point((xStep + 1) * _kStepSize, (yStep + 1) * _kStepSize),
+                  new Offset((xStep + 1) * _kStepSize, (yStep + 1) * _kStepSize),
                 ),
           ),
     );
@@ -142,5 +142,5 @@ class _InfluencePainter extends CustomPainter {
   }
 
   @override
-  bool hitTest(Point position) => false;
+  bool hitTest(Offset position) => false;
 }

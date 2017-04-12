@@ -29,10 +29,10 @@ class LineSegment extends PanelDragTarget {
   /// The beginning of the line.
   /// [a] always aligns with [b] in either vertically or horizontally.
   /// [a] is always 'less than' [b] in x or y direction.
-  final Point a;
+  final Offset a;
 
   /// The end of the line.
-  final Point b;
+  final Offset b;
 
   /// The number of stories this line will accept.  See [canAccept].
   final int maxStoriesCanAccept;
@@ -46,14 +46,14 @@ class LineSegment extends PanelDragTarget {
   final bool directionallyTargetable;
 
   /// A [LineSegment] is considered a valid target for accepting stories if
-  /// the [distanceFrom] [Point] of the stories in question is within the
+  /// the [distanceFrom] [Offset] of the stories in question is within the
   /// [validityDistance] of this [LineSegment].
   final double validityDistance;
 
   /// Constructor.
   LineSegment(
-    Point a,
-    Point b, {
+    Offset a,
+    Offset b, {
     Color color: material.Colors.white,
     OnPanelEvent onHover,
     OnPanelEvent onDrop,
@@ -90,8 +90,8 @@ class LineSegment extends PanelDragTarget {
     double validityDistance: double.INFINITY,
   }) =>
       new LineSegment(
-        new Point(x, top),
-        new Point(x, bottom),
+        new Offset(x, top),
+        new Offset(x, bottom),
         color: color,
         onHover: onHover,
         onDrop: onDrop,
@@ -117,8 +117,8 @@ class LineSegment extends PanelDragTarget {
     double validityDistance: double.INFINITY,
   }) =>
       new LineSegment(
-        new Point(left, y),
-        new Point(right, y),
+        new Offset(left, y),
+        new Offset(right, y),
         color: color,
         onHover: onHover,
         onDrop: onDrop,
@@ -139,7 +139,7 @@ class LineSegment extends PanelDragTarget {
   bool canAccept(int storyCount) => storyCount <= maxStoriesCanAccept;
 
   @override
-  bool withinRange(Point p) => distanceFrom(p) < validityDistance;
+  bool withinRange(Offset p) => distanceFrom(p) < validityDistance;
 
   @override
   bool isValidInDirection(DragDirection dragDirection) {
@@ -167,7 +167,7 @@ class LineSegment extends PanelDragTarget {
   }
 
   @override
-  bool isInDirectionFromPoint(DragDirection dragDirection, Point point) {
+  bool isInDirectionFromPoint(DragDirection dragDirection, Offset point) {
     if (!directionallyTargetable) {
       return true;
     }
@@ -208,7 +208,7 @@ class LineSegment extends PanelDragTarget {
   }
 
   @override
-  double distanceFrom(Point p) {
+  double distanceFrom(Offset p) {
     if (isHorizontal) {
       if (p.x < a.x) {
         return math.sqrt(math.pow(p.x - a.x, 2) + math.pow(p.y - a.y, 2));

@@ -91,7 +91,7 @@ class ExpandSuggestion extends ExpansionBehavior {
   @override
   Widget build(BuildContext context, BoxConstraints constraints) {
     RenderBox box = context.findRenderObject();
-    Point topLeft = box.localToGlobal(Point.origin);
+    Offset topLeft = box.localToGlobal(Offset.zero);
     return new Stack(
       children: <Widget>[
         new Positioned(

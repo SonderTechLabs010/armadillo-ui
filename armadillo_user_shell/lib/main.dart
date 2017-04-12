@@ -257,7 +257,7 @@ Widget _buildDiscardDragTarget({
           storyProviderStoryGenerator.removeStoryCluster(
             data.id,
           ),
-      builder: (_, Map<StoryClusterDragData, Point> candidateData, __) =>
+      builder: (_, Map<StoryClusterDragData, Offset> candidateData, __) =>
           new IgnorePointer(
             child: new Container(
               decoration: new BoxDecoration(

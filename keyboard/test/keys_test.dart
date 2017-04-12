@@ -44,14 +44,14 @@ void main() {
   });
 }
 
-Point _getMiddleOfLeftSide(WidgetTester tester, Key key) {
+Offset _getMiddleOfLeftSide(WidgetTester tester, Key key) {
   Finder element = find.byKey(key);
-  Point topLeft = tester.getTopLeft(element);
-  Point center = tester.getCenter(element);
-  return new Point(topLeft.x, center.y);
+  Offset topLeft = tester.getTopLeft(element);
+  Offset center = tester.getCenter(element);
+  return new Offset(topLeft.x, center.y);
 }
 
-Future<Null> _tap(WidgetTester tester, Point point) async {
+Future<Null> _tap(WidgetTester tester, Offset point) async {
   TestGesture gesture = await tester.startGesture(point, pointer: 8);
   await tester.pump();
   await gesture.up();

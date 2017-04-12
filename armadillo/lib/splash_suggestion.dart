@@ -78,7 +78,7 @@ class SplashSuggestion extends ExpansionBehavior {
     }
 
     RenderBox box = context.findRenderObject();
-    Point topLeft = box.localToGlobal(Point.origin);
+    Offset topLeft = box.localToGlobal(Offset.zero);
     Rect shiftedBounds =
         suggestionInitialGlobalBounds.shift(new Offset(-topLeft.x, -topLeft.y));
     double splashRadius = math.sqrt(

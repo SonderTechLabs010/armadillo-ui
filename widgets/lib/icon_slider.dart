@@ -406,7 +406,7 @@ class _RenderIconSlider extends RenderConstrainedBox
   }
 
   @override
-  bool hitTestSelf(Point position) => true;
+  bool hitTestSelf(Offset position) => true;
 
   @override
   void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
@@ -459,7 +459,7 @@ class _RenderIconSlider extends RenderConstrainedBox
     final Paint trackPaint = new Paint()
       ..color = _kTrackColorTween.evaluate(_reaction);
 
-    final Point thumbCenter = new Point(trackActive, trackCenter);
+    final Offset thumbCenter = new Offset(trackActive, trackCenter);
     double thumbRadius = enabled
         ? _kThumbRadiusTween.evaluate(_reaction)
         : _kDisabledThumbRadius;
@@ -525,10 +525,10 @@ class _RenderIconSlider extends RenderConstrainedBox
       }
 
       if (label != null) {
-        final Point center = new Point(trackActive,
+        final Offset center = new Offset(trackActive,
             _kLabelBalloonCenterTween.evaluate(_reaction) + trackCenter);
         final double radius = _kLabelBalloonRadiusTween.evaluate(_reaction);
-        final Point tip = new Point(trackActive,
+        final Offset tip = new Offset(trackActive,
             _kLabelBalloonTipTween.evaluate(_reaction) + trackCenter);
         final double tipAttachment = _kLabelBalloonTipAttachmentRatio * radius;
 
@@ -584,7 +584,7 @@ class _RenderIconSlider extends RenderConstrainedBox
         double imageRadius = thumbRadius - thumbStrokeWidth;
         thumbPainter.paint(
             canvas,
-            thumbCenter.toOffset() -
+            thumbCenter -
                 new Offset(imageRadius, imageRadius), // + offset
             configuration.copyWith(size: new Size.fromRadius(imageRadius)));
       } finally {

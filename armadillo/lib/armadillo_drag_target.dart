@@ -21,7 +21,7 @@ const Duration _kLongPressTimeout = const Duration(milliseconds: 300);
 /// Much of this code is borrowed from the Flutter framework's inplementation
 /// of [Draggable] and [DragTarget].  What is different about this
 /// implementation is the addition of each piece of data having an associated
-/// [Point] which indicates where it is when hovering
+/// [Offset] which indicates where it is when hovering
 /// (passed in via [ArmadilloDragTargetWillAccept]) and when dropped (passed in
 /// via [ArmadilloDragTargetAccept]).  We also use [ArmadilloOverlay] instead of
 /// [Overlay] to display draggable drag feedback so the drag feedback can be
@@ -39,17 +39,17 @@ const Duration _kLongPressTimeout = const Duration(milliseconds: 300);
 /// this [ArmadilloDragTarget] and that will not be accepted by the [ArmadilloDragTarget].
 typedef Widget ArmadilloDragTargetBuilder<T>(
   BuildContext context,
-  Map<T, Point> candidateData,
-  Map<dynamic, Point> rejectedData,
+  Map<T, Offset> candidateData,
+  Map<dynamic, Offset> rejectedData,
 );
 
 /// Signature for determining whether the given data will be accepted by a [ArmadilloDragTarget].
-typedef bool ArmadilloDragTargetWillAccept<T>(T data, Point point);
+typedef bool ArmadilloDragTargetWillAccept<T>(T data, Offset point);
 
 /// Signature for causing a [ArmadilloDragTarget] to accept the given data.
 typedef void ArmadilloDragTargetAccept<T>(
   T data,
-  Point point,
+  Offset point,
   Velocity velocity,
 );
 
@@ -58,7 +58,7 @@ typedef void ArmadilloDragTargetAccept<T>(
 /// [localDragStartPoint] indicates where the drag started in the draggable's
 /// local coordinate space.
 typedef Widget FeedbackBuilder(
-  Point localDragStartPoint,
+  Offset localDragStartPoint,
   Rect initialBoundsOnDrag,
 );
 
@@ -130,7 +130,7 @@ class ArmadilloLongPressDraggable<T> extends StatefulWidget {
   DelayedMultiDragGestureRecognizer createRecognizer(
           GestureMultiDragStartCallback onStart) =>
       new DelayedMultiDragGestureRecognizer(delay: _kLongPressTimeout)
-        ..onStart = (Point position) {
+        ..onStart = (Offset position) {
           Drag result = onStart(position);
           if (result != null) {
             HapticFeedback.vibrate();
@@ -186,7 +186,7 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
     }
   }
 
-  _DragAvatar<T> _startDrag(Point position) {
+  _DragAvatar<T> _startDrag(Offset position) {
     if (!_canDrag) {
       return null;
     }
@@ -196,7 +196,7 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
     });
 
     final RenderBox box = context.findRenderObject();
-    final Point dragStartPoint = box.globalToLocal(position);
+    final Offset dragStartPoint = box.globalToLocal(position);
     final Rect initialBoundsOnDrag = config.onDragStarted?.call();
     final WidgetBuilder builder =
         (BuildContext context) => new _DragAvatarWidget(
@@ -212,7 +212,7 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
 
     _DragAvatar<T> dragAvatar = new _DragAvatar<T>(
       data: config.data,
-      onDragUpdate: (Point position) =>
+      onDragUpdate: (Offset position) =>
           _dragAvatarKey.currentState?.updatePosition(position),
       onDragEnd: (bool wasAccepted) {
         setState(() {
@@ -250,8 +250,8 @@ class _DraggableState<T> extends State<ArmadilloLongPressDraggable<T>> {
 class _DragAvatarWidget extends StatefulWidget {
   final GlobalKey returnTargetKey;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
-  final Point initialPosition;
-  final Point dragStartPoint;
+  final Offset initialPosition;
+  final Offset dragStartPoint;
   final Rect initialBoundsOnDrag;
   final FeedbackBuilder feedbackBuilder;
 
@@ -273,7 +273,7 @@ class _DragAvatarWidget extends StatefulWidget {
 class _DragAvatarWidgetState extends TickingState<_DragAvatarWidget> {
   RK4SpringSimulation _returnSimulation;
   VoidCallback _onReturnSimulationDone;
-  Point _position;
+  Offset _position;
 
   @override
   void initState() {
@@ -284,7 +284,7 @@ class _DragAvatarWidgetState extends TickingState<_DragAvatarWidget> {
   @override
   Widget build(BuildContext context) {
     RenderBox overlayBox = config.overlayKey.currentContext.findRenderObject();
-    Point overlayTopLeft = overlayBox.localToGlobal(Point.origin);
+    Offset overlayTopLeft = overlayBox.localToGlobal(Offset.zero);
     Offset localOffset = _position - config.dragStartPoint;
     double left = localOffset.dx - overlayTopLeft.x;
     double top = localOffset.dy - overlayTopLeft.y;
@@ -293,8 +293,8 @@ class _DragAvatarWidgetState extends TickingState<_DragAvatarWidget> {
     if (returnProgress > 0.0) {
       final RenderBox returnTargetBox =
           config.returnTargetKey.currentContext.findRenderObject();
-      final Point returnTargetTopLeft = returnTargetBox.localToGlobal(
-        Point.origin,
+      final Offset returnTargetTopLeft = returnTargetBox.localToGlobal(
+        Offset.zero,
       );
       left = lerpDouble(
         left,
@@ -332,7 +332,7 @@ class _DragAvatarWidgetState extends TickingState<_DragAvatarWidget> {
     return !(isDone);
   }
 
-  void updatePosition(Point position) => setState(() {
+  void updatePosition(Offset position) => setState(() {
         _position = position;
       });
 
@@ -392,10 +392,10 @@ class ArmadilloDragTarget<T> extends StatefulWidget {
 }
 
 class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
-  final Map<T, Point> _candidateData = new Map<T, Point>();
-  final Map<dynamic, Point> _rejectedData = new Map<dynamic, Point>();
+  final Map<T, Offset> _candidateData = new Map<T, Offset>();
+  final Map<dynamic, Offset> _rejectedData = new Map<dynamic, Offset>();
 
-  bool didEnter(dynamic data, Point localPosition) {
+  bool didEnter(dynamic data, Offset localPosition) {
     assert(_candidateData[data] == null);
     assert(_rejectedData[data] == null);
     if (data is T && (config.onWillAccept?.call(data, localPosition) ?? true)) {
@@ -410,7 +410,7 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
     return false;
   }
 
-  void updatePosition(dynamic data, Point localPosition) {
+  void updatePosition(dynamic data, Offset localPosition) {
     setState(() {
       if (_candidateData[data] != null) {
         _candidateData[data] = localPosition;
@@ -435,7 +435,7 @@ class _DragTargetState<T> extends State<ArmadilloDragTarget<T>> {
   void didDrop(dynamic data, Velocity velocity) {
     assert(_candidateData[data] != null);
     if (mounted) {
-      Point point = _candidateData[data];
+      Offset point = _candidateData[data];
       setState(() {
         _candidateData.remove(data);
         _rejectedData.remove(data);
@@ -462,16 +462,16 @@ typedef void _OnDragEnd(bool wasAccepted);
 // this widget.
 class _DragAvatar<T> extends Drag {
   final T data;
-  final ValueChanged<Point> onDragUpdate;
+  final ValueChanged<Offset> onDragUpdate;
   final _OnDragEnd onDragEnd;
   final List<_DragTargetState<T>> _activeTargets = <_DragTargetState<T>>[];
   final List<_DragTargetState<T>> _enteredTargets = <_DragTargetState<T>>[];
 
-  Point _position;
+  Offset _position;
 
   _DragAvatar({this.data, this.onDragUpdate, this.onDragEnd});
 
-  set position(Point newPosition) {
+  set position(Offset newPosition) {
     _position = newPosition;
     _updateDrag(newPosition);
   }
@@ -491,7 +491,7 @@ class _DragAvatar<T> extends Drag {
   @override
   void cancel() => _finishDrag(_DragEndKind.canceled);
 
-  void _updateDrag(Point globalPosition) {
+  void _updateDrag(Offset globalPosition) {
     onDragUpdate?.call(globalPosition);
 
     Iterable<_DragTargetState<T>> targets = _getDragTargets(globalPosition);
@@ -520,15 +520,15 @@ class _DragAvatar<T> extends Drag {
     );
   }
 
-  Point _globalToLocal(_DragTargetState<T> target, Point globalPosition) {
+  Offset _globalToLocal(_DragTargetState<T> target, Offset globalPosition) {
     RenderBox box = target.context.findRenderObject();
     return box.globalToLocal(globalPosition);
   }
 
-  void _updatePosition(_DragTargetState<T> target, Point globalPosition) =>
+  void _updatePosition(_DragTargetState<T> target, Offset globalPosition) =>
       target.updatePosition(data, _globalToLocal(target, globalPosition));
 
-  Iterable<_DragTargetState<T>> _getDragTargets(Point globalPosition) sync* {
+  Iterable<_DragTargetState<T>> _getDragTargets(Offset globalPosition) sync* {
     HitTestResult result = new HitTestResult();
     WidgetsBinding.instance.hitTest(result, globalPosition);
 

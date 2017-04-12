@@ -265,9 +265,9 @@ class StoryPanels extends StatelessWidget {
             onDragStarted: () {
               RenderBox box =
                   story.positionedKey.currentContext.findRenderObject();
-              Point boxTopLeft = box.localToGlobal(Point.origin);
-              Point boxBottomRight = box.localToGlobal(
-                new Point(box.size.width, box.size.height),
+              Offset boxTopLeft = box.localToGlobal(Offset.zero);
+              Offset boxBottomRight = box.localToGlobal(
+                new Offset(box.size.width, box.size.height),
               );
               Rect initialBoundsOnDrag = new Rect.fromLTRB(
                 boxTopLeft.x,
@@ -278,8 +278,8 @@ class StoryPanels extends StatelessWidget {
 
               RenderBox storyBarBox =
                   story.storyBarKey.currentContext.findRenderObject();
-              Point storyBarBoxTopLeft =
-                  storyBarBox.localToGlobal(Point.origin);
+              Offset storyBarBoxTopLeft =
+                  storyBarBox.localToGlobal(Offset.zero);
               initialDxOnDrag = (storyCluster.displayMode == DisplayMode.tabs)
                   ? -storyBarBoxTopLeft.x
                   : 0.0;
@@ -308,7 +308,7 @@ class StoryPanels extends StatelessWidget {
                     ),
             childWhenDragging: Nothing.widget,
             feedbackBuilder: (
-              Point localDragStartPoint,
+              Offset localDragStartPoint,
               Rect initialBoundsOnDrag,
             ) {
               StoryCluster storyCluster =

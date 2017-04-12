@@ -304,7 +304,7 @@ class SuggestionListState extends State<SuggestionList> {
             new GlobalObjectKey(suggestion).currentContext.findRenderObject();
         config.onSuggestionSelected(
           suggestion,
-          box.localToGlobal(Point.origin) & box.size,
+          box.localToGlobal(Offset.zero) & box.size,
         );
         break;
       case SelectionType.doNothing:

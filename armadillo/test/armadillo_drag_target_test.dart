@@ -29,7 +29,7 @@ void main() {
         color: new Color(0xFFFFFF00),
       ),
       feedbackBuilder: (
-        Point localDragStartPoint,
+        Offset localDragStartPoint,
         Rect initialBoundsOnDrag,
       ) {},
       data: 1,
@@ -128,7 +128,7 @@ void main() {
         color: new Color(0xFFFFFF00),
       ),
       feedbackBuilder: (
-        Point localDragStartPoint,
+        Offset localDragStartPoint,
         Rect initialBoundsOnDrag,
       ) {},
       data: 1,
@@ -209,28 +209,28 @@ void main() {
         color: new Color(0xFFFFFF00),
       ),
       feedbackBuilder: (
-        Point localDragStartPoint,
+        Offset localDragStartPoint,
         Rect initialBoundsOnDrag,
       ) {},
       data: 1,
     );
 
     GlobalKey acceptingDragTargetKey = new GlobalKey();
-    Map<int, Point> acceptingCandidateData;
-    Map<dynamic, Point> acceptingRejectedData;
+    Map<int, Offset> acceptingCandidateData;
+    Map<dynamic, Offset> acceptingRejectedData;
     ArmadilloDragTarget<int> acceptingDragTarget = new ArmadilloDragTarget<int>(
       key: acceptingDragTargetKey,
-      onWillAccept: (int data, Point point) {
+      onWillAccept: (int data, Offset point) {
         assert(data == 1);
         return true;
       },
-      onAccept: (int data, Point point, Velocity velocity) {
+      onAccept: (int data, Offset point, Velocity velocity) {
         assert(data == 1);
       },
       builder: (
         BuildContext context,
-        Map<int, Point> candidateData,
-        Map<dynamic, Point> rejectedData,
+        Map<int, Offset> candidateData,
+        Map<dynamic, Offset> rejectedData,
       ) {
         acceptingCandidateData = candidateData;
         acceptingRejectedData = rejectedData;
@@ -243,22 +243,22 @@ void main() {
     );
 
     GlobalKey unacceptingDragTargetKey = new GlobalKey();
-    Map<int, Point> unacceptingCandidateData;
-    Map<dynamic, Point> unacceptingRejectedData;
+    Map<int, Offset> unacceptingCandidateData;
+    Map<dynamic, Offset> unacceptingRejectedData;
     ArmadilloDragTarget<int> unacceptingDragTarget =
         new ArmadilloDragTarget<int>(
       key: unacceptingDragTargetKey,
-      onWillAccept: (int data, Point point) {
+      onWillAccept: (int data, Offset point) {
         assert(data == 1);
         return false;
       },
-      onAccept: (int data, Point point, Velocity velocity) {
+      onAccept: (int data, Offset point, Velocity velocity) {
         throw new AssertionError('onAccept shouldn\'t have been called!');
       },
       builder: (
         BuildContext context,
-        Map<int, Point> candidateData,
-        Map<dynamic, Point> rejectedData,
+        Map<int, Offset> candidateData,
+        Map<dynamic, Offset> rejectedData,
       ) {
         unacceptingCandidateData = candidateData;
         unacceptingRejectedData = rejectedData;
@@ -314,7 +314,7 @@ void main() {
     expect(acceptingCandidateData.isEmpty, isFalse);
     expect(acceptingRejectedData.isEmpty, isTrue);
     expect(
-      acceptingCandidateData.values.single - Point.origin,
+      acceptingCandidateData.values.single - Offset.zero,
       tester.getCenter(find.byKey(acceptingDragTargetKey)) -
           tester.getTopLeft(find.byKey(acceptingDragTargetKey)),
     );
@@ -330,7 +330,7 @@ void main() {
     expect(acceptingCandidateData.isEmpty, isTrue);
     expect(acceptingRejectedData.isEmpty, isTrue);
     expect(
-      unacceptingRejectedData.values.single - Point.origin,
+      unacceptingRejectedData.values.single - Offset.zero,
       tester.getCenter(find.byKey(unacceptingDragTargetKey)) -
           tester.getTopLeft(find.byKey(unacceptingDragTargetKey)),
     );
@@ -354,7 +354,7 @@ void main() {
         color: new Color(0xFFFFFF00),
       ),
       feedbackBuilder: (
-        Point localDragStartPoint,
+        Offset localDragStartPoint,
         Rect initialBoundsOnDrag,
       ) {},
       data: 1,
@@ -364,22 +364,22 @@ void main() {
     // (transparent containers). So all will have a chance to accept or reject
     // the candidate.
     GlobalKey acceptingDragTargetKey1 = new GlobalKey();
-    Map<int, Point> acceptingCandidateData1;
-    Map<dynamic, Point> acceptingRejectedData1;
+    Map<int, Offset> acceptingCandidateData1;
+    Map<dynamic, Offset> acceptingRejectedData1;
     ArmadilloDragTarget<int> acceptingDragTarget1 =
         new ArmadilloDragTarget<int>(
       key: acceptingDragTargetKey1,
-      onWillAccept: (int data, Point point) {
+      onWillAccept: (int data, Offset point) {
         assert(data == 1);
         return true;
       },
-      onAccept: (int data, Point point, Velocity velocity) {
+      onAccept: (int data, Offset point, Velocity velocity) {
         assert(data == 1);
       },
       builder: (
         BuildContext context,
-        Map<int, Point> candidateData,
-        Map<dynamic, Point> rejectedData,
+        Map<int, Offset> candidateData,
+        Map<dynamic, Offset> rejectedData,
       ) {
         acceptingCandidateData1 = candidateData;
         acceptingRejectedData1 = rejectedData;
@@ -391,22 +391,22 @@ void main() {
     );
 
     GlobalKey acceptingDragTargetKey2 = new GlobalKey();
-    Map<int, Point> acceptingCandidateData2;
-    Map<dynamic, Point> acceptingRejectedData2;
+    Map<int, Offset> acceptingCandidateData2;
+    Map<dynamic, Offset> acceptingRejectedData2;
     ArmadilloDragTarget<int> acceptingDragTarget2 =
         new ArmadilloDragTarget<int>(
       key: acceptingDragTargetKey2,
-      onWillAccept: (int data, Point point) {
+      onWillAccept: (int data, Offset point) {
         assert(data == 1);
         return true;
       },
-      onAccept: (int data, Point point, Velocity velocity) {
+      onAccept: (int data, Offset point, Velocity velocity) {
         assert(data == 1);
       },
       builder: (
         BuildContext context,
-        Map<int, Point> candidateData,
-        Map<dynamic, Point> rejectedData,
+        Map<int, Offset> candidateData,
+        Map<dynamic, Offset> rejectedData,
       ) {
         acceptingCandidateData2 = candidateData;
         acceptingRejectedData2 = rejectedData;
@@ -418,22 +418,22 @@ void main() {
     );
 
     GlobalKey unacceptingDragTargetKey = new GlobalKey();
-    Map<int, Point> unacceptingCandidateData;
-    Map<dynamic, Point> unacceptingRejectedData;
+    Map<int, Offset> unacceptingCandidateData;
+    Map<dynamic, Offset> unacceptingRejectedData;
     ArmadilloDragTarget<int> unacceptingDragTarget =
         new ArmadilloDragTarget<int>(
       key: unacceptingDragTargetKey,
-      onWillAccept: (int data, Point point) {
+      onWillAccept: (int data, Offset point) {
         assert(data == 1);
         return false;
       },
-      onAccept: (int data, Point point, Velocity velocity) {
+      onAccept: (int data, Offset point, Velocity velocity) {
         throw new AssertionError('onAccept shouldn\'t have been called!');
       },
       builder: (
         BuildContext context,
-        Map<int, Point> candidateData,
-        Map<dynamic, Point> rejectedData,
+        Map<int, Offset> candidateData,
+        Map<dynamic, Offset> rejectedData,
       ) {
         unacceptingCandidateData = candidateData;
         unacceptingRejectedData = rejectedData;
@@ -500,17 +500,17 @@ void main() {
     expect(acceptingCandidateData2.isEmpty, isFalse);
     expect(acceptingRejectedData2.isEmpty, isTrue);
     expect(
-      acceptingCandidateData1.values.single - Point.origin,
+      acceptingCandidateData1.values.single - Offset.zero,
       tester.getCenter(find.byKey(acceptingDragTargetKey1)) -
           tester.getTopLeft(find.byKey(acceptingDragTargetKey1)),
     );
     expect(
-      acceptingCandidateData2.values.single - Point.origin,
+      acceptingCandidateData2.values.single - Offset.zero,
       tester.getCenter(find.byKey(acceptingDragTargetKey2)) -
           tester.getTopLeft(find.byKey(acceptingDragTargetKey2)),
     );
     expect(
-      unacceptingRejectedData.values.single - Point.origin,
+      unacceptingRejectedData.values.single - Offset.zero,
       tester.getCenter(find.byKey(unacceptingDragTargetKey)) -
           tester.getTopLeft(find.byKey(unacceptingDragTargetKey)),
     );

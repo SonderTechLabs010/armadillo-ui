@@ -216,7 +216,7 @@ class RenderStoryListBody extends RenderListBody {
       // This effectively prevents all of the most focused child's siblings
       // from being tapped, dragged over, or otherwise interacted with.
       if (mostFocusedProgress > 0.0) {
-        Point transformed = new Point(
+        Offset transformed = new Offset(
           position.x - mostFocusedChildParentData.offset.dx,
           position.y - mostFocusedChildParentData.offset.dy,
         );
@@ -232,7 +232,7 @@ class RenderStoryListBody extends RenderListBody {
           final RenderBox child = children[i];
           final StoryListBodyParentData childParentData =
               child.parentData;
-          Point transformed = new Point(
+          Offset transformed = new Offset(
             position.x - childParentData.offset.dx,
             position.y - childParentData.offset.dy,
           );
@@ -260,8 +260,8 @@ class RenderStoryListBody extends RenderListBody {
     );
     double parentCenterOffsetY = _listHeight +
         (_bottomPadding - scrollOffset - (_parentSize.height / 2.0));
-    Point parentCenter =
-        new Point(_parentSize.width / 2.0, parentCenterOffsetY);
+    Offset parentCenter =
+        new Offset(_parentSize.width / 2.0, parentCenterOffsetY);
 
     {
       RenderBox child = firstChild;
@@ -331,7 +331,7 @@ class RenderStoryListBody extends RenderListBody {
         );
 
         // Reposition toward center if inline previewing.
-        Point currentCenter = new Point(
+        Offset currentCenter = new Offset(
           childParentData.offset.dx + childWidth / 2.0,
           childParentData.offset.dy + childHeight / 2.0,
         );

@@ -30,7 +30,7 @@ class StoryClusterDragFeedback extends StatefulWidget {
   final StoryCluster storyCluster;
   final GlobalKey<ArmadilloOverlayState> overlayKey;
   final Map<StoryId, Widget> storyWidgets;
-  final Point localDragStartPoint;
+  final Offset localDragStartPoint;
   final Rect initialBounds;
   final double focusProgress;
   final double initDx;

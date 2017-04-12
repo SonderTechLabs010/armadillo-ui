@@ -14,7 +14,7 @@ import 'package:flutter/widgets.dart';
 class SplashPainter extends CustomPainter {
   final double innerSplashProgress;
   final double outerSplashProgress;
-  final Point splashOrigin;
+  final Offset splashOrigin;
   final Color splashColor;
   final double splashRadius;
 

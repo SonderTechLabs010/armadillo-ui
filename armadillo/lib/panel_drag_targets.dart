@@ -157,8 +157,8 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
             ),
         builder: (
           BuildContext context,
-          Map<StoryClusterDragData, Point> candidates,
-          Map<dynamic, Point> rejectedData,
+          Map<StoryClusterDragData, Offset> candidates,
+          Map<dynamic, Offset> rejectedData,
         ) =>
             _build(candidates),
       );
@@ -212,7 +212,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   /// [candidates] are the clusters that are currently
   /// being dragged over this drag target with their associated local
   /// position.
-  Widget _build(Map<StoryClusterDragData, Point> candidates) {
+  Widget _build(Map<StoryClusterDragData, Offset> candidates) {
     // Update the acceptance of a dragged StoryCluster.  If we have no
     // candidates we're not accepting it.  If we do have condidates and we're
     // focused we do accept it.  If we're in the timeline we need to wait for
@@ -257,7 +257,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     return _buildWithConfirmedCandidates(
       !_inTimeline || _candidatesValid
           ? candidates
-          : <StoryClusterDragData, Point>{},
+          : <StoryClusterDragData, Offset>{},
     );
   }
 
@@ -265,7 +265,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   /// being dragged over this drag target for the prerequesite time period with
   /// their associated local position.
   Widget _buildWithConfirmedCandidates(
-    Map<StoryClusterDragData, Point> candidates,
+    Map<StoryClusterDragData, Offset> candidates,
   ) {
     candidates.keys.forEach((StoryClusterDragData data) {
       if (_trackedCandidates[data.id] == null) {
@@ -291,7 +291,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     _updateInlinePreviewScalingSimulation(hasCandidates && _inTimeline);
 
-    Map<StoryCluster, Point> storyClusterCandidates = _getStoryClusterMap(
+    Map<StoryCluster, Offset> storyClusterCandidates = _getStoryClusterMap(
       candidates,
     );
 
@@ -327,7 +327,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
                 debugModel.showTargetInfluenceOverlay && candidates.isNotEmpty,
             targets: validTargets,
             dragDirection: influenceDragDirection,
-            closestTargetGetter: (Point point) => _getClosestTarget(
+            closestTargetGetter: (Offset point) => _getClosestTarget(
                   influenceDragDirection,
                   point,
                   storyClusterCandidates.keys.isNotEmpty
@@ -387,17 +387,17 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
         return;
       }
 
-      Point storyTopLeft = storyBox.localToGlobal(Point.origin);
-      Point storyBottomRight = storyBox.localToGlobal(
-        new Point(storyBox.size.width, storyBox.size.height),
+      Offset storyTopLeft = storyBox.localToGlobal(Offset.zero);
+      Offset storyBottomRight = storyBox.localToGlobal(
+        new Offset(storyBox.size.width, storyBox.size.height),
       );
 
       // Convert the Story's global bounds into bounds local to the
       // StoryPanels...
       RenderBox panelsBox =
           config.storyCluster.panelsKey.currentContext.findRenderObject();
-      Point storyInPanelsTopLeft = panelsBox.globalToLocal(storyTopLeft);
-      Point storyInPanelsBottomRight =
+      Offset storyInPanelsTopLeft = panelsBox.globalToLocal(storyTopLeft);
+      Offset storyInPanelsBottomRight =
           panelsBox.globalToLocal(storyBottomRight);
       // Jump the Story's SimulatedFractional to its new location to
       // ensure a seamless animation into place.
@@ -414,12 +414,12 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
     });
   }
 
-  Map<StoryCluster, Point> _getStoryClusterMap(
-    Map<StoryClusterDragData, Point> candidates,
+  Map<StoryCluster, Offset> _getStoryClusterMap(
+    Map<StoryClusterDragData, Offset> candidates,
   ) {
-    Map<StoryCluster, Point> storyClusterMap = <StoryCluster, Point>{};
+    Map<StoryCluster, Offset> storyClusterMap = <StoryCluster, Offset>{};
     candidates.keys.forEach((StoryClusterDragData data) {
-      Point storyClusterPoint = candidates[data];
+      Offset storyClusterPoint = candidates[data];
       StoryCluster storyCluster =
           StoryModel.of(context).getStoryCluster(data.id);
       storyClusterMap[storyCluster] = storyClusterPoint;
@@ -436,7 +436,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
         ?.target = (activate || _candidateValidityTimer != null) ? 1.0 : 0.0;
   }
 
-  void _updateClosestTargets(Map<StoryClusterDragData, Point> candidates) {
+  void _updateClosestTargets(Map<StoryClusterDragData, Offset> candidates) {
     // Remove any candidates that no longer exist.
     _trackedCandidates.keys.toList().forEach((StoryClusterId storyClusterId) {
       if (candidates.keys
@@ -456,7 +456,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
     // For each candidate...
     candidates.keys.forEach((StoryClusterDragData data) {
-      Point storyClusterPoint = candidates[data];
+      Offset storyClusterPoint = candidates[data];
 
       CandidateInfo candidateInfo = _trackedCandidates[data.id];
 
@@ -484,7 +484,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
   void _lockClosestTarget({
     CandidateInfo candidateInfo,
     StoryCluster storyCluster,
-    Point point,
+    Offset point,
     PanelDragTarget closestTarget,
   }) {
     candidateInfo.lock(point, closestTarget);
@@ -496,7 +496,7 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
 
   PanelDragTarget _getClosestTarget(
     DragDirection dragDirection,
-    Point point,
+    Offset point,
     StoryCluster storyCluster,
     bool initialTarget,
   ) {

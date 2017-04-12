@@ -70,5 +70,5 @@ class QuadrilateralPainter extends CustomPainter {
       (oldPainter.color != color);
 
   @override
-  bool hitTest(Point position) => false;
+  bool hitTest(Offset position) => false;
 }

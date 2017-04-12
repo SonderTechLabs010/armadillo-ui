@@ -42,10 +42,10 @@ abstract class PanelDragTarget {
   bool isValidInDirection(DragDirection dragDirection);
 
   /// Returns true if the target is in the [dragDirection] from [point].
-  bool isInDirectionFromPoint(DragDirection dragDirection, Point point);
+  bool isInDirectionFromPoint(DragDirection dragDirection, Offset point);
 
   /// Returns the distance the target is from [p].
-  double distanceFrom(Point p);
+  double distanceFrom(Offset p);
 
   /// Returns a visual representation of the target. For debug purposes only.
   Widget build({bool highlighted: false});
@@ -58,5 +58,5 @@ abstract class PanelDragTarget {
   bool isSameTarget(PanelDragTarget other);
 
   /// Returns true if [p] is within range of target.
-  bool withinRange(Point p);
+  bool withinRange(Offset p);
 }

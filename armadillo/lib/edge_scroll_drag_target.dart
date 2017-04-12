@@ -18,7 +18,7 @@ const Color _kNoDraggableHoverColor = const Color(0x00FFFF00);
 
 /// Called whenever an [ArmadilloDragTarget] child of [EdgeScrollDragTarget] is
 /// built.
-typedef void _BuildCallback(bool hasDraggableAbove, List<Point> points);
+typedef void _BuildCallback(bool hasDraggableAbove, List<Offset> points);
 
 /// Creates disablable drag targets which cause the given [ScrollController] to
 /// scroll when a draggable hovers over them.  The drag targets are placed
@@ -84,11 +84,11 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
               right: 0.0,
               bottom: 0.0,
               child: _buildDragTarget(
-                onBuild: (bool hasDraggableAbove, List<Point> points) {
+                onBuild: (bool hasDraggableAbove, List<Offset> points) {
                   RenderBox box = context.findRenderObject();
                   double height = box.size.height;
                   double y = height;
-                  points.forEach((Point point) {
+                  points.forEach((Offset point) {
                     y = math.min(y, point.y);
                   });
                   _kenichiEdgeScrolling.update(y, height);
@@ -139,7 +139,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
       new ArmadilloDragTarget<StoryClusterDragData>(
         onWillAccept: (_, __) => false,
         onAccept: (_, __, ___) => null,
-        builder: (_, __, Map<dynamic, Point> rejectedData) {
+        builder: (_, __, Map<dynamic, Offset> rejectedData) {
           onBuild(rejectedData.isNotEmpty, rejectedData.values.toList());
           return new IgnorePointer(
             child: new Container(

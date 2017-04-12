@@ -96,9 +96,9 @@ class StoryClusterWidget extends StatelessWidget {
             onDragStarted: () {
               RenderBox box =
                   storyCluster.panelsKey.currentContext.findRenderObject();
-              Point boxTopLeft = box.localToGlobal(Point.origin);
-              Point boxBottomRight = box.localToGlobal(
-                new Point(box.size.width, box.size.height),
+              Offset boxTopLeft = box.localToGlobal(Offset.zero);
+              Offset boxBottomRight = box.localToGlobal(
+                new Offset(box.size.width, box.size.height),
               );
               Rect initialBoundsOnDrag = new Rect.fromLTRB(
                 boxTopLeft.x,
@@ -116,7 +116,7 @@ class StoryClusterWidget extends StatelessWidget {
                       storyCluster.id,
                     ),
             feedbackBuilder: (
-              Point localDragStartPoint,
+              Offset localDragStartPoint,
               Rect initialBoundsOnDrag,
             ) =>
                 new StoryClusterDragFeedback(

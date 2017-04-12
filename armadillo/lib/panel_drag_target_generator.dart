@@ -340,7 +340,7 @@ class PanelDragTargetGenerator {
     }
 
     // Story edge targets.
-    Point center = new Point(size.width / 2.0, size.height / 2.0);
+    Offset center = new Offset(size.width / 2.0, size.height / 2.0);
     clusterLayout.visitStories((StoryId storyId, Panel storyPanel) {
       Rect bounds = _transform(storyPanel, center, size, scale);
 
@@ -498,11 +498,11 @@ class PanelDragTargetGenerator {
       List<LineSegment> scaledTargets = targets
           .map(
             (LineSegment lineSegment) => new LineSegment(
-                  new Point(
+                  new Offset(
                     lerpDouble(0.0, lineSegment.a.x, horizontalScale),
                     lerpDouble(0.0, lineSegment.a.y, verticalScale),
                   ),
-                  new Point(
+                  new Offset(
                     lerpDouble(0.0, lineSegment.b.x, horizontalScale),
                     lerpDouble(0.0, lineSegment.b.y, verticalScale),
                   ),
@@ -589,6 +589,6 @@ class PanelDragTargetGenerator {
         panel.bottom * size.height,
       );
 
-  Rect _transform(Panel panel, Point origin, Size size, double scale) =>
+  Rect _transform(Panel panel, Offset origin, Size size, double scale) =>
       Rect.lerp(origin & Size.zero, _bounds(panel, size), scale);
 }

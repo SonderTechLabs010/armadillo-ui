@@ -8,7 +8,7 @@ import 'panel_drag_target.dart';
 
 /// When [enabled] is true, this widget draws the given [targets]
 /// that will accept [candidatePoints] overlaid on top of [child].  The
-/// current [Point]s of the [candidatePoints] along with those of the
+/// current [Offset]s of the [candidatePoints] along with those of the
 /// [closestTargetLockPoints] are also drawn on top of [child].
 class TargetOverlay extends StatelessWidget {
   /// Widget to display behind the overlay.
@@ -18,10 +18,10 @@ class TargetOverlay extends StatelessWidget {
   final List<PanelDragTarget> targets;
 
   /// The locations the candidates last chose their targets.
-  final List<Point> closestTargetLockPoints;
+  final List<Offset> closestTargetLockPoints;
 
   /// The locations of the candidates.
-  final List<Point> candidatePoints;
+  final List<Offset> candidatePoints;
 
   /// Set to true to draw targets.
   final bool enabled;
@@ -49,7 +49,7 @@ class TargetOverlay extends StatelessWidget {
       // Add candidate points
       stackChildren.addAll(
         candidatePoints.map(
-          (Point point) => new Positioned(
+          (Offset point) => new Positioned(
                 left: point.x - 5.0,
                 top: point.y - 5.0,
                 width: 10.0,
@@ -65,7 +65,7 @@ class TargetOverlay extends StatelessWidget {
       // Add candidate lockpoints
       stackChildren.addAll(
         closestTargetLockPoints.map(
-          (Point point) => new Positioned(
+          (Offset point) => new Positioned(
                 left: point.x - 5.0,
                 top: point.y - 5.0,
                 width: 10.0,
