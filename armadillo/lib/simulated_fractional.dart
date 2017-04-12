@@ -129,11 +129,11 @@ class SimulatedFractionalState extends TickingState<SimulatedFractional> {
 
   void jump(Rect bounds, Size newSize) {
     _fractionalTopSimulation = new RK4SpringSimulation(
-      initValue: bounds.topLeft.y / newSize.height,
+      initValue: bounds.topLeft.dy / newSize.height,
       desc: config.springDescription,
     );
     _fractionalLeftSimulation = new RK4SpringSimulation(
-      initValue: bounds.topLeft.x / newSize.width,
+      initValue: bounds.topLeft.dx / newSize.width,
       desc: config.springDescription,
     );
     _fractionalWidthSimulation = new RK4SpringSimulation(

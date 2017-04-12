@@ -499,12 +499,12 @@ class PanelDragTargetGenerator {
           .map(
             (LineSegment lineSegment) => new LineSegment(
                   new Offset(
-                    lerpDouble(0.0, lineSegment.a.x, horizontalScale),
-                    lerpDouble(0.0, lineSegment.a.y, verticalScale),
+                    lerpDouble(0.0, lineSegment.a.dx, horizontalScale),
+                    lerpDouble(0.0, lineSegment.a.dy, verticalScale),
                   ),
                   new Offset(
-                    lerpDouble(0.0, lineSegment.b.x, horizontalScale),
-                    lerpDouble(0.0, lineSegment.b.y, verticalScale),
+                    lerpDouble(0.0, lineSegment.b.dx, horizontalScale),
+                    lerpDouble(0.0, lineSegment.b.dy, verticalScale),
                   ),
                   name: lineSegment.name,
                   color: lineSegment.color,

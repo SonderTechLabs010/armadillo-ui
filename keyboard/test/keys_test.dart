@@ -48,7 +48,7 @@ Offset _getMiddleOfLeftSide(WidgetTester tester, Key key) {
   Finder element = find.byKey(key);
   Offset topLeft = tester.getTopLeft(element);
   Offset center = tester.getCenter(element);
-  return new Offset(topLeft.x, center.y);
+  return new Offset(topLeft.dx, center.dy);
 }
 
 Future<Null> _tap(WidgetTester tester, Offset point) async {

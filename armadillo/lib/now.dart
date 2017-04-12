@@ -231,7 +231,7 @@ class NowState extends TickingState<Now> {
           new Listener(
             behavior: HitTestBehavior.translucent,
             onPointerDown: (PointerDownEvent event) {
-              _pointerDownY = event.position.y;
+              _pointerDownY = event.position.dy;
             },
             onPointerUp: (PointerUpEvent event) {
               // When the user lifts their finger after overscrolling we may
@@ -242,7 +242,7 @@ class NowState extends TickingState<Now> {
                       _kOverscrollAutoSnapThreshold ||
                   (config.scrollController.offset <
                           _kOverscrollSnapDragThreshold &&
-                      _pointerDownY - event.position.y >
+                      _pointerDownY - event.position.dy >
                           _kOverscrollSnapDragDistanceThreshold)) {
                 config.onOverscrollThresholdRelease?.call();
               }

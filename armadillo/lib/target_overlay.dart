@@ -50,8 +50,8 @@ class TargetOverlay extends StatelessWidget {
       stackChildren.addAll(
         candidatePoints.map(
           (Offset point) => new Positioned(
-                left: point.x - 5.0,
-                top: point.y - 5.0,
+                left: point.dx - 5.0,
+                top: point.dy - 5.0,
                 width: 10.0,
                 height: 10.0,
                 child: new Container(
@@ -66,8 +66,8 @@ class TargetOverlay extends StatelessWidget {
       stackChildren.addAll(
         closestTargetLockPoints.map(
           (Offset point) => new Positioned(
-                left: point.x - 5.0,
-                top: point.y - 5.0,
+                left: point.dx - 5.0,
+                top: point.dy - 5.0,
                 width: 10.0,
                 height: 10.0,
                 child: new Container(

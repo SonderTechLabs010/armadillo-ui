@@ -381,7 +381,7 @@ class _RenderIconSlider extends RenderConstrainedBox
     if (isInteractive) {
       _active = true;
       _currentDragValue =
-          (globalToLocal(details.globalPosition).x - _kReactionRadius) /
+          (globalToLocal(details.globalPosition).dx - _kReactionRadius) /
               _trackLength;
       onChanged(_discretizedCurrentDragValue);
       _reactionController.forward();
@@ -533,14 +533,14 @@ class _RenderIconSlider extends RenderConstrainedBox
         final double tipAttachment = _kLabelBalloonTipAttachmentRatio * radius;
 
         Path path = new Path()
-          ..moveTo(tip.x, tip.y)
-          ..lineTo(center.x - tipAttachment, center.y + tipAttachment)
-          ..lineTo(center.x + tipAttachment, center.y + tipAttachment)
+          ..moveTo(tip.dx, tip.dy)
+          ..lineTo(center.dx - tipAttachment, center.dy + tipAttachment)
+          ..lineTo(center.dx + tipAttachment, center.dy + tipAttachment)
           ..close();
         canvas.drawPath(path, primaryPaint);
         _labelPainter.layout();
-        Offset labelOffset = new Offset(center.x - _labelPainter.width / 2.0,
-            center.y - _labelPainter.height / 2.0);
+        Offset labelOffset = new Offset(center.dx - _labelPainter.width / 2.0,
+            center.dy - _labelPainter.height / 2.0);
         _labelPainter.paint(canvas, labelOffset);
         return;
       } else {

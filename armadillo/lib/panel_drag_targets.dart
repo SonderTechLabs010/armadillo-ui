@@ -404,10 +404,10 @@ class _PanelDragTargetsState extends TickingState<PanelDragTargets> {
       SimulatedFractionalState state = story.positionedKey.currentState;
       state.jump(
         new Rect.fromLTRB(
-          storyInPanelsTopLeft.x,
-          storyInPanelsTopLeft.y,
-          storyInPanelsBottomRight.x,
-          storyInPanelsBottomRight.y,
+          storyInPanelsTopLeft.dx,
+          storyInPanelsTopLeft.dy,
+          storyInPanelsBottomRight.dx,
+          storyInPanelsBottomRight.dy,
         ),
         panelsBox.size,
       );

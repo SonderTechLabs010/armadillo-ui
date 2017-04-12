@@ -270,10 +270,10 @@ class StoryPanels extends StatelessWidget {
                 new Offset(box.size.width, box.size.height),
               );
               Rect initialBoundsOnDrag = new Rect.fromLTRB(
-                boxTopLeft.x,
-                boxTopLeft.y,
-                boxBottomRight.x,
-                boxBottomRight.y,
+                boxTopLeft.dx,
+                boxTopLeft.dy,
+                boxBottomRight.dx,
+                boxBottomRight.dy,
               );
 
               RenderBox storyBarBox =
@@ -281,7 +281,7 @@ class StoryPanels extends StatelessWidget {
               Offset storyBarBoxTopLeft =
                   storyBarBox.localToGlobal(Offset.zero);
               initialDxOnDrag = (storyCluster.displayMode == DisplayMode.tabs)
-                  ? -storyBarBoxTopLeft.x
+                  ? -storyBarBoxTopLeft.dx
                   : 0.0;
 
               // Store off panel configuration before splitting.

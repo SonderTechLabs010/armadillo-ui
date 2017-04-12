@@ -213,20 +213,20 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                 // In tab mode we center on the story's story bar.
                 // In panel mode we center on the story itself.
                 double newDx =
-                    (isAcceptable || config.localDragStartPoint.x > targetWidth)
+                    (isAcceptable || config.localDragStartPoint.dx > targetWidth)
                         ? (config.storyCluster.displayMode == DisplayMode.tabs)
-                            ? config.localDragStartPoint.x -
+                            ? config.localDragStartPoint.dx -
                                 targetWidth * tabFractionalXOffset
-                            : config.localDragStartPoint.x -
+                            : config.localDragStartPoint.dx -
                                 targetWidth * realStoriesFractionalCenterX
                         : 0.0;
                 double newDy = (isAcceptable ||
-                        config.localDragStartPoint.y > targetHeight)
+                        config.localDragStartPoint.dy > targetHeight)
                     ? (config.storyCluster.displayMode == DisplayMode.tabs)
-                        ? config.localDragStartPoint.y -
+                        ? config.localDragStartPoint.dy -
                             targetHeight * realStoriesFractionalTopY -
                             childScale * _kStoryBarMaximizedHeight
-                        : config.localDragStartPoint.y -
+                        : config.localDragStartPoint.dy -
                             targetHeight * realStoriesFractionalCenterY
                     : 0.0;
 

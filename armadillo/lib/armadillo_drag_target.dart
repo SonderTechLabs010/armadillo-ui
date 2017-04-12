@@ -286,8 +286,8 @@ class _DragAvatarWidgetState extends TickingState<_DragAvatarWidget> {
     RenderBox overlayBox = config.overlayKey.currentContext.findRenderObject();
     Offset overlayTopLeft = overlayBox.localToGlobal(Offset.zero);
     Offset localOffset = _position - config.dragStartPoint;
-    double left = localOffset.dx - overlayTopLeft.x;
-    double top = localOffset.dy - overlayTopLeft.y;
+    double left = localOffset.dx - overlayTopLeft.dx;
+    double top = localOffset.dy - overlayTopLeft.dy;
 
     double returnProgress = _returnSimulation?.value ?? 0.0;
     if (returnProgress > 0.0) {
@@ -298,12 +298,12 @@ class _DragAvatarWidgetState extends TickingState<_DragAvatarWidget> {
       );
       left = lerpDouble(
         left,
-        returnTargetTopLeft.x - overlayTopLeft.x,
+        returnTargetTopLeft.dx - overlayTopLeft.dx,
         returnProgress,
       );
       top = lerpDouble(
         top,
-        returnTargetTopLeft.y - overlayTopLeft.y,
+        returnTargetTopLeft.dy - overlayTopLeft.dy,
         returnProgress,
       );
     }

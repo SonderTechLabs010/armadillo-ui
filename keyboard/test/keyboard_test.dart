@@ -49,7 +49,7 @@ Offset _getShiftPosition(WidgetTester tester, Key keyboardKey) {
   final Finder element = find.byKey(keyboardKey);
   Offset topLeft = tester.getTopLeft(element);
   Offset bottomLeft = tester.getBottomLeft(element);
-  return new Offset(topLeft.x, topLeft.y + ((bottomLeft.y - topLeft.y) * 0.6));
+  return new Offset(topLeft.dx, topLeft.dy + ((bottomLeft.dy - topLeft.dy) * 0.6));
 }
 
 Offset _getCenter(WidgetTester tester, Key key) =>

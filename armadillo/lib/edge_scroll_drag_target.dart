@@ -89,7 +89,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
                   double height = box.size.height;
                   double y = height;
                   points.forEach((Offset point) {
-                    y = math.min(y, point.y);
+                    y = math.min(y, point.dy);
                   });
                   _kenichiEdgeScrolling.update(y, height);
                   if (!_kenichiEdgeScrolling.isDone) {

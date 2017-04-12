@@ -95,9 +95,9 @@ class ExpandSuggestion extends ExpansionBehavior {
     return new Stack(
       children: <Widget>[
         new Positioned(
-          left: (suggestionInitialGlobalBounds.left - topLeft.x) *
+          left: (suggestionInitialGlobalBounds.left - topLeft.dx) *
               (1.0 - _expansionProgress),
-          top: (suggestionInitialGlobalBounds.top - topLeft.y) *
+          top: (suggestionInitialGlobalBounds.top - topLeft.dy) *
               (1.0 - _expansionProgress),
           width: suggestionInitialGlobalBounds.width +
               (constraints.maxWidth - suggestionInitialGlobalBounds.width) *

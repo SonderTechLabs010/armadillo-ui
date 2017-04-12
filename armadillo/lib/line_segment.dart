@@ -63,8 +63,8 @@ class LineSegment extends PanelDragTarget {
     this.directionallyTargetable: false,
     this.validityDistance: double.INFINITY,
   })
-      : this.a = (a.x < b.x || a.y < b.y) ? a : b,
-        this.b = (a.x < b.x || a.y < b.y) ? b : a,
+      : this.a = (a.dx < b.dx || a.dy < b.dy) ? a : b,
+        this.b = (a.dx < b.dx || a.dy < b.dy) ? b : a,
         super(
           onHover: onHover,
           onDrop: onDrop,
@@ -72,7 +72,7 @@ class LineSegment extends PanelDragTarget {
           initiallyTargetable: initiallyTargetable,
         ) {
     // Ensure the line is either vertical or horizontal.
-    assert(a.x == b.x || a.y == b.y);
+    assert(a.dx == b.dx || a.dy == b.dy);
   }
 
   /// Creates a vertical [LineSegment] whose [a] and [b] have the same [x].
@@ -130,7 +130,7 @@ class LineSegment extends PanelDragTarget {
       );
 
   /// Returns true if the line is horizontal.
-  bool get isHorizontal => a.y == b.y;
+  bool get isHorizontal => a.dy == b.dy;
 
   /// Returns true if the line is vertical.
   bool get isVertical => !isHorizontal;
@@ -175,28 +175,28 @@ class LineSegment extends PanelDragTarget {
       case DragDirection.left:
         if (isHorizontal) {
           return false;
-        } else if (a.x > point.x) {
+        } else if (a.dx > point.dx) {
           return false;
         }
         break;
       case DragDirection.right:
         if (isHorizontal) {
           return false;
-        } else if (a.x < point.x) {
+        } else if (a.dx < point.dx) {
           return false;
         }
         break;
       case DragDirection.up:
         if (isVertical) {
           return false;
-        } else if (a.y > point.y) {
+        } else if (a.dy > point.dy) {
           return false;
         }
         break;
       case DragDirection.down:
         if (isVertical) {
           return false;
-        } else if (a.y < point.y) {
+        } else if (a.dy < point.dy) {
           return false;
         }
         break;
@@ -210,20 +210,20 @@ class LineSegment extends PanelDragTarget {
   @override
   double distanceFrom(Offset p) {
     if (isHorizontal) {
-      if (p.x < a.x) {
-        return math.sqrt(math.pow(p.x - a.x, 2) + math.pow(p.y - a.y, 2));
-      } else if (p.x > b.x) {
-        return math.sqrt(math.pow(p.x - b.x, 2) + math.pow(p.y - b.y, 2));
+      if (p.dx < a.dx) {
+        return math.sqrt(math.pow(p.dx - a.dx, 2) + math.pow(p.dy - a.dy, 2));
+      } else if (p.dx > b.dx) {
+        return math.sqrt(math.pow(p.dx - b.dx, 2) + math.pow(p.dy - b.dy, 2));
       } else {
-        return (p.y - a.y).abs();
+        return (p.dy - a.dy).abs();
       }
     } else {
-      if (p.y < a.y) {
-        return math.sqrt(math.pow(p.x - a.x, 2) + math.pow(p.y - a.y, 2));
-      } else if (p.y > b.y) {
-        return math.sqrt(math.pow(p.x - b.x, 2) + math.pow(p.y - b.y, 2));
+      if (p.dy < a.dy) {
+        return math.sqrt(math.pow(p.dx - a.dx, 2) + math.pow(p.dy - a.dy, 2));
+      } else if (p.dy > b.dy) {
+        return math.sqrt(math.pow(p.dx - b.dx, 2) + math.pow(p.dy - b.dy, 2));
       } else {
-        return (p.x - a.x).abs();
+        return (p.dx - a.dx).abs();
       }
     }
   }
@@ -239,10 +239,10 @@ class LineSegment extends PanelDragTarget {
         ]);
 
   Positioned _buildLineWidget({bool highlighted: false}) => new Positioned(
-        left: a.x - _kLineWidth / 2.0,
-        top: a.y - _kLineWidth / 2.0,
-        width: isHorizontal ? b.x - a.x + _kLineWidth : _kLineWidth,
-        height: isVertical ? b.y - a.y + _kLineWidth : _kLineWidth,
+        left: a.dx - _kLineWidth / 2.0,
+        top: a.dy - _kLineWidth / 2.0,
+        width: isHorizontal ? b.dx - a.dx + _kLineWidth : _kLineWidth,
+        height: isVertical ? b.dy - a.dy + _kLineWidth : _kLineWidth,
         child: new Container(
           decoration: new BoxDecoration(
             backgroundColor: color.withOpacity(highlighted ? 1.0 : 0.3),
@@ -252,11 +252,11 @@ class LineSegment extends PanelDragTarget {
 
   Positioned _buildValidityDistanceWidget({bool highlighted: false}) =>
       new Positioned(
-        left: a.x - _kLineWidth / 2.0 - validityDistance,
-        top: a.y - _kLineWidth / 2.0 - validityDistance,
-        width: (isHorizontal ? b.x - a.x + _kLineWidth : _kLineWidth) +
+        left: a.dx - _kLineWidth / 2.0 - validityDistance,
+        top: a.dy - _kLineWidth / 2.0 - validityDistance,
+        width: (isHorizontal ? b.dx - a.dx + _kLineWidth : _kLineWidth) +
             2 * validityDistance,
-        height: (isVertical ? b.y - a.y + _kLineWidth : _kLineWidth) +
+        height: (isVertical ? b.dy - a.dy + _kLineWidth : _kLineWidth) +
             2 * validityDistance,
         child: new Container(
           decoration: new BoxDecoration(
