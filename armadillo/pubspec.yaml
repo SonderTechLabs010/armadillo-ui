@@ -4,8 +4,6 @@
 
 name: armadillo
 dependencies:
-  email_story:
-    path: ../../modules/email/modules/story
   flutter:
     sdk: flutter
   keyboard:
