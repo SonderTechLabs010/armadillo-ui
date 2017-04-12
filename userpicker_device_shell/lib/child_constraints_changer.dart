@@ -42,33 +42,27 @@ class _ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
   @override
   void initState() {
     super.initState();
-    _constraints = config.constraintsModel.constraints;
-    config.constraintsModel.addListener(_onChange);
+    _constraints = widget.constraintsModel.constraints;
+    widget.constraintsModel.addListener(_onChange);
   }
 
   @override
   void dispose() {
-    config.constraintsModel.removeListener(_onChange);
+    widget.constraintsModel.removeListener(_onChange);
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => new Container(
-        foregroundDecoration: new RoundedCornerDecoration(
-          radius: _kInnerBezelRadius,
-          color: Colors.black,
-        ),
-        child: (_constraints?.isEmpty ?? true) ||
-                (_constraints.length == 1 &&
-                    _constraints[0] == const BoxConstraints())
-            ? config.child
-            : new Stack(
-                children: <Widget>[
-                  _constrainedChild,
-                  _constraintSwitchingButton,
-                ],
-              ),
-      );
+  Widget build(BuildContext context) => (_constraints?.isEmpty ?? true) ||
+          (_constraints.length == 1 &&
+              _constraints[0] == const BoxConstraints())
+      ? widget.child
+      : new Stack(
+          children: <Widget>[
+            _constrainedChild,
+            _constraintSwitchingButton,
+          ],
+        );
 
   Widget get _constrainedChild => new LayoutBuilder(
         builder: (BuildContext context, BoxConstraints parentConstraints) =>
@@ -93,9 +87,12 @@ class _ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
                       : new BoxDecoration(
                           backgroundColor: Colors.black,
                           border: new Border.all(
-                              color: Colors.black, width: _kBezelMinimumWidth),
-                          borderRadius:
-                              new BorderRadius.circular(_kOuterBezelRadius),
+                            color: Colors.black,
+                            width: _kBezelMinimumWidth,
+                          ),
+                          borderRadius: new BorderRadius.circular(
+                            _kOuterBezelRadius,
+                          ),
                           boxShadow: kElevationToShadow[12],
                         ),
                   child: new AnimatedContainer(
@@ -109,7 +106,13 @@ class _ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
                     duration: const Duration(milliseconds: 500),
                     curve: Curves.fastOutSlowIn,
                     child: new ClipRect(
-                      child: config.child,
+                      child: new Container(
+                        foregroundDecoration: new RoundedCornerDecoration(
+                          radius: _kInnerBezelRadius,
+                          color: Colors.black,
+                        ),
+                        child: widget.child,
+                      ),
                     ),
                   ),
                 ),
@@ -141,7 +144,7 @@ class _ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
 
   void _onChange() {
     setState(() {
-      _constraints = config.constraintsModel.constraints;
+      _constraints = widget.constraintsModel.constraints;
     });
   }
 }

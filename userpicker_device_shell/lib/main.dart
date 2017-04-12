@@ -124,7 +124,7 @@ class _ScreenManagerState extends State<_ScreenManager>
     _userWatcherImpl = new UserWatcherImpl(onUserLogout: () {
       print('UserPickerDeviceShell: User logged out!');
       setState(() {
-        config.onLogout?.call();
+        widget.onLogout?.call();
         _transitionAnimation.reverse();
         // TODO(apwilson): Should not need to remove the child view connection but
         // it causes a mozart deadlock in the compositor if you don't.
@@ -151,7 +151,7 @@ class _ScreenManagerState extends State<_ScreenManager>
         },
         onUnavailable: (ChildViewConnection connection) {
           print('UserPickerDeviceShell: Child view connection unavailable!');
-          config.onLogout?.call();
+          widget.onLogout?.call();
           _transitionAnimation.reverse();
           // TODO(apwilson): Should not need to remove the child view
           // connection but it causes a mozart deadlock in the compositor if you
