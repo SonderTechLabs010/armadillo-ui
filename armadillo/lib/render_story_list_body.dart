@@ -203,7 +203,7 @@ class RenderStoryListBody extends RenderListBody {
   }
 
   @override
-  bool hitTestChildren(HitTestResult result, {Point position}) {
+  bool hitTestChildren(HitTestResult result, {Offset position}) {
     final List<RenderBox> children =
         _childrenSortedByFocusProgress.reversed.toList();
     if (children.isNotEmpty) {
@@ -216,10 +216,7 @@ class RenderStoryListBody extends RenderListBody {
       // This effectively prevents all of the most focused child's siblings
       // from being tapped, dragged over, or otherwise interacted with.
       if (mostFocusedProgress > 0.0) {
-        Offset transformed = new Offset(
-          position.x - mostFocusedChildParentData.offset.dx,
-          position.y - mostFocusedChildParentData.offset.dy,
-        );
+        Offset transformed = position - mostFocusedChildParentData.offset;
         if (mostFocusedChild.hitTest(result, position: transformed)) {
           return true;
         }
@@ -232,10 +229,7 @@ class RenderStoryListBody extends RenderListBody {
           final RenderBox child = children[i];
           final StoryListBodyParentData childParentData =
               child.parentData;
-          Offset transformed = new Offset(
-            position.x - childParentData.offset.dx,
-            position.y - childParentData.offset.dy,
-          );
+          Offset transformed = position - childParentData.offset;
           if (child.hitTest(result, position: transformed)) {
             return true;
           }
