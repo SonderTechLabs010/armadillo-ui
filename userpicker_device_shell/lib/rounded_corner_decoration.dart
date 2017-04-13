@@ -22,7 +22,7 @@ class RoundedCornerDecoration extends Decoration {
       new _RoundedCornerBoxPainter(radius: radius, color: color);
 
   @override
-  bool hitTest(Size size, Point position) => false;
+  bool hitTest(Size size, Offset position) => false;
 }
 
 class _RoundedCornerBoxPainter extends BoxPainter {
