@@ -6,7 +6,7 @@ import 'package:apps.modular.services.device/user_provider.fidl.dart';
 import 'package:flutter/material.dart';
 import 'package:lib.widgets/hacks.dart' as hacks;
 
-import 'user_picker_device_shell_factory_model.dart';
+import 'user_picker_device_shell_model.dart';
 
 const String _kDefaultUserName = 'user1';
 const String _kDefaultDeviceName = 'fuchsia';
@@ -32,24 +32,21 @@ class UserPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      new ScopedModelDescendant<UserPickerDeviceShellFactoryModel>(builder: (
+      new ScopedModelDescendant<UserPickerDeviceShellModel>(builder: (
         BuildContext context,
         Widget child,
-        UserPickerDeviceShellFactoryModel userPickerDeviceShellFactoryModel,
+        UserPickerDeviceShellModel model,
       ) {
         final List<Widget> children = <Widget>[];
-        if (userPickerDeviceShellFactoryModel.users != null) {
-          if (userPickerDeviceShellFactoryModel.users.isNotEmpty) {
+        if (model.users != null) {
+          if (model.users.isNotEmpty) {
             // Add list of previous users.
             children.addAll(
-              userPickerDeviceShellFactoryModel.users.map((String user) {
+              model.users.map((String user) {
                 return new Container(
                   margin: const EdgeInsets.all(8.0),
                   child: new RaisedButton(
-                    onPressed: () => _loginUser(
-                          user,
-                          userPickerDeviceShellFactoryModel,
-                        ),
+                    onPressed: () => _loginUser(user, model),
                     child: new Text('Log in as $user'),
                   ),
                 );
@@ -65,7 +62,7 @@ class UserPicker extends StatelessWidget {
                         _kDefaultUserName,
                         _kDefaultDeviceName,
                         _kDefaultServerName,
-                        userPickerDeviceShellFactoryModel,
+                        model,
                       ),
                   child: new Container(
                     width: _kButtonContentWidth,
@@ -126,7 +123,7 @@ class UserPicker extends StatelessWidget {
                                         userNameController.text,
                                         deviceNameController.text,
                                         serverNameController.text,
-                                        userPickerDeviceShellFactoryModel,
+                                        model,
                                       ),
                                   child: new Container(
                                     width: _kButtonContentWidth - 32.0,
@@ -169,10 +166,10 @@ class UserPicker extends StatelessWidget {
     String user,
     String deviceName,
     String serverName,
-    UserPickerDeviceShellFactoryModel userPickerDeviceShellFactoryModel,
+    UserPickerDeviceShellModel model,
   ) {
     // Add the user if it doesn't already exist.
-    if (!(userPickerDeviceShellFactoryModel.users?.contains(user) ?? false)) {
+    if (!(model.users?.contains(user) ?? false)) {
       if (user?.isEmpty ?? true) {
         print('Not creating user: User name needs to be set!');
         return;
@@ -187,7 +184,7 @@ class UserPicker extends StatelessWidget {
       }
       print(
           'UserPicker: Creating user $user with device $deviceName and server $serverName!');
-      userPickerDeviceShellFactoryModel.userProvider?.addUser(
+      model.userProvider?.addUser(
         user,
         null,
         deviceName,
@@ -195,17 +192,11 @@ class UserPicker extends StatelessWidget {
       );
     }
 
-    _loginUser(
-      user,
-      userPickerDeviceShellFactoryModel,
-    );
+    _loginUser(user, model);
   }
 
-  void _loginUser(
-    String user,
-    UserPickerDeviceShellFactoryModel userPickerDeviceShellFactoryModel,
-  ) {
+  void _loginUser(String user, UserPickerDeviceShellModel model) {
     print('UserPicker: Logging in as $user!');
-    onLoginRequest?.call(user, userPickerDeviceShellFactoryModel.userProvider);
+    onLoginRequest?.call(user, model.userProvider);
   }
 }

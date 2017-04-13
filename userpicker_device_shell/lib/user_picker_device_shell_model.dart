@@ -8,7 +8,7 @@ import 'package:lib.widgets/modular.dart';
 
 export 'package:lib.widgets/model.dart' show ScopedModel, ScopedModelDescendant;
 
-class UserPickerDeviceShellFactoryModel extends DeviceShellFactoryModel {
+class UserPickerDeviceShellModel extends DeviceShellModel {
   List<String> _users;
 
   List<String> get users => _users;

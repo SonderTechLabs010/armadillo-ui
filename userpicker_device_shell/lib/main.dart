@@ -15,7 +15,7 @@ import 'package:lib.widgets/modular.dart';
 import 'child_constraints_changer.dart';
 import 'constraints_model.dart';
 import 'user_picker.dart';
-import 'user_picker_device_shell_factory_model.dart';
+import 'user_picker_device_shell_model.dart';
 import 'user_picker_screen.dart';
 import 'user_watcher_impl.dart';
 
@@ -23,26 +23,24 @@ void main() {
   GlobalKey screenManagerKey = new GlobalKey();
   ConstraintsModel constraintsModel = new ConstraintsModel();
 
-  UserPickerDeviceShellFactoryModel userPickerDeviceShellFactoryModel =
-      new UserPickerDeviceShellFactoryModel();
+  UserPickerDeviceShellModel model = new UserPickerDeviceShellModel();
 
-  DeviceShellFactoryWidget<UserPickerDeviceShellFactoryModel>
-      deviceShellFactoryWidget =
-      new DeviceShellFactoryWidget<UserPickerDeviceShellFactoryModel>(
-    deviceShellFactoryModel: userPickerDeviceShellFactoryModel,
+  DeviceShellWidget<UserPickerDeviceShellModel> deviceShellWidget =
+      new DeviceShellWidget<UserPickerDeviceShellModel>(
+    deviceShellModel: model,
     child: new ChildConstraintsChanger(
       constraintsModel: constraintsModel,
       child: new _ScreenManager(
         key: screenManagerKey,
-        onLogout: userPickerDeviceShellFactoryModel.onLogout,
+        onLogout: model.onLogout,
       ),
     ),
   );
 
-  runApp(deviceShellFactoryWidget);
+  runApp(deviceShellWidget);
 
   constraintsModel.load(rootBundle);
-  deviceShellFactoryWidget.advertise();
+  deviceShellWidget.advertise();
 }
 
 class _ScreenManager extends StatefulWidget {
