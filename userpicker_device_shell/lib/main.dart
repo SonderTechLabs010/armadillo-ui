@@ -44,7 +44,7 @@ void main() {
 }
 
 class _ScreenManager extends StatefulWidget {
-  VoidCallback onLogout;
+  final VoidCallback onLogout;
 
   _ScreenManager({Key key, this.onLogout}) : super(key: key);
 

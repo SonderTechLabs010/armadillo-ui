@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:apps.modular.services.device/device_context.fidl.dart';
+import 'package:apps.modular.services.device/device_shell.fidl.dart';
 import 'package:apps.modular.services.device/user_provider.fidl.dart';
 import 'package:lib.widgets/modular.dart';
 
@@ -14,8 +14,11 @@ class UserPickerDeviceShellModel extends DeviceShellModel {
   List<String> get users => _users;
 
   @override
-  void onReady(UserProvider userProvider, DeviceContext deviceContext) {
-    super.onReady(userProvider, deviceContext);
+  void onReady(
+    UserProvider userProvider,
+    DeviceShellContext deviceShellContext,
+  ) {
+    super.onReady(userProvider, deviceShellContext);
     _loadUsers();
   }
 

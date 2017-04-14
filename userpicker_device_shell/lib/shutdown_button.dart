@@ -16,7 +16,7 @@ class ShutdownButton extends StatelessWidget {
           UserPickerDeviceShellModel model,
         ) =>
             new RaisedButton(
-              onPressed: () => model.deviceContext?.shutdown(),
+              onPressed: () => model.deviceShellContext?.shutdown(),
               child: child,
             ),
         child: new Text('Shutdown'),
