@@ -9,10 +9,6 @@ import 'selected_suggestion_overlay.dart';
 import 'suggestion.dart';
 import 'suggestion_widget.dart';
 
-/// Called when the [Widget] representing [Suggestion] has fully expanded to
-/// fill its parent.
-typedef void OnSuggestionExpanded(Suggestion suggestion);
-
 const RK4SpringDescription _kExpansionSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
 const double _kExpansionSimulationTarget = 200.0;

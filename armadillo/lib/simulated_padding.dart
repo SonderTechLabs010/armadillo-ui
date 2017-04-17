@@ -12,12 +12,23 @@ const RK4SpringDescription _kDefaultSimulationDesc =
 /// Animates a [Padding]'s [fractionalLeftPadding] and [fractionalRightPadding]
 /// with a spring simulation.
 class SimulatedPadding extends StatefulWidget {
+  /// The description of the spring to use for simulating transitions.
   final RK4SpringDescription springDescription;
+
+  /// The amount of left padding to apply to [child] given the parent's [width].
   final double fractionalLeftPadding;
+
+  /// The amount of right padding to apply to [child] given the parent's
+  /// [width].
   final double fractionalRightPadding;
+
+  /// The parent's width.
   final double width;
+
+  /// The widget to apply padding to.
   final Widget child;
 
+  /// Constructor.
   SimulatedPadding({
     Key key,
     this.fractionalLeftPadding,
@@ -29,10 +40,10 @@ class SimulatedPadding extends StatefulWidget {
       : super(key: key);
 
   @override
-  SimulatedPaddingState createState() => new SimulatedPaddingState();
+  _SimulatedPaddingState createState() => new _SimulatedPaddingState();
 }
 
-class SimulatedPaddingState extends TickingState<SimulatedPadding> {
+class _SimulatedPaddingState extends TickingState<SimulatedPadding> {
   RK4SpringSimulation _leftSimulation;
   RK4SpringSimulation _rightSimulation;
 

@@ -32,8 +32,13 @@ void main() {
     bool pressed = false;
 
     GlobalKey imageKeyKey = new GlobalKey();
-    ImageKey imageKey =
-        new ImageKey("doesn't matter", () => pressed = true, key: imageKeyKey);
+    ImageKey imageKey = new ImageKey(
+      "doesn't matter",
+      () => pressed = true,
+      const Color(0xFFFFFFFF),
+      54.0,
+      key: imageKeyKey,
+    );
 
     await tester.pumpWidget(new DefaultAssetBundle(
         bundle: _defaultBundle, child: new Row(children: <Widget>[imageKey])));

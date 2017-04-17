@@ -5,7 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'blinking_cursor.dart';
+import 'package:lib.widgets/hacks.dart';
 
 final Color _kTextColor = Colors.grey[600];
 final Color _kHintTextColor = Colors.grey[600];
@@ -15,8 +15,13 @@ const double _kTextSize = 16.0;
 ///
 /// TODO(apwilson): Handle non-Latin-1 characters.
 class ScrollableInputText extends StatefulWidget {
+  /// The text's alignment.
   final FractionalOffset alignment;
+
+  /// If true, displays the text.  Otherwise displays hint text.
   final bool focused;
+
+  /// Constructor.
   ScrollableInputText({Key key, this.alignment, this.focused})
       : super(key: key);
 

@@ -8,14 +8,18 @@ import 'package:sysui_widgets/ticking_state.dart';
 
 import 'suggestion.dart';
 
+/// Called when the [Widget] representing [Suggestion] has fully expanded to
+/// fill its parent.
 typedef void OnSuggestionExpanded(Suggestion suggestion);
 
 /// When a Suggestion is selected, the suggestion is brought into this overlay
 /// and an animation fills the overlay such that we can prepare the story that
 /// will be displayed after the overlay animation finishes.
 class SelectedSuggestionOverlay extends StatefulWidget {
+  /// Called when a suggestion fully expands within the overlay.
   final OnSuggestionExpanded onSuggestionExpanded;
 
+  /// Constructor.
   SelectedSuggestionOverlay({Key key, this.onSuggestionExpanded})
       : super(key: key);
 
@@ -24,6 +28,7 @@ class SelectedSuggestionOverlay extends StatefulWidget {
       new SelectedSuggestionOverlayState();
 }
 
+/// Holds the state associated with an expanding suggestion within the overlay.
 class SelectedSuggestionOverlayState
     extends TickingState<SelectedSuggestionOverlay> {
   ExpansionBehavior _expansionBehavior;

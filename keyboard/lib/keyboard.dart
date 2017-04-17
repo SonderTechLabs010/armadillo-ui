@@ -5,6 +5,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -14,6 +15,15 @@ import 'word_suggestion_service.dart';
 
 const double _kSuggestionRowHeight = 40.0;
 const Color _kTurquoiseAccentColor = const Color(0xFF68EFAD);
+const Color _kImageColor = const Color(0xFF909090);
+const double _kDefaultRowHeight = 54.0;
+
+const double _kKeyTextSize = 22.0;
+const TextStyle _kDefaultTextStyle = const TextStyle(
+  color: Colors.white,
+  fontFamily: "Roboto-Light",
+  fontSize: _kKeyTextSize,
+);
 
 const String _kKeyType = 'type'; // defaults to kKeyTypeNormal
 const String _kKeyTypeSuggestion = 'suggestion';
@@ -375,33 +385,51 @@ class KeyboardState extends State<Keyboard> {
         ? _kSuggestionTextStyle
         : (visualType == _kKeyVisualTypeActionText)
             ? (type == _kKeyTypeSpecial)
-                ? TextKey.kDefaultTextStyle.copyWith(
+                ? _kDefaultTextStyle.copyWith(
                     fontSize: _kGoKeyTextSize,
                     fontWeight: FontWeight.bold,
-                    color: ImageKey.kImageColor)
-                : TextKey.kDefaultTextStyle.copyWith(
-                    fontSize: _kGoKeyTextSize, fontWeight: FontWeight.bold)
-            : TextKey.kDefaultTextStyle;
+                    color: _kImageColor,
+                  )
+                : _kDefaultTextStyle.copyWith(
+                    fontSize: _kGoKeyTextSize,
+                    fontWeight: FontWeight.bold,
+                  )
+            : _kDefaultTextStyle;
     bool isSuggestion = type == _kKeyTypeSuggestion;
     GlobalKey key = isSuggestion ? new GlobalKey() : null;
-    TextKey textKey = new TextKey(isSuggestion ? '' : text,
-        key: key,
-        flex: width,
-        onKeyPressed: _getAction(action),
-        onText: isSuggestion ? _onSuggestion : _onText,
-        horizontalAlign: align,
-        style: style,
-        height: isSuggestion ? _kSuggestionRowHeight : kDefaultRowHeight,
-        verticalAlign: 0.5);
+    TextKey textKey = new TextKey(
+      isSuggestion ? '' : text,
+      key: key,
+      flex: width,
+      onText: (String text) {
+        VoidCallback actionCallback = _getAction(action);
+        if (actionCallback != null) {
+          actionCallback();
+        } else if (isSuggestion) {
+          _onSuggestion(text);
+        } else {
+          _onText(text);
+        }
+      },
+      horizontalAlign: align,
+      style: style,
+      height: isSuggestion ? _kSuggestionRowHeight : _kDefaultRowHeight,
+      verticalAlign: 0.5,
+    );
     if (isSuggestion) {
       _suggestionKeys.add(key);
     }
     return textKey;
   }
 
-  Widget _createImageKey(String image, int width, String action) {
-    return new ImageKey(image, _getAction(action), flex: width);
-  }
+  Widget _createImageKey(String image, int width, String action) =>
+      new ImageKey(
+        image,
+        _getAction(action),
+        _kImageColor,
+        _kDefaultRowHeight,
+        flex: width,
+      );
 
   VoidCallback _getAction(String action) {
     switch (action) {
@@ -414,11 +442,9 @@ class KeyboardState extends State<Keyboard> {
       case _kKeyActionGo:
         return _onGoPressed;
       default:
-        return () {
-          setState(() {
-            _keyboardWidget = _keyboards[int.parse(action)];
-          });
-        };
+        return () => setState(() {
+              _keyboardWidget = _keyboards[int.parse(action)];
+            });
     }
   }
 

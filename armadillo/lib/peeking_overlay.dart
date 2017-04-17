@@ -18,11 +18,23 @@ const double _kAngleOffsetY = 0.0;
 
 /// A bottom aligned overlay which peeks up over the bottom.
 class PeekingOverlay extends StatefulWidget {
+  /// The amount the overlay should peek above the bottom of its parent when
+  /// hiding.
   final double peekHeight;
+
+  /// The overlay's parent's width.
   final double parentWidth;
+
+  /// The widget to display within the overlay.
   final Widget child;
+
+  /// Called when the overlay is hidden.
   final VoidCallback onHide;
+
+  /// Called when the overlay is shown.
   final VoidCallback onShow;
+
+  /// Constructor.
   PeekingOverlay({
     Key key,
     this.peekHeight: _kStartOverlayTransitionHeight,
@@ -35,8 +47,6 @@ class PeekingOverlay extends StatefulWidget {
 
   @override
   PeekingOverlayState createState() => new PeekingOverlayState();
-
-  double get darkeningBackgroundMinHeight => peekHeight;
 }
 
 /// A [TickingHeightState] that changes its height to [minHeight] via [hide] and\
@@ -76,6 +86,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
     );
   }
 
+  /// Hides the overlay.
   void hide() {
     if (widget.onHide != null) {
       widget.onHide();
@@ -84,6 +95,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
     setHeight(minHeight);
   }
 
+  /// Shows the overlay.
   void show() {
     if (widget.onShow != null) {
       widget.onShow();
@@ -92,6 +104,8 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
     setHeight(maxHeight);
   }
 
+  /// If [peeking] is true, the overlay will pop up itself over the bottom of
+  /// its parent by the [PeekingOverlay.peekHeight].
   set peek(bool peeking) {
     if (peeking != _peeking) {
       _peeking = peeking;
@@ -100,6 +114,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
     }
   }
 
+  /// Returns true if the overlay is currently hiding.
   bool get hiding => _hiding;
 
   /// Tracks how 'peeked' the overlay is taking [_kAngleOffsetY] into account.
@@ -111,12 +126,16 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
       math.min((height - _kAngleOffsetY) / (widget.peekHeight - _kAngleOffsetY),
           1.0));
 
+  /// Updates the overlay as if it was being dragged vertically.
   void onVerticalDragUpdate(DragUpdateDetails details) =>
       setHeight(height - details.primaryDelta, force: true);
 
+  /// Updates the overlay as if it was finished being dragged vertically.
   void onVerticalDragEnd(DragEndDetails details) =>
       snap(details.velocity.pixelsPerSecond.dy);
 
+  /// Snaps the overlay open (showing) or closed (hiding) based on the vertical
+  /// velocity occuring at the time a vertical drag finishes.
   void snap(double verticalVelocity) {
     if (verticalVelocity < -kSnapVelocityThreshold) {
       show();
@@ -178,11 +197,9 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
         ],
       );
 
-  double get _openingProgress => (height > widget.darkeningBackgroundMinHeight
+  double get _openingProgress => (height > widget.peekHeight
       ? math.min(
-          1.0,
-          (height - widget.darkeningBackgroundMinHeight) /
-              (maxHeight - widget.darkeningBackgroundMinHeight))
+          1.0, (height - widget.peekHeight) / (maxHeight - widget.peekHeight))
       : 0.0);
 
   Color get _overlayBackgroundColor =>

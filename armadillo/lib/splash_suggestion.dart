@@ -12,9 +12,6 @@ import 'splash_painter.dart';
 import 'suggestion.dart';
 import 'suggestion_widget.dart';
 
-/// Called when the splash assoicated with [suggestion] completes.
-typedef void OnSuggestionExpanded(Suggestion suggestion);
-
 const RK4SpringDescription _kSweepSimulationDesc =
     const RK4SpringDescription(tension: 100.0, friction: 50.0);
 const double _kSweepSimulationTarget = 100.0;
