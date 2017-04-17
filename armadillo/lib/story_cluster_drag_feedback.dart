@@ -27,14 +27,28 @@ const double _kFocusedCornerRadius = 8.0;
 
 /// Displays a representation of a StoryCluster while being dragged.
 class StoryClusterDragFeedback extends StatefulWidget {
+  /// The cluster being dragged.
   final StoryCluster storyCluster;
+
+  /// The key of the overlay this feedback has been added to.
   final GlobalKey<ArmadilloOverlayState> overlayKey;
+
+  /// The widgets for the stories in the cluster being dragged.
   final Map<StoryId, Widget> storyWidgets;
+
+  /// Where the drag began relative to the cluster's widget's coordinate system.
   final Offset localDragStartPoint;
+
+  /// The bounds of the cluster's widget when the drag begin.
   final Rect initialBounds;
+
+  /// The focus progress of the cluster's widget.
   final double focusProgress;
+
+  /// The initial X offset of the cluster's widget.
   final double initDx;
 
+  /// Constructor.
   StoryClusterDragFeedback({
     Key key,
     this.overlayKey,
@@ -59,6 +73,9 @@ class StoryClusterDragFeedback extends StatefulWidget {
       new StoryClusterDragFeedbackState();
 }
 
+/// Holds the necessary state for performing transitions to and from its
+/// [StoryClusterDragFeedback.storyCluster]'s being a candidate in a new
+/// cluster.
 class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
   final GlobalKey<SimulatedSizedBoxState> _childKey =
       new GlobalKey<SimulatedSizedBoxState>();
@@ -212,14 +229,14 @@ class StoryClusterDragFeedbackState extends State<StoryClusterDragFeedback> {
                 // its translation when isAcceptable is true.
                 // In tab mode we center on the story's story bar.
                 // In panel mode we center on the story itself.
-                double newDx =
-                    (isAcceptable || widget.localDragStartPoint.dx > targetWidth)
-                        ? (widget.storyCluster.displayMode == DisplayMode.tabs)
-                            ? widget.localDragStartPoint.dx -
-                                targetWidth * tabFractionalXOffset
-                            : widget.localDragStartPoint.dx -
-                                targetWidth * realStoriesFractionalCenterX
-                        : 0.0;
+                double newDx = (isAcceptable ||
+                        widget.localDragStartPoint.dx > targetWidth)
+                    ? (widget.storyCluster.displayMode == DisplayMode.tabs)
+                        ? widget.localDragStartPoint.dx -
+                            targetWidth * tabFractionalXOffset
+                        : widget.localDragStartPoint.dx -
+                            targetWidth * realStoriesFractionalCenterX
+                    : 0.0;
                 double newDy = (isAcceptable ||
                         widget.localDragStartPoint.dy > targetHeight)
                     ? (widget.storyCluster.displayMode == DisplayMode.tabs)

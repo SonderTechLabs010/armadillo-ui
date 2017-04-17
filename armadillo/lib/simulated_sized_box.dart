@@ -12,11 +12,19 @@ const RK4SpringDescription _kDefaultSimulationDesc =
 /// Animates a [SizedBox]'s [width] and [height] with a
 /// spring simulation.
 class SimulatedSizedBox extends StatefulWidget {
+  /// The target width of the box.
   final double width;
+
+  /// The target height of the box.
   final double height;
+
+  /// The description of th espring to use for width and height transitions.
   final RK4SpringDescription springDescription;
+
+  /// What's inside the box.
   final Widget child;
 
+  /// Constructor.
   SimulatedSizedBox({
     Key key,
     this.width,
@@ -30,6 +38,7 @@ class SimulatedSizedBox extends StatefulWidget {
   SimulatedSizedBoxState createState() => new SimulatedSizedBoxState();
 }
 
+/// Holds the width and height transition simulations for [SimulatedSizedBox].
 class SimulatedSizedBoxState extends TickingState<SimulatedSizedBox> {
   RK4SpringSimulation _widthSimulation;
   RK4SpringSimulation _heightSimulation;
@@ -69,17 +78,7 @@ class SimulatedSizedBoxState extends TickingState<SimulatedSizedBox> {
     return !(_heightSimulation.isDone && _widthSimulation.isDone);
   }
 
-  set size(Size size) {
-    _widthSimulation = new RK4SpringSimulation(
-      initValue: size.width,
-      desc: widget.springDescription,
-    );
-    _heightSimulation = new RK4SpringSimulation(
-      initValue: size.height,
-      desc: widget.springDescription,
-    );
-  }
-
+  /// Gets the current size of the box.
   Size get size => new Size(
         _widthSimulation.value.clamp(0.0, double.INFINITY),
         _heightSimulation.value.clamp(0.0, double.INFINITY),

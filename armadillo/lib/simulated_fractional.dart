@@ -17,14 +17,28 @@ const RK4SpringDescription _kDefaultSimulationDesc =
 /// If [fractionalTop] and [fractionalLeft] are both null, a [SizedBox] will
 /// be used instead of a [Positioned].
 class SimulatedFractional extends StatefulWidget {
+  /// The top of child relative to its parent from 0.0 to 1.0.
   final double fractionalTop;
+
+  /// The left of child relative to its parent from 0.0 to 1.0.
   final double fractionalLeft;
+
+  /// The width of child relative to its parent from 0.0 to 1.0.
   final double fractionalWidth;
+
+  /// The height of child relative to its parent from 0.0 to 1.0.
   final double fractionalHeight;
+
+  /// The parent's size.
   final Size size;
+
+  /// The spring description for the transition to new fractional values.
   final RK4SpringDescription springDescription;
+
+  /// The child to size relative to the [SimulatedFractional]'s parent.
   final Widget child;
 
+  /// Constructor.
   SimulatedFractional({
     Key key,
     this.fractionalTop,
@@ -49,6 +63,7 @@ class SimulatedFractional extends StatefulWidget {
   SimulatedFractionalState createState() => new SimulatedFractionalState();
 }
 
+/// Holds the transition simulations for [SimulatedFractional].
 class SimulatedFractionalState extends TickingState<SimulatedFractional> {
   RK4SpringSimulation _fractionalTopSimulation;
   RK4SpringSimulation _fractionalLeftSimulation;
@@ -120,6 +135,7 @@ class SimulatedFractionalState extends TickingState<SimulatedFractional> {
         _fractionalHeightSimulation.isDone);
   }
 
+  /// Jumps the fractional height of the child to [fractionalHeight].
   void jumpFractionalHeight(double fractionalHeight) {
     _fractionalHeightSimulation = new RK4SpringSimulation(
       initValue: fractionalHeight,
@@ -127,6 +143,9 @@ class SimulatedFractionalState extends TickingState<SimulatedFractional> {
     );
   }
 
+  /// Jumps the fractional top, left, width and height of the child to
+  /// what they should be if the child is positioned via [bounds] given a parent
+  /// size of [newSize].
   void jump(Rect bounds, Size newSize) {
     _fractionalTopSimulation = new RK4SpringSimulation(
       initValue: bounds.topLeft.dy / newSize.height,
@@ -146,6 +165,9 @@ class SimulatedFractionalState extends TickingState<SimulatedFractional> {
     );
   }
 
+  /// Jumps the fractional top, left, width and height of the child to
+  /// [fractionalTop], [fractionalLeft], [fractionalWidth], and
+  /// [fractionalHeight], respectively.
   void jumpToValues({
     double fractionalTop,
     double fractionalLeft,

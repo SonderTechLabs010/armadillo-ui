@@ -12,12 +12,28 @@ import 'package:flutter/widgets.dart';
 /// [innerSplashProgress] and [outerSplashProgress] are expected to go from 0.0
 /// to 1.0 and [innerSplashProgress] <= [outerSplashProgress].
 class SplashPainter extends CustomPainter {
+  /// The inner radius of the splash will be
+  /// [splashRadius] * [innerSplashProgress].
+  /// This is expected to go from 0.0 to 1.0 and
+  /// [innerSplashProgress] <= [outerSplashProgress].
   final double innerSplashProgress;
+
+  /// The outer radius of the splash will be
+  /// [splashRadius] * [outerSplashProgress].
+  /// This is expected to go from 0.0 to 1.0 and
+  /// [innerSplashProgress] <= [outerSplashProgress].
   final double outerSplashProgress;
+
+  /// The center of the splash.
   final Offset splashOrigin;
+
+  /// The color of the splash.
   final Color splashColor;
+
+  /// The radius of the splash.
   final double splashRadius;
 
+  /// Constructor
   SplashPainter(
       {this.innerSplashProgress,
       this.outerSplashProgress,

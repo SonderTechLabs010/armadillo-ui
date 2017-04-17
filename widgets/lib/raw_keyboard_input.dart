@@ -59,6 +59,7 @@ class RawKeyboardInputState extends State<RawKeyboardInput> {
 
   @override
   void didUpdateWidget(RawKeyboardInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
     if (widget.focused != oldWidget.focused) {
       if (widget.focused) {
         FocusScope.of(context).requestFocus(_focusNode);

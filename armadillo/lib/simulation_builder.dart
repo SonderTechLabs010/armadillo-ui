@@ -10,18 +10,32 @@ import 'package:sysui_widgets/ticking_state.dart';
 const RK4SpringDescription _kSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
 
+/// Called each time the simulation ticks.
 typedef void ProgressListener(double progress, bool isDone);
+
+/// Called each time the simulation ticks to build a child for
+/// [SimulationBuilder].
 typedef Widget ProgressBuilder(BuildContext context, double progress);
 
 /// Manages a simulation for the [Widget] built via [builder] allowing it to be
 /// stateless.
 class SimulationBuilder extends StatefulWidget {
+  /// Called each time the simulation ticks.
   final ProgressListener onSimulationChanged;
+
+  /// The initial simulation value.
   final double initValue;
+
+  /// The target simulation value.
   final double targetValue;
+
+  /// Builds the child for this [Widget] each time the simulation ticks.
   final ProgressBuilder builder;
+
+  /// The description of the spring to do the simulation with.
   final RK4SpringDescription springDescription;
 
+  /// Constructor.
   SimulationBuilder({
     Key key,
     this.onSimulationChanged,
@@ -36,6 +50,7 @@ class SimulationBuilder extends StatefulWidget {
   SimulationBuilderState createState() => new SimulationBuilderState();
 }
 
+/// Holds the simulation state for [SimulationBuilder].
 class SimulationBuilderState extends TickingState<SimulationBuilder> {
   RK4SpringSimulation _simulation;
 
@@ -59,6 +74,7 @@ class SimulationBuilderState extends TickingState<SimulationBuilder> {
     }
   }
 
+  /// Jumps the simulation to [value].
   void jump(double value) {
     setState(() {
       _simulation = new RK4SpringSimulation(
@@ -66,8 +82,10 @@ class SimulationBuilderState extends TickingState<SimulationBuilder> {
         desc: widget.springDescription,
       );
     });
+    widget.onSimulationChanged?.call(progress, _simulation.isDone);
   }
 
+  /// Sets the new target for the simulation to [target].
   set target(double target) {
     if (_simulation.target != target) {
       _simulation.target = target;
@@ -75,6 +93,7 @@ class SimulationBuilderState extends TickingState<SimulationBuilder> {
     }
   }
 
+  /// THe current value of the simulation.
   double get progress => _simulation.value;
 
   @override

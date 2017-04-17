@@ -21,18 +21,37 @@ const RK4SpringDescription _kDefaultSimulationDesc =
 /// animate to [targetScale].  Rebuilds of this widget will animate from the
 /// current scale value to [targetScale] instead of animating from [initScale].
 class SimulatedTransform extends StatefulWidget {
+  /// The initial X offset of the [child].
   final double initDx;
-  final double initDy;
-  final double targetDx;
-  final double targetDy;
-  final double initScale;
-  final double targetScale;
-  final double initOpacity;
-  final double targetOpacity;
-  final RK4SpringDescription springDescription;
-  final Widget child;
-  final FractionalOffset alignment;
 
+  /// The target X offset of the [child].
+  final double targetDx;
+
+  /// The initial Y offset of the [child].
+  final double initDy;
+
+  /// The target Y offset of the [child].
+  final double targetDy;
+
+  /// The initial scale of the [child].
+  final double initScale;
+
+  /// The target scale of the [child].
+  final double targetScale;
+
+  /// The initial opacity of the [child].
+  final double initOpacity;
+
+  /// The target opacity of the [child].
+  final double targetOpacity;
+
+  /// The spring description to use for simulating from inits to targets.
+  final RK4SpringDescription springDescription;
+
+  /// The child to apply all the transforms to.
+  final Widget child;
+
+  /// Constructor.
   SimulatedTransform({
     Key key,
     this.initDx: 0.0,
@@ -45,16 +64,15 @@ class SimulatedTransform extends StatefulWidget {
     this.targetOpacity: 1.0,
     this.springDescription: _kDefaultSimulationDesc,
     this.child,
-    this.alignment: FractionalOffset.center,
   })
       : super(key: key);
 
   @override
-  SimulatedTranslationTransformState createState() =>
-      new SimulatedTranslationTransformState();
+  _SimulatedTranslationTransformState createState() =>
+      new _SimulatedTranslationTransformState();
 }
 
-class SimulatedTranslationTransformState
+class _SimulatedTranslationTransformState
     extends TickingState<SimulatedTransform> {
   RK4SpringSimulation _dxSimulation;
   RK4SpringSimulation _dySimulation;
@@ -109,7 +127,7 @@ class SimulatedTranslationTransformState
           _scaleSimulation.value,
           _scaleSimulation.value,
         ),
-        alignment: widget.alignment,
+        alignment: FractionalOffset.center,
         child: new Opacity(
           opacity: _opacitySimulation.value.clamp(0.0, 1.0),
           child: widget.child,

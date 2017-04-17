@@ -15,14 +15,28 @@ const String _kImage = 'packages/armadillo/res/logo_googleg_24dpx4.png';
 typedef void OnSuggestionSelected(Suggestion suggestion, Rect globalBounds);
 typedef void OnAskTextChanged(String text);
 
+/// Displays a list of suggestions and provides a mechanism for asking for
+/// new things to do.
 class SuggestionList extends StatefulWidget {
+  /// The controller to use for scrolling the list.
   final ScrollController scrollController;
+
+  /// Called when the user begins asking.
   final VoidCallback onAskingStarted;
+
+  /// Called when the user ends asking.
   final VoidCallback onAskingEnded;
+
+  /// Called when a suggestion is selected.
   final OnSuggestionSelected onSuggestionSelected;
+
+  /// Called when the text representation of what the user is asking changes.
   final OnAskTextChanged onAskTextChanged;
+
+  /// The number of columns to use for displaying suggestions.
   final int columnCount;
 
+  /// Constructor.
   SuggestionList({
     Key key,
     this.scrollController,
@@ -38,37 +52,46 @@ class SuggestionList extends StatefulWidget {
   SuggestionListState createState() => new SuggestionListState();
 }
 
+/// Manages the asking state for the [SuggestionList].
 class SuggestionListState extends State<SuggestionList> {
   final GlobalKey<RawKeyboardInputState> _inputKey =
       new GlobalKey<RawKeyboardInputState>();
   bool _asking = false;
   Suggestion _selectedSuggestion;
 
+  /// The current ask text.
   String get text => _inputKey.currentState?.text;
+
+  /// Appends [text] to the ask text.
   void append(String text) {
     _inputKey.currentState?.append(text);
     widget.onAskTextChanged?.call(text);
     SuggestionModel.of(context).askText = this.text;
   }
 
+  /// Removes the last character of the ask text.
   void backspace() {
     _inputKey.currentState?.backspace();
     widget.onAskTextChanged?.call(text);
     SuggestionModel.of(context).askText = text;
   }
 
+  /// Clears the ask text.
   void clear() {
     _inputKey.currentState?.clear();
     widget.onAskTextChanged?.call(text);
     SuggestionModel.of(context).askText = null;
   }
 
+  /// Clears the last selected suggestion.  The selected suggestion isn't drawn
+  /// in favor of a splash transition drawing it.
   void resetSelection() {
     setState(() {
       _selectedSuggestion = null;
     });
   }
 
+  /// Called when a suggestion is selected from an IME when asking.
   void onSuggestion(String suggestion) {
     if (suggestion == null || suggestion.isEmpty) {
       return;
@@ -87,6 +110,7 @@ class SuggestionListState extends State<SuggestionList> {
     append(suggestion + ' ');
   }
 
+  /// Stops asking and clears the the ask text.
   void stopAsking() {
     if (!_asking) {
       return;
@@ -99,6 +123,7 @@ class SuggestionListState extends State<SuggestionList> {
     });
   }
 
+  /// Selects the first suggestion in the list as if it had been tapped.
   void selectFirstSuggestions() {
     List<Suggestion> suggestions = SuggestionModel.of(context).suggestions;
     if (suggestions.isNotEmpty) {

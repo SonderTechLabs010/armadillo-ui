@@ -260,6 +260,7 @@ class Keyboard extends StatefulWidget {
   /// Called when 'Go' is tapped on the keyboard.
   final VoidCallback onGo;
 
+  /// Constructor.
   Keyboard({Key key, this.onText, this.onSuggestion, this.onDelete, this.onGo})
       : super(key: key);
 

@@ -32,7 +32,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
   /// Set from an external source - typically the UserShell.
   StoryProviderProxy _storyProvider;
 
-  List<StoryCluster> _storyClusters = <StoryCluster>[];
+  final List<StoryCluster> _storyClusters = <StoryCluster>[];
 
   final Map<String, StoryControllerProxy> _storyControllerMap =
       <String, StoryControllerProxy>{};

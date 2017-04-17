@@ -12,6 +12,7 @@ import 'splash_painter.dart';
 import 'suggestion.dart';
 import 'suggestion_widget.dart';
 
+/// Called when the splash assoicated with [suggestion] completes.
 typedef void OnSuggestionExpanded(Suggestion suggestion);
 
 const RK4SpringDescription _kSweepSimulationDesc =
@@ -25,17 +26,25 @@ const double _kClearSimulationTarget = 100.0;
 /// over the screen.  Once fully expanded a hole will open up from the center
 /// of the [suggestion] revealing what's behind.
 class SplashSuggestion extends ExpansionBehavior {
+  /// The [Suggestion] which should be expanded to fill the parent.
   final Suggestion suggestion;
+
+  /// The global bounds of the [suggestion]'s widget when the splash begins.
   final Rect suggestionInitialGlobalBounds;
+
+  /// Called when the splash assoicated with [suggestion] completes.
   final OnSuggestionExpanded onSuggestionExpanded;
+
   RK4SpringSimulation _sweepSimulation;
   RK4SpringSimulation _clearSimulation;
   bool _notified = false;
 
-  SplashSuggestion(
-      {this.suggestion,
-      this.suggestionInitialGlobalBounds,
-      this.onSuggestionExpanded});
+  /// Constructor.
+  SplashSuggestion({
+    this.suggestion,
+    this.suggestionInitialGlobalBounds,
+    this.onSuggestionExpanded,
+  });
 
   @override
   void start() {
@@ -79,8 +88,8 @@ class SplashSuggestion extends ExpansionBehavior {
 
     RenderBox box = context.findRenderObject();
     Offset topLeft = box.localToGlobal(Offset.zero);
-    Rect shiftedBounds =
-        suggestionInitialGlobalBounds.shift(new Offset(-topLeft.dx, -topLeft.dy));
+    Rect shiftedBounds = suggestionInitialGlobalBounds
+        .shift(new Offset(-topLeft.dx, -topLeft.dy));
     double splashRadius = math.sqrt(
         (constraints.maxWidth / 2.0 * constraints.maxWidth / 2.0) +
             (constraints.maxHeight * constraints.maxHeight));

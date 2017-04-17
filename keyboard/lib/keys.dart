@@ -55,6 +55,7 @@ class TextKeyState extends State<TextKey> {
 
   @override
   void didUpdateWidget(_) {
+    super.didUpdateWidget(_);
     setState(() {
       _text = widget.text;
       _down = false;
