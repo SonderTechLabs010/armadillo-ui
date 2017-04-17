@@ -17,10 +17,13 @@ abstract class SuggestionModel extends Model {
   static SuggestionModel of(BuildContext context) =>
       new ModelFinder<SuggestionModel>().of(context);
 
+  /// Returns the list of suggestions to be displayed.
   List<Suggestion> get suggestions;
 
+  /// Sets the ask text to [text].
   set askText(String text);
 
+  /// Sets the asking state to [asking].
   set asking(bool asking);
 
   /// Updates the [suggestions] based on the currently focused storyCluster].  If no

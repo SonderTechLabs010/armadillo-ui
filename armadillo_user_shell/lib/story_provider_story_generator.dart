@@ -54,7 +54,7 @@ class StoryProviderStoryGenerator extends StoryGenerator {
       onStoryChanged: _onStoryChanged,
       onStoryDeleted: (String storyId) => _removeStory(storyId),
     );
-    _storyProvider.watch(_storyProviderWatcher.getHandle());
+    _storyProvider.watch(_storyProviderWatcher.handle);
     update();
   }
 

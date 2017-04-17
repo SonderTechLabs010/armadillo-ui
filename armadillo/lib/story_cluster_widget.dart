@@ -251,11 +251,16 @@ class StoryClusterWidget extends StatelessWidget {
 
 /// The Story Title that hovers below the story itself.
 class InlineStoryTitle extends StatelessWidget {
+  /// The progress of [storyCluster] coming into focus.
   final double focusProgress;
+
+  /// The cluster this story title represents.
   final StoryCluster storyCluster;
 
+  /// Constructor.
   InlineStoryTitle({this.focusProgress, this.storyCluster});
 
+  /// THe height the inline story title should be for the given [focusProgress].
   static double getHeight(double focusProgress) =>
       lerpDouble(_kStoryInlineTitleHeight, 0.0, focusProgress);
 

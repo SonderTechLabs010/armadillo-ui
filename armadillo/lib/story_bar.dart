@@ -19,24 +19,33 @@ const double _kPartMargin = 8.0;
 
 /// The bar to be shown at the top of a story.
 class StoryBar extends StatefulWidget {
+  /// The [Story] this bar represents.
   final Story story;
+
+  /// The height of the bar when minimized.
   final double minimizedHeight;
+
+  /// The height of the bar when maximized.
   final double maximizedHeight;
+
+  /// True if the story is in focus.
   final bool focused;
+
+  /// Constructor.
   StoryBar({
     Key key,
-    Story story,
+    this.story,
     this.minimizedHeight,
     this.maximizedHeight,
     this.focused,
   })
-      : this.story = story,
-        super(key: key);
+      : super(key: key);
 
   @override
   StoryBarState createState() => new StoryBarState();
 }
 
+/// Holds the simulations for focus and height transitions.
 class StoryBarState extends TickingState<StoryBar> {
   RK4SpringSimulation _heightSimulation;
   RK4SpringSimulation _focusedSimulation;
@@ -158,16 +167,21 @@ class StoryBarState extends TickingState<StoryBar> {
     return !_heightSimulation.isDone || !_focusedSimulation.isDone;
   }
 
+  /// Shows the story bar.
   void show() {
     _heightSimulation.target = _showHeight;
     startTicking();
   }
 
+  /// Hides the story bar.
   void hide() {
     _heightSimulation.target = 0.0;
     startTicking();
   }
 
+  /// Maximizes the height of the story bar when shown.  If [jumpToFinish] is
+  /// true the story bar height will jump to its maximized value instead of
+  /// transitioning to it.
   void maximize({bool jumpToFinish: false}) {
     if (jumpToFinish) {
       _heightSimulation = new RK4SpringSimulation(
@@ -180,6 +194,7 @@ class StoryBarState extends TickingState<StoryBar> {
     show();
   }
 
+  /// Minimizes the height of the story bar when shown.
   void minimize() {
     _showHeight = widget.minimizedHeight;
     _focusedSimulation.target = 0.0;

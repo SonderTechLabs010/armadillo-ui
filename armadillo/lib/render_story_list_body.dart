@@ -227,8 +227,7 @@ class RenderStoryListBody extends RenderListBody {
         // the HitTestResult but will return false for its hitTest)).
         for (int i = 0; i < children.length; i++) {
           final RenderBox child = children[i];
-          final StoryListBodyParentData childParentData =
-              child.parentData;
+          final StoryListBodyParentData childParentData = child.parentData;
           Offset transformed = position - childParentData.offset;
           if (child.hitTest(result, position: transformed)) {
             return true;

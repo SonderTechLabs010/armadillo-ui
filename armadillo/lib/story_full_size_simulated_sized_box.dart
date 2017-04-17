@@ -14,12 +14,22 @@ import 'size_model.dart';
 /// [ScopedModel] which provides the size the [child] should be
 /// when fully focused.
 class StoryFullSizeSimulatedSizedBox extends StatelessWidget {
+  /// The widget whose size should be simulated.
   final Widget child;
+
+  /// The key to use for the [SimulatedFractional].
   final GlobalKey containerKey;
+
+  /// The current display mode of the cluster this story is in.
   final DisplayMode displayMode;
+
+  /// The panel representing the size and location of this story in its cluster.
   final Panel panel;
+
+  /// The maximum height of the story bar.
   final double storyBarMaximizedHeight;
 
+  /// Constructor.
   StoryFullSizeSimulatedSizedBox({
     this.displayMode,
     this.panel,

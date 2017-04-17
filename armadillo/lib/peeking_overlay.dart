@@ -59,7 +59,7 @@ class PeekingOverlay extends StatefulWidget {
 /// The [createWidget] [Widget] will be clipped to [height] but will be given
 /// [maxHeight] to be laid out in.
 class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
-  static final double kSnapVelocityThreshold = 500.0;
+  static final double _kSnapVelocityThreshold = 500.0;
   bool _hiding = true;
   bool _peeking;
   Widget _dragTarget;
@@ -137,9 +137,9 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
   /// Snaps the overlay open (showing) or closed (hiding) based on the vertical
   /// velocity occuring at the time a vertical drag finishes.
   void snap(double verticalVelocity) {
-    if (verticalVelocity < -kSnapVelocityThreshold) {
+    if (verticalVelocity < -_kSnapVelocityThreshold) {
       show();
-    } else if (verticalVelocity > kSnapVelocityThreshold) {
+    } else if (verticalVelocity > _kSnapVelocityThreshold) {
       hide();
     } else if (height - minHeight < maxHeight - height) {
       hide();

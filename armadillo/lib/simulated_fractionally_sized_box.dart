@@ -17,9 +17,13 @@ class SimulatedFractionallySizedBox extends StatefulWidget {
   /// See [FractionallySizedBox.alignment].
   final FractionalOffset alignment;
 
+  /// The description of the spring used to transition the box's size.
   final RK4SpringDescription springDescription;
+
+  /// The widget to be sized by this box.
   final Widget child;
 
+  /// Construuctor.
   SimulatedFractionallySizedBox({
     Key key,
     this.alignment,
@@ -34,6 +38,7 @@ class SimulatedFractionallySizedBox extends StatefulWidget {
       new SimulatedFractionallySizedBoxState();
 }
 
+/// Tracks the simulation of the [SimulatedFractionallySizedBox]'s size.
 class SimulatedFractionallySizedBoxState
     extends TickingState<SimulatedFractionallySizedBox> {
   RK4SpringSimulation _heightFactorSimulation;
@@ -68,6 +73,7 @@ class SimulatedFractionallySizedBoxState
     return !_heightFactorSimulation.isDone;
   }
 
+  /// Jumps the height of the box relative to its parent to [heightFactor].
   void jump({double heightFactor}) {
     _heightFactorSimulation = new RK4SpringSimulation(
       initValue: heightFactor,

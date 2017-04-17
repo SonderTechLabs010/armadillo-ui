@@ -8,9 +8,13 @@ import 'story_model.dart';
 
 /// Adds a button to randomize story times.
 class StoryTimeRandomizer extends StatelessWidget {
+  /// The model whose stories will have their times randomized.
   final StoryModel storyModel;
+
+  /// The child the button overlays.
   final Widget child;
 
+  /// Constructor.
   StoryTimeRandomizer({this.storyModel, this.child});
 
   @override

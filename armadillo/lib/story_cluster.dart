@@ -414,13 +414,17 @@ class StoryCluster {
     }
   }
 
+  /// The id of the currently focused story.
   StoryId get focusedStoryId => _focusedStoryId;
 
+  /// Unfocuses the story cluster.
   void unFocus() {
     focusSimulationKey.currentState?.target = 0.0;
     minimizeStoryBars();
   }
 
+  /// Maximizes the story bars for all the stories within the cluster.
+  /// See [Story.maximizeStoryBar].
   void maximizeStoryBars({
     bool jumpToFinish: false,
   }) =>
@@ -428,15 +432,23 @@ class StoryCluster {
         (Story story) => story.maximizeStoryBar(jumpToFinish: jumpToFinish),
       );
 
+  /// Minimizes the story bars for all the stories within the cluster.
+  /// See [Story.minimizeStoryBar].
   void minimizeStoryBars() =>
       stories.forEach((Story story) => story.minimizeStoryBar());
 
+  /// Hides the story bars for all the stories within the cluster.
+  /// See [Story.hideStoryBar].
   void hideStoryBars() =>
       stories.forEach((Story story) => story.hideStoryBar());
 
+  /// Shows the story bars for all the stories within the cluster.
+  /// See [Story.showStoryBar].
   void showStoryBars() =>
       stories.forEach((Story story) => story.showStoryBar());
 
+  /// Moves the [storiesToMove] from their current location in the story list
+  /// to [targetIndex].
   void moveStoriesToIndex(List<Story> storiesToMove, int targetIndex) {
     List<Story> removedStories = <Story>[];
     storiesToMove.forEach((Story storyToMove) {
@@ -445,12 +457,15 @@ class StoryCluster {
       _stories.remove(story);
       removedStories.add(story);
     });
-    removedStories.reversed.forEach((Story removedStory) {
-      _stories.insert(targetIndex, removedStory);
-    });
+    removedStories.reversed.forEach(
+      (Story removedStory) => _stories.insert(targetIndex, removedStory),
+    );
     _notifyStoryListListeners();
   }
 
+  /// Moves the [storiesToMove] from their current location in the story list
+  /// to [targetIndex].  This differs from [moveStoriesToIndex] in that only
+  /// [previewStories] are moved.
   void movePlaceholderStoriesToIndex(
     List<Story> storiesToMove,
     int targetIndex,
@@ -464,9 +479,9 @@ class StoryCluster {
       _stories.remove(story);
       removedStories.add(story);
     });
-    removedStories.reversed.forEach((Story removedStory) {
-      _stories.insert(targetIndex, removedStory);
-    });
+    removedStories.reversed.forEach(
+      (Story removedStory) => _stories.insert(targetIndex, removedStory),
+    );
     _notifyStoryListListeners();
   }
 

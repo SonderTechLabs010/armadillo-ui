@@ -25,9 +25,14 @@ class StoryClusterDragStateModel extends Model {
   final Set<StoryClusterId> _acceptableStoryClusters =
       new Set<StoryClusterId>();
 
+  /// Returns true if a story cluster is being dragged.
   bool get isDragging => _draggingStoryClusters.isNotEmpty;
+
+  /// Returns true if a story cluster is being dragged and has been accepted by
+  /// another story cluster.
   bool get isAcceptable => _acceptableStoryClusters.isNotEmpty;
 
+  /// Registers [storyClusterId] as being dragged.
   void addDragging(StoryClusterId storyClusterId) {
     bool isDraggingBefore = isDragging;
     _draggingStoryClusters.add(storyClusterId);
@@ -36,6 +41,7 @@ class StoryClusterDragStateModel extends Model {
     }
   }
 
+  /// Registers [storyClusterId] as no longer being dragged.
   void removeDragging(StoryClusterId storyClusterId) {
     bool isDraggingBefore = isDragging;
     _draggingStoryClusters.remove(storyClusterId);
@@ -44,6 +50,7 @@ class StoryClusterDragStateModel extends Model {
     }
   }
 
+  /// Registers [storyClusterId] as being accepted by another story cluster.
   void addAcceptance(StoryClusterId storyClusterId) {
     bool isAcceptableBefore = isAcceptable;
     _acceptableStoryClusters.add(storyClusterId);
@@ -52,6 +59,8 @@ class StoryClusterDragStateModel extends Model {
     }
   }
 
+  /// Registers [storyClusterId] as no longer being accepted by another story
+  /// cluster.
   void removeAcceptance(StoryClusterId storyClusterId) {
     bool isAcceptableBefore = isAcceptable;
     _acceptableStoryClusters.remove(storyClusterId);

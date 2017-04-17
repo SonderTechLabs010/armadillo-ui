@@ -7,24 +7,27 @@ import 'package:flutter/widgets.dart';
 /// Shifts by [verticalShift] as [VerticalShifterState.shiftProgress] goes to
 /// 1.0.
 class VerticalShifter extends StatefulWidget {
+  /// The amount to shift [child] vertically by.
   final double verticalShift;
+
+  /// The widget to shift vertically.
   final Widget child;
 
+  /// Constructor.
   VerticalShifter({Key key, this.verticalShift, this.child}) : super(key: key);
 
   @override
   VerticalShifterState createState() => new VerticalShifterState();
 }
 
+/// Tracks the current progress of the shift for [VerticalShifter].
 class VerticalShifterState extends State<VerticalShifter> {
   double _shiftProgress = 0.0;
 
   /// The distance to shift up.
-  set shiftProgress(double shiftProgress) {
-    setState(() {
-      _shiftProgress = shiftProgress;
-    });
-  }
+  set shiftProgress(double shiftProgress) => setState(() {
+        _shiftProgress = shiftProgress;
+      });
 
   @override
   Widget build(BuildContext context) => new Stack(

@@ -12,8 +12,9 @@ import 'suggestion_widget.dart';
 
 const String _kImage = 'packages/armadillo/res/logo_googleg_24dpx4.png';
 
+/// Called when a suggestion is selected.  [globalBounds] indicates the location
+/// of the widget representing [suggestion] was on screen when it was selected.
 typedef void OnSuggestionSelected(Suggestion suggestion, Rect globalBounds);
-typedef void OnAskTextChanged(String text);
 
 /// Displays a list of suggestions and provides a mechanism for asking for
 /// new things to do.
@@ -31,7 +32,7 @@ class SuggestionList extends StatefulWidget {
   final OnSuggestionSelected onSuggestionSelected;
 
   /// Called when the text representation of what the user is asking changes.
-  final OnAskTextChanged onAskTextChanged;
+  final ValueChanged<String> onAskTextChanged;
 
   /// The number of columns to use for displaying suggestions.
   final int columnCount;
