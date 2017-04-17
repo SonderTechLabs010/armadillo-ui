@@ -23,10 +23,19 @@ const double _kFocusedCornerRadius = 8.0;
 /// a [SimulatedFractional] based on [panel], [displayMode], and
 /// [isFocused].
 class StoryPositioned extends StatelessWidget {
+  /// The current display mode of the cluster the story is within.
   final DisplayMode displayMode;
+
+  /// True if the story is focused.
   final bool isFocused;
+
+  /// The position of the story within its cluster in panel mode.
   final Panel panel;
+
+  /// The size of the cluster.
   final Size currentSize;
+
+  /// The progress of the cluster's focus simulation.
   final double focusProgress;
 
   /// The [Widget] representation of the [Story].
@@ -115,6 +124,11 @@ class StoryPositioned extends StatelessWidget {
                   );
           });
 
+  /// Returns the margins to use between [panel] and its neighbors within a
+  /// cluster in fractions of the parent's [currentSize] and depending on
+  /// the cluster's [focusProgress].  [panelResizingModel] indicates if a
+  /// particular side of [panel] is in the process of being resized which
+  /// effects the width of the margin on that side.
   static EdgeInsets getFractionalMargins(
     Panel panel,
     Size currentSize,
@@ -161,9 +175,10 @@ class StoryPositioned extends StatelessWidget {
     double rightMargin =
         panel.right == 1.0 ? 0.0 : rightScaledMargin / currentSize.width;
     return new EdgeInsets.only(
-        top: topMargin,
-        left: leftMargin,
-        bottom: bottomMargin,
-        right: rightMargin);
+      top: topMargin,
+      left: leftMargin,
+      bottom: bottomMargin,
+      right: rightMargin,
+    );
   }
 }

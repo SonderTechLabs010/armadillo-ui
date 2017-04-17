@@ -10,6 +10,7 @@ import 'package:sysui_widgets/icon_slider.dart';
 import 'package:sysui_widgets/rk4_spring_simulation.dart';
 import 'package:sysui_widgets/ticking_state.dart';
 
+import 'now.dart';
 import 'toggle_icon.dart';
 
 // Width and height of the icons
@@ -24,9 +25,9 @@ const String _kDoNoDisturbOffGrey600 =
     'packages/armadillo/res/ic_do_not_disturb_off_grey600.png';
 const String _kDoNoDisturbOnBlack =
     'packages/armadillo/res/ic_do_not_disturb_on_black.png';
-const String kScreenLockRotationBlack =
+const String _kScreenLockRotationBlack =
     'packages/armadillo/res/ic_screen_lock_rotation_black.png';
-const String kScreenRotationBlack =
+const String _kScreenRotationBlack =
     'packages/armadillo/res/ic_screen_rotation_black.png';
 const String _kBatteryImageGrey600 =
     'packages/armadillo/res/ic_battery_90_grey600_1x_web_24dp.png';
@@ -48,13 +49,18 @@ const RK4SpringDescription _kSimulationDesc =
     const RK4SpringDescription(tension: 450.0, friction: 50.0);
 const double _kShowSimulationTarget = 100.0;
 
-typedef void OnProgressChanged(double progress);
-
+/// An overlay that slides up over the bottom of its parent when shown.
 class QuickSettingsOverlay extends StatefulWidget {
+  /// The size of [Now] when minimized.
   final double minimizedNowBarHeight;
-  final OnProgressChanged onProgressChanged;
+
+  /// Called each tick as the overlay is shown or hidden.
+  final ValueChanged<double> onProgressChanged;
+
+  /// Called when logout is selected.
   final VoidCallback onLogoutSelected;
 
+  /// Constructor.
   QuickSettingsOverlay({
     Key key,
     this.minimizedNowBarHeight,
@@ -67,17 +73,21 @@ class QuickSettingsOverlay extends StatefulWidget {
   QuickSettingsOverlayState createState() => new QuickSettingsOverlayState();
 }
 
+/// Holds the simulation for the show/hide transition of the
+/// [QuickSettingsOverlay].
 class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
   final RK4SpringSimulation _showSimulation = new RK4SpringSimulation(
     initValue: 0.0,
     desc: _kSimulationDesc,
   );
 
+  /// Shows the overlay.
   void show() {
     _showSimulation.target = _kShowSimulationTarget;
     startTicking();
   }
 
+  /// Hides the overlay.
   void hide() {
     _showSimulation.target = 0.0;
     startTicking();
@@ -166,10 +176,15 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
   }
 }
 
+/// Displays the quick settings.
 class QuickSettings extends StatefulWidget {
+  /// The opacity of the quick settings.
   final double opacity;
+
+  /// Called when logout is selected.
   final VoidCallback onLogoutSelected;
 
+  /// Constructor.
   QuickSettings({this.opacity, this.onLogoutSelected});
 
   @override
@@ -242,8 +257,8 @@ class _QuickSettingsState extends State<QuickSettings> {
   Widget _screenRotationToggleIcon() => new ToggleIcon(
         key: _kScreenRotationToggle,
         imageList: <String>[
-          kScreenLockRotationBlack,
-          kScreenRotationBlack,
+          _kScreenLockRotationBlack,
+          _kScreenRotationBlack,
         ],
         initialImageIndex: 0,
         width: _kIconSize,

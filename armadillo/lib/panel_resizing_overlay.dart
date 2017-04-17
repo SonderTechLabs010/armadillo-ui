@@ -21,11 +21,19 @@ const Color _kGestureDetectorColor = const Color(0x00800080);
 /// overlayed on top of [child].
 /// Once a resizing has occurred [onPanelsChanged] will be called.
 class PanelResizingOverlay extends StatelessWidget {
+  /// The cluster whose panels are to be resized.
   final StoryCluster storyCluster;
+
+  /// The cluster's widget.
   final Widget child;
+
+  /// Called when a panel is resized.
   final VoidCallback onPanelsChanged;
+
+  /// The current size of the cluster's widget.
   final Size currentSize;
 
+  /// Constructor.
   PanelResizingOverlay({
     Key key,
     this.storyCluster,
@@ -54,21 +62,21 @@ class PanelResizingOverlay extends StatelessWidget {
     List<Widget> stackChildren = <Widget>[child];
 
     // Create draggables for each vertical seam.
-    List<VerticalSeam> verticalSeams = _getVerticalSeams(context, rights);
+    List<_VerticalSeam> verticalSeams = _getVerticalSeams(context, rights);
     stackChildren.addAll(
       verticalSeams.map(
-        (VerticalSeam verticalSeam) => new Positioned.fill(
+        (_VerticalSeam verticalSeam) => new Positioned.fill(
               child: verticalSeam.build(context),
             ),
       ),
     );
 
     // Create draggables for each horizontal seam.
-    List<HorizontalSeam> horizontalSeams =
+    List<_HorizontalSeam> horizontalSeams =
         _getHorizontalSeams(context, bottoms);
     stackChildren.addAll(
       horizontalSeams.map(
-        (HorizontalSeam horizontalSeam) => new Positioned.fill(
+        (_HorizontalSeam horizontalSeam) => new Positioned.fill(
               child: horizontalSeam.build(context),
             ),
       ),
@@ -78,12 +86,12 @@ class PanelResizingOverlay extends StatelessWidget {
   }
 
   /// For each element of [rights], find the set of panels that touch that
-  /// element with their right or left and create a [VerticalSeam] from them.
-  /// There can be multiple [VerticalSeam]s for a right if the panels on the
+  /// element with their right or left and create a [_VerticalSeam] from them.
+  /// There can be multiple [_VerticalSeam]s for a right if the panels on the
   /// left and right don't overlap contiguously.
-  List<VerticalSeam> _getVerticalSeams(
+  List<_VerticalSeam> _getVerticalSeams(
       BuildContext context, Set<double> rights) {
-    List<VerticalSeam> verticalSeams = <VerticalSeam>[];
+    List<_VerticalSeam> verticalSeams = <_VerticalSeam>[];
     rights.forEach((double right) {
       List<Panel> touchingPanels = storyCluster.panels
           .where((Panel panel) => panel.left == right || panel.right == right)
@@ -104,7 +112,7 @@ class PanelResizingOverlay extends StatelessWidget {
         } else {
           // Store span, start new span.
           verticalSeams.add(
-            new VerticalSeam(
+            new _VerticalSeam(
               x: right,
               top: top,
               bottom: bottom,
@@ -128,7 +136,7 @@ class PanelResizingOverlay extends StatelessWidget {
       });
       // Store last span.
       verticalSeams.add(
-        new VerticalSeam(
+        new _VerticalSeam(
           x: right,
           top: top,
           bottom: bottom,
@@ -143,12 +151,12 @@ class PanelResizingOverlay extends StatelessWidget {
   }
 
   /// For each element of [bottoms], find the set of panels that touch that
-  /// element with their top or bottom and create a [HorizontalSeam] from them.
-  /// There can be multiple [HorizontalSeam]s for a bottom if the panels on the
+  /// element with their top or bottom and create a [_HorizontalSeam] from them.
+  /// There can be multiple [_HorizontalSeam]s for a bottom if the panels on the
   /// top and bottom don't overlap contiguously.
-  List<HorizontalSeam> _getHorizontalSeams(
+  List<_HorizontalSeam> _getHorizontalSeams(
       BuildContext context, Set<double> bottoms) {
-    List<HorizontalSeam> horizontalSeams = <HorizontalSeam>[];
+    List<_HorizontalSeam> horizontalSeams = <_HorizontalSeam>[];
     bottoms.forEach((double bottom) {
       List<Panel> touchingPanels = storyCluster.panels
           .where((Panel panel) => panel.top == bottom || panel.bottom == bottom)
@@ -169,7 +177,7 @@ class PanelResizingOverlay extends StatelessWidget {
         } else {
           // Store span, start new span.
           horizontalSeams.add(
-            new HorizontalSeam(
+            new _HorizontalSeam(
               y: bottom,
               left: left,
               right: right,
@@ -193,7 +201,7 @@ class PanelResizingOverlay extends StatelessWidget {
       });
       // Store last span.
       horizontalSeams.add(
-        new HorizontalSeam(
+        new _HorizontalSeam(
           y: bottom,
           left: left,
           right: right,
@@ -234,7 +242,7 @@ class PanelResizingOverlay extends StatelessWidget {
 /// When a drag happens [panelsToLeft] and [panelsToRight] will be resized and
 /// [onPanelsChanged] will be called.
 /// [x], [top], and [bottom] are all specified in fractional values.
-class VerticalSeam {
+class _VerticalSeam {
   final double x;
   final double top;
   final double bottom;
@@ -243,7 +251,7 @@ class VerticalSeam {
   final VoidCallback onPanelsChanged;
   final ResizingSimulation resizingSimulation;
 
-  VerticalSeam({
+  _VerticalSeam({
     this.x,
     this.top,
     this.bottom,
@@ -361,7 +369,7 @@ class _VerticalSeamLayoutDelegate extends SingleChildLayoutDelegate {
 /// When a drag happens [panelsAbove] and [panelsBelow] will be resized and
 /// [onPanelsChanged] will be called.
 /// [y], [left], and [right] are all specified in fractional values.
-class HorizontalSeam {
+class _HorizontalSeam {
   final double y;
   final double left;
   final double right;
@@ -370,7 +378,7 @@ class HorizontalSeam {
   final VoidCallback onPanelsChanged;
   final ResizingSimulation resizingSimulation;
 
-  HorizontalSeam({
+  _HorizontalSeam({
     this.y,
     this.left,
     this.right,
