@@ -12,7 +12,6 @@ dart_package("armadillo") {
 
   deps = [
     "//apps/modules/common/packages/models",
-    "//apps/modules/email/modules/story:email_story",
     "//apps/sysui/keyboard",
     "//apps/sysui/widgets",
     "//lib/flutter/packages/flutter",
