@@ -249,7 +249,7 @@ class _VerticalSeam {
   final List<Panel> panelsToLeft;
   final List<Panel> panelsToRight;
   final VoidCallback onPanelsChanged;
-  final ResizingSimulation resizingSimulation;
+  final ResizingState resizingState;
 
   _VerticalSeam({
     this.x,
@@ -262,15 +262,14 @@ class _VerticalSeam {
   })
       : this.panelsToLeft = panelsToLeft,
         this.panelsToRight = panelsToRight,
-        resizingSimulation =
-            panelResizingModel.getSimulation(<Side, List<Panel>>{
-                  Side.right: panelsToLeft,
-                  Side.left: panelsToRight,
-                }) ??
-                new ResizingSimulation(<Side, List<Panel>>{
-                  Side.right: panelsToLeft,
-                  Side.left: panelsToRight,
-                });
+        resizingState = panelResizingModel.getState(<Side, List<Panel>>{
+              Side.right: panelsToLeft,
+              Side.left: panelsToRight,
+            }) ??
+            new ResizingState(<Side, List<Panel>>{
+              Side.right: panelsToLeft,
+              Side.left: panelsToRight,
+            });
 
   /// Creates a [Widget] representing this seam which can be dragged.
   Widget build(BuildContext context) => new CustomSingleChildLayout(
@@ -285,25 +284,25 @@ class _VerticalSeam {
           ),
           child: new LongPressGestureDetector(
             onDragStart: (DragStartDetails details) {
-              resizingSimulation.valueOnDrag = x;
-              resizingSimulation.dragDelta = 0.0;
-              PanelResizingModel.of(context).resizeBegin(resizingSimulation);
+              resizingState.valueOnDrag = x;
+              resizingState.dragDelta = 0.0;
+              PanelResizingModel.of(context).resizeBegin(resizingState);
             },
             onDragEnd: (DragEndDetails details) {
-              PanelResizingModel.of(context).resizeEnd(resizingSimulation);
+              PanelResizingModel.of(context).resizeEnd(resizingState);
             },
             onDragCancel: () {
-              PanelResizingModel.of(context).resizeEnd(resizingSimulation);
+              PanelResizingModel.of(context).resizeEnd(resizingState);
             },
             onDragUpdate: (DragUpdateDetails details) {
               double deltaX = details.delta.dx;
-              resizingSimulation.dragDelta += deltaX;
+              resizingState.dragDelta += deltaX;
 
               RenderBox box = context.findRenderObject();
 
               double newX = toGridValue(
-                resizingSimulation.valueOnDrag +
-                    (resizingSimulation.dragDelta / box.size.width),
+                resizingState.valueOnDrag +
+                    (resizingState.dragDelta / box.size.width),
               );
 
               if (panelsToLeft.every(
@@ -376,7 +375,7 @@ class _HorizontalSeam {
   final List<Panel> panelsAbove;
   final List<Panel> panelsBelow;
   final VoidCallback onPanelsChanged;
-  final ResizingSimulation resizingSimulation;
+  final ResizingState resizingState;
 
   _HorizontalSeam({
     this.y,
@@ -389,15 +388,14 @@ class _HorizontalSeam {
   })
       : this.panelsAbove = panelsAbove,
         this.panelsBelow = panelsBelow,
-        resizingSimulation =
-            panelResizingModel.getSimulation(<Side, List<Panel>>{
-                  Side.bottom: panelsAbove,
-                  Side.top: panelsBelow,
-                }) ??
-                new ResizingSimulation(<Side, List<Panel>>{
-                  Side.bottom: panelsAbove,
-                  Side.top: panelsBelow,
-                });
+        resizingState = panelResizingModel.getState(<Side, List<Panel>>{
+              Side.bottom: panelsAbove,
+              Side.top: panelsBelow,
+            }) ??
+            new ResizingState(<Side, List<Panel>>{
+              Side.bottom: panelsAbove,
+              Side.top: panelsBelow,
+            });
 
   /// Creates a [Widget] representing this seam which can be dragged.
   Widget build(BuildContext context) => new CustomSingleChildLayout(
@@ -412,24 +410,24 @@ class _HorizontalSeam {
           ),
           child: new LongPressGestureDetector(
             onDragStart: (DragStartDetails details) {
-              resizingSimulation.valueOnDrag = y;
-              resizingSimulation.dragDelta = 0.0;
-              PanelResizingModel.of(context).resizeBegin(resizingSimulation);
+              resizingState.valueOnDrag = y;
+              resizingState.dragDelta = 0.0;
+              PanelResizingModel.of(context).resizeBegin(resizingState);
             },
             onDragEnd: (DragEndDetails details) {
-              PanelResizingModel.of(context).resizeEnd(resizingSimulation);
+              PanelResizingModel.of(context).resizeEnd(resizingState);
             },
             onDragCancel: () {
-              PanelResizingModel.of(context).resizeEnd(resizingSimulation);
+              PanelResizingModel.of(context).resizeEnd(resizingState);
             },
             onDragUpdate: (DragUpdateDetails details) {
               double deltaY = details.delta.dy;
-              resizingSimulation.dragDelta += deltaY;
+              resizingState.dragDelta += deltaY;
               RenderBox box = context.findRenderObject();
 
               double newY = toGridValue(
-                resizingSimulation.valueOnDrag +
-                    (resizingSimulation.dragDelta / box.size.height),
+                resizingState.valueOnDrag +
+                    (resizingState.dragDelta / box.size.height),
               );
 
               if (panelsAbove.every(

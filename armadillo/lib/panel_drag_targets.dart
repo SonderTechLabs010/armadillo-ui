@@ -53,14 +53,30 @@ const double _kVerticalFlingToDiscardSpeedThreshold = 2000.0;
 /// [onVerticalEdgeHover] will be called whenever a cluster hovers over the top
 /// or bottom targets.
 class PanelDragTargets extends StatefulWidget {
+  /// The cluster the drag targets are being created for.
   final StoryCluster storyCluster;
+
+  /// The cluster's widget.
   final Widget child;
+
+  /// The scale the cluster's widget should be when a candidate cluster is
+  /// dragged over it.
   final double scale;
+
+  /// The progress of the cluster coming into focus.
   final double focusProgress;
+
+  /// Called when a candidate is accepted by one of the drag targets.
   final VoidCallback onAccept;
+
+  /// Called when a candidate hovers over the top or bottom edge of this
+  /// widget.
   final VoidCallback onVerticalEdgeHover;
+
+  /// The current size of the cluster's widget.
   final Size currentSize;
 
+  /// Constructor.
   PanelDragTargets({
     Key key,
     this.storyCluster,

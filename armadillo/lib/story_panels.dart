@@ -37,13 +37,25 @@ const bool _kGrowFocusedTab = false;
 
 /// Displays up to four stories in a grid-like layout.
 class StoryPanels extends StatelessWidget {
+  /// THe cluster whose stories will be displayed.
   final StoryCluster storyCluster;
+
+  /// The progress of the cluster coming into focus.
   final double focusProgress;
+
+  /// The overlay to use for this cluster's draggable.
   final GlobalKey<ArmadilloOverlayState> overlayKey;
+
+  /// The widgets for this cluster's stories.
   final Map<StoryId, Widget> storyWidgets;
+
+  /// If true, shadows will be painted behind each of the stories.
   final bool paintShadows;
+
+  /// The size the cluster's widget should be.
   final Size currentSize;
 
+  /// Constructor.
   StoryPanels({
     Key key,
     this.storyCluster,
