@@ -5,14 +5,15 @@
 import 'package:apps.modular.services.device/user_provider.fidl.dart';
 import 'package:flutter/material.dart';
 import 'package:lib.widgets/hacks.dart' as hacks;
+import 'package:lib.widgets/widgets.dart';
 
 import 'user_picker_device_shell_model.dart';
 
-const String _kDefaultUserName = 'user1';
+const String _kDefaultUserName = 'Guest';
 const String _kDefaultDeviceName = 'fuchsia';
 const String _kDefaultServerName = 'ledger.fuchsia.com';
 const Color _kFuchsiaColor = const Color(0xFFFF0080);
-const double _kButtonContentWidth = 180.0;
+const double _kButtonContentWidth = 220.0;
 const double _kButtonContentHeight = 80.0;
 
 typedef void OnLoginRequest(String user, UserProvider userProvider);
@@ -30,6 +31,151 @@ class UserPicker extends StatelessWidget {
     this.serverNameController,
   });
 
+  Widget _buildNewUserForm(UserPickerDeviceShellModel model) {
+    return new Overlay(initialEntries: <OverlayEntry>[
+      new OverlayEntry(
+        builder: (BuildContext context) => new Material(
+          color: Colors.grey[300],
+          borderRadius: new BorderRadius.circular(8.0),
+          elevation: 4,
+          child: new Container(
+            width: _kButtonContentWidth,
+            padding: const EdgeInsets.all(16.0),
+            child: new Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                // TODO(apwilson): Use TextField ONCE WE HAVE A PROPER
+                // IME ON FUCHSIA!
+                new hacks.RawKeyboardTextField(
+                  decoration: new InputDecoration(
+                    hintText: 'Enter user name',
+                  ),
+                  controller: userNameController,
+                ),
+                new hacks.RawKeyboardTextField(
+                  decoration: new InputDecoration(
+                    hintText: 'Enter device name',
+                  ),
+                  controller: deviceNameController,
+                ),
+                new hacks.RawKeyboardTextField(
+                  decoration: new InputDecoration(
+                    hintText: 'Enter server name',
+                  ),
+                  controller: serverNameController,
+                ),
+                new Container(
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 16.0,
+                  ),
+                  child: new RaisedButton(
+                    color: Colors.blue[500],
+                    onPressed: () => _createAndLoginUser(
+                      userNameController.text,
+                      deviceNameController.text,
+                      serverNameController.text,
+                      model,
+                    ),
+                    child: new Container(
+                      width: _kButtonContentWidth - 32.0,
+                      height: _kButtonContentHeight,
+                      child: new Center(
+                        child: new Text(
+                          'Create and Log in',
+                          style: new TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ]);
+  }
+
+  Widget _buildUserEntry({String user, VoidCallback onTap}) => new InkWell(
+    highlightColor: _kFuchsiaColor.withAlpha(200),
+    onTap: () => onTap(),
+    borderRadius: new BorderRadius.all(new Radius.circular(8.0)),
+    child: new Container(
+      margin: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
+      child: new Column(
+       mainAxisSize: MainAxisSize.min,
+       children: <Widget>[
+         new Container(
+           padding: const EdgeInsets.all(2.0),
+           decoration: new BoxDecoration(
+             borderRadius: new BorderRadius.all(
+               new Radius.circular(40.0),
+             ),
+             backgroundColor: Colors.white,
+           ),
+           child: new Alphatar.fromName(
+             name: user.toUpperCase(),
+             size: 80.0,
+           ),
+         ),
+         new Container(
+           margin: const EdgeInsets.only(top: 16.0),
+           padding: const EdgeInsets.all(4.0),
+           decoration: new BoxDecoration(
+             borderRadius: new BorderRadius.all(new Radius.circular(4.0)),
+             backgroundColor: Colors.black.withAlpha(240),
+           ),
+           child: new Text(
+             user.toUpperCase(),
+             style: new TextStyle(
+               color: Colors.grey[300],
+             ),
+           ),
+         ),
+       ],
+     ),
+    ),
+  );
+
+  Widget _buildUserList(UserPickerDeviceShellModel model) {
+    List<Widget> children;
+    if(model.users.isEmpty) {
+      children = <Widget>[
+        _buildUserEntry(
+          user: _kDefaultUserName,
+          onTap: () {
+            _createAndLoginUser(
+              _kDefaultUserName,
+              _kDefaultDeviceName,
+              _kDefaultServerName,
+              model,
+            );
+          },
+        ),
+      ];
+    } else {
+      children = model.users.map((String user) {
+        return _buildUserEntry(
+          user: user,
+          onTap: () => _loginUser(user, model),
+        );
+      }).toList();
+    }
+
+    return new Material(
+      borderRadius: new BorderRadius.all(new Radius.circular(8.0)),
+      color: Colors.black.withAlpha(0),
+      child: new Row(
+        mainAxisSize: MainAxisSize.min,
+        children: children,
+      ),
+    );
+
+  }
+
   @override
   Widget build(BuildContext context) =>
       new ScopedModelDescendant<UserPickerDeviceShellModel>(builder: (
@@ -37,129 +183,42 @@ class UserPicker extends StatelessWidget {
         Widget child,
         UserPickerDeviceShellModel model,
       ) {
-        final List<Widget> children = <Widget>[];
         if (model.users != null) {
-          if (model.users.isNotEmpty) {
-            // Add list of previous users.
-            children.addAll(
-              model.users.map((String user) {
-                return new Container(
-                  margin: const EdgeInsets.all(8.0),
-                  child: new RaisedButton(
-                    onPressed: () => _loginUser(user, model),
-                    child: new Text('Log in as $user'),
-                  ),
-                );
-              }),
-            );
-          } else {
-            // Option to login as default user.
-            children.add(
-              new Container(
-                margin: const EdgeInsets.all(8.0),
-                child: new RaisedButton(
-                  onPressed: () => _createAndLoginUser(
-                        _kDefaultUserName,
-                        _kDefaultDeviceName,
-                        _kDefaultServerName,
-                        model,
-                      ),
-                  child: new Container(
-                    width: _kButtonContentWidth,
-                    height: _kButtonContentHeight,
-                    child: new Center(
-                      child: new Text(
-                        'Log in as default user: $_kDefaultUserName',
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
-          // Option to enter a username.
-          children.add(
-            new Container(
-              decoration: new BoxDecoration(
-                backgroundColor: Colors.grey[300],
-                borderRadius: new BorderRadius.circular(2.0),
-              ),
-              margin: const EdgeInsets.all(8.0),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: new Container(
-                width: _kButtonContentWidth,
-                child: new Overlay(initialEntries: <OverlayEntry>[
-                  new OverlayEntry(
-                    builder: (BuildContext context) => new Center(
-                          // TODO(apwilson): Use TextField ONCE WE HAVE A PROPER
-                          // IME ON FUCHSIA!
-                          child: new Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              new hacks.RawKeyboardTextField(
-                                decoration: new InputDecoration(
-                                  hintText: 'Enter user name',
-                                ),
-                                controller: userNameController,
-                              ),
-                              new hacks.RawKeyboardTextField(
-                                decoration: new InputDecoration(
-                                  hintText: 'Enter device name',
-                                ),
-                                controller: deviceNameController,
-                              ),
-                              new hacks.RawKeyboardTextField(
-                                decoration: new InputDecoration(
-                                  hintText: 'Enter server name',
-                                ),
-                                controller: serverNameController,
-                              ),
-                              new Container(
-                                margin: const EdgeInsets.symmetric(
-                                  vertical: 16.0,
-                                ),
-                                child: new RaisedButton(
-                                  onPressed: () => _createAndLoginUser(
-                                        userNameController.text,
-                                        deviceNameController.text,
-                                        serverNameController.text,
-                                        model,
-                                      ),
-                                  child: new Container(
-                                    width: _kButtonContentWidth - 32.0,
-                                    height: _kButtonContentHeight,
-                                    child: new Center(
-                                      child: new Text(
-                                        'Create and Log in',
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                  ),
-                ]),
+          List<Widget> stackChildren = <Widget>[
+            new Center(
+              child: new Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  _buildUserList(model),
+                ],
               ),
             ),
+          ];
+
+          if(model.isShowingNewUserForm) {
+            stackChildren.add(new GestureDetector(
+              onTapUp: (_) => model.hideNewUserForm(),
+              child: new Container(
+                color: Colors.black.withAlpha(180),
+              ),
+            ));
+            stackChildren.add(new Center(
+              child: _buildNewUserForm(model),
+            ));
+          }
+
+          return new Stack(
+            children: stackChildren,
           );
         } else {
-          children.add(
-            new Container(
-              width: 64.0,
-              height: 64.0,
-              child: new CircularProgressIndicator(
-                valueColor: new AlwaysStoppedAnimation<Color>(_kFuchsiaColor),
-              ),
+          return new Container(
+            width: 64.0,
+            height: 64.0,
+            child: new CircularProgressIndicator(
+              valueColor: new AlwaysStoppedAnimation<Color>(_kFuchsiaColor),
             ),
           );
         }
-
-        return new Column(
-          mainAxisSize: MainAxisSize.min,
-          children: children,
-        );
       });
 
   void _createAndLoginUser(

@@ -4,7 +4,7 @@
 
 import 'package:flutter/material.dart';
 
-import 'shutdown_button.dart';
+import 'user_picker_buttons.dart';
 import 'user_picker.dart';
 
 class UserPickerScreen extends StatelessWidget {
@@ -14,36 +14,37 @@ class UserPickerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => new Material(
-        color: Colors.grey[900],
-        child: new Container(
-          child: new Stack(
-            children: <Widget>[
-              /// Add Fuchsia logo.
-              new Align(
-                alignment: FractionalOffset.bottomRight,
-                child: new Container(
-                  margin: const EdgeInsets.only(
-                    right: 16.0,
-                    bottom: 8.0,
-                  ),
-                  child: new Image.asset(
-                    'packages/userpicker_device_shell/res/fuchsia.png',
-                    width: 256.0,
-                    height: 256.0,
-                  ),
-                ),
-              ),
-              new Center(child: userPicker),
-              // Add shutdown button.
-              new Align(
-                alignment: FractionalOffset.bottomCenter,
-                child: new Container(
-                  margin: const EdgeInsets.all(16.0),
-                  child: new ShutdownButton(),
-                ),
-              ),
-            ],
+    color: Colors.grey[900],
+    child: new Container(
+      child: new Stack(
+        children: <Widget>[
+          new Image.asset(
+            'packages/userpicker_device_shell/res/bg.jpg',
+            fit: BoxFit.cover,
           ),
-        ),
-      );
+          /// Add Fuchsia logo.
+          new Align(
+            alignment: FractionalOffset.bottomRight,
+            child: new Container(
+              margin: const EdgeInsets.all(16.0),
+              child: new Image.asset(
+                'packages/userpicker_device_shell/res/fuchsia.png',
+                width: 64.0,
+                height: 64.0,
+              ),
+            ),
+          ),
+          new Center(child: userPicker),
+          // Add shutdown button and new user button.
+          new Align(
+            alignment: FractionalOffset.bottomLeft,
+            child: new Container(
+              margin: const EdgeInsets.all(16.0),
+              child: new UserPickerButtons(),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

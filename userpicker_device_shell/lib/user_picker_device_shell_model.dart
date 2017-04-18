@@ -11,7 +11,11 @@ export 'package:lib.widgets/model.dart' show ScopedModel, ScopedModelDescendant;
 class UserPickerDeviceShellModel extends DeviceShellModel {
   List<String> _users;
 
+  bool _isShowingNewUserForm = false;
+
   List<String> get users => _users;
+
+  bool get isShowingNewUserForm => _isShowingNewUserForm;
 
   @override
   void onReady(
@@ -34,4 +38,17 @@ class UserPickerDeviceShellModel extends DeviceShellModel {
       notifyListeners();
     });
   }
+
+  /// Sets _isShowingNewUserForm to true
+  void showNewUserForm() {
+    _isShowingNewUserForm = true;
+    notifyListeners();
+  }
+
+  /// Sets _isShowingNewUserForm to false
+  void hideNewUserForm() {
+    _isShowingNewUserForm = false;
+    notifyListeners();
+  }
+
 }
