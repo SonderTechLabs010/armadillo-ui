@@ -16,14 +16,24 @@ const Color _kFuchsiaColor = const Color(0xFFFF0080);
 const double _kButtonContentWidth = 220.0;
 const double _kButtonContentHeight = 80.0;
 
+/// Called when the user wants to login as [user] using [userProvider].
 typedef void OnLoginRequest(String user, UserProvider userProvider);
 
+/// Provides a UI for picking a user.
 class UserPicker extends StatelessWidget {
+  /// Called when the user want's to log in.
   final OnLoginRequest onLoginRequest;
+
+  /// The text controller for the user name of a new user.
   final TextEditingController userNameController;
+
+  /// The text controller for the device name of a new user.
   final TextEditingController deviceNameController;
+
+  /// The text controller for the server name of a new user.
   final TextEditingController serverNameController;
 
+  /// Constructor.
   UserPicker({
     this.onLoginRequest,
     this.userNameController,
@@ -35,114 +45,114 @@ class UserPicker extends StatelessWidget {
     return new Overlay(initialEntries: <OverlayEntry>[
       new OverlayEntry(
         builder: (BuildContext context) => new Material(
-          color: Colors.grey[300],
-          borderRadius: new BorderRadius.circular(8.0),
-          elevation: 4,
-          child: new Container(
-            width: _kButtonContentWidth,
-            padding: const EdgeInsets.all(16.0),
-            child: new Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                // TODO(apwilson): Use TextField ONCE WE HAVE A PROPER
-                // IME ON FUCHSIA!
-                new hacks.RawKeyboardTextField(
-                  decoration: new InputDecoration(
-                    hintText: 'Enter user name',
-                  ),
-                  controller: userNameController,
-                ),
-                new hacks.RawKeyboardTextField(
-                  decoration: new InputDecoration(
-                    hintText: 'Enter device name',
-                  ),
-                  controller: deviceNameController,
-                ),
-                new hacks.RawKeyboardTextField(
-                  decoration: new InputDecoration(
-                    hintText: 'Enter server name',
-                  ),
-                  controller: serverNameController,
-                ),
-                new Container(
-                  margin: const EdgeInsets.symmetric(
-                    vertical: 16.0,
-                  ),
-                  child: new RaisedButton(
-                    color: Colors.blue[500],
-                    onPressed: () => _createAndLoginUser(
-                      userNameController.text,
-                      deviceNameController.text,
-                      serverNameController.text,
-                      model,
+              color: Colors.grey[300],
+              borderRadius: new BorderRadius.circular(8.0),
+              elevation: 4,
+              child: new Container(
+                width: _kButtonContentWidth,
+                padding: const EdgeInsets.all(16.0),
+                child: new Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    // TODO(apwilson): Use TextField ONCE WE HAVE A PROPER
+                    // IME ON FUCHSIA!
+                    new hacks.RawKeyboardTextField(
+                      decoration: new InputDecoration(
+                        hintText: 'Enter user name',
+                      ),
+                      controller: userNameController,
                     ),
-                    child: new Container(
-                      width: _kButtonContentWidth - 32.0,
-                      height: _kButtonContentHeight,
-                      child: new Center(
-                        child: new Text(
-                          'Create and Log in',
-                          style: new TextStyle(
-                            color: Colors.white,
+                    new hacks.RawKeyboardTextField(
+                      decoration: new InputDecoration(
+                        hintText: 'Enter device name',
+                      ),
+                      controller: deviceNameController,
+                    ),
+                    new hacks.RawKeyboardTextField(
+                      decoration: new InputDecoration(
+                        hintText: 'Enter server name',
+                      ),
+                      controller: serverNameController,
+                    ),
+                    new Container(
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 16.0,
+                      ),
+                      child: new RaisedButton(
+                        color: Colors.blue[500],
+                        onPressed: () => _createAndLoginUser(
+                              userNameController.text,
+                              deviceNameController.text,
+                              serverNameController.text,
+                              model,
+                            ),
+                        child: new Container(
+                          width: _kButtonContentWidth - 32.0,
+                          height: _kButtonContentHeight,
+                          child: new Center(
+                            child: new Text(
+                              'Create and Log in',
+                              style: new TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
       ),
     ]);
   }
 
   Widget _buildUserEntry({String user, VoidCallback onTap}) => new InkWell(
-    highlightColor: _kFuchsiaColor.withAlpha(200),
-    onTap: () => onTap(),
-    borderRadius: new BorderRadius.all(new Radius.circular(8.0)),
-    child: new Container(
-      margin: const EdgeInsets.all(16.0),
-      padding: const EdgeInsets.all(16.0),
-      child: new Column(
-       mainAxisSize: MainAxisSize.min,
-       children: <Widget>[
-         new Container(
-           padding: const EdgeInsets.all(2.0),
-           decoration: new BoxDecoration(
-             borderRadius: new BorderRadius.all(
-               new Radius.circular(40.0),
-             ),
-             backgroundColor: Colors.white,
-           ),
-           child: new Alphatar.fromName(
-             name: user.toUpperCase(),
-             size: 80.0,
-           ),
-         ),
-         new Container(
-           margin: const EdgeInsets.only(top: 16.0),
-           padding: const EdgeInsets.all(4.0),
-           decoration: new BoxDecoration(
-             borderRadius: new BorderRadius.all(new Radius.circular(4.0)),
-             backgroundColor: Colors.black.withAlpha(240),
-           ),
-           child: new Text(
-             user.toUpperCase(),
-             style: new TextStyle(
-               color: Colors.grey[300],
-             ),
-           ),
-         ),
-       ],
-     ),
-    ),
-  );
+        highlightColor: _kFuchsiaColor.withAlpha(200),
+        onTap: () => onTap(),
+        borderRadius: new BorderRadius.all(new Radius.circular(8.0)),
+        child: new Container(
+          margin: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
+          child: new Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              new Container(
+                padding: const EdgeInsets.all(2.0),
+                decoration: new BoxDecoration(
+                  borderRadius: new BorderRadius.all(
+                    new Radius.circular(40.0),
+                  ),
+                  backgroundColor: Colors.white,
+                ),
+                child: new Alphatar.fromName(
+                  name: user.toUpperCase(),
+                  size: 80.0,
+                ),
+              ),
+              new Container(
+                margin: const EdgeInsets.only(top: 16.0),
+                padding: const EdgeInsets.all(4.0),
+                decoration: new BoxDecoration(
+                  borderRadius: new BorderRadius.all(new Radius.circular(4.0)),
+                  backgroundColor: Colors.black.withAlpha(240),
+                ),
+                child: new Text(
+                  user.toUpperCase(),
+                  style: new TextStyle(
+                    color: Colors.grey[300],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
 
   Widget _buildUserList(UserPickerDeviceShellModel model) {
     List<Widget> children;
-    if(model.users.isEmpty) {
+    if (model.users.isEmpty) {
       children = <Widget>[
         _buildUserEntry(
           user: _kDefaultUserName,
@@ -173,7 +183,6 @@ class UserPicker extends StatelessWidget {
         children: children,
       ),
     );
-
   }
 
   @override
@@ -195,7 +204,7 @@ class UserPicker extends StatelessWidget {
             ),
           ];
 
-          if(model.isShowingNewUserForm) {
+          if (model.isShowingNewUserForm) {
             stackChildren.add(new GestureDetector(
               onTapUp: (_) => model.hideNewUserForm(),
               child: new Container(

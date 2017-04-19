@@ -347,7 +347,10 @@ class _StoryListBody extends MultiChildRenderObjectWidget {
       );
 
   @override
-  void updateRenderObject(BuildContext context, RenderStoryListBody renderObject) {
+  void updateRenderObject(
+    BuildContext context,
+    RenderStoryListBody renderObject,
+  ) {
     renderObject
       ..mainAxis = Axis.vertical
       ..parentSize = _parentSize

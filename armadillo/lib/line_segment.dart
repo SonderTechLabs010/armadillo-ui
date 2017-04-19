@@ -180,6 +180,7 @@ class LineSegment extends PanelDragTarget {
         }
         break;
       case DragDirection.right:
+        // ignore: invariant_booleans
         if (isHorizontal) {
           return false;
         } else if (a.dx < point.dx) {
@@ -194,6 +195,7 @@ class LineSegment extends PanelDragTarget {
         }
         break;
       case DragDirection.down:
+        // ignore: invariant_booleans
         if (isVertical) {
           return false;
         } else if (a.dy < point.dy) {

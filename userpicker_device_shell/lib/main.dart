@@ -32,7 +32,7 @@ void main() {
       constraintsModel: constraintsModel,
       child: new _ScreenManager(
         key: screenManagerKey,
-        onLogout: model.onLogout,
+        onLogout: model.refreshUsers,
       ),
     ),
   );

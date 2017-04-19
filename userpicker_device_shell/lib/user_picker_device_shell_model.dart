@@ -8,13 +8,17 @@ import 'package:lib.widgets/modular.dart';
 
 export 'package:lib.widgets/model.dart' show ScopedModel, ScopedModelDescendant;
 
+/// Contains all the relevant data for displaying the list of users and for
+/// logging in and creating new users.
 class UserPickerDeviceShellModel extends DeviceShellModel {
   List<String> _users;
 
   bool _isShowingNewUserForm = false;
 
+  /// The list of previously logged in users.
   List<String> get users => _users;
 
+  /// True if the 'new user' form is showing.
   bool get isShowingNewUserForm => _isShowingNewUserForm;
 
   @override
@@ -26,7 +30,8 @@ class UserPickerDeviceShellModel extends DeviceShellModel {
     _loadUsers();
   }
 
-  void onLogout() {
+  /// Refreshes the list of users.
+  void refreshUsers() {
     _users = null;
     notifyListeners();
     _loadUsers();
@@ -39,16 +44,15 @@ class UserPickerDeviceShellModel extends DeviceShellModel {
     });
   }
 
-  /// Sets _isShowingNewUserForm to true
+  /// Shows the 'new user' form.
   void showNewUserForm() {
     _isShowingNewUserForm = true;
     notifyListeners();
   }
 
-  /// Sets _isShowingNewUserForm to false
+  /// Hides the 'new user' form.
   void hideNewUserForm() {
     _isShowingNewUserForm = false;
     notifyListeners();
   }
-
 }

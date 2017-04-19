@@ -37,7 +37,7 @@ class ScrollableInputTextState extends State<ScrollableInputText> {
   Widget build(BuildContext context) {
     List<Widget> blockChildren = <Widget>[
       new Align(
-          alignment: widget.alignment ?? const FractionalOffset(0.0, 0.5),
+          alignment: widget.alignment ?? FractionalOffset.centerLeft,
           child: new Text(
               (_text.isEmpty && !widget.focused) ? 'Ask for anything' : _text,
               style: new TextStyle(
@@ -47,7 +47,7 @@ class ScrollableInputTextState extends State<ScrollableInputText> {
 
     if (widget.focused) {
       blockChildren.add(new Align(
-          alignment: widget.alignment ?? const FractionalOffset(0.0, 0.5),
+          alignment: widget.alignment ?? FractionalOffset.centerLeft,
           child: new BlinkingCursor(
               height: _kTextSize,
               color: _kTextColor,

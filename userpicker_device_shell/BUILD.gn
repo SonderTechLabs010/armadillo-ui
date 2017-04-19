@@ -13,7 +13,7 @@ flutter_app("userpicker_device_shell") {
 
   manifest = "pubspec.yaml"
 
-  analysis_options = ".analysis_options"
+  analysis_options = "//apps/sysui/.analysis_options"
 
   deps = [
     "//application/lib/app/dart",
