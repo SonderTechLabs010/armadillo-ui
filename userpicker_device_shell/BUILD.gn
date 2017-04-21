@@ -2,14 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/dart/dart_test.gni")
 import("//flutter/build/flutter_app.gni")
 
 flutter_app("userpicker_device_shell") {
   main_dart = "lib/main.dart"
 
   package_name = "userpicker_device_shell"
-
-  source_dir = "lib"
 
   manifest = "pubspec.yaml"
 
@@ -23,5 +22,15 @@ flutter_app("userpicker_device_shell") {
     "//lib/fidl/dart",
     "//lib/flutter/packages/flutter",
     "//lib/widgets/packages/widgets:lib.widgets",
+  ]
+}
+
+dart_test("test") {
+  analysis_options = "//apps/sysui/.analysis_options"
+
+  deps = [
+    ":userpicker_device_shell_dart_package",
+    "//lib/flutter/packages/flutter_test",
+    "//third_party/dart-pkg/pub/test",
   ]
 }

@@ -4,8 +4,7 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:test/test.dart';
-
-import '../lib/constraints_model.dart';
+import 'package:userpicker_device_shell/constraints_model.dart';
 
 void main() {
   test('Before loading we have one unconstrained constraint.', () {

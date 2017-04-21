@@ -13,8 +13,9 @@ group("test") {
   testonly = true
 
   deps = [
-    "//apps/sysui/armadillo/test",
-    "//apps/sysui/keyboard/test",
-    "//apps/sysui/widgets/test",
+    "//apps/sysui/armadillo:test",
+    "//apps/sysui/keyboard:test",
+    "//apps/sysui/userpicker_device_shell:test",
+    "//apps/sysui/widgets:test",
   ]
 }
