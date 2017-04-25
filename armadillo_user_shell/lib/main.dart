@@ -208,21 +208,19 @@ Widget _buildApp({
               model: hitTestModel,
               child: armadillo,
             ),
-            new Positioned(
-              left: 0.0,
-              top: 0.0,
-              bottom: 0.0,
-              width: 100.0,
+            new FractionallySizedBox(
+              widthFactor: 0.1,
+              heightFactor: 1.0,
+              alignment: FractionalOffset.centerLeft,
               child: _buildDiscardDragTarget(
                 storyModel: storyModel,
                 storyProviderStoryGenerator: storyProviderStoryGenerator,
               ),
             ),
-            new Positioned(
-              right: 0.0,
-              top: 0.0,
-              bottom: 0.0,
-              width: 100.0,
+            new FractionallySizedBox(
+              widthFactor: 0.1,
+              heightFactor: 1.0,
+              alignment: FractionalOffset.centerRight,
               child: _buildDiscardDragTarget(
                 storyModel: storyModel,
                 storyProviderStoryGenerator: storyProviderStoryGenerator,
