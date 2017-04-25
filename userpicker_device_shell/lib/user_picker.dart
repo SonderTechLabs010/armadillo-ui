@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:apps.modular.services.auth.account/account.fidl.dart';
 import 'package:apps.modular.services.device/user_provider.fidl.dart';
 import 'package:flutter/material.dart';
 import 'package:lib.widgets/hacks.dart' as hacks;
@@ -16,8 +17,8 @@ const Color _kFuchsiaColor = const Color(0xFFFF0080);
 const double _kButtonContentWidth = 220.0;
 const double _kButtonContentHeight = 80.0;
 
-/// Called when the user wants to login as [user] using [userProvider].
-typedef void OnLoginRequest(String user, UserProvider userProvider);
+/// Called when the user wants to login as [accountId] using [userProvider].
+typedef void OnLoginRequest(String accountId, UserProvider userProvider);
 
 /// Provides a UI for picking a user.
 class UserPicker extends StatelessWidget {
@@ -156,21 +157,19 @@ class UserPicker extends StatelessWidget {
 
   Widget _buildUserList(UserPickerDeviceShellModel model) {
     List<Widget> children = <Widget>[];
-    if (!model.users.contains(_kDefaultUserName)) {
-      children.add(
-        _buildUserEntry(
-          user: _kDefaultUserName,
-          onTap: () => _createAndLoginUser(
-            _kDefaultUserName,
-            _kDefaultServerName,
-            model),
-        ),
-      );
-    }
+    // Default entry.
+    children.add(
+      _buildUserEntry(
+        user: _kDefaultUserName,
+        onTap: () => _loginUser(
+          null,
+          model),
+      ),
+    );
     children.addAll(
-      model.users.map(
-        (String user) => _buildUserEntry(
-              user: user,
+      model.accounts.map(
+        (Account account) => _buildUserEntry(
+              user: account.displayName,
               onTap: () => _loginUser(user, model),
             ),
       ),
@@ -193,7 +192,7 @@ class UserPicker extends StatelessWidget {
         Widget child,
         UserPickerDeviceShellModel model,
       ) {
-        if (model.users != null) {
+        if (model.accounts != null) {
           List<Widget> stackChildren = <Widget>[
             new Center(
               child: new Column(
@@ -237,23 +236,36 @@ class UserPicker extends StatelessWidget {
     String serverName,
     UserPickerDeviceShellModel model,
   ) {
+    Iterable<Account> matchingAccounts = model.accounts.where(
+      (Account account) => account.displayName == user,
+    );
     // Add the user if it doesn't already exist.
-    if (!(model.users?.contains(user) ?? false)) {
+    if (!(model.accounts?.contains(user) ?? false)) {
       print('UserPicker: Creating user $user with server $serverName!');
       model.userProvider?.addUser(
+        IdentityProvider.google,
         user,
-        null,
         _kDefaultDeviceName,
         serverName,
+        (Account account, String errorCode) {
+          if (errorCode == null) {
+            _loginUser(account.id, model);
+          } else {
+            print('ERROR adding user!  $errorCode');
+          }
+        },
       );
+    } else {
+      if (matchingAccounts.length > 1) {
+        print('WARNING multiple accounts with name $user!');
+      }
+      _loginUser(matchingAccounts.first.id, model);
+      model.hideNewUserForm();
     }
-
-    _loginUser(user, model);
-    model.hideNewUserForm();
   }
 
-  void _loginUser(String user, UserPickerDeviceShellModel model) {
-    print('UserPicker: Logging in as $user!');
-    onLoginRequest?.call(user, model.userProvider);
+  void _loginUser(String accountId, UserPickerDeviceShellModel model) {
+    print('UserPicker: Logging in as $accountId!');
+    onLoginRequest?.call(accountId, model.userProvider);
   }
 }

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:apps.modular.services.auth.account/account.fidl.dart';
 import 'package:apps.modular.services.device/device_shell.fidl.dart';
 import 'package:apps.modular.services.device/user_provider.fidl.dart';
 import 'package:lib.widgets/modular.dart';
@@ -11,12 +12,12 @@ export 'package:lib.widgets/model.dart' show ScopedModel, ScopedModelDescendant;
 /// Contains all the relevant data for displaying the list of users and for
 /// logging in and creating new users.
 class UserPickerDeviceShellModel extends DeviceShellModel {
-  List<String> _users;
+  List<Account> _accounts;
 
   bool _isShowingNewUserForm = false;
 
-  /// The list of previously logged in users.
-  List<String> get users => _users;
+  /// The list of previously logged in accounts.
+  List<Account> get accounts => _accounts;
 
   /// True if the 'new user' form is showing.
   bool get isShowingNewUserForm => _isShowingNewUserForm;
@@ -32,14 +33,15 @@ class UserPickerDeviceShellModel extends DeviceShellModel {
 
   /// Refreshes the list of users.
   void refreshUsers() {
-    _users = null;
+    _accounts = null;
     notifyListeners();
     _loadUsers();
   }
 
   void _loadUsers() {
-    userProvider.previousUsers((List<String> users) {
-      _users = new List<String>.unmodifiable(users);
+    userProvider.previousUsers((List<Account> accounts) {
+      print('accounts: $accounts');
+      _accounts = new List<Account>.unmodifiable(accounts);
       notifyListeners();
     });
   }

@@ -143,7 +143,7 @@ class _ScreenManagerState extends State<_ScreenManager>
         ),
       );
 
-  void _login(String user, UserProvider userProvider) {
+  void _login(String accountId, UserProvider userProvider) {
     _userControllerProxy?.ctrl?.close();
     _userControllerProxy = new UserControllerProxy();
     _userWatcherImpl?.close();
@@ -160,9 +160,7 @@ class _ScreenManagerState extends State<_ScreenManager>
 
     final InterfacePair<ViewOwner> viewOwner = new InterfacePair<ViewOwner>();
     userProvider?.login(
-      user,
-      null,
-      null,
+      accountId,
       viewOwner.passRequest(),
       _userControllerProxy.ctrl.request(),
     );
