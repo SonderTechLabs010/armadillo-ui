@@ -67,12 +67,11 @@ class _LockedScrollPhysics extends ScrollPhysics {
 
   @override
   Simulation createBallisticSimulation(
-    ScrollPosition position,
+    ScrollMetrics position,
     double velocity,
   ) =>
       null;
 
   @override
-  double applyPhysicsToUserOffset(ScrollPosition position, double offset) =>
-      0.0;
+  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) => 0.0;
 }
