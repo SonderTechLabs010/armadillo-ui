@@ -21,6 +21,7 @@ class UserPickerScreen extends StatelessWidget {
         color: Colors.grey[900],
         child: new Container(
           child: new Stack(
+            fit: StackFit.passthrough,
             children: <Widget>[
               new Image.asset(
                 'packages/userpicker_device_shell/res/bg.jpg',

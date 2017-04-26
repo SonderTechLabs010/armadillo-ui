@@ -150,6 +150,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
 
   @override
   Widget build(BuildContext context) => new Stack(
+        fit: StackFit.passthrough,
         children: <Widget>[
           new IgnorePointer(
             child: new Container(
@@ -174,6 +175,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
               maxHeight: math.max(height, maxHeight),
               alignment: FractionalOffset.topCenter,
               child: new Stack(
+                fit: StackFit.passthrough,
                 children: <Widget>[
                   new CustomPaint(
                     painter: new QuadrilateralPainter(

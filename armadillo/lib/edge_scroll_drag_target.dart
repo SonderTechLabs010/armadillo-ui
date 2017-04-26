@@ -77,6 +77,7 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
           return isNotDragging ? Nothing.widget : child;
         },
         child: new Stack(
+          fit: StackFit.passthrough,
           children: <Widget>[
             new Positioned(
               top: 0.0,

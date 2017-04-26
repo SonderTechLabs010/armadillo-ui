@@ -156,6 +156,7 @@ class Conductor extends StatelessWidget {
           storyModel.updateLayouts(fullSize);
 
           Widget stack = new Stack(
+            fit: StackFit.passthrough,
             children: <Widget>[
               /// Story List.
               new ScopedModelDescendant<StoryDragTransitionModel>(

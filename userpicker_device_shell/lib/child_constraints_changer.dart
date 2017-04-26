@@ -58,6 +58,7 @@ class _ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
               _constraints[0] == const BoxConstraints())
       ? widget.child
       : new Stack(
+          fit: StackFit.passthrough,
           children: <Widget>[
             _constrainedChild,
             _constraintSwitchingButton,

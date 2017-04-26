@@ -82,7 +82,10 @@ class PanelResizingOverlay extends StatelessWidget {
       ),
     );
 
-    return new Stack(children: stackChildren);
+    return new Stack(
+      children: stackChildren,
+      fit: StackFit.passthrough,
+    );
   }
 
   /// For each element of [rights], find the set of panels that touch that

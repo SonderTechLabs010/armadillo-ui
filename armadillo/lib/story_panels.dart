@@ -164,7 +164,11 @@ class StoryPanels extends StatelessWidget {
       ),
     );
 
-    return new Stack(overflow: Overflow.visible, children: stackChildren);
+    return new Stack(
+      fit: StackFit.passthrough,
+      overflow: Overflow.visible,
+      children: stackChildren,
+    );
   }
 
   Widget _getStoryBarDraggableWrapper({

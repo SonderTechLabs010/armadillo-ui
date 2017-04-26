@@ -217,6 +217,7 @@ class UserPicker extends StatelessWidget {
           }
 
           return new Stack(
+            fit: StackFit.passthrough,
             children: stackChildren,
           );
         } else {

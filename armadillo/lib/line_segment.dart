@@ -232,13 +232,19 @@ class LineSegment extends PanelDragTarget {
 
   @override
   Widget build({bool highlighted: false}) => validityDistance != double.INFINITY
-      ? new Stack(children: <Widget>[
-          _buildValidityDistanceWidget(highlighted: highlighted),
-          _buildLineWidget(highlighted: highlighted),
-        ])
-      : new Stack(children: <Widget>[
-          _buildLineWidget(highlighted: highlighted),
-        ]);
+      ? new Stack(
+          fit: StackFit.passthrough,
+          children: <Widget>[
+            _buildValidityDistanceWidget(highlighted: highlighted),
+            _buildLineWidget(highlighted: highlighted),
+          ],
+        )
+      : new Stack(
+          fit: StackFit.passthrough,
+          children: <Widget>[
+            _buildLineWidget(highlighted: highlighted),
+          ],
+        );
 
   Positioned _buildLineWidget({bool highlighted: false}) => new Positioned(
         left: a.dx - _kLineWidth / 2.0,

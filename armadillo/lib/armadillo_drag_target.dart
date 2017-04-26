@@ -308,6 +308,7 @@ class _DragAvatarWidgetState extends TickingState<_DragAvatarWidget> {
       );
     }
     return new Stack(
+      fit: StackFit.passthrough,
       children: <Widget>[
         new Positioned(
           left: left,

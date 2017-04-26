@@ -138,6 +138,7 @@ class StoryClusterWidget extends StatelessWidget {
 
   Widget _getStoryClusterWithInlineStoryTitle(BuildContext context) =>
       new Stack(
+        fit: StackFit.passthrough,
         children: <Widget>[
           new Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,6 +176,7 @@ class StoryClusterWidget extends StatelessWidget {
                   onPointerDown: (PointerDownEvent event) =>
                       storyCluster.hideStoryBars(),
                   child: new Stack(
+                    fit: StackFit.passthrough,
                     children: <Widget>[
                       new Positioned.fill(child: child),
                       new Positioned(

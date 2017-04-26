@@ -42,6 +42,7 @@ void main() {
     child: new ChildConstraintsChanger(
       constraintsModel: constraintsModel,
       child: new Stack(
+        fit: StackFit.passthrough,
         children: <Widget>[
           new _ScreenManager(
             key: screenManagerKey,
@@ -117,13 +118,16 @@ class _ScreenManagerState extends State<_ScreenManager>
         builder: (BuildContext context, Widget child) =>
             _childViewConnection == null
                 ? child
-                : new Stack(children: <Widget>[
-                    new ChildView(connection: _childViewConnection),
-                    new Opacity(
-                      opacity: 1.0 - _curvedTransitionAnimation.value,
-                      child: child,
-                    ),
-                  ]),
+                : new Stack(
+                    fit: StackFit.passthrough,
+                    children: <Widget>[
+                      new ChildView(connection: _childViewConnection),
+                      new Opacity(
+                        opacity: 1.0 - _curvedTransitionAnimation.value,
+                        child: child,
+                      ),
+                    ],
+                  ),
         child: new UserPickerScreen(
           userPicker: new UserPicker(
             onLoginRequest: _login,

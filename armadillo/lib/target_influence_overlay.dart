@@ -62,7 +62,10 @@ class TargetInfluenceOverlay extends StatelessWidget {
         ),
       );
     }
-    return new Stack(children: stackChildren);
+    return new Stack(
+      fit: StackFit.passthrough,
+      children: stackChildren,
+    );
   }
 }
 

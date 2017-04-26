@@ -134,6 +134,7 @@ class SuggestionListState extends State<SuggestionList> {
 
   @override
   Widget build(BuildContext context) => new Stack(
+        fit: StackFit.passthrough,
         children: <Widget>[
           new Positioned(
             top: 0.0,

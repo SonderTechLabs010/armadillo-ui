@@ -203,35 +203,39 @@ Widget _buildApp({
         debugModel: debugModel,
         child: new DefaultAssetBundle(
           bundle: defaultBundle,
-          child: new Stack(children: <Widget>[
-            new ScopedModel<HitTestModel>(
-              model: hitTestModel,
-              child: armadillo,
-            ),
-            new FractionallySizedBox(
-              widthFactor: 0.1,
-              heightFactor: 1.0,
-              alignment: FractionalOffset.centerLeft,
-              child: _buildDiscardDragTarget(
-                storyModel: storyModel,
-                storyProviderStoryGenerator: storyProviderStoryGenerator,
+          child: new Stack(
+            fit: StackFit.passthrough,
+            children: <Widget>[
+              new ScopedModel<HitTestModel>(
+                model: hitTestModel,
+                child: armadillo,
               ),
-            ),
-            new FractionallySizedBox(
-              widthFactor: 0.1,
-              heightFactor: 1.0,
-              alignment: FractionalOffset.centerRight,
-              child: _buildDiscardDragTarget(
-                storyModel: storyModel,
-                storyProviderStoryGenerator: storyProviderStoryGenerator,
+              new FractionallySizedBox(
+                widthFactor: 0.1,
+                heightFactor: 1.0,
+                alignment: FractionalOffset.centerLeft,
+                child: _buildDiscardDragTarget(
+                  storyModel: storyModel,
+                  storyProviderStoryGenerator: storyProviderStoryGenerator,
+                ),
               ),
-            ),
-          ]),
+              new FractionallySizedBox(
+                widthFactor: 0.1,
+                heightFactor: 1.0,
+                alignment: FractionalOffset.centerRight,
+                child: _buildDiscardDragTarget(
+                  storyModel: storyModel,
+                  storyProviderStoryGenerator: storyProviderStoryGenerator,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
 
 Widget _buildPerformanceOverlay({Widget child}) => new Stack(
+      fit: StackFit.passthrough,
       children: <Widget>[
         child,
         new Positioned(

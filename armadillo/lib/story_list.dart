@@ -133,7 +133,10 @@ class StoryList extends StatelessWidget {
 
           return new ScopedModel<SizeModel>(
             model: _sizeModel,
-            child: new Stack(children: stackChildren),
+            child: new Stack(
+              fit: StackFit.passthrough,
+              children: stackChildren,
+            ),
           );
         },
       );

@@ -227,6 +227,7 @@ class NowState extends TickingState<Now> {
       );
 
   Widget _buildNow(BuildContext context) => new Stack(
+        fit: StackFit.passthrough,
         children: <Widget>[
           new Listener(
             behavior: HitTestBehavior.translucent,
@@ -264,6 +265,7 @@ class NowState extends TickingState<Now> {
                   NowModel nowModel,
                 ) =>
                     new Stack(
+                      fit: StackFit.passthrough,
                       children: <Widget>[
                         // Quick Settings Background.
                         new Positioned(
@@ -341,7 +343,9 @@ class NowState extends TickingState<Now> {
       );
 
   Widget _buildUserImage(NowModel nowModel) =>
-      new Stack(key: _userImageKey, children: <Widget>[
+      new Stack(
+        fit: StackFit.passthrough,
+        key: _userImageKey, children: <Widget>[
         // Shadow.
         new Opacity(
           opacity: _quickSettingsProgress,

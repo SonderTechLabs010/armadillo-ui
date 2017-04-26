@@ -91,6 +91,7 @@ class SplashSuggestion extends ExpansionBehavior {
         (constraints.maxWidth / 2.0 * constraints.maxWidth / 2.0) +
             (constraints.maxHeight * constraints.maxHeight));
     return new Stack(
+      fit: StackFit.passthrough,
       children: <Widget>[
         new Positioned(
           left: shiftedBounds.left,

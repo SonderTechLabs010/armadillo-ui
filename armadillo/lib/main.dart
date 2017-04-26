@@ -149,6 +149,7 @@ Widget _buildApp({
     );
 
 Widget _buildPerformanceOverlay({Widget child}) => new Stack(
+      fit: StackFit.passthrough,
       children: <Widget>[
         child,
         new Positioned(

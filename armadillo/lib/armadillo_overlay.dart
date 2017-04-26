@@ -36,6 +36,7 @@ class ArmadilloOverlayState extends State<ArmadilloOverlay> {
 
   @override
   Widget build(BuildContext context) => new Stack(
+        fit: StackFit.passthrough,
         children: _builders
             .map(
               (WidgetBuilder builder) => builder(context),

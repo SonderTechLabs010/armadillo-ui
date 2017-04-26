@@ -49,10 +49,13 @@ void main() {
 
     // Pump the widgets.
     await tester.pumpWidget(
-      new Stack(children: <Widget>[
-        new Center(child: draggable),
-        overlay,
-      ]),
+      new Stack(
+        fit: StackFit.passthrough,
+        children: <Widget>[
+          new Center(child: draggable),
+          overlay,
+        ],
+      ),
     );
 
     // Initially only child is in the tree.
@@ -147,10 +150,13 @@ void main() {
 
     // Pump the widgets.
     await tester.pumpWidget(
-      new Stack(children: <Widget>[
-        new Center(child: draggable),
-        overlay,
-      ]),
+      new Stack(
+        fit: StackFit.passthrough,
+        children: <Widget>[
+          new Center(child: draggable),
+          overlay,
+        ],
+      ),
     );
 
     expect(ongoingDrags, 0);
@@ -275,16 +281,21 @@ void main() {
       new Container(
         width: 300.0,
         height: 300.0,
-        child: new Stack(children: <Widget>[
-          new Align(
+        child: new Stack(
+          fit: StackFit.passthrough,
+          children: <Widget>[
+            new Align(
               alignment: FractionalOffset.topLeft,
-              child: unacceptingDragTarget),
-          new Align(
+              child: unacceptingDragTarget,
+            ),
+            new Align(
               alignment: FractionalOffset.bottomRight,
-              child: acceptingDragTarget),
-          new Center(child: draggable),
-          overlay,
-        ]),
+              child: acceptingDragTarget,
+            ),
+            new Center(child: draggable),
+            overlay,
+          ],
+        ),
       ),
     );
 
@@ -449,22 +460,25 @@ void main() {
       new Container(
         width: 300.0,
         height: 300.0,
-        child: new Stack(children: <Widget>[
-          new Align(
-            alignment: FractionalOffset.topLeft,
-            child: unacceptingDragTarget,
-          ),
-          new Align(
-            alignment: FractionalOffset.topLeft,
-            child: acceptingDragTarget1,
-          ),
-          new Align(
-            alignment: FractionalOffset.topLeft,
-            child: acceptingDragTarget2,
-          ),
-          new Center(child: draggable),
-          overlay,
-        ]),
+        child: new Stack(
+          fit: StackFit.passthrough,
+          children: <Widget>[
+            new Align(
+              alignment: FractionalOffset.topLeft,
+              child: unacceptingDragTarget,
+            ),
+            new Align(
+              alignment: FractionalOffset.topLeft,
+              child: acceptingDragTarget1,
+            ),
+            new Align(
+              alignment: FractionalOffset.topLeft,
+              child: acceptingDragTarget2,
+            ),
+            new Center(child: draggable),
+            overlay,
+          ],
+        ),
       ),
     );
 

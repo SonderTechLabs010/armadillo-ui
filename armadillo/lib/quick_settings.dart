@@ -121,6 +121,7 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
   Widget build(BuildContext context) => new Offstage(
         offstage: _showProgress == 0.0,
         child: new Stack(
+          fit: StackFit.passthrough,
           children: <Widget>[
             new Positioned(
               left: 0.0,
