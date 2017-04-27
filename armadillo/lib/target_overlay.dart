@@ -55,9 +55,7 @@ class TargetOverlay extends StatelessWidget {
                 width: 10.0,
                 height: 10.0,
                 child: new Container(
-                  decoration: new BoxDecoration(
-                    backgroundColor: new Color(0xFFFFFF00),
-                  ),
+                  color: new Color(0xFFFFFF00),
                 ),
               ),
         ),
@@ -71,9 +69,7 @@ class TargetOverlay extends StatelessWidget {
                 width: 10.0,
                 height: 10.0,
                 child: new Container(
-                  decoration: new BoxDecoration(
-                    backgroundColor: new Color(0xFFFF00FF),
-                  ),
+                  color: new Color(0xFFFF00FF),
                 ),
               ),
         ),

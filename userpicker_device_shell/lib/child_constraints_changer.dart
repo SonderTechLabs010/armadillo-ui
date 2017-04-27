@@ -68,8 +68,7 @@ class _ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
   Widget get _constrainedChild => new LayoutBuilder(
         builder: (BuildContext context, BoxConstraints parentConstraints) =>
             new Container(
-              decoration:
-                  new BoxDecoration(backgroundColor: new Color(0xFF404040)),
+              color: new Color(0xFF404040),
               child: new Center(
                 child: new Container(
                   padding: _currentConstraint == const BoxConstraints()
@@ -86,7 +85,7 @@ class _ChildConstraintsChangerState extends State<ChildConstraintsChanger> {
                   decoration: _currentConstraint == const BoxConstraints()
                       ? null
                       : new BoxDecoration(
-                          backgroundColor: Colors.black,
+                          color: Colors.black,
                           border: new Border.all(
                             color: Colors.black,
                             width: _kBezelMinimumWidth,

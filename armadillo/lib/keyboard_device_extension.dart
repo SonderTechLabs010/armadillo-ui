@@ -44,7 +44,7 @@ class _KeyboardDeviceExtensionState
     extends DeviceExtensionState<KeyboardDeviceExtension> {
   @override
   Widget createWidget(BuildContext context) => new Container(
-        decoration: new BoxDecoration(backgroundColor: Colors.black),
+        color: Colors.black,
         child: new Keyboard(
           key: widget.keyboardKey,
           onText: widget.onText,

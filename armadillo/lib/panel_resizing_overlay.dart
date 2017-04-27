@@ -282,9 +282,7 @@ class _VerticalSeam {
           bottom: bottom,
         ),
         child: new Container(
-          decoration: new BoxDecoration(
-            backgroundColor: _kGestureDetectorColor,
-          ),
+          color: _kGestureDetectorColor,
           child: new LongPressGestureDetector(
             onDragStart: (DragStartDetails details) {
               resizingState.valueOnDrag = x;
@@ -408,9 +406,7 @@ class _HorizontalSeam {
           right: right,
         ),
         child: new Container(
-          decoration: new BoxDecoration(
-            backgroundColor: _kGestureDetectorColor,
-          ),
+          color: _kGestureDetectorColor,
           child: new LongPressGestureDetector(
             onDragStart: (DragStartDetails details) {
               resizingState.valueOnDrag = y;

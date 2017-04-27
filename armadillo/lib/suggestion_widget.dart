@@ -77,9 +77,7 @@ class SuggestionWidget extends StatelessWidget {
           child: new ClipRRect(
             borderRadius: new BorderRadius.circular(_kSuggestionCornerRadius),
             child: new Container(
-              decoration: new BoxDecoration(
-                backgroundColor: Colors.white,
-              ),
+              color: Colors.white,
               child: new GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: onSelected,
@@ -142,17 +140,13 @@ class SuggestionWidget extends StatelessWidget {
                               padding: const EdgeInsets.all(_kPersonImageInset),
                               child: new ClipOval(
                                 child: new Container(
-                                  decoration: new BoxDecoration(
-                                    backgroundColor: suggestion.themeColor,
-                                  ),
+                                  color: suggestion.themeColor,
                                   child: suggestion.image?.call(context),
                                 ),
                               ),
                             )
                           : new Container(
-                              decoration: new BoxDecoration(
-                                backgroundColor: suggestion.themeColor,
-                              ),
+                              color: suggestion.themeColor,
                               constraints: new BoxConstraints.expand(),
                               child: suggestion.image?.call(context),
                             ),

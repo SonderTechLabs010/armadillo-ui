@@ -262,10 +262,8 @@ Widget _buildDiscardDragTarget({
       builder: (_, Map<StoryClusterDragData, Offset> candidateData, __) =>
           new IgnorePointer(
             child: new Container(
-              decoration: new BoxDecoration(
-                backgroundColor: new Color(
-                  candidateData.isEmpty ? 0x00FF0000 : 0x40FF0000,
-                ),
+              color: new Color(
+                candidateData.isEmpty ? 0x00FF0000 : 0x40FF0000,
               ),
             ),
           ),

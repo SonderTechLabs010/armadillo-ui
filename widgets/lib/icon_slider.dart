@@ -419,9 +419,7 @@ class _RenderIconSlider extends RenderConstrainedBox
 
   BoxDecoration _createDefaultThumbDecoration(ImageProvider image) {
     return new BoxDecoration(
-        backgroundColor: null,
-        backgroundImage:
-            image == null ? null : new BackgroundImage(image: image),
+        image: image == null ? null : new DecorationImage(image: image),
         shape: BoxShape.circle,
         boxShadow: null);
   }

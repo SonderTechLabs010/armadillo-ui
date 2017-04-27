@@ -154,9 +154,7 @@ class PeekingOverlayState extends TickingHeightState<PeekingOverlay> {
         children: <Widget>[
           new IgnorePointer(
             child: new Container(
-              decoration: new BoxDecoration(
-                backgroundColor: _overlayBackgroundColor,
-              ),
+              color: _overlayBackgroundColor,
             ),
           ),
           new Offstage(

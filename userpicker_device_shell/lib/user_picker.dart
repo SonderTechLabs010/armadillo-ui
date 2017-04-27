@@ -124,7 +124,7 @@ class UserPicker extends StatelessWidget {
                   borderRadius: new BorderRadius.all(
                     new Radius.circular(40.0),
                   ),
-                  backgroundColor: Colors.white,
+                  color: Colors.white,
                 ),
                 child: new Alphatar.fromName(
                   name: user.toUpperCase(),
@@ -136,7 +136,7 @@ class UserPicker extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 decoration: new BoxDecoration(
                   borderRadius: new BorderRadius.all(new Radius.circular(4.0)),
-                  backgroundColor: Colors.black.withAlpha(240),
+                  color: Colors.black.withAlpha(240),
                 ),
                 child: new Text(
                   user.toUpperCase(),

@@ -44,8 +44,8 @@ class Armadillo extends StatelessWidget {
 
     return new Container(
       decoration: new BoxDecoration(
-        backgroundColor: Colors.black,
-        backgroundImage: new BackgroundImage(
+        color: Colors.black,
+        image: new DecorationImage(
           image: new AssetImage(_kBackgroundImage),
           alignment: new FractionalOffset(0.4, 0.5),
           fit: BoxFit.cover,

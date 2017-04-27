@@ -100,7 +100,7 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
         child: new RepaintBoundary(
           child: new Container(
               decoration: new BoxDecoration(
-                  backgroundColor: Colors.white.withOpacity(
+                  color: Colors.white.withOpacity(
                     lerpDouble(0.0, 1.0, _showProgress),
                   ),
                   borderRadius: new BorderRadius.circular(
@@ -130,12 +130,10 @@ class QuickSettingsOverlayState extends TickingState<QuickSettingsOverlay> {
               bottom: widget.minimizedNowBarHeight,
               child: new IgnorePointer(
                 child: new Container(
-                  decoration: new BoxDecoration(
-                    backgroundColor: Color.lerp(
-                      Colors.transparent,
-                      Colors.black45,
-                      _showProgress,
-                    ),
+                  color: Color.lerp(
+                    Colors.transparent,
+                    Colors.black45,
+                    _showProgress,
                   ),
                 ),
               ),

@@ -80,7 +80,7 @@ class StoryBarState extends TickingState<StoryBar> {
         height: _height - _focusedSimulation.value,
         padding: new EdgeInsets.symmetric(horizontal: 12.0),
         margin: new EdgeInsets.only(bottom: _focusedSimulation.value),
-        decoration: new BoxDecoration(backgroundColor: widget.story.themeColor),
+        color: widget.story.themeColor,
         child: new OverflowBox(
           minHeight: widget.maximizedHeight,
           maxHeight: widget.maximizedHeight,

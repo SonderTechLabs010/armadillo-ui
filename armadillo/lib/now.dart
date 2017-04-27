@@ -277,7 +277,7 @@ class NowState extends TickingState<Now> {
                               height: _quickSettingsBackgroundHeight,
                               width: _quickSettingsBackgroundWidth,
                               decoration: new BoxDecoration(
-                                backgroundColor: Colors.white,
+                                color: Colors.white,
                                 borderRadius: new BorderRadius.circular(
                                   _quickSettingsBackgroundBorderRadius,
                                 ),

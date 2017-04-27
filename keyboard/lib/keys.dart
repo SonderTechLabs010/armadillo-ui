@@ -90,10 +90,8 @@ class TextKeyState extends State<TextKey> {
           widget.onText?.call(_text);
         },
         child: new Container(
-          decoration: new BoxDecoration(
-            backgroundColor: new Color(
-              _down ? _kTurquoiseAccentColorValue : _kUnselectedColorValue,
-            ),
+          color: new Color(
+            _down ? _kTurquoiseAccentColorValue : _kUnselectedColorValue,
           ),
           height: widget.height,
           child: new Align(
@@ -171,10 +169,9 @@ class _ImageKeyState extends State<ImageKey> {
             onPressed();
           },
           child: new Container(
-            decoration: new BoxDecoration(
-                backgroundColor: new Color(_down
-                    ? _kTurquoiseAccentColorValue
-                    : _kUnselectedColorValue)),
+            color: new Color(_down
+                ? _kTurquoiseAccentColorValue
+                : _kUnselectedColorValue),
             padding: new EdgeInsets.all(_kPadding),
             height: widget.height,
             child: new Container(

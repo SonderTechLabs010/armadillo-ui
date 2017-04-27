@@ -30,11 +30,7 @@ class PlaceHolderStory extends Story {
           id: new StoryId('PlaceHolder $associatedStoryId'),
           builder: (_) => transparent
               ? Nothing.widget
-              : new Container(
-                  decoration: new BoxDecoration(
-                    backgroundColor: _kBackgroundColor,
-                  ),
-                ),
+              : new Container(color: _kBackgroundColor),
         );
 
   @override

@@ -252,9 +252,7 @@ class LineSegment extends PanelDragTarget {
         width: isHorizontal ? b.dx - a.dx + _kLineWidth : _kLineWidth,
         height: isVertical ? b.dy - a.dy + _kLineWidth : _kLineWidth,
         child: new Container(
-          decoration: new BoxDecoration(
-            backgroundColor: color.withOpacity(highlighted ? 1.0 : 0.3),
-          ),
+          color: color.withOpacity(highlighted ? 1.0 : 0.3),
         ),
       );
 
@@ -267,9 +265,7 @@ class LineSegment extends PanelDragTarget {
         height: (isVertical ? b.dy - a.dy + _kLineWidth : _kLineWidth) +
             2 * validityDistance,
         child: new Container(
-          decoration: new BoxDecoration(
-            backgroundColor: color.withOpacity(highlighted ? 0.3 : 0.1),
-          ),
+          color: color.withOpacity(highlighted ? 0.3 : 0.1),
         ),
       );
 

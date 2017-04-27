@@ -144,11 +144,9 @@ class EdgeScrollDragTargetState extends TickingState<EdgeScrollDragTarget> {
           onBuild(rejectedData.isNotEmpty, rejectedData.values.toList());
           return new IgnorePointer(
             child: new Container(
-              decoration: new BoxDecoration(
-                backgroundColor: rejectedData.isEmpty
-                    ? _kNoDraggableHoverColor
-                    : _kDraggableHoverColor,
-              ),
+              color: rejectedData.isEmpty
+                  ? _kNoDraggableHoverColor
+                  : _kDraggableHoverColor,
             ),
           );
         },

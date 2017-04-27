@@ -415,9 +415,7 @@ class StoryPanels extends StatelessWidget {
                         ? 1.0
                         : 0.0,
                     child: new Container(
-                      decoration: new BoxDecoration(
-                        backgroundColor: story.themeColor,
-                      ),
+                      color: story.themeColor,
                       child: _getStoryContents(context, story),
                     ),
                   ),
