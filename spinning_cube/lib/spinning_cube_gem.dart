@@ -156,7 +156,7 @@ class SpinningCubeGem extends StatelessWidget {
           width: gemSize,
           height: gemSize,
           decoration: new BoxDecoration(
-            backgroundColor: _kFaceColor,
+            color: _kFaceColor,
             borderRadius: new BorderRadius.circular(_kGemCornerRadius),
           ),
         ),
