@@ -5,6 +5,7 @@
 group("sysui") {
   deps = [
     "//apps/sysui/armadillo_user_shell",
+    "//apps/sysui/spinning_cube",
     "//apps/sysui/userpicker_device_shell",
   ]
 }
