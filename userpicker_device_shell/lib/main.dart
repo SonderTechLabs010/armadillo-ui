@@ -57,7 +57,12 @@ void main() {
     ),
   );
 
-  runApp(deviceShellWidget);
+  runApp(
+    new MediaQuery(
+      data: const MediaQueryData(),
+      child: deviceShellWidget,
+    ),
+  );
 
   constraintsModel.load(rootBundle);
   deviceShellWidget.advertise();

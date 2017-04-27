@@ -187,7 +187,12 @@ Future<Null> main() async {
         _kShowPerformanceOverlay ? _buildPerformanceOverlay(child: app) : app,
   )..advertise();
 
-  runApp(userShellWidget);
+  runApp(
+    new MediaQuery(
+      data: const MediaQueryData(),
+      child: userShellWidget,
+    ),
+  );
 }
 
 Widget _buildApp({
