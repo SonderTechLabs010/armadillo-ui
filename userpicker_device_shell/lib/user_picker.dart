@@ -44,63 +44,61 @@ class UserPicker extends StatelessWidget {
   Widget _buildNewUserForm(UserPickerDeviceShellModel model) {
     return new Overlay(initialEntries: <OverlayEntry>[
       new OverlayEntry(
-        builder: (BuildContext context) => new Material(
-              color: Colors.grey[300],
-              borderRadius: new BorderRadius.circular(8.0),
-              elevation: 4,
-              child: new Container(
-                width: _kButtonContentWidth,
-                padding: const EdgeInsets.all(16.0),
-                child: new Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    // TODO(apwilson): Use TextField ONCE WE HAVE A PROPER
-                    // IME ON FUCHSIA!
-                    new hacks.RawKeyboardTextField(
-                      decoration: new InputDecoration(
-                        hintText: 'Enter user name',
+        builder: (BuildContext context) => new Center(
+              child: new Material(
+                color: Colors.grey[300],
+                borderRadius: new BorderRadius.circular(8.0),
+                elevation: 4,
+                child: new Container(
+                  width: _kButtonContentWidth,
+                  padding: const EdgeInsets.all(16.0),
+                  child: new Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      // TODO(apwilson): Use TextField ONCE WE HAVE A PROPER
+                      // IME ON FUCHSIA!
+                      new hacks.RawKeyboardTextField(
+                        decoration: new InputDecoration(
+                          hintText: 'Enter user name',
+                        ),
+                        controller: userNameController,
                       ),
-                      controller: userNameController,
-                    ),
-                    new hacks.RawKeyboardTextField(
-                      decoration: new InputDecoration(
-                        hintText: 'Enter device name',
+                      new hacks.RawKeyboardTextField(
+                        decoration: new InputDecoration(
+                          hintText: 'Enter device name',
+                        ),
+                        controller: deviceNameController,
                       ),
-                      controller: deviceNameController,
-                    ),
-                    new hacks.RawKeyboardTextField(
-                      decoration: new InputDecoration(
-                        hintText: 'Enter server name',
+                      new hacks.RawKeyboardTextField(
+                        decoration: new InputDecoration(
+                          hintText: 'Enter server name',
+                        ),
+                        controller: serverNameController,
                       ),
-                      controller: serverNameController,
-                    ),
-                    new Container(
-                      margin: const EdgeInsets.symmetric(
-                        vertical: 16.0,
-                      ),
-                      child: new RaisedButton(
-                        color: Colors.blue[500],
-                        onPressed: () => _createAndLoginUser(
-                              userNameController.text,
-                              deviceNameController.text,
-                              serverNameController.text,
-                              model,
-                            ),
-                        child: new Container(
-                          width: _kButtonContentWidth - 32.0,
-                          height: _kButtonContentHeight,
-                          child: new Center(
-                            child: new Text(
-                              'Create and Log in',
-                              style: new TextStyle(
-                                color: Colors.white,
+                      new Container(
+                        margin: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: new RaisedButton(
+                          color: Colors.blue[500],
+                          onPressed: () => _createAndLoginUser(
+                                userNameController.text,
+                                deviceNameController.text,
+                                serverNameController.text,
+                                model,
+                              ),
+                          child: new Container(
+                            width: _kButtonContentWidth - 32.0,
+                            height: _kButtonContentHeight,
+                            child: new Center(
+                              child: new Text(
+                                'Create and Log in',
+                                style: new TextStyle(color: Colors.white),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -262,6 +260,7 @@ class UserPicker extends StatelessWidget {
     }
 
     _loginUser(user, model);
+    model.hideNewUserForm();
   }
 
   void _loginUser(String user, UserPickerDeviceShellModel model) {
