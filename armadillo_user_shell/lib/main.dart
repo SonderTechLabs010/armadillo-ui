@@ -24,6 +24,7 @@ import 'package:armadillo/suggestion_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:lib.widgets/widgets.dart';
 import 'package:sysui_widgets/default_bundle.dart';
 
 import 'focus_request_watcher_impl.dart';
@@ -188,8 +189,7 @@ Future<Null> main() async {
   )..advertise();
 
   runApp(
-    new MediaQuery(
-      data: const MediaQueryData(),
+    new WindowMediaQuery(
       child: userShellWidget,
     ),
   );
