@@ -24,7 +24,7 @@ function push_to_gerrit() {
   git push origin HEAD:refs/for/master
 }
 
-PRUNE_ARGS="-name third_party -prune -o -name .git -prune -o -name out -prune -o -name .pub -prune -o -name .packages -prune -o -name build -prune"
+PRUNE_ARGS="-name third_party -prune -o -name .git -prune -o -name out -prune -o -name .pub -prune -o -name .packages -prune"
 GREP_COMMAND="grep -I -nH --color"
 
 function sfind() {
