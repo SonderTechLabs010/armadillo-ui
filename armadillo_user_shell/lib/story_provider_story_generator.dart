@@ -120,7 +120,8 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         int added = 0;
         storiesToAdd.forEach((String storyId) {
           _getController(storyId);
-          _storyControllerMap[storyId].getInfo((StoryInfo storyInfo) {
+          _storyControllerMap[storyId]
+              .getInfo((StoryInfo storyInfo, StoryState state) {
             _startStory(storyInfo);
             added++;
             if (added == storiesToAdd.length) {
@@ -145,9 +146,9 @@ class StoryProviderStoryGenerator extends StoryGenerator {
         (Story story) => story.id == new StoryId(storyId),
       );
 
-  void _onStoryChanged(StoryInfo storyInfo) {
+  void _onStoryChanged(StoryInfo storyInfo, StoryState storyState) {
     if (_storyControllerMap[storyInfo.id] == null) {
-      if (storyInfo.state == StoryState.initial) {
+      if (storyState == StoryState.initial) {
         _getController(storyInfo.id);
         _startStory(storyInfo);
       }
