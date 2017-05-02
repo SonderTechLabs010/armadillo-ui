@@ -11,6 +11,7 @@ import 'suggestion_model.dart';
 import 'suggestion_widget.dart';
 
 const String _kImage = 'packages/armadillo/res/logo_googleg_24dpx4.png';
+const Duration _kFadeInDuration = const Duration(milliseconds: 500);
 
 /// Called when a suggestion is selected.  [globalBounds] indicates the location
 /// of the widget representing [suggestion] was on screen when it was selected.
@@ -54,11 +55,29 @@ class SuggestionList extends StatefulWidget {
 }
 
 /// Manages the asking state for the [SuggestionList].
-class SuggestionListState extends State<SuggestionList> {
+class SuggestionListState extends State<SuggestionList>
+    with TickerProviderStateMixin {
   final GlobalKey<RawKeyboardInputState> _inputKey =
       new GlobalKey<RawKeyboardInputState>();
   bool _asking = false;
   Suggestion _selectedSuggestion;
+  DateTime _lastBuildTime;
+  AnimationController _fadeInAnimation;
+  CurvedAnimation _curvedFadeInAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeInAnimation = new AnimationController(
+      vsync: this,
+      value: 0.0,
+      duration: _kFadeInDuration,
+    );
+    _curvedFadeInAnimation = new CurvedAnimation(
+      parent: _fadeInAnimation,
+      curve: Curves.fastOutSlowIn,
+    );
+  }
 
   /// The current ask text.
   String get text => _inputKey.currentState?.text;
@@ -203,13 +222,18 @@ class SuggestionListState extends State<SuggestionList> {
                 BuildContext context,
                 Widget child,
                 SuggestionModel suggestionModel,
-              ) =>
-                  widget.columnCount == 3
-                      ? _createThreeColumnBlock(suggestionModel.suggestions)
-                      : widget.columnCount == 2
-                          ? _createTwoColumnBlock(suggestionModel.suggestions)
-                          : _createSingleColumnBlock(
-                              suggestionModel.suggestions),
+              ) {
+                _lastBuildTime = new DateTime.now();
+                _fadeInAnimation.value = 0.0;
+                _fadeInAnimation.forward();
+                return widget.columnCount == 3
+                    ? _createThreeColumnBlock(suggestionModel.suggestions)
+                    : widget.columnCount == 2
+                        ? _createTwoColumnBlock(suggestionModel.suggestions)
+                        : _createSingleColumnBlock(
+                            suggestionModel.suggestions,
+                          );
+              },
             ),
           ),
         ],
@@ -316,6 +340,9 @@ class SuggestionListState extends State<SuggestionList> {
   }
 
   void _onSuggestionSelected(Suggestion suggestion) {
+    if (new DateTime.now().difference(_lastBuildTime) < _kFadeInDuration) {
+      return;
+    }
     switch (suggestion.selectionType) {
       case SelectionType.launchStory:
       case SelectionType.modifyStory:
@@ -341,15 +368,18 @@ class SuggestionListState extends State<SuggestionList> {
   }
 
   Widget _createSuggestion(Suggestion suggestion) => new RepaintBoundary(
-        child: new Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 12.0,
-          ),
-          child: new SuggestionWidget(
-            key: new GlobalObjectKey(suggestion),
-            visible: _selectedSuggestion?.id != suggestion.id,
-            suggestion: suggestion,
-            onSelected: () => _onSuggestionSelected(suggestion),
+        child: new FadeTransition(
+          opacity: _curvedFadeInAnimation,
+          child: new Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 12.0,
+            ),
+            child: new SuggestionWidget(
+              key: new GlobalObjectKey(suggestion),
+              visible: _selectedSuggestion?.id != suggestion.id,
+              suggestion: suggestion,
+              onSelected: () => _onSuggestionSelected(suggestion),
+            ),
           ),
         ),
       );

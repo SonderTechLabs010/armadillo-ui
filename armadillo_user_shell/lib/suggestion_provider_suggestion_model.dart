@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:apps.maxwell.services.suggestion/suggestion_display.fidl.dart'
     as maxwell;
 import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart'
@@ -104,6 +106,7 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
   /// suggestions rather than the normal maxwell suggestion list.
   String _askText;
   bool _asking = false;
+  Timer _askTimeoutTimer;
 
   /// Set from an external source - typically the UserShell.
   maxwell.SuggestionProviderProxy _suggestionProviderProxy;
@@ -125,14 +128,13 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
   final HitTestModel hitTestModel;
 
   /// Constructor.
-  SuggestionProviderSuggestionModel({
-    this.hitTestModel,
-  });
+  SuggestionProviderSuggestionModel({this.hitTestModel});
 
   /// Setting [suggestionProvider] triggers the loading on suggestions.
   /// This is typically set by the UserShell.
   set suggestionProvider(
-      maxwell.SuggestionProviderProxy suggestionProviderProxy) {
+    maxwell.SuggestionProviderProxy suggestionProviderProxy,
+  ) {
     _suggestionProviderProxy = suggestionProviderProxy;
     _askListener = new _MaxwellSuggestionListenerImpl(
       prefix: 'ask',
@@ -200,9 +202,14 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
     String newAskText = text?.toLowerCase();
     if (_askText != newAskText) {
       _askText = newAskText;
-      _askControllerProxy.setUserInput(
-        new maxwell.UserInput()..text = newAskText ?? '',
-      );
+      _askTimeoutTimer?.cancel();
+      _askTimeoutTimer = new Timer(const Duration(milliseconds: 200), () {
+        if (_asking) {
+          _askControllerProxy.setUserInput(
+            new maxwell.UserInput()..text = newAskText ?? '',
+          );
+        }
+      });
     }
   }
 
@@ -214,6 +221,7 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
         _currentSuggestions = _askListener.suggestions;
       } else {
         _currentSuggestions = _nextListener.suggestions;
+        _askControllerProxy.setUserInput(new maxwell.UserInput()..text = '');
       }
       notifyListeners();
     }
