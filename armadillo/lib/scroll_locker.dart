@@ -59,7 +59,7 @@ class _LockingScrollBehavior extends ScrollBehavior {
 }
 
 class _LockedScrollPhysics extends ScrollPhysics {
-  const _LockedScrollPhysics({ScrollPhysics parent}) : super(parent);
+  const _LockedScrollPhysics({ScrollPhysics parent}) : super(parent: parent);
 
   @override
   _LockedScrollPhysics applyTo(ScrollPhysics parent) =>
