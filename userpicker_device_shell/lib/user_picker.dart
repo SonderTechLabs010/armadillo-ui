@@ -11,7 +11,6 @@ import 'user_picker_device_shell_model.dart';
 
 const String _kDefaultUserName = 'Guest';
 const String _kDefaultDeviceName = 'fuchsia';
-const String _kDefaultServerName = 'ledger.fuchsia.com';
 const Color _kFuchsiaColor = const Color(0xFFFF0080);
 const double _kButtonContentWidth = 220.0;
 const double _kButtonContentHeight = 80.0;
@@ -59,19 +58,13 @@ class UserPicker extends StatelessWidget {
                       // IME ON FUCHSIA!
                       new hacks.RawKeyboardTextField(
                         decoration: new InputDecoration(
-                          hintText: 'Enter user name',
+                          hintText: 'username@example.com',
                         ),
                         controller: userNameController,
                       ),
                       new hacks.RawKeyboardTextField(
                         decoration: new InputDecoration(
-                          hintText: 'Enter device name',
-                        ),
-                        controller: deviceNameController,
-                      ),
-                      new hacks.RawKeyboardTextField(
-                        decoration: new InputDecoration(
-                          hintText: 'Enter server name',
+                          hintText: 'firebase_id',
                         ),
                         controller: serverNameController,
                       ),
@@ -79,12 +72,24 @@ class UserPicker extends StatelessWidget {
                         margin: const EdgeInsets.symmetric(vertical: 16.0),
                         child: new RaisedButton(
                           color: Colors.blue[500],
-                          onPressed: () => _createAndLoginUser(
-                                userNameController.text,
-                                deviceNameController.text,
-                                serverNameController.text,
-                                model,
-                              ),
+                          onPressed: () {
+                            if (userNameController.text?.isEmpty ?? true) {
+                              print(
+                                  'Not creating user: User name needs to be set!');
+                              return;
+                            }
+                            if (serverNameController.text?.isEmpty ?? true) {
+                              print(
+                                  'Not creating user: Server name needs to be set!');
+                              return;
+                            }
+
+                            _createAndLoginUser(
+                              userNameController.text,
+                              serverNameController.text,
+                              model,
+                            );
+                          },
                           child: new Container(
                             width: _kButtonContentWidth - 32.0,
                             height: _kButtonContentHeight,
@@ -149,29 +154,23 @@ class UserPicker extends StatelessWidget {
       );
 
   Widget _buildUserList(UserPickerDeviceShellModel model) {
-    List<Widget> children;
-    if (model.users.isEmpty) {
-      children = <Widget>[
+    List<Widget> children = <Widget>[];
+    if (!model.users.contains(_kDefaultUserName)) {
+      children.add(
         _buildUserEntry(
           user: _kDefaultUserName,
-          onTap: () {
-            _createAndLoginUser(
-              _kDefaultUserName,
-              _kDefaultDeviceName,
-              _kDefaultServerName,
-              model,
-            );
-          },
+          onTap: () => _createAndLoginUser(_kDefaultUserName, null, model),
         ),
-      ];
-    } else {
-      children = model.users.map((String user) {
-        return _buildUserEntry(
-          user: user,
-          onTap: () => _loginUser(user, model),
-        );
-      }).toList();
+      );
     }
+    children.addAll(
+      model.users.map(
+        (String user) => _buildUserEntry(
+              user: user,
+              onTap: () => _loginUser(user, model),
+            ),
+      ),
+    );
 
     return new Material(
       borderRadius: new BorderRadius.all(new Radius.circular(8.0)),
@@ -231,30 +230,16 @@ class UserPicker extends StatelessWidget {
 
   void _createAndLoginUser(
     String user,
-    String deviceName,
     String serverName,
     UserPickerDeviceShellModel model,
   ) {
     // Add the user if it doesn't already exist.
     if (!(model.users?.contains(user) ?? false)) {
-      if (user?.isEmpty ?? true) {
-        print('Not creating user: User name needs to be set!');
-        return;
-      }
-      if (deviceName?.isEmpty ?? true) {
-        print('Not creating user: Device name needs to be set!');
-        return;
-      }
-      if (serverName?.isEmpty ?? true) {
-        print('Not creating user: Server name needs to be set!');
-        return;
-      }
-      print(
-          'UserPicker: Creating user $user with device $deviceName and server $serverName!');
+      print('UserPicker: Creating user $user with server $serverName!');
       model.userProvider?.addUser(
         user,
         null,
-        deviceName,
+        _kDefaultDeviceName,
         serverName,
       );
     }
