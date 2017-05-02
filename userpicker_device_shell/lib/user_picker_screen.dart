@@ -13,8 +13,11 @@ class UserPickerScreen extends StatelessWidget {
   /// The widget that allows a user to be picked.
   final UserPicker userPicker;
 
+  /// Called when the add user button is pressed.
+  final VoidCallback onAddUser;
+
   /// Constructor.
-  UserPickerScreen({this.userPicker});
+  UserPickerScreen({this.userPicker, this.onAddUser});
 
   @override
   Widget build(BuildContext context) => new Material(
@@ -46,7 +49,7 @@ class UserPickerScreen extends StatelessWidget {
                 alignment: FractionalOffset.bottomLeft,
                 child: new Container(
                   margin: const EdgeInsets.all(16.0),
-                  child: new UserPickerButtons(),
+                  child: new UserPickerButtons(onAddUser: onAddUser),
                 ),
               ),
             ],

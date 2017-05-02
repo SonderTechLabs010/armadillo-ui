@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:apps.modular.services.device/user_provider.fidl.dart';
 import 'package:apps.mozart.lib.flutter/child_view.dart';
 import 'package:apps.mozart.services.views/view_token.fidl.dart';
@@ -47,6 +49,7 @@ void main() {
           new _ScreenManager(
             key: screenManagerKey,
             onLogout: model.refreshUsers,
+            onAddUser: model.showNewUserForm,
           ),
           new ScopedModel<_AuthenticationOverlayModel>(
             model: authenticationOverlayModel,
@@ -60,7 +63,11 @@ void main() {
   runApp(
     new MediaQuery(
       data: const MediaQueryData(),
-      child: deviceShellWidget,
+      child: new FocusScope(
+        node: new FocusScopeNode(),
+        autofocus: true,
+        child: deviceShellWidget,
+      ),
     ),
   );
 
@@ -70,8 +77,9 @@ void main() {
 
 class _ScreenManager extends StatefulWidget {
   final VoidCallback onLogout;
+  final VoidCallback onAddUser;
 
-  _ScreenManager({Key key, this.onLogout}) : super(key: key);
+  _ScreenManager({Key key, this.onLogout, this.onAddUser}) : super(key: key);
 
   @override
   _ScreenManagerState createState() => new _ScreenManagerState();
@@ -80,10 +88,10 @@ class _ScreenManager extends StatefulWidget {
 class _ScreenManagerState extends State<_ScreenManager>
     with TickerProviderStateMixin {
   final TextEditingController _userNameController = new TextEditingController();
-  final TextEditingController _deviceNameController =
-      new TextEditingController();
   final TextEditingController _serverNameController =
       new TextEditingController();
+  final FocusNode _userNameFocusNode = new FocusNode();
+  final FocusNode _serverNameFocusNode = new FocusNode();
 
   UserControllerProxy _userControllerProxy;
   UserWatcherImpl _userWatcherImpl;
@@ -134,11 +142,21 @@ class _ScreenManagerState extends State<_ScreenManager>
                     ],
                   ),
         child: new UserPickerScreen(
+          onAddUser: () {
+            //TODO(apwilson): Remove the delay.  It's a workaround to raw
+            // keyboard focus bug.
+            new Timer(
+              const Duration(milliseconds: 1000),
+              () => FocusScope.of(context).requestFocus(_userNameFocusNode),
+            );
+            widget.onAddUser?.call();
+          },
           userPicker: new UserPicker(
             onLoginRequest: _login,
             userNameController: _userNameController,
-            deviceNameController: _deviceNameController,
             serverNameController: _serverNameController,
+            userNameFocusNode: _userNameFocusNode,
+            serverNameFocusNode: _serverNameFocusNode,
           ),
         ),
       );

@@ -28,18 +28,22 @@ class UserPicker extends StatelessWidget {
   /// The text controller for the user name of a new user.
   final TextEditingController userNameController;
 
-  /// The text controller for the device name of a new user.
-  final TextEditingController deviceNameController;
-
   /// The text controller for the server name of a new user.
   final TextEditingController serverNameController;
+
+  /// The add user user name text field's focus node.
+  final FocusNode userNameFocusNode;
+
+  /// The add user server name text field's focus node.
+  final FocusNode serverNameFocusNode;
 
   /// Constructor.
   UserPicker({
     this.onLoginRequest,
     this.userNameController,
-    this.deviceNameController,
     this.serverNameController,
+    this.userNameFocusNode,
+    this.serverNameFocusNode,
   });
 
   Widget _buildNewUserForm(UserPickerDeviceShellModel model) {
@@ -62,36 +66,27 @@ class UserPicker extends StatelessWidget {
                         decoration: new InputDecoration(
                           hintText: 'username@example.com',
                         ),
+                        focusNode: userNameFocusNode,
                         controller: userNameController,
+                        onSubmitted: (_) {
+                          FocusScope.of(context).requestFocus(
+                                serverNameFocusNode,
+                              );
+                        },
                       ),
                       new hacks.RawKeyboardTextField(
                         decoration: new InputDecoration(
                           hintText: 'firebase_id',
                         ),
+                        focusNode: serverNameFocusNode,
                         controller: serverNameController,
+                        onSubmitted: (_) => _onSubmit(model),
                       ),
                       new Container(
                         margin: const EdgeInsets.symmetric(vertical: 16.0),
                         child: new RaisedButton(
                           color: Colors.blue[500],
-                          onPressed: () {
-                            if (userNameController.text?.isEmpty ?? true) {
-                              print(
-                                  'Not creating user: User name needs to be set!');
-                              return;
-                            }
-                            if (serverNameController.text?.isEmpty ?? true) {
-                              print(
-                                  'Not creating user: Server name needs to be set!');
-                              return;
-                            }
-
-                            _createAndLoginUser(
-                              userNameController.text,
-                              serverNameController.text,
-                              model,
-                            );
-                          },
+                          onPressed: () => _onSubmit(model),
                           child: new Container(
                             width: _kButtonContentWidth - 32.0,
                             height: _kButtonContentHeight,
@@ -111,6 +106,25 @@ class UserPicker extends StatelessWidget {
             ),
       ),
     ]);
+  }
+
+  void _onSubmit(UserPickerDeviceShellModel model) {
+    userNameFocusNode.unfocus();
+    serverNameFocusNode.unfocus();
+    if (userNameController.text?.isEmpty ?? true) {
+      print('Not creating user: User name needs to be set!');
+      return;
+    }
+    if (serverNameController.text?.isEmpty ?? true) {
+      print('Not creating user: Server name needs to be set!');
+      return;
+    }
+
+    _createAndLoginUser(
+      userNameController.text,
+      serverNameController.text,
+      model,
+    );
   }
 
   Widget _buildUserEntry({String user, VoidCallback onTap}) => new InkWell(
