@@ -49,7 +49,7 @@ class UserPicker extends StatelessWidget {
               child: new Material(
                 color: Colors.grey[300],
                 borderRadius: new BorderRadius.circular(8.0),
-                elevation: 4,
+                elevation: 4.0,
                 child: new Container(
                   width: _kButtonContentWidth,
                   padding: const EdgeInsets.all(16.0),

@@ -7,7 +7,6 @@ import 'package:meta/meta.dart';
 
 /// A button that is circular
 class CircularButton extends StatelessWidget {
-
   /// Callback that is fired when the button is tapped
   final VoidCallback onTap;
 
@@ -15,26 +14,21 @@ class CircularButton extends StatelessWidget {
   final IconData icon;
 
   /// Constructor
-  CircularButton({
-    this.onTap,
-    @required this.icon,
-  }) {
+  CircularButton({this.onTap, @required this.icon}) {
     assert(icon != null);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return new Material(
-      type: MaterialType.circle,
-      elevation: 2,
-      color: Colors.grey[200],
-      child: new InkWell(
-        onTap: () => onTap?.call(),
-        child: new Container(
-          padding: const EdgeInsets.all(12.0),
-          child: new Icon(icon),
+  Widget build(BuildContext context) => new Material(
+        type: MaterialType.circle,
+        elevation: 2.0,
+        color: Colors.grey[200],
+        child: new InkWell(
+          onTap: () => onTap?.call(),
+          child: new Container(
+            padding: const EdgeInsets.all(12.0),
+            child: new Icon(icon),
+          ),
         ),
-      ),
-    );
-  }
+      );
 }
