@@ -161,16 +161,14 @@ class UserPicker extends StatelessWidget {
     children.add(
       _buildUserEntry(
         user: _kDefaultUserName,
-        onTap: () => _loginUser(
-          null,
-          model),
+        onTap: () => _loginUser(null, model),
       ),
     );
     children.addAll(
       model.accounts.map(
         (Account account) => _buildUserEntry(
               user: account.displayName,
-              onTap: () => _loginUser(user, model),
+              onTap: () => _loginUser(account.id, model),
             ),
       ),
     );
