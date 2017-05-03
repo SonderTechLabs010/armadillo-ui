@@ -11,6 +11,7 @@ import 'user_picker_device_shell_model.dart';
 
 const String _kDefaultUserName = 'Guest';
 const String _kDefaultDeviceName = 'fuchsia';
+const String _kDefaultServerName = 'ledger.fuchsia.com';
 const Color _kFuchsiaColor = const Color(0xFFFF0080);
 const double _kButtonContentWidth = 220.0;
 const double _kButtonContentHeight = 80.0;
@@ -159,7 +160,10 @@ class UserPicker extends StatelessWidget {
       children.add(
         _buildUserEntry(
           user: _kDefaultUserName,
-          onTap: () => _createAndLoginUser(_kDefaultUserName, null, model),
+          onTap: () => _createAndLoginUser(
+            _kDefaultUserName,
+            _kDefaultServerName,
+            model),
         ),
       );
     }
