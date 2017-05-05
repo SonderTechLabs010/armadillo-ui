@@ -101,6 +101,8 @@ class _ScreenManagerState extends State<_ScreenManager>
   AnimationController _transitionAnimation;
   CurvedAnimation _curvedTransitionAnimation;
 
+  bool _addingUser = false;
+
   @override
   void initState() {
     super.initState();
@@ -114,16 +116,20 @@ class _ScreenManagerState extends State<_ScreenManager>
       curve: Curves.fastOutSlowIn,
       reverseCurve: Curves.fastOutSlowIn,
     );
+    _curvedTransitionAnimation.addStatusListener(_onStatusChange);
   }
 
   @override
   void dispose() {
+    _curvedTransitionAnimation.removeStatusListener(_onStatusChange);
     super.dispose();
     _userWatcherImpl?.close();
     _userWatcherImpl = null;
     _userControllerProxy?.ctrl?.close();
     _userControllerProxy = null;
   }
+
+  void _onStatusChange(_) => setState(() {});
 
   @override
   Widget build(BuildContext context) => new AnimatedBuilder(
@@ -153,13 +159,29 @@ class _ScreenManagerState extends State<_ScreenManager>
           },
           userPicker: new UserPicker(
             onLoginRequest: _login,
+            onAddUserStarted: _addUserStarted,
+            onAddUserFinished: _addUserFinished,
             userNameController: _userNameController,
             serverNameController: _serverNameController,
             userNameFocusNode: _userNameFocusNode,
             serverNameFocusNode: _serverNameFocusNode,
+            loggingIn: _addingUser ||
+                (_childViewConnection != null &&
+                    (_curvedTransitionAnimation.status ==
+                            AnimationStatus.dismissed ||
+                        _curvedTransitionAnimation.status ==
+                            AnimationStatus.forward)),
           ),
         ),
       );
+
+  void _addUserStarted() => setState(() {
+        _addingUser = true;
+      });
+
+  void _addUserFinished() => setState(() {
+        _addingUser = false;
+      });
 
   void _login(String accountId, UserProvider userProvider) {
     _userControllerProxy?.ctrl?.close();
@@ -167,13 +189,7 @@ class _ScreenManagerState extends State<_ScreenManager>
     _userWatcherImpl?.close();
     _userWatcherImpl = new UserWatcherImpl(onUserLogout: () {
       print('UserPickerDeviceShell: User logged out!');
-      setState(() {
-        widget.onLogout?.call();
-        _transitionAnimation.reverse();
-        // TODO(apwilson): Should not need to remove the child view connection but
-        // it causes a mozart deadlock in the compositor if you don't.
-        _childViewConnection = null;
-      });
+      _handleLogout();
     });
 
     final InterfacePair<ViewOwner> viewOwner = new InterfacePair<ViewOwner>();
@@ -193,14 +209,19 @@ class _ScreenManagerState extends State<_ScreenManager>
         },
         onUnavailable: (ChildViewConnection connection) {
           print('UserPickerDeviceShell: Child view connection unavailable!');
-          widget.onLogout?.call();
-          _transitionAnimation.reverse();
-          // TODO(apwilson): Should not need to remove the child view
-          // connection but it causes a mozart deadlock in the compositor if you
-          // don't.
-          _childViewConnection = null;
+          _handleLogout();
         },
       );
+    });
+  }
+
+  void _handleLogout() {
+    setState(() {
+      widget.onLogout?.call();
+      _transitionAnimation.reverse();
+      // TODO(apwilson): Should not need to remove the child view connection but
+      // it causes a mozart deadlock in the compositor if you don't.
+      _childViewConnection = null;
     });
   }
 }

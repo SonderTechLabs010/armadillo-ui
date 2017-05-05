@@ -48,13 +48,17 @@ class UserPickerDeviceShellModel extends DeviceShellModel {
 
   /// Shows the 'new user' form.
   void showNewUserForm() {
-    _isShowingNewUserForm = true;
-    notifyListeners();
+    if(!_isShowingNewUserForm) {
+      _isShowingNewUserForm = true;
+      notifyListeners();
+    }
   }
 
   /// Hides the 'new user' form.
   void hideNewUserForm() {
-    _isShowingNewUserForm = false;
-    notifyListeners();
+    if(_isShowingNewUserForm) {
+      _isShowingNewUserForm = false;
+      notifyListeners();
+    }
   }
 }

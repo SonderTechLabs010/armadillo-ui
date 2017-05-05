@@ -25,6 +25,12 @@ class UserPicker extends StatelessWidget {
   /// Called when the user want's to log in.
   final OnLoginRequest onLoginRequest;
 
+  /// Called when a user is being added.
+  final VoidCallback onAddUserStarted;
+
+  /// Called when a user finished being added.
+  final VoidCallback onAddUserFinished;
+
   /// The text controller for the user name of a new user.
   final TextEditingController userNameController;
 
@@ -37,76 +43,82 @@ class UserPicker extends StatelessWidget {
   /// The add user server name text field's focus node.
   final FocusNode serverNameFocusNode;
 
+  /// Indicates if the user is currently logging in.
+  final bool loggingIn;
+
   /// Constructor.
   UserPicker({
     this.onLoginRequest,
+    this.onAddUserStarted,
+    this.onAddUserFinished,
     this.userNameController,
     this.serverNameController,
     this.userNameFocusNode,
     this.serverNameFocusNode,
+    this.loggingIn,
   });
 
-  Widget _buildNewUserForm(UserPickerDeviceShellModel model) {
-    return new Overlay(initialEntries: <OverlayEntry>[
-      new OverlayEntry(
-        builder: (BuildContext context) => new Center(
-              child: new Material(
-                color: Colors.grey[300],
-                borderRadius: new BorderRadius.circular(8.0),
-                elevation: 4.0,
-                child: new Container(
-                  width: _kButtonContentWidth,
-                  padding: const EdgeInsets.all(16.0),
-                  child: new Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      // TODO(apwilson): Use TextField ONCE WE HAVE A PROPER
-                      // IME ON FUCHSIA!
-                      new hacks.RawKeyboardTextField(
-                        decoration: new InputDecoration(
-                          hintText: 'username@example.com',
-                        ),
-                        focusNode: userNameFocusNode,
-                        controller: userNameController,
-                        onSubmitted: (_) {
-                          FocusScope.of(context).requestFocus(
-                                serverNameFocusNode,
-                              );
-                        },
-                      ),
-                      new hacks.RawKeyboardTextField(
-                        decoration: new InputDecoration(
-                          hintText: 'firebase_id',
-                        ),
-                        focusNode: serverNameFocusNode,
-                        controller: serverNameController,
-                        onSubmitted: (_) => _onSubmit(model),
-                      ),
-                      new Container(
-                        margin: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: new RaisedButton(
-                          color: Colors.blue[500],
-                          onPressed: () => _onSubmit(model),
-                          child: new Container(
-                            width: _kButtonContentWidth - 32.0,
-                            height: _kButtonContentHeight,
-                            child: new Center(
-                              child: new Text(
-                                'Create and Log in',
-                                style: new TextStyle(color: Colors.white),
+  Widget _buildNewUserForm(UserPickerDeviceShellModel model) => new Overlay(
+        initialEntries: <OverlayEntry>[
+          new OverlayEntry(
+            builder: (BuildContext context) => new Center(
+                  child: new Material(
+                    color: Colors.grey[300],
+                    borderRadius: new BorderRadius.circular(8.0),
+                    elevation: 4.0,
+                    child: new Container(
+                      width: _kButtonContentWidth,
+                      padding: const EdgeInsets.all(16.0),
+                      child: new Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          // TODO(apwilson): Use TextField ONCE WE HAVE A PROPER
+                          // IME ON FUCHSIA!
+                          new hacks.RawKeyboardTextField(
+                            decoration: new InputDecoration(
+                              hintText: 'username@example.com',
+                            ),
+                            focusNode: userNameFocusNode,
+                            controller: userNameController,
+                            onSubmitted: (_) {
+                              FocusScope.of(context).requestFocus(
+                                    serverNameFocusNode,
+                                  );
+                            },
+                          ),
+                          new hacks.RawKeyboardTextField(
+                            decoration: new InputDecoration(
+                              hintText: 'firebase_id',
+                            ),
+                            focusNode: serverNameFocusNode,
+                            controller: serverNameController,
+                            onSubmitted: (_) => _onSubmit(model),
+                          ),
+                          new Container(
+                            margin: const EdgeInsets.symmetric(vertical: 16.0),
+                            child: new RaisedButton(
+                              color: Colors.blue[500],
+                              onPressed: () => _onSubmit(model),
+                              child: new Container(
+                                width: _kButtonContentWidth - 32.0,
+                                height: _kButtonContentHeight,
+                                child: new Center(
+                                  child: new Text(
+                                    'Create and Log in',
+                                    style: new TextStyle(color: Colors.white),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-      ),
-    ]);
-  }
+          ),
+        ],
+      );
 
   void _onSubmit(UserPickerDeviceShellModel model) {
     userNameFocusNode.unfocus();
@@ -125,6 +137,8 @@ class UserPicker extends StatelessWidget {
       serverNameController.text,
       model,
     );
+    userNameController.clear();
+    serverNameController.clear();
   }
 
   Widget _buildUserEntry({String user, VoidCallback onTap}) => new InkWell(
@@ -204,7 +218,7 @@ class UserPicker extends StatelessWidget {
         Widget child,
         UserPickerDeviceShellModel model,
       ) {
-        if (model.accounts != null) {
+        if (model.accounts != null && !loggingIn) {
           List<Widget> stackChildren = <Widget>[
             new Center(
               child: new Column(
@@ -254,6 +268,7 @@ class UserPicker extends StatelessWidget {
     // Add the user if it doesn't already exist.
     if (!(model.accounts?.contains(user) ?? false)) {
       print('UserPicker: Creating user $user with server $serverName!');
+      onAddUserStarted?.call();
       model.userProvider?.addUser(
         IdentityProvider.google,
         user,
@@ -265,6 +280,7 @@ class UserPicker extends StatelessWidget {
           } else {
             print('ERROR adding user!  $errorCode');
           }
+          onAddUserFinished?.call();
         },
       );
     } else {
@@ -272,12 +288,12 @@ class UserPicker extends StatelessWidget {
         print('WARNING multiple accounts with name $user!');
       }
       _loginUser(matchingAccounts.first.id, model);
-      model.hideNewUserForm();
     }
   }
 
   void _loginUser(String accountId, UserPickerDeviceShellModel model) {
     print('UserPicker: Logging in as $accountId!');
     onLoginRequest?.call(accountId, model.userProvider);
+    model.hideNewUserForm();
   }
 }
