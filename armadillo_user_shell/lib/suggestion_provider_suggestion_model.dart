@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:apps.maxwell.services.suggestion/suggestion_display.fidl.dart'
     as maxwell;
 import 'package:apps.maxwell.services.suggestion/suggestion_provider.fidl.dart'
@@ -106,7 +104,6 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
   /// suggestions rather than the normal maxwell suggestion list.
   String _askText;
   bool _asking = false;
-  Timer _askTimeoutTimer;
 
   /// Set from an external source - typically the UserShell.
   maxwell.SuggestionProviderProxy _suggestionProviderProxy;
@@ -199,17 +196,10 @@ class SuggestionProviderSuggestionModel extends SuggestionModel {
 
   @override
   set askText(String text) {
-    String newAskText = text?.toLowerCase();
-    if (_askText != newAskText) {
-      _askText = newAskText;
-      _askTimeoutTimer?.cancel();
-      _askTimeoutTimer = new Timer(const Duration(milliseconds: 200), () {
-        if (_asking) {
-          _askControllerProxy.setUserInput(
-            new maxwell.UserInput()..text = newAskText ?? '',
-          );
-        }
-      });
+    if (_askText != text) {
+      _askText = text;
+      _askControllerProxy
+          .setUserInput(new maxwell.UserInput()..text = text ?? '');
     }
   }
 
