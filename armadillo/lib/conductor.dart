@@ -100,6 +100,8 @@ typedef void OnOverlayChanged(bool active);
 /// Manages the position, size, and state of the story list, user context,
 /// suggestion overlay, device extensions. interruption overlay, and quick
 /// settings overlay.
+// TODO(pylaligand): mark class as @immutable.
+// ignore: must_be_immutable
 class Conductor extends StatelessWidget {
   /// Set to true to use a software keyboard when asking.
   final bool useSoftKeyboard;
