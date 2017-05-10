@@ -34,7 +34,7 @@ const double _kQuickSettingsHorizontalPadding = 16.0;
 
 const double _kQuickSettingsInnerHorizontalPadding = 16.0;
 
-const double _kMaxQuickSettingsBackgroundWidth = 600.0;
+const double _kMaxQuickSettingsBackgroundWidth = 700.0;
 
 /// The overscroll amount which must occur before now begins to grow in height.
 const double _kOverscrollDelayOffset = 0.0;
@@ -293,34 +293,38 @@ class NowState extends TickingState<Now> {
                           child: new Center(
                             child: new Column(
                               children: <Widget>[
-                                // User Profile image
-                                _buildUserImage(nowModel),
-                                // User Context Text when maximized.
-                                new Padding(
-                                  key: _userContextTextKey,
-                                  padding: const EdgeInsets.only(top: 24.0),
-                                  child: nowModel.userContextMaximized(
-                                    opacity: _fallAwayOpacity,
-                                  ),
-                                ),
-                                // Important Information when maximized.
-                                new Container(
-                                    key: _importantInfoMaximizedKey,
-                                    width: _getImportantInfoMaximizedWidth(
-                                      nowModel.importantInfoMinWidth,
-                                    ),
-                                    child: new Padding(
-                                      padding: const EdgeInsets.only(top: 16.0),
-                                      child: nowModel.importantInfoMaximized(
-                                        maxWidth:
-                                            _quickSettingsBackgroundMaximizedWidth -
-                                                2.0 *
-                                                    _kQuickSettingsInnerHorizontalPadding,
-                                        opacity: _fallAwayOpacity,
+                                new Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    // User Context Text when maximized.
+                                    new Expanded(
+                                      child: new Container(
+                                        key: _userContextTextKey,
+                                        height: _userImageSize,
+                                        child: nowModel.userContextMaximized(
+                                          opacity: _fallAwayOpacity,
+                                        ),
                                       ),
-                                    )),
+                                    ),
+                                    // User Profile image
+                                    _buildUserImage(nowModel),
+                                    // Important Information when maximized.
+                                    new Expanded(
+                                      child: new Container(
+                                        key: _importantInfoMaximizedKey,
+                                        height: _userImageSize,
+                                        child: nowModel.importantInfoMaximized(
+                                          opacity: _fallAwayOpacity,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 // Quick Settings
-                                _buildQuickSettings(nowModel),
+                                new Container(
+                                  padding: const EdgeInsets.only(top: 32.0),
+                                  child: _buildQuickSettings(nowModel),
+                                ),
                               ],
                             ),
                           ),
@@ -342,48 +346,48 @@ class NowState extends TickingState<Now> {
         ],
       );
 
-  Widget _buildUserImage(NowModel nowModel) =>
-      new Stack(
-        fit: StackFit.passthrough,
-        key: _userImageKey, children: <Widget>[
-        // Shadow.
-        new Opacity(
-          opacity: _quickSettingsProgress,
-          child: new Container(
-            width: _userImageSize,
-            height: _userImageSize,
-            decoration: new BoxDecoration(
-              boxShadow: kElevationToShadow[12],
-              shape: BoxShape.circle,
-            ),
-          ),
-        ),
-        // The actual user image.
-        new ClipOval(
-          child: new GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              if (!_revealingQuickSettings) {
-                showQuickSettings();
-              } else {
-                hideQuickSettings();
-              }
-            },
-            child: new Container(
-              width: _userImageSize,
-              height: _userImageSize,
-              foregroundDecoration: new BoxDecoration(
-                border: new Border.all(
-                  color: new Color(0xFFFFFFFF),
-                  width: _userImageBorderWidth,
+  Widget _buildUserImage(NowModel nowModel) => new Stack(
+          fit: StackFit.passthrough,
+          key: _userImageKey,
+          children: <Widget>[
+            // Shadow.
+            new Opacity(
+              opacity: _quickSettingsProgress,
+              child: new Container(
+                width: _userImageSize,
+                height: _userImageSize,
+                decoration: new BoxDecoration(
+                  boxShadow: kElevationToShadow[12],
+                  shape: BoxShape.circle,
                 ),
-                shape: BoxShape.circle,
               ),
-              child: nowModel.user,
             ),
-          ),
-        ),
-      ]);
+            // The actual user image.
+            new ClipOval(
+              child: new GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  if (!_revealingQuickSettings) {
+                    showQuickSettings();
+                  } else {
+                    hideQuickSettings();
+                  }
+                },
+                child: new Container(
+                  width: _userImageSize,
+                  height: _userImageSize,
+                  foregroundDecoration: new BoxDecoration(
+                    border: new Border.all(
+                      color: new Color(0xFFFFFFFF),
+                      width: _userImageBorderWidth,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: nowModel.user,
+                ),
+              ),
+            ),
+          ]);
 
   Widget _buildQuickSettings(NowModel nowModel) => new Padding(
         padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
@@ -514,7 +518,6 @@ class NowState extends TickingState<Now> {
       }
       NowModel nowModel = NowModel.of(context);
       nowModel.quickSettingsProgress = _quickSettingsProgress;
-      nowModel.quickSettingsSlideUpProgress = _quickSettingsSlideUpProgress;
     }
 
     _updateMinimizedInfoOpacity();
@@ -684,16 +687,4 @@ class NowState extends TickingState<Now> {
       0.0,
       ((_quickSettingsProgress - (1.0 - _kFallAwayDurationFraction)) /
           _kFallAwayDurationFraction));
-
-  // Width of quick settings maximized info
-  // (ie battery icon/desc | wifi icon/desc | network icon/desc)
-  double _getImportantInfoMaximizedWidth(double importantInfoMinWidth) {
-    double t = _quickSettingsProgress * (1.0 - _minimizationProgress);
-    double minWidth = importantInfoMinWidth;
-    return lerpDouble(
-        minWidth,
-        _quickSettingsBackgroundMaximizedWidth -
-            2.0 * _kQuickSettingsInnerHorizontalPadding,
-        t);
-  }
 }

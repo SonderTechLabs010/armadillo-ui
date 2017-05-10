@@ -7,6 +7,8 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
+final DateFormat _kTimeOnlyDateFormat = new DateFormat('h:mm', 'en_US');
+final DateFormat _kDateOnlyDateFormat = new DateFormat('EEEE MMM d', 'en_US');
 final DateFormat _kShortStringDateFormat = new DateFormat('h:mm', 'en_US');
 final DateFormat _kLongStringDateFormat = new DateFormat('EEEE h:mm', 'en_US');
 
@@ -34,7 +36,21 @@ class TimeStringer {
     }
   }
 
-  /// Returns a short version of the time (eg. 'Monday 10:34').
+  /// Returns the time only (eg. '10:34').
+  String get timeOnly => _kTimeOnlyDateFormat
+      .format(
+        new DateTime.now().toLocal(),
+      )
+      .toUpperCase();
+
+  /// Returns the date only (eg. 'MONDAY AUG 3').
+  String get dateOnly => _kDateOnlyDateFormat
+      .format(
+        new DateTime.now().toLocal(),
+      )
+      .toUpperCase();
+
+  /// Returns a short version of the time (eg. '10:34').
   String get shortString => _kShortStringDateFormat
       .format(new DateTime.now().toLocal())
       .toLowerCase();
