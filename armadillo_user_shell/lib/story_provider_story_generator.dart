@@ -147,22 +147,22 @@ class StoryProviderStoryGenerator extends StoryGenerator {
       );
 
   void _onStoryChanged(StoryInfo storyInfo, StoryState storyState) {
-    if (_storyControllerMap[storyInfo.id] == null) {
-      if (storyState == StoryState.initial) {
-        _getController(storyInfo.id);
-        _startStory(storyInfo);
-      }
+    if (!_storyControllerMap.containsKey(storyInfo.id)) {
+      assert(
+          storyState == StoryState.initial || storyState == StoryState.stopped);
+      _getController(storyInfo.id);
+      _startStory(storyInfo);
     }
   }
 
   void _removeStory(String storyId, {bool notify: true}) {
-    if (_storyControllerMap[storyId] != null) {
+    if (_storyControllerMap.containsKey(storyId)) {
       _storyControllerMap[storyId].ctrl.close();
       _storyControllerMap.remove(storyId);
       Iterable<Story> stories = _currentStories.where(
         (Story story) => story.id.value == storyId,
       );
-      assert(stories.length == 0 || stories.length == 1);
+      assert(stories.length <= 1);
       if (stories.isNotEmpty) {
         _removeStoryFromClusters(stories.first);
       }
