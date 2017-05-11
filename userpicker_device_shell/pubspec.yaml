@@ -4,6 +4,7 @@
 
 flutter:
   assets:
-    - packages/userpicker_device_shell/res/fuchsia.png
     - packages/userpicker_device_shell/res/bg.jpg
+    - packages/userpicker_device_shell/res/BlackHole.png
+    - packages/userpicker_device_shell/res/fuchsia.png
     - packages/userpicker_device_shell/res/screen_config.json

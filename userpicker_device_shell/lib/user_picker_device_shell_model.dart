@@ -41,14 +41,14 @@ class UserPickerDeviceShellModel extends DeviceShellModel {
   void _loadUsers() {
     userProvider.previousUsers((List<Account> accounts) {
       print('accounts: $accounts');
-      _accounts = new List<Account>.unmodifiable(accounts);
+      _accounts = new List<Account>.from(accounts);
       notifyListeners();
     });
   }
 
   /// Shows the 'new user' form.
   void showNewUserForm() {
-    if(!_isShowingNewUserForm) {
+    if (!_isShowingNewUserForm) {
       _isShowingNewUserForm = true;
       notifyListeners();
     }
@@ -56,9 +56,17 @@ class UserPickerDeviceShellModel extends DeviceShellModel {
 
   /// Hides the 'new user' form.
   void hideNewUserForm() {
-    if(_isShowingNewUserForm) {
+    if (_isShowingNewUserForm) {
       _isShowingNewUserForm = false;
       notifyListeners();
     }
+  }
+
+  /// Permanently removes the user.
+  void removeUser(Account account) {
+    userProvider.removeUser(account.id);
+    _accounts.remove(account);
+    notifyListeners();
+    _loadUsers();
   }
 }

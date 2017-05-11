@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:apps.modular.services.auth.account/account.fidl.dart';
 import 'package:apps.modular.services.device/user_provider.fidl.dart';
 import 'package:apps.mozart.lib.flutter/child_view.dart';
 import 'package:apps.mozart.services.views/view_token.fidl.dart';
@@ -50,6 +51,7 @@ void main() {
             key: screenManagerKey,
             onLogout: model.refreshUsers,
             onAddUser: model.showNewUserForm,
+            onRemoveUser: model.removeUser,
           ),
           new ScopedModel<_AuthenticationOverlayModel>(
             model: authenticationOverlayModel,
@@ -61,13 +63,19 @@ void main() {
   );
 
   runApp(
-    new MediaQuery(
-      data: const MediaQueryData(),
-      child: new FocusScope(
-        node: new FocusScopeNode(),
-        autofocus: true,
-        child: deviceShellWidget,
-      ),
+    new Overlay(
+      initialEntries: <OverlayEntry>[
+        new OverlayEntry(
+          builder: (BuildContext context) => new MediaQuery(
+                data: const MediaQueryData(),
+                child: new FocusScope(
+                  node: new FocusScopeNode(),
+                  autofocus: true,
+                  child: deviceShellWidget,
+                ),
+              ),
+        ),
+      ],
     ),
   );
 
@@ -78,8 +86,15 @@ void main() {
 class _ScreenManager extends StatefulWidget {
   final VoidCallback onLogout;
   final VoidCallback onAddUser;
+  final OnRemoveUser onRemoveUser;
 
-  _ScreenManager({Key key, this.onLogout, this.onAddUser}) : super(key: key);
+  _ScreenManager({
+    Key key,
+    this.onLogout,
+    this.onAddUser,
+    this.onRemoveUser,
+  })
+      : super(key: key);
 
   @override
   _ScreenManagerState createState() => new _ScreenManagerState();
@@ -92,6 +107,7 @@ class _ScreenManagerState extends State<_ScreenManager>
       new TextEditingController();
   final FocusNode _userNameFocusNode = new FocusNode();
   final FocusNode _serverNameFocusNode = new FocusNode();
+  final Set<Account> _draggedUsers = new Set<Account>();
 
   UserControllerProxy _userControllerProxy;
   UserWatcherImpl _userWatcherImpl;
@@ -148,6 +164,7 @@ class _ScreenManagerState extends State<_ScreenManager>
                     ],
                   ),
         child: new UserPickerScreen(
+          showBlackHole: _draggedUsers.isNotEmpty,
           onAddUser: () {
             //TODO(apwilson): Remove the delay.  It's a workaround to raw
             // keyboard focus bug.
@@ -171,7 +188,17 @@ class _ScreenManagerState extends State<_ScreenManager>
                             AnimationStatus.dismissed ||
                         _curvedTransitionAnimation.status ==
                             AnimationStatus.forward)),
+            onUserDragStarted: (Account account) => setState(() {
+                  _draggedUsers.add(account);
+                }),
+            onUserDragCanceled: (Account account) => setState(() {
+                  _draggedUsers.remove(account);
+                }),
           ),
+          onRemoveUser: (Account account) => setState(() {
+                _draggedUsers.remove(account);
+                widget.onRemoveUser?.call(account);
+              }),
         ),
       );
 
