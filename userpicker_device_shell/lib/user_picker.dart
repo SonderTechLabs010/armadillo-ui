@@ -5,7 +5,6 @@
 import 'package:apps.modular.services.auth.account/account.fidl.dart';
 import 'package:apps.modular.services.device/user_provider.fidl.dart';
 import 'package:flutter/material.dart';
-import 'package:lib.widgets/hacks.dart' as hacks;
 import 'package:lib.widgets/widgets.dart';
 
 import 'user_picker_device_shell_model.dart';
@@ -72,9 +71,7 @@ class UserPicker extends StatelessWidget {
                       child: new Column(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          // TODO(apwilson): Use TextField ONCE WE HAVE A PROPER
-                          // IME ON FUCHSIA!
-                          new hacks.RawKeyboardTextField(
+                          new TextField(
                             decoration: new InputDecoration(
                               hintText: 'username@example.com',
                             ),
@@ -86,7 +83,7 @@ class UserPicker extends StatelessWidget {
                                   );
                             },
                           ),
-                          new hacks.RawKeyboardTextField(
+                          new TextField(
                             decoration: new InputDecoration(
                               hintText: 'firebase_id',
                             ),
