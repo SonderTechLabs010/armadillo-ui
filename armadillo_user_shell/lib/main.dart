@@ -45,15 +45,19 @@ const bool _kDumpAllErrors = false;
 
 Future<Null> main() async {
   if (_kDumpAllErrors) {
-    FlutterError.onError =
-        (FlutterErrorDetails details) => FlutterError.dumpErrorToConsole(
+    var flutterError;
+    flutterError.onError =
+        (FlutterErrorDetails details) {
+          return flutterError.dumpErrorToConsole(
               details,
               forceReport: true,
             );
+        };
   }
 
   HitTestModel hitTestModel = new HitTestModel();
-  InitialStoryGenerator initialStoryGenerator = new InitialStoryGenerator()
+  InitialStoryGenerator initialStoryGenerator;
+  initialStoryGenerator = new InitialStoryGenerator()
     ..load(defaultBundle);
   InitialFocusSetter initialFocusSetter = new InitialFocusSetter();
 
@@ -62,8 +66,8 @@ Future<Null> main() async {
     onNoStories: initialStoryGenerator.createStories,
     onStoriesFirstAvailable: initialFocusSetter.onStoriesFirstAvailable,
   );
-  StoryClusterDragStateModel storyClusterDragStateModel =
-      new StoryClusterDragStateModel();
+  StoryClusterDragStateModel storyClusterDragStateModel;
+  storyClusterDragStateModel = new StoryClusterDragStateModel();
   StoryRearrangementScrimModel storyRearrangementScrimModel =
       new StoryRearrangementScrimModel();
   storyClusterDragStateModel.addListener(
@@ -78,7 +82,8 @@ Future<Null> main() async {
   );
 
   UserLogoutter userLogoutter = new UserLogoutter();
-  Conductor conductor = new Conductor(
+  Conductor conductor;
+  conductor = new Conductor(
     useSoftKeyboard: false,
     blurScrimmedChildren: false,
     onQuickSettingsOverlayChanged: hitTestModel.onQuickSettingsOverlayChanged,
@@ -89,7 +94,8 @@ Future<Null> main() async {
   SuggestionProviderSuggestionModel suggestionProviderSuggestionModel =
       new SuggestionProviderSuggestionModel(hitTestModel: hitTestModel);
 
-  StoryModel storyModel = new StoryModel(
+  StoryModel storyModel;
+  storyModel = new StoryModel(
     onFocusChanged: suggestionProviderSuggestionModel.storyClusterFocusChanged,
   );
   storyProviderStoryGenerator.addListener(
@@ -193,6 +199,63 @@ Future<Null> main() async {
       child: userShellWidget,
     ),
   );
+}
+
+class StoryId {
+  StoryId(String storyId);
+}
+
+class ApplicationContext {
+  ApplicationContext.fromStartupInfo();
+}
+class Armadillo {
+}
+
+class Widget {
+}
+
+class ScopedModel {
+}
+
+void runApp(WindowMediaQuery windowMediaQuery) {
+}
+
+class WindowMediaQuery {
+}
+
+class DebugModel {
+}
+
+class NowModel {
+}
+
+class StoryModel {
+  onStoryClustersChanged(List storyClusters) {}
+}
+
+class Conductor {
+  void goToOrigin(StoryModel storyModel) {}
+
+  void requestStoryFocus(storyId, StoryModel storyModel, {bool jumpToFinish}) {}
+}
+
+class StoryDragTransitionModel {
+  onDragStateChanged(isDragging) {}
+}
+
+class StoryRearrangementScrimModel {
+  onDragAcceptableStateChanged(isAcceptable) {}
+}
+
+class StoryClusterDragStateModel {
+  get isAcceptable => null;
+
+  get isDragging => null;
+
+  void addListener(Function arg0) {}
+}
+
+class FlutterErrorDetails {
 }
 
 Widget _buildApp({
