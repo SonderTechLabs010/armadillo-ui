@@ -12,15 +12,24 @@ import 'user_picker_device_shell_model.dart';
 const String _kGuestUserName = 'Guest';
 const String _kDefaultDeviceName = 'fuchsia';
 const String _kDefaultServerName = 'ledger.fuchsia.com';
-const Color _kFuchsiaColor = const Color(0xFFFF0080);
+const Color _kFuchsiaColor = const Color(0xFFFF0080); // ignore: const_with_non_const
+
+class Color {
+}
 const double _kButtonContentWidth = 220.0;
 const double _kButtonContentHeight = 80.0;
 
 /// Called when the user wants to login as [accountId] using [userProvider].
 typedef void OnLoginRequest(String accountId, UserProvider userProvider);
 
+class UserProvider {
+}
+
 /// See [UserPicker.onUserDragStarted].
 typedef void OnUserDragStarted(Account account);
+
+class Account {
+}
 
 /// See [UserPicker.onUserDragCanceled].
 typedef void OnUserDragCanceled(Account account);
@@ -332,4 +341,10 @@ class UserPicker extends StatelessWidget {
     onLoginRequest?.call(accountId, model.userProvider);
     model.hideNewUserForm();
   }
+}
+
+class VoidCallback {
+}
+
+class StatelessWidget {
 }

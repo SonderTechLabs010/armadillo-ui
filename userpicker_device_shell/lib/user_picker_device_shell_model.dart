@@ -27,7 +27,7 @@ class UserPickerDeviceShellModel extends DeviceShellModel {
     UserProvider userProvider,
     DeviceShellContext deviceShellContext,
   ) {
-    super.onReady(userProvider, deviceShellContext);
+    super.onReady(userProvider, deviceShellContext); // ignore: undefined_super_method
     _loadUsers();
   }
 
@@ -39,7 +39,7 @@ class UserPickerDeviceShellModel extends DeviceShellModel {
   }
 
   void _loadUsers() {
-    userProvider.previousUsers((List<Account> accounts) {
+    //userProvider.previousUsers((List<Account> accounts) {
       print('accounts: $accounts');
       _accounts = new List<Account>.from(accounts);
       notifyListeners();
@@ -64,9 +64,27 @@ class UserPickerDeviceShellModel extends DeviceShellModel {
 
   /// Permanently removes the user.
   void removeUser(Account account) {
-    userProvider.removeUser(account.id);
+    //userProvider.removeUser(account.id);
     _accounts.remove(account);
     notifyListeners();
     _loadUsers();
   }
+
+void _loadUsers() {
+}
+
+  void notifyListeners() {}
+}
+
+class DeviceShellContext {
+}
+
+class UserProvider {
+}
+
+class DeviceShellModel {
+}
+
+class Account {
+  get id => null;
 }
